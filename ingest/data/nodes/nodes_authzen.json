@@ -1,0 +1,154 @@
+{
+    "nodes":
+    [
+      {
+        "externalId": "alice",
+        "isIdentity": true,
+        "type": "Person",
+        "properties": [
+          {
+            "type": "email",
+            "value": {
+        "stringValue": "alice@email.com"
+            }
+          },
+          {
+            "type": "given_name",
+            "value": {
+        "stringValue": "Alice"
+            }
+          },
+          {
+            "type": "last_name",
+            "value": {
+        "stringValue": "Smith"
+            }
+          }
+      ]
+      },
+        {
+            "externalId": "knightrider",
+            "type": "Person",
+            "isIdentity": true,
+            "properties": [
+                {
+                    "type": "email",
+                    "value": {
+                        "stringValue": "knightrider@demo.com"
+                    }
+                },
+                {
+                    "type": "name",
+                    "value": {
+                        "stringValue": "Michael Knight"
+                    }
+                }
+            ]
+        },
+        {
+            "externalId": "satchmo",
+            "type": "Person",
+            "isIdentity": true,
+            "properties": [
+                {
+                    "type": "email",
+                    "value": {
+                        "stringValue": "satchmo@demo.com"
+                    }
+                },
+                {
+                    "type": "name",
+                    "value": {
+                        "stringValue": "Louis Armstrong"
+                    }
+                }
+            ]
+        },
+        {
+            "externalId": "karel",
+            "type": "Person",
+            "isIdentity": true,
+            "properties": [
+                {
+                    "type": "email",
+                    "value": {
+                        "stringValue": "karel@demo.com"
+                    }
+                },
+                {
+                    "type": "name",
+                    "value": {
+                        "stringValue": "Karel Plihal"
+                    }
+                }
+            ]
+        },
+        {
+            "externalId": "kitt",
+            "type": "Car",
+            "isIdentity": false,
+            "properties": [
+                {
+                    "type": "manufacturer",
+                    "value": {
+                        "stringValue": "pontiac"
+                    }
+                },
+                {
+                    "type": "model",
+                    "value": {
+                        "stringValue": "Firebird"
+                    }
+                }
+            ]
+        },
+        {
+            "externalId": "cadillacv16",
+            "type": "Car",
+            "isIdentity": false,
+            "properties": [
+                {
+                    "type": "manufacturer",
+                    "value": {
+                        "stringValue": "Cadillac"
+                    }
+                },
+                {
+                    "type": "model",
+                    "value": {
+                        "stringValue": "V-16"
+                    }
+                }
+            ]
+        },
+        {
+            "externalId": "harmonika",
+            "type": "Bus",
+            "isIdentity": false,
+            "properties": [
+                {
+                    "type": "manufacturer",
+                    "value": {
+                        "stringValue": "Ikarus"
+                    }
+                },
+                {
+                    "type": "model",
+                    "value": {
+                        "stringValue": "280"
+                    }
+                }
+            ]
+        },
+        {
+            "externalId": "listek",
+            "type": "Ticket",
+            "isIdentity": false
+        },
+        {
+            "externalId": "airbook-xyz",
+            "type": "Laptop",
+            "isIdentity": false
+        }
+    ]
+}

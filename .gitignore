@@ -26,6 +26,9 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+capture
+test
+
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
@@ -172,3 +175,31 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# emacs tmp files
+*~
+\#*
+.\#*
+
+#IDEA
+.idea/
+
+#VSCode
+.vscode/
+
+# project data stuff
+./data/
+*.csv
+*.zip
+
+# mac
+.DS_Store
+
+# LaTeX
+*.aux
+*.fdb_latexmk
+*.fls
+**/tmp/
+
+# Ignore generated credentials from google-github-actions/auth
+gha-creds-*.json
