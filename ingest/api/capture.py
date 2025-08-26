@@ -32,7 +32,7 @@ api_capture = APIBlueprint(
 @api_capture.get('/select', tags=[tag])
 def select_json_file():
     json_files = [f for f in os.listdir('data/nodes') if f.endswith('.json')]
-    return render_template('capture/select_file.html', json_files=json_files)
+    return render_template('ingest/select_file.html', json_files=json_files)
 
 
 @api_capture.post('/create', tags=[tag])
@@ -59,7 +59,7 @@ def upsert_file():
     except ValueError:
         response_json = {"message": "Invalid JSON response", "status": response.status_code}
 
-    return render_template('capture/result.html',
+    return render_template('ingest/result.html',
                            response_json=response_json,
                            status_code=response.status_code,
                            selected_file=selected_file)
