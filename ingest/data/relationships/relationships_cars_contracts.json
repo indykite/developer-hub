@@ -1,0 +1,191 @@
+{
+    "relationships": [
+   {
+      "source": {
+        "externalId": "ryan",
+        "type": "Person"
+      },
+      "target": {
+        "externalId": "cb123",
+        "type": "PaymentMethod"
+      },
+      "type": "HAS"
+    },
+     {
+      "source": {
+        "externalId": "tilda",
+        "type": "Person"
+      },
+      "target": {
+        "externalId": "kl123",
+        "type": "PaymentMethod"
+      },
+      "type": "HAS"
+    },
+     {
+      "source": {
+        "externalId": "alice",
+        "type": "Person"
+      },
+      "target": {
+        "externalId": "cb123",
+        "type": "PaymentMethod"
+      },
+      "type": "HAS"
+    },
+    {
+      "source": {
+        "externalId": "ryan",
+        "type": "Person"
+      },
+      "target": {
+        "externalId": "ct123",
+        "type": "Contract"
+      },
+      "type": "ACCEPTED"
+    },
+     {
+      "source": {
+        "externalId": "tilda",
+        "type": "Person"
+      },
+      "target": {
+        "externalId": "ct234",
+        "type": "Contract"
+      },
+      "type": "ACCEPTED"
+    },
+    {
+      "source": {
+        "externalId": "alice",
+        "type": "Person"
+      },
+      "target": {
+        "externalId": "ct985",
+        "type": "Contract"
+      },
+      "type": "ACCEPTED"
+    },
+    {
+      "source": {
+        "externalId": "ct123",
+        "type": "Contract"
+      },
+      "target": {
+        "externalId": "car1",
+        "type": "Vehicle"
+      },
+      "type": "COVERS"
+    },
+     {
+      "source": {
+        "externalId": "ct985",
+        "type": "Contract"
+      },
+      "target": {
+        "externalId": "car1",
+        "type": "Vehicle"
+      },
+      "type": "COVERS"
+    },
+      {
+      "source": {
+        "externalId": "ct234",
+        "type": "Contract"
+      },
+      "target": {
+        "externalId": "truck1",
+        "type": "Vehicle"
+      },
+      "type": "COVERS"
+    },
+     {
+      "source": {
+        "externalId": "car1",
+        "type": "Vehicle"
+      },
+      "target": {
+        "externalId": "license1",
+        "type": "LicenseNumber"
+      },
+      "type": "HAS"
+    },
+    {
+      "source": {
+        "externalId": "truck1",
+        "type": "Vehicle"
+      },
+      "target": {
+        "externalId": "license2",
+        "type": "LicenseNumber"
+      },
+      "type": "HAS"
+    },
+     {
+      "source": {
+        "externalId": "car2",
+        "type": "Vehicle"
+      },
+      "target": {
+        "externalId": "license3",
+        "type": "LicenseNumber"
+      },
+      "type": "HAS"
+    },
+    {
+      "source": {
+        "externalId": "company1",
+        "type": "Company"
+      },
+      "target": {
+        "externalId": "car1",
+        "type": "Vehicle"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "externalId": "company1",
+        "type": "Company"
+      },
+      "target": {
+        "externalId": "car2",
+        "type": "Vehicle"
+      },
+      "type": "OWNS"
+    },
+     {
+      "source": {
+        "externalId": "company1",
+        "type": "Company"
+      },
+      "target": {
+        "externalId": "truck1",
+        "type": "Vehicle"
+      },
+      "type": "OWNS"
+    },
+     {
+      "source": {
+        "externalId": "application1",
+        "type": "Application"
+      },
+      "target": {
+        "externalId": "company1",
+        "type": "Company"
+      },
+      "type": "HAS_AGREEMENT_WITH"
+    },
+    {
+      "source": {
+        "externalId": "application2",
+        "type": "Application"
+      },
+      "target": {
+        "externalId": "company1",
+        "type": "Company"
+      },
+      "type": "HAS_AGREEMENT_WITH"
+    }
+  ]
+}

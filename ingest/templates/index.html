@@ -1,0 +1,50 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Select JSON File{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="row">
+        <div class="col-12 col-xl-8">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                   <h3 class="mb-3">Ingest data into your IKG (Aura instance) in the IndyKite platform</h3>
+                        <ul>
+                        <li><a href="/api_capture/select" class="link-indigo">Capture nodes</a></li>
+                            <li><a href="/api_relationships/select" class="link-indigo">Capture relationships</a></li>
+                       </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <div class="row">
+        <div class="col-12 col-xl-8">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                   <h3 class="mb-3">Requirements </h3>
+                        <ul>
+                            <li>Environment created on the IndyKite platform: Project, Application, AppAgent, AppAgent Credentials</li>
+                       </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 col-xl-8">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                   <h3 class="mb-3">Environment variables </h3>
+                        <ul>
+                            <li>APP_TOKEN: AppAgent token</li>
+                            <li>URL_ENDPOINTS: https://jarvis.indykite.com</li>
+                            <li>PROJECT_ID: gid of your project on the IK platform</li>
+                       </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+{% endblock %}

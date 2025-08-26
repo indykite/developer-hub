@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>{% block title %}{% endblock %} | Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Volt CSS -->
+    <link type="text/css" href="{{ url_for('static', filename='css/volt.css') }}" rel="stylesheet">
+</head>
+
+<body>
+    {% include 'includes/sidebar.html' %}
+    <div class="main-content" id="panel">
+        <div class="container-fluid">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- Volt JS -->
+    <script src="{{ url_for('static', filename='assets/js/volt.js') }}"></script>
+</body>
+
+</html>

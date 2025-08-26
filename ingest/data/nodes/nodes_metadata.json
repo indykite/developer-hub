@@ -1,0 +1,158 @@
+{
+    "nodes":
+    [
+        {
+            "externalId": "alice",
+            "type": "Person",
+            "isIdentity": true,
+            "properties": [
+                {
+                    "type": "email",
+                    "value": {
+                        "stringValue": "alice@email.com"
+                    }
+                },
+                {
+                    "type": "name",
+                    "value": {
+                        "stringValue": "Alice Smith"
+                    }
+                }
+            ]
+        },
+        {
+            "externalId": "satchmo",
+            "type": "Person",
+            "isIdentity": true,
+            "properties": [
+                {
+                    "type": "email",
+                    "value": {
+                        "stringValue": "satchmo@demo.com"
+                    }
+                },
+                {
+                    "type": "name",
+                    "value": {
+                        "stringValue": "Louis Armstrong"
+                    }
+                }
+            ]
+        },
+        {
+            "externalId": "karel",
+            "type": "Person",
+            "isIdentity": true,
+            "properties": [
+                {
+                    "type": "email",
+                    "value": {
+                        "stringValue": "karel@demo.com"
+                    }
+                },
+                {
+                    "type": "name",
+                    "value": {
+                        "stringValue": "Karel Plihal"
+                    }
+                }
+            ]
+        },
+        {
+            "externalId": "kitt",
+            "type": "Car",
+            "isIdentity": false,
+            "properties": [
+                {
+                    "type": "manufacturer",
+                    "value": {
+                        "stringValue": "pontiac"
+                    }
+                },
+                {
+                    "type": "model",
+                    "value": {
+                        "stringValue": "Firebird"
+                    }
+                }
+            ]
+        },
+        {
+            "externalId": "caddilacv16",
+            "type": "Car",
+            "isIdentity": false,
+            "properties": [
+                {
+                    "type": "manufacturer",
+                    "value": {
+                        "stringValue": "Caddilac"
+                    }
+                },
+                {
+                    "type": "model",
+                    "value": {
+                        "stringValue": "V-16"
+                    }
+                }
+            ]
+        },
+        {
+            "externalId": "harmonika",
+            "type": "Bus",
+            "isIdentity": false,
+            "properties": [
+                {
+                    "type": "manufacturer",
+                    "value": {
+                        "stringValue": "Ikarus"
+                    }
+                },
+                {
+                    "type": "model",
+                    "value": {
+                        "stringValue": "280"
+                    }
+                }
+            ]
+        },
+        {
+            "externalId": "ln-xxx",
+            "type": "LicenseNumber",
+            "isIdentity": false,
+            "properties": [
+                {
+                    "type": "license",
+                    "value": {
+                        "stringValue": "ln-xxx-value"
+                    }
+                }
+            ]
+        },
+        {
+            "externalId": "ln-yyy",
+            "type": "LicenseNumber",
+            "isIdentity": false,
+            "properties": [
+                {
+                    "type": "license",
+                    "value": {
+                        "stringValue": "ln-yyy-value"
+                    }
+                }
+            ]
+        },
+        {
+            "externalId": "ln-zzz",
+            "type": "LicenseNumber",
+            "isIdentity": false,
+            "properties": [
+                {
+                    "type": "license",
+                    "value": {
+                        "stringValue": "ln-zzz-value"
+                    }
+                }
+            ]
+        }
+    ]
+}

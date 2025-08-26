@@ -1,0 +1,81 @@
+{
+    "relationships": [
+        {
+            "source": {
+                "externalId": "alice",
+                "type": "Person"
+            },
+            "target": {
+                "externalId": "kitt",
+                "type": "Car"
+            },
+            "type": "OWNS"
+        },
+        {
+            "source": {
+                "externalId": "alice",
+                "type": "Person"
+            },
+            "target": {
+                "externalId": "caddilacv16",
+                "type": "Car"
+            },
+            "type": "OWNS"
+        },
+        {
+            "source": {
+                "externalId": "satchmo",
+                "type": "Person"
+            },
+            "target": {
+                "externalId": "caddilacv16",
+                "type": "Car"
+            },
+            "type": "OWNS"
+        },
+        {
+            "source": {
+                "externalId": "karel",
+                "type": "Person"
+            },
+            "target": {
+                "externalId": "harmonika",
+                "type": "Bus"
+            },
+            "type": "OWNS"
+        },
+        {
+            "source": {
+                "externalId": "kitt",
+                "type": "Car"
+            },
+            "target": {
+                "externalId": "ln-xxx",
+                "type": "LicenseNumber"
+            },
+            "type": "HAS"
+        },
+        {
+            "source": {
+                "externalId": "caddilacv16",
+                "type": "Car"
+            },
+            "target": {
+                "externalId": "ln-zzz",
+                "type": "LicenseNumber"
+            },
+            "type": "HAS"
+        },
+        {
+            "source": {
+                "externalId": "harmonika",
+                "type": "Bus"
+            },
+            "target": {
+                "externalId": "ln-yyy",
+                "type": "LicenseNumber"
+            },
+            "type": "HAS"
+        }
+    ]
+}
