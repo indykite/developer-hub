@@ -1,0 +1,81 @@
+{
+    "relationships": [
+        {
+            "source": {
+                "external_id": "alice",
+                "type": "Person"
+            },
+            "target": {
+                "external_id": "kitt",
+                "type": "Car"
+            },
+            "type": "OWNS"
+        },
+        {
+            "source": {
+                "external_id": "alice",
+                "type": "Person"
+            },
+            "target": {
+                "external_id": "caddilacv16",
+                "type": "Car"
+            },
+            "type": "OWNS"
+        },
+        {
+            "source": {
+                "external_id": "satchmo",
+                "type": "Person"
+            },
+            "target": {
+                "external_id": "caddilacv16",
+                "type": "Car"
+            },
+            "type": "OWNS"
+        },
+        {
+            "source": {
+                "external_id": "karel",
+                "type": "Person"
+            },
+            "target": {
+                "external_id": "harmonika",
+                "type": "Bus"
+            },
+            "type": "OWNS"
+        },
+        {
+            "source": {
+                "external_id": "kitt",
+                "type": "Car"
+            },
+            "target": {
+                "external_id": "ln-xxx",
+                "type": "LicenseNumber"
+            },
+            "type": "HAS"
+        },
+        {
+            "source": {
+                "external_id": "caddilacv16",
+                "type": "Car"
+            },
+            "target": {
+                "external_id": "ln-zzz",
+                "type": "LicenseNumber"
+            },
+            "type": "HAS"
+        },
+        {
+            "source": {
+                "external_id": "harmonika",
+                "type": "Bus"
+            },
+            "target": {
+                "external_id": "ln-yyy",
+                "type": "LicenseNumber"
+            },
+            "type": "HAS"
+        }
+    ]
+}

@@ -1,0 +1,92 @@
+{
+    "relationships": [
+        {
+            "source": {
+                "external_id": "knightrider",
+                "type": "Person"
+            },
+            "target": {
+                "external_id": "kitt",
+                "type": "Car"
+            },
+            "type": "DRIVES"
+        },
+        {
+            "source": {
+                "external_id": "satchmo",
+                "type": "Person"
+            },
+            "target": {
+                "external_id": "cadillacv16",
+                "type": "Car"
+            },
+            "type": "DRIVES"
+        },
+        {
+            "source": {
+                "external_id": "karel",
+                "type": "Person"
+            },
+            "target": {
+                "external_id": "listek",
+                "type": "Ticket"
+            },
+            "type": "HAS"
+        },
+        {
+            "source": {
+                "external_id": "listek",
+                "type": "Ticket"
+            },
+            "target": {
+                "external_id": "harmonika",
+                "type": "Bus"
+            },
+            "type": "FOR"
+        },
+        {
+            "source": {
+                "external_id": "karel",
+                "type": "Person"
+            },
+            "target": {
+                "external_id": "airbook-xyz",
+                "type": "Laptop"
+            },
+            "type": "OWNS"
+        },
+        {
+            "source": {
+                "external_id": "alice",
+                "type": "Person"
+            },
+            "target": {
+                "external_id": "airbook-xyz",
+                "type": "Laptop"
+            },
+            "type": "OWNS"
+        },
+        {
+            "source": {
+                "external_id": "knightrider",
+                "type": "Person"
+            },
+            "target": {
+                "external_id": "kitt",
+                "type": "Car"
+            },
+            "type": "OWNS"
+        },
+         {
+            "source": {
+                "external_id": "alice",
+                "type": "Person"
+            },
+            "target": {
+                "external_id": "cadillacv16",
+                "type": "Car"
+            },
+            "type": "DRIVES"
+        }
+    ]
+}

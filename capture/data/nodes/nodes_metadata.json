@@ -1,0 +1,128 @@
+{
+    "nodes":
+    [
+        {
+            "external_id": "alice",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+                {
+                    "type": "email",
+                    "value": "alice@email.com"
+                },
+                {
+                    "type": "name",
+                    "value": "Alice Smith"
+                }
+            ]
+        },
+        {
+            "external_id": "satchmo",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+                {
+                    "type": "email",
+                    "value":"satchmo@demo.com"
+                },
+                {
+                    "type": "name",
+                    "value": "Louis Armstrong"
+                }
+            ]
+        },
+        {
+            "external_id": "karel",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+                {
+                    "type": "email",
+                    "value": "karel@demo.com"
+                },
+                {
+                    "type": "name",
+                    "value": "Karel Plihal"
+                }
+            ]
+        },
+        {
+            "external_id": "kitt",
+            "type": "Car",
+            "is_identity": false,
+            "properties": [
+                {
+                    "type": "manufacturer",
+                    "value": "pontiac"
+                },
+                {
+                    "type": "model",
+                    "value": "Firebird"
+                }
+            ]
+        },
+        {
+            "external_id": "caddilacv16",
+            "type": "Car",
+            "is_identity": false,
+            "properties": [
+                {
+                    "type": "manufacturer",
+                    "value": "Caddilac"
+                },
+                {
+                    "type": "model",
+                    "value": "V-16"
+                }
+            ]
+        },
+        {
+            "external_id": "harmonika",
+            "type": "Bus",
+            "is_identity": false,
+            "properties": [
+                {
+                    "type": "manufacturer",
+                    "value": "Ikarus"
+                },
+                {
+                    "type": "model",
+                    "value": "280"
+                }
+            ]
+        },
+        {
+            "external_id": "ln-xxx",
+            "type": "LicenseNumber",
+            "is_identity": false,
+            "properties": [
+                {
+                    "type": "license",
+                    "value":"ln-xxx-value"
+                }
+            ]
+        },
+        {
+            "external_id": "ln-yyy",
+            "type": "LicenseNumber",
+            "is_identity": false,
+            "properties": [
+                {
+                    "type": "license",
+                    "value": "ln-yyy-value"
+                }
+            ]
+        },
+        {
+            "external_id": "ln-zzz",
+            "type": "LicenseNumber",
+            "is_identity": false,
+            "properties": [
+                {
+                    "type": "license",
+                    "value": "ln-zzz-value"
+                }
+            ]
+        }
+    ]
+}
