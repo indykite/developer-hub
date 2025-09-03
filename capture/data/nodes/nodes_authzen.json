@@ -1,0 +1,124 @@
+{
+    "nodes":
+    [
+      {
+        "external_id": "alice",
+        "is_identity": true,
+        "type": "Person",
+        "properties": [
+          {
+            "type": "email",
+            "value": "alice@email.com"
+          },
+          {
+            "type": "given_name",
+            "value": "Alice"
+          },
+          {
+            "type": "last_name",
+            "value": "Smith"
+          }
+      ]
+      },
+        {
+            "external_id": "knightrider",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+                {
+                    "type": "email",
+                    "value": "knightrider@demo.com"
+                },
+                {
+                    "type": "name",
+                    "value": "Michael Knight"
+                }
+            ]
+        },
+        {
+            "external_id": "satchmo",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+                {
+                    "type": "email",
+                    "value": "satchmo@demo.com"
+                },
+                {
+                    "type": "name",
+                    "value": "Louis Armstrong"
+                }
+            ]
+        },
+        {
+            "external_id": "karel",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+                {
+                    "type": "email",
+                    "value": "karel@demo.com"
+                },
+                {
+                    "type": "name",
+                    "value": "Karel Plihal"
+                }
+            ]
+        },
+        {
+            "external_id": "kitt",
+            "type": "Car",
+            "is_identity": false,
+            "properties": [
+                {
+                    "type": "manufacturer",
+                    "value": "pontiac"
+                },
+                {
+                    "type": "model",
+                    "value": "Firebird"
+                }
+            ]
+        },
+        {
+            "external_id": "cadillacv16",
+            "type": "Car",
+            "is_identity": false,
+            "properties": [
+                {
+                    "type": "manufacturer",
+                    "value": "Cadillac"
+                },
+                {
+                    "type": "model",
+                    "value": "V-16"
+                }
+            ]
+        },
+        {
+            "external_id": "harmonika",
+            "type": "Bus",
+            "is_identity": false,
+            "properties": [
+                {
+                    "type": "manufacturer",
+                    "value": "Ikarus"
+                },
+                {
+                    "type": "model",
+                    "value": "280"
+                }
+            ]
+        },
+        {
+            "external_id": "listek",
+            "type": "Ticket",
+            "is_identity": false
+        },
+        {
+            "external_id": "airbook-xyz",
+            "type": "Laptop",
+            "is_identity": false
+        }
+    ]
+}

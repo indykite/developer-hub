@@ -1,0 +1,132 @@
+{
+    "nodes": [
+  {
+  "external_id": "alice",
+  "is_identity": true,
+  "type": "Person",
+  "properties": [
+    {
+      "type": "email",
+      "value":"alice@email.com"
+    },
+    {
+      "type": "given_name",
+      "value": "Alice"
+    },
+    {
+      "type": "last_name",
+      "value": "Smith"
+    }
+  ]
+  },
+   {
+  "external_id": "ole",
+  "is_identity": true,
+  "type": "Person",
+  "properties": [
+    {
+      "type": "email",
+      "value": "ole@yahoo.co.uk"
+    },
+    {
+      "type": "given_name",
+      "value":  "ole"
+    },
+    {
+      "type": "last_name",
+      "value": "einar"
+    }
+  ]
+  },
+  {
+  "external_id": "cb2563",
+  "type": "PaymentMethod",
+  "properties": [
+    {
+      "type": "payment_name",
+      "value": "Credit Card Parking"
+    },
+    {
+      "type": "preference",
+      "value": "Pay as you go"
+    }
+  ]
+  },
+  {
+  "external_id": "carOle",
+  "type": "Vehicle",
+  "properties": [
+    {
+      "type": "category",
+      "value": "Car"
+    },
+    {
+      "type": "is_active",
+      "value": true
+    },
+    {
+      "type": "vin",
+      "value": "pcfjnm78"
+    }
+  ]
+  },
+  {
+  "external_id": "licenseOle",
+  "type": "LicenseNumber",
+  "properties": [
+    {
+      "type": "status",
+      "value": "Active"
+    },
+    {
+      "type": "number",
+      "value": "AL98745",
+       "metadata": {
+	    "assurance_level": 3,
+        "source": "BRREG"
+       }
+    }
+  ]
+  },
+   {
+  "external_id": "loyalty1",
+  "type": "Loyalty",
+  "properties": [
+    {
+      "type": "name",
+      "value": "Parking Loyalty Plan"
+    }
+  ]
+  },
+   {
+  "external_id": "consent1",
+  "type": "ConsentPayment",
+  "properties": [
+    {
+      "type": "name",
+      "value": "Consent Parking"
+    }
+  ]
+  },
+   {
+  "external_id": "companyParking",
+  "type": "Company",
+  "properties": [
+    {
+      "type": "name",
+      "value":"City Parking Inc"
+    }
+  ]
+  },
+   {
+  "external_id": "applicationParking",
+  "type": "Application",
+  "properties": [
+    {
+      "type": "name",
+      "value":"City Mall Parking"
+    }
+  ]
+  }
+ ]
+}

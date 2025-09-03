@@ -1,0 +1,114 @@
+{
+    "relationships": [
+     {
+      "source": {
+        "external_id": "bob",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "kl123",
+        "type": "PaymentMethod"
+      },
+      "type": "HAS"
+    },
+     {
+      "source": {
+        "external_id": "alice",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "cb123",
+        "type": "PaymentMethod"
+      },
+      "type": "HAS"
+    },
+    {
+      "source": {
+        "external_id": "alice",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "ct123",
+        "type": "Contract"
+      },
+      "type": "ACCEPTED"
+    },
+     {
+      "source": {
+        "external_id": "bob",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "ct234",
+        "type": "Contract"
+      },
+      "type": "ACCEPTED"
+    },
+    {
+      "source": {
+        "external_id": "ct123",
+        "type": "Contract"
+      },
+      "target": {
+        "external_id": "car1",
+        "type": "Vehicle"
+      },
+      "type": "COVERS"
+    },
+      {
+      "source": {
+        "external_id": "ct234",
+        "type": "Contract"
+      },
+      "target": {
+        "external_id": "car2",
+        "type": "Vehicle"
+      },
+      "type": "COVERS"
+    },
+     {
+      "source": {
+        "external_id": "car1",
+        "type": "Vehicle"
+      },
+      "target": {
+        "external_id": "license1",
+        "type": "LicenseNumber"
+      },
+      "type": "HAS"
+    },
+    {
+      "source": {
+        "external_id": "car2",
+        "type": "Vehicle"
+      },
+      "target": {
+        "external_id": "license2",
+        "type": "LicenseNumber"
+      },
+      "type": "HAS"
+    },
+    {
+      "source": {
+        "external_id": "companyParking",
+        "type": "Company"
+      },
+      "target": {
+        "external_id": "ct234",
+        "type": "Contract"
+      },
+      "type": "OFFERS"
+    },
+    {
+      "source": {
+        "external_id": "companyParking",
+        "type": "Company"
+      },
+      "target": {
+        "external_id": "ct123",
+        "type": "Contract"
+      },
+      "type": "OFFERS"
+    }
+  ]
+}

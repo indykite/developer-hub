@@ -1,0 +1,77 @@
+{
+    "relationships": 
+  [
+    {
+        "source": {
+            "external_id": "101",
+            "type": "Record"
+        },
+        "target": {
+            "external_id": "102",
+            "type": "Record"
+        },
+        "type": "LIVES_WITH",
+        "properties": []
+    },
+    {
+        "source": {
+            "external_id": "103",
+            "type": "Record"
+        },
+        "target": {
+            "external_id": "104",
+            "type": "Record"
+        },
+        "type": "LIVES_WITH",
+        "properties": []
+    },
+    {
+        "source": {
+            "external_id": "105",
+            "type": "Record"
+        },
+        "target": {
+            "external_id": "106",
+            "type": "Record"
+        },
+        "type": "LIVES_WITH",
+        "properties": []
+    },
+    {
+        "source": {
+            "external_id": "107",
+            "type": "Record"
+        },
+        "target": {
+            "external_id": "108",
+            "type": "Record"
+        },
+        "type": "LIVES_WITH",
+        "properties": []
+    },
+    {
+        "source": {
+            "external_id": "109",
+            "type": "Record"
+        },
+        "target": {
+            "external_id": "110",
+            "type": "Record"
+        },
+        "type": "LIVES_WITH",
+        "properties": []
+    },
+    {
+        "source": {
+            "external_id": "111",
+            "type": "Record"
+        },
+        "target": {
+            "external_id": "112",
+            "type": "Record"
+        },
+        "type": "LIVES_WITH",
+        "properties": []
+    }
+]
+}

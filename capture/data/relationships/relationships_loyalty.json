@@ -1,0 +1,103 @@
+{
+    "relationships": [
+      {
+      "source": {
+        "external_id": "ole",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "cb2563",
+        "type": "PaymentMethod"
+      },
+      "type": "HAS"
+    },
+    {
+      "source": {
+        "external_id": "ole",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "carOle",
+        "type": "Car"
+      },
+      "type": "OWNS"
+    },
+     {
+      "source": {
+        "external_id": "ole",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "loyalty1",
+        "type": "Loyalty"
+      },
+      "type": "IS_MEMBER"
+    },
+    {
+      "source": {
+        "external_id": "alice",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "loyalty1",
+        "type": "Loyalty"
+      },
+      "type": "IS_MEMBER"
+    },
+    {
+      "source": {
+        "external_id": "ole",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "consent1",
+        "type": "ConsentPayment"
+      },
+      "type": "GRANTED"
+    },
+     {
+      "source": {
+        "external_id": "carOle",
+        "type": "Car"
+      },
+      "target": {
+        "external_id": "licenseOle",
+        "type": "LicenseNumber"
+      },
+      "type": "HAS"
+    },
+    {
+      "source": {
+        "external_id": "consent1",
+        "type": "ConsentPayment"
+      },
+      "target": {
+        "external_id": "cb2563",
+        "type": "PaymentMethod"
+      },
+      "type": "GRANTED"
+    },
+    {
+      "source": {
+        "external_id": "companyParking",
+        "type": "Company"
+      },
+      "target": {
+        "external_id": "applicationParking",
+        "type": "Application"
+      },
+      "type": "OWNS"
+    },
+     {
+      "source": {
+        "external_id": "applicationParking",
+        "type": "Application"
+      },
+      "target": {
+        "external_id": "consent1",
+        "type": "ConsentPayment"
+      },
+      "type": "USES"
+    }
+   ]
+}
