@@ -2,7 +2,7 @@
 
 Codes examples to clone and test locally
 
-## Ingest data into your IKG (Aura instance) in the IndyKite platform
+## Capture data into your IKG (Aura instance) in the IndyKite platform using the Capture REST API
 
     Capture nodes
     Capture relationships
@@ -16,4 +16,3 @@ Codes examples to clone and test locally
     APP_TOKEN: AppAgent token from the AppAgent credentials
     URL_ENDPOINTS: https://jarvis.indykite.com
     PROJECT_ID: gid of your project on the IK platform
-
