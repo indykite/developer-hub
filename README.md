@@ -1,6 +1,10 @@
 # developer-hub
 
-Codes examples to clone and test locally
+Codes examples to clone and test locally 
+- Ingest data into your IKG (Aura instance) in the IndyKite platform using the Ingest gRPC API
+- Capture data into your IKG (Aura instance) in the IndyKite platform using the Capture REST API
+
+Endpoints definitions: https://openapi.indykite.com
 
 ## How to use
 
