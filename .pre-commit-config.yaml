@@ -18,7 +18,6 @@
 #   pre-commit install -t post-checkout -t commit-msg
 #
 # Prerequisites:
-#   - if using 'make install-tools', then '~/go/bin' must be added to $PATH in ~/.bash_profile
 #   brew install pre-commit yamlfmt yamllint actionlint markdownlint-cli2 shellcheck shfmt trivy
 #
 # Update hooks and their dependencies regularly via:
