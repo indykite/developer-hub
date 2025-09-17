@@ -1,6 +1,6 @@
 {
-    "relationships": [
-     {
+  "relationships": [
+    {
       "source": {
         "externalId": "bob",
         "type": "Person"
@@ -11,7 +11,7 @@
       },
       "type": "HAS"
     },
-     {
+    {
       "source": {
         "externalId": "alice",
         "type": "Person"
@@ -33,7 +33,7 @@
       },
       "type": "ACCEPTED"
     },
-     {
+    {
       "source": {
         "externalId": "bob",
         "type": "Person"
@@ -55,7 +55,7 @@
       },
       "type": "COVERS"
     },
-      {
+    {
       "source": {
         "externalId": "ct234",
         "type": "Contract"
@@ -66,7 +66,7 @@
       },
       "type": "COVERS"
     },
-     {
+    {
       "source": {
         "externalId": "car1",
         "type": "Vehicle"

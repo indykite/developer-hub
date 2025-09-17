@@ -1,6 +1,6 @@
 {
-    "relationships": [
-      {
+  "relationships": [
+    {
       "source": {
         "external_id": "ole",
         "type": "Person"
@@ -22,7 +22,7 @@
       },
       "type": "OWNS"
     },
-     {
+    {
       "source": {
         "external_id": "ole",
         "type": "Person"
@@ -55,7 +55,7 @@
       },
       "type": "GRANTED"
     },
-     {
+    {
       "source": {
         "external_id": "carOle",
         "type": "Car"
@@ -88,7 +88,7 @@
       },
       "type": "OWNS"
     },
-     {
+    {
       "source": {
         "external_id": "applicationParking",
         "type": "Application"
@@ -99,5 +99,5 @@
       },
       "type": "USES"
     }
-   ]
+  ]
 }

@@ -1,17 +1,18 @@
-from flask_openapi3 import APIBlueprint
-from flask_openapi3 import Tag
-from pydantic import BaseModel, Field
-from flask import render_template, request, redirect, url_for, flash
-
-import json
-import os
-import requests
 import concurrent.futures
+import json
+import logging
+from pathlib import Path
 
 import app
+import requests
+from flask import flash, redirect, render_template, request, url_for
+from flask_openapi3 import APIBlueprint, Tag
+from pydantic import BaseModel, Field
 
-tag = Tag(name='api_capture', description='Capture')
+tag = Tag(name="api_capture", description="Capture")
 security = [{"ApiKeyAuth": []}]
+
+logger = logging.getLogger(__name__)
 
 
 class Unauthorized(BaseModel):
@@ -20,71 +21,72 @@ class Unauthorized(BaseModel):
 
 
 api_capture = APIBlueprint(
-    'api_capture',
+    "api_capture",
     __name__,
-    url_prefix='/api_capture',
+    url_prefix="/api_capture",
     abp_tags=[tag],
     abp_security=security,
     abp_responses={"401": Unauthorized},
-    doc_ui=True
+    doc_ui=True,
 )
 
-@api_capture.get('/select', tags=[tag])
+
+@api_capture.get("/select", tags=[tag])
 def select_json_file():
-    json_files = [f for f in os.listdir('data/nodes') if f.endswith('.json')]
-    return render_template('capture/select_file.html', json_files=json_files)
+    json_dir = Path("data/nodes")
+    json_files = [f.name for f in json_dir.iterdir() if f.suffix == ".json"]
+    return render_template("capture/select_file.html", json_files=json_files)
 
 
-@api_capture.post('/create', tags=[tag])
+@api_capture.post("/create", tags=[tag])
 def upsert_file():
-    selected_file = request.form.get('json_file')
+    selected_file = request.form.get("json_file")
     if not selected_file:
         flash("No file selected", "danger")
-        return redirect(url_for('api_capture.select_json_file'))
+        return redirect(url_for("api_capture.select_json_file"))
 
-    json_file_path = os.path.join('data/nodes', selected_file)
-    with open(json_file_path, 'r') as file:
+    json_file_path = Path("data/nodes") / selected_file
+    with json_file_path.open() as file:
         json_data = json.load(file)
 
-        nodes_list = json_data.get('nodes', [])
+        nodes_list = json_data.get("nodes", [])
         nodes_count = len(nodes_list)
-        print(f"Total nodes entries: {nodes_count}")
+        logger.info("Total nodes entries: %s", nodes_count)
 
         def chunk_list(lst, chunk_size):
             for i in range(0, len(lst), chunk_size):
-                yield lst[i:i + chunk_size]
+                yield lst[i : i + chunk_size]
 
-        def process_chunk(chunk, index):
-            # Each chunk should be wrapped in the same structure
-            chunk_data = {"nodes": chunk}
-
-            response = requests.put(app.url + "/capture/v1/nodes",
-                                     headers={
-                                         "Content-Type": "application/json",
-                                         "X-IK-ClientKey": app.app_token
-                                     },
-                                     json=json_data
-                                     )
+        def process_chunk(index):  # removed unused `chunk`
+            response = requests.put(
+                app.url + "/capture/v1/nodes",
+                headers={
+                    "Content-Type": "application/json",
+                    "X-IK-ClientKey": app.app_token,
+                },
+                json=json_data,
+                timeout=30,  # added timeout
+            )
 
             try:
                 response_json = response.json()
             except ValueError:
-                response_json = {"message": "Invalid JSON response", "status": response.status_code}
+                response_json = {
+                    "message": "Invalid JSON response",
+                    "status": response.status_code,
+                }
 
             return {
                 "chunk_index": index,
                 "status_code": response.status_code,
-                "response_json": response_json
+                "response_json": response_json,
             }
 
         chunk_size = 200
         chunks = list(chunk_list(nodes_list, chunk_size))
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-            futures = {
-                executor.submit(process_chunk, chunk, i): i
-                for i, chunk in enumerate(chunks)
-            }
+            futures = {executor.submit(process_chunk, i): i for i, _ in enumerate(chunks)}
 
             results = []
             for future in concurrent.futures.as_completed(futures):
@@ -93,11 +95,12 @@ def upsert_file():
                     result = future.result()
                     results.append(result["response_json"])
                 except Exception as e:
-                    print(f"Chunk {index} failed: {e}")
+                    logger.exception("Chunk %s failed", index)
                     results.append({"message": str(e)})
 
-            # Now render results
-            return render_template('capture/result.html',
-                                   response_json=results,
-                                   status_code=result["status_code"],
-                                   selected_file=selected_file)
+            return render_template(
+                "capture/result.html",
+                response_json=results,
+                status_code=result["status_code"],
+                selected_file=selected_file,
+            )

@@ -1,198 +1,4834 @@
 {
   "nodes": [
-{"external_id": "13", "type": "App", "is_identity": true, "properties": [{"type": "AppID", "value": "13"}, {"type": "name", "value": "eBanking"}]},
-{"external_id": "finApp", "type": "App", "is_identity": true, "properties": [{"type": "AppID", "value": "finApp"}, {"type": "name", "value": "Financial App"}]},
-{"external_id": "finWeb", "type": "App", "is_identity": true, "properties": [{"type": "AppID", "value": "finWeb"}, {"type": "name", "value": "Financial Web Portal"}]},
-{"external_id": "eCredit", "type": "App", "is_identity": true, "properties": [{"type": "AppID", "value": "eCredit"}, {"type": "name", "value": "Credit Services"}]},
-{"external_id": "FBVAN001", "type": "Branch", "is_identity": false, "properties": [{"type": "BranchCode", "value": "FBVAN001"}, {"type": "BranchNb", "value": "001"}, {"type": "name", "value": "FakeBank Vancouver Downtown"}, {"type": "address", "value": "789 Main St Vancouver BC V6A 1A1"}]},
-{"external_id": "FBTOR002", "type": "Branch", "is_identity": false, "properties": [{"type": "BranchCode", "value": "FBTOR002"}, {"type": "BranchNb", "value": "002"}, {"type": "name", "value": "FakeBank Toronto North"}, {"type": "address", "value": "123 Maple Ave North York ON M2N 5B8"}]},
-{"external_id": "FBMON003", "type": "Branch", "is_identity": false, "properties": [{"type": "BranchCode", "value": "FBMON003"}, {"type": "BranchNb", "value": "003"}, {"type": "name", "value": "FakeBank Montreal Centre"}, {"type": "address", "value": "456 Rue St-Jean Montreal QC H2Y 1W7"}]},
-{"external_id": "FBCAL004", "type": "Branch", "is_identity": false, "properties": [{"type": "BranchCode", "value": "FBCAL004"}, {"type": "BranchNb", "value": "004"}, {"type": "name", "value": "FakeBank Calgary South"}, {"type": "address", "value": "789 Pine Cres Calgary AB T2J 0S2"}]},
-{"external_id": "FBEDM005", "type": "Branch", "is_identity": false, "properties": [{"type": "BranchCode", "value": "FBEDM005"}, {"type": "BranchNb", "value": "005"}, {"type": "name", "value": "FakeBank Edmonton West"}, {"type": "address", "value": "101 Gold Rd Edmonton AB T5P 0M1"}]},
-{"external_id": "FBHAL006", "type": "Branch", "is_identity": false, "properties": [{"type": "BranchCode", "value": "FBHAL006"}, {"type": "BranchNb", "value": "006"}, {"type": "name", "value": "FakeBank Halifax Waterfront"}, {"type": "address", "value": "234 Harbour Dr Halifax NS B3J 2S8"}]},
-{"external_id": "FBWIN007", "type": "Branch", "is_identity": false, "properties": [{"type": "BranchCode", "value": "FBWIN007"}, {"type": "BranchNb", "value": "007"}, {"type": "name", "value": "FakeBank Winnipeg East"}, {"type": "address", "value": "567 Prairie Blvd Winnipeg MB R2C 2Z2"}]},
-{"external_id": "FBQUE008", "type": "Branch", "is_identity": false, "properties": [{"type": "BranchCode", "value": "FBQUE008"}, {"type": "BranchNb", "value": "008"}, {"type": "name", "value": "FakeBank Quebec City Old Town"}, {"type": "address", "value": "890 Grande Allée Quebec City QC G1R 2P9"}]},
-{"external_id": "FBREJ009", "type": "Branch", "is_identity": false, "properties": [{"type": "BranchCode", "value": "FBREJ009"}, {"type": "BranchNb", "value": "009"}, {"type": "name", "value": "FakeBank Regina Central"}, {"type": "address", "value": "111 Capital Dr Regina SK S4P 3C8"}]},
-{"external_id": "FBVIC010", "type": "Branch", "is_identity": false, "properties": [{"type": "BranchCode", "value": "FBVIC010"}, {"type": "BranchNb", "value": "010"}, {"type": "name", "value": "FakeBank Victoria Uptown"}, {"type": "address", "value": "333 Royal Ave Victoria BC V8X 3X3"}]},
-{"external_id": "100050001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100050001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2018-03-15"}, {"type": "balance", "value": "1250.75"}, {"type": "user_id", "value": "50"}]},
-{"external_id": "200050002", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "200050002"}, {"type": "account_type", "value": "Credit"}, {"type": "since", "value": "2020-07-20"}, {"type": "balance", "value": "3500"}, {"type": "user_id", "value": "50"}]},
-{"external_id": "100051001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100051001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2019-01-10"}, {"type": "balance", "value": "875.2"}, {"type": "user_id", "value": "51"}]},
-{"external_id": "300051002", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "300051002"}, {"type": "account_type", "value": "Saving"}, {"type": "since", "value": "2021-04-01"}, {"type": "balance", "value": "15200.5"}, {"type": "user_id", "value": "51"}]},
-{"external_id": "100052001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100052001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2017-09-22"}, {"type": "balance", "value": "3400.1"}, {"type": "user_id", "value": "52"}]},
-{"external_id": "100053001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100053001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2020-11-05"}, {"type": "balance", "value": "980.5"}, {"type": "user_id", "value": "53"}]},
-{"external_id": "200053002", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "200053002"}, {"type": "account_type", "value": "Credit"}, {"type": "since", "value": "2022-02-14"}, {"type": "balance", "value": "1200"}, {"type": "user_id", "value": "53"}]},
-{"external_id": "100054001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100054001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2016-06-01"}, {"type": "balance", "value": "5600.9"}, {"type": "user_id", "value": "54"}]},
-{"external_id": "100055001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100055001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2019-02-28"}, {"type": "balance", "value": "1100.3"}, {"type": "user_id", "value": "55"}]},
-{"external_id": "300055002", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "300055002"}, {"type": "account_type", "value": "Saving"}, {"type": "since", "value": "2023-01-01"}, {"type": "balance", "value": "7800.25"}, {"type": "user_id", "value": "55"}]},
-{"external_id": "100056001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100056001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2017-04-12"}, {"type": "balance", "value": "2300"}, {"type": "user_id", "value": "56"}]},
-{"external_id": "100057001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100057001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2018-08-08"}, {"type": "balance", "value": "750.6"}, {"type": "user_id", "value": "57"}]},
-{"external_id": "100058001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100058001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2021-03-17"}, {"type": "balance", "value": "4500"}, {"type": "user_id", "value": "58"}]},
-{"external_id": "200058002", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "200058002"}, {"type": "account_type", "value": "Credit"}, {"type": "since", "value": "2023-06-01"}, {"type": "balance", "value": "500"}, {"type": "user_id", "value": "58"}]},
-{"external_id": "100059001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100059001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2016-12-01"}, {"type": "balance", "value": "1800.4"}, {"type": "user_id", "value": "59"}]},
-{"external_id": "100060001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100060001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2020-05-20"}, {"type": "balance", "value": "290.7"}, {"type": "user_id", "value": "60"}]},
-{"external_id": "300060002", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "300060002"}, {"type": "account_type", "value": "Saving"}, {"type": "since", "value": "2022-09-10"}, {"type": "balance", "value": "32000"}, {"type": "user_id", "value": "60"}]},
-{"external_id": "100061001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100061001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2017-07-07"}, {"type": "balance", "value": "670"}, {"type": "user_id", "value": "61"}]},
-{"external_id": "100062001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100062001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2019-10-15"}, {"type": "balance", "value": "4800.5"}, {"type": "user_id", "value": "62"}]},
-{"external_id": "100063001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100063001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2018-02-01"}, {"type": "balance", "value": "1300.2"}, {"type": "user_id", "value": "63"}]},
-{"external_id": "200063002", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "200063002"}, {"type": "account_type", "value": "Credit"}, {"type": "since", "value": "2021-05-25"}, {"type": "balance", "value": "2800"}, {"type": "user_id", "value": "63"}]},
-{"external_id": "100064001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100064001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2022-04-01"}, {"type": "balance", "value": "210.9"}, {"type": "user_id", "value": "64"}]},
-{"external_id": "100065001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100065001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2016-09-09"}, {"type": "balance", "value": "9200.75"}, {"type": "user_id", "value": "65"}]},
-{"external_id": "100066001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100066001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2020-01-23"}, {"type": "balance", "value": "1750.15"}, {"type": "user_id", "value": "66"}]},
-{"external_id": "300066002", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "300066002"}, {"type": "account_type", "value": "Saving"}, {"type": "since", "value": "2023-03-03"}, {"type": "balance", "value": "8500"}, {"type": "user_id", "value": "66"}]},
-{"external_id": "100067001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100067001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2019-07-11"}, {"type": "balance", "value": "600"}, {"type": "user_id", "value": "67"}]},
-{"external_id": "100068001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100068001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2017-11-30"}, {"type": "balance", "value": "3100.8"}, {"type": "user_id", "value": "68"}]},
-{"external_id": "200068002", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "200068002"}, {"type": "account_type", "value": "Credit"}, {"type": "since", "value": "2022-08-18"}, {"type": "balance", "value": "4000"}, {"type": "user_id", "value": "68"}]},
-{"external_id": "100069001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100069001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2018-05-01"}, {"type": "balance", "value": "420.5"}, {"type": "user_id", "value": "69"}]},
-{"external_id": "100070001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100070001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2020-06-01"}, {"type": "balance", "value": "1500"}, {"type": "user_id", "value": "70"}]},
-{"external_id": "300070002", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "300070002"}, {"type": "account_type", "value": "Saving"}, {"type": "since", "value": "2022-07-07"}, {"type": "balance", "value": "10500"}, {"type": "user_id", "value": "70"}]},
-{"external_id": "100071001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100071001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2017-08-19"}, {"type": "balance", "value": "780.2"}, {"type": "user_id", "value": "71"}]},
-{"external_id": "100072001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100072001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2019-03-25"}, {"type": "balance", "value": "2600.4"}, {"type": "user_id", "value": "72"}]},
-{"external_id": "100073001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100073001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2018-11-11"}, {"type": "balance", "value": "1950"}, {"type": "user_id", "value": "73"}]},
-{"external_id": "200073002", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "200073002"}, {"type": "account_type", "value": "Credit"}, {"type": "since", "value": "2021-10-05"}, {"type": "balance", "value": "1000"}, {"type": "user_id", "value": "73"}]},
-{"external_id": "100074001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100074001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2020-04-04"}, {"type": "balance", "value": "380.1"}, {"type": "user_id", "value": "74"}]},
-{"external_id": "100075001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100075001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2016-10-20"}, {"type": "balance", "value": "7500.6"}, {"type": "user_id", "value": "75"}]},
-{"external_id": "100076001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100076001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2019-05-13"}, {"type": "balance", "value": "1400.9"}, {"type": "user_id", "value": "76"}]},
-{"external_id": "300076002", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "300076002"}, {"type": "account_type", "value": "Saving"}, {"type": "since", "value": "2023-04-15"}, {"type": "balance", "value": "25000"}, {"type": "user_id", "value": "76"}]},
-{"external_id": "100077001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100077001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2017-02-01"}, {"type": "balance", "value": "920"}, {"type": "user_id", "value": "77"}]},
-{"external_id": "100078001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100078001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2021-01-08"}, {"type": "balance", "value": "5000"}, {"type": "user_id", "value": "78"}]},
-{"external_id": "100079001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100079001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2018-09-01"}, {"type": "balance", "value": "220.3"}, {"type": "user_id", "value": "79"}]},
-{"external_id": "200079002", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "200079002"}, {"type": "account_type", "value": "Credit"}, {"type": "since", "value": "2022-11-20"}, {"type": "balance", "value": "2000"}, {"type": "user_id", "value": "79"}]},
-{"external_id": "100080001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100080001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2020-03-10"}, {"type": "balance", "value": "1050.5"}, {"type": "user_id", "value": "80"}]},
-{"external_id": "100081001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100081001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2017-06-25"}, {"type": "balance", "value": "310"}, {"type": "user_id", "value": "81"}]},
-{"external_id": "100082001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100082001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2019-08-01"}, {"type": "balance", "value": "6500"}, {"type": "user_id", "value": "82"}]},
-{"external_id": "300082002", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "300082002"}, {"type": "account_type", "value": "Saving"}, {"type": "since", "value": "2023-02-01"}, {"type": "balance", "value": "45000"}, {"type": "user_id", "value": "82"}]},
-{"external_id": "100083001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100083001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2018-04-01"}, {"type": "balance", "value": "880.7"}, {"type": "user_id", "value": "83"}]},
-{"external_id": "100084001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100084001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2020-09-19"}, {"type": "balance", "value": "160.2"}, {"type": "user_id", "value": "84"}]},
-{"external_id": "200084002", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "200084002"}, {"type": "account_type", "value": "Credit"}, {"type": "since", "value": "2022-05-10"}, {"type": "balance", "value": "3000"}, {"type": "user_id", "value": "84"}]},
-{"external_id": "100085001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100085001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2016-11-15"}, {"type": "balance", "value": "4200"}, {"type": "user_id", "value": "85"}]},
-{"external_id": "100086001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100086001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2019-01-05"}, {"type": "balance", "value": "730.4"}, {"type": "user_id", "value": "86"}]},
-{"external_id": "100087001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100087001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2017-05-22"}, {"type": "balance", "value": "2900"}, {"type": "user_id", "value": "87"}]},
-{"external_id": "300087002", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "300087002"}, {"type": "account_type", "value": "Saving"}, {"type": "since", "value": "2021-12-01"}, {"type": "balance", "value": "18000"}, {"type": "user_id", "value": "87"}]},
-{"external_id": "100088001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100088001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2020-02-14"}, {"type": "balance", "value": "90.5"}, {"type": "user_id", "value": "88"}]},
-{"external_id": "100089001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100089001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2018-10-01"}, {"type": "balance", "value": "5500"}, {"type": "user_id", "value": "89"}]},
-{"external_id": "100090001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100090001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2021-07-01"}, {"type": "balance", "value": "350"}, {"type": "user_id", "value": "90"}]},
-{"external_id": "200090002", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "200090002"}, {"type": "account_type", "value": "Credit"}, {"type": "since", "value": "2023-08-22"}, {"type": "balance", "value": "800"}, {"type": "user_id", "value": "90"}]},
-{"external_id": "100091001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100091001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2016-07-07"}, {"type": "balance", "value": "8100.9"}, {"type": "user_id", "value": "91"}]},
-{"external_id": "100092001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100092001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2019-04-18"}, {"type": "balance", "value": "1200.1"}, {"type": "user_id", "value": "92"}]},
-{"external_id": "100093001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100093001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2017-10-10"}, {"type": "balance", "value": "540"}, {"type": "user_id", "value": "93"}]},
-{"external_id": "300093002", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "300093002"}, {"type": "account_type", "value": "Saving"}, {"type": "since", "value": "2022-06-05"}, {"type": "balance", "value": "9500"}, {"type": "user_id", "value": "93"}]},
-{"external_id": "100094001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100094001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2020-08-01"}, {"type": "balance", "value": "2300"}, {"type": "user_id", "value": "94"}]},
-{"external_id": "100095001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100095001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2018-06-12"}, {"type": "balance", "value": "470.6"}, {"type": "user_id", "value": "95"}]},
-{"external_id": "100096001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100096001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2021-09-01"}, {"type": "balance", "value": "7000"}, {"type": "user_id", "value": "96"}]},
-{"external_id": "200096002", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "200096002"}, {"type": "account_type", "value": "Credit"}, {"type": "since", "value": "2023-07-14"}, {"type": "balance", "value": "1500"}, {"type": "user_id", "value": "96"}]},
-{"external_id": "100097001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100097001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2016-08-25"}, {"type": "balance", "value": "190.8"}, {"type": "user_id", "value": "97"}]},
-{"external_id": "100098001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100098001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2019-11-01"}, {"type": "balance", "value": "8900"}, {"type": "user_id", "value": "98"}]},
-{"external_id": "100099001", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "100099001"}, {"type": "account_type", "value": "Chequing"}, {"type": "since", "value": "2017-03-01"}, {"type": "balance", "value": "2100.2"}, {"type": "user_id", "value": "99"}]},
-{"external_id": "300099002", "type": "FinAccount", "is_identity": false, "properties": [{"type": "acctNb", "value": "300099002"}, {"type": "account_type", "value": "Saving"}, {"type": "since", "value": "2022-01-20"}, {"type": "balance", "value": "6000"}, {"type": "user_id", "value": "99"}]},
-{"external_id": "CORP001", "type": "Organization", "is_identity": false, "properties": [{"type": "orgID", "value": "CORP001"}, {"type": "name", "value": "Corporate Banking Division"}]},
-{"external_id": "RETL002", "type": "Organization", "is_identity": false, "properties": [{"type": "orgID", "value": "RETL002"}, {"type": "name", "value": "Retail Banking Services"}]},
-{"external_id": "INV003", "type": "Organization", "is_identity": false, "properties": [{"type": "orgID", "value": "INV003"}, {"type": "name", "value": "Investment Management Group"}]},
-{"external_id": "RISK004", "type": "Organization", "is_identity": false, "properties": [{"type": "orgID", "value": "RISK004"}, {"type": "name", "value": "Risk Management Department"}]},
-{"external_id": "HR005", "type": "Organization", "is_identity": false, "properties": [{"type": "orgID", "value": "HR005"}, {"type": "name", "value": "Human Resources Department"}]},
-{"external_id": "IT006", "type": "Organization", "is_identity": false, "properties": [{"type": "orgID", "value": "IT006"}, {"type": "name", "value": "Information Technology Solutions"}]},
-{"external_id": "FIN007", "type": "Organization", "is_identity": false, "properties": [{"type": "orgID", "value": "FIN007"}, {"type": "name", "value": "Financial Planning Unit"}]},
-{"external_id": "MKT008", "type": "Organization", "is_identity": false, "properties": [{"type": "orgID", "value": "MKT008"}, {"type": "name", "value": "Marketing and Communications"}]},
-{"external_id": "OPS009", "type": "Organization", "is_identity": false, "properties": [{"type": "orgID", "value": "OPS009"}, {"type": "name", "value": "Operations Center"}]},
-{"external_id": "LEGAL010", "type": "Organization", "is_identity": false, "properties": [{"type": "orgID", "value": "LEGAL010"}, {"type": "name", "value": "Legal and Compliance Office"}]},
-{"external_id": "100050001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100050001"}, {"type": "date", "value": "2024-07-25"}, {"type": "amount", "value": "-50"}, {"type": "source", "value": "Groceries"}, {"type": "acctNb", "value": "100050001"}]},
-{"external_id": "100050001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100050001"}, {"type": "date", "value": "2024-07-24"}, {"type": "amount", "value": "250"}, {"type": "source", "value": "Deposit - Payroll"}, {"type": "acctNb", "value": "100050001"}]},
-{"external_id": "200050002", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "200050002"}, {"type": "date", "value": "2024-07-23"}, {"type": "amount", "value": "-120.5"}, {"type": "source", "value": "Online Shopping"}, {"type": "acctNb", "value": "200050002"}]},
-{"external_id": "100051001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100051001"}, {"type": "date", "value": "2024-07-22"}, {"type": "amount", "value": "-35.2"}, {"type": "source", "value": "Coffee Shop"}, {"type": "acctNb", "value": "100051001"}]},
-{"external_id": "300051002", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "300051002"}, {"type": "date", "value": "2024-07-21"}, {"type": "amount", "value": "100"}, {"type": "source", "value": "Transfer from Chequing"}, {"type": "acctNb", "value": "300051002"}]},
-{"external_id": "100052001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100052001"}, {"type": "date", "value": "2024-07-20"}, {"type": "amount", "value": "-75"}, {"type": "source", "value": "Restaurant"}, {"type": "acctNb", "value": "100052001"}]},
-{"external_id": "100053001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100053001"}, {"type": "date", "value": "2024-07-19"}, {"type": "amount", "value": "-25"}, {"type": "source", "value": "ATM Withdrawal"}, {"type": "acctNb", "value": "100053001"}]},
-{"external_id": "200053002", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "200053002"}, {"type": "date", "value": "2024-07-18"}, {"type": "amount", "value": "-88.99"}, {"type": "source", "value": "Utility Bill"}, {"type": "acctNb", "value": "200053002"}]},
-{"external_id": "100054001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100054001"}, {"type": "date", "value": "2024-07-17"}, {"type": "amount", "value": "500"}, {"type": "source", "value": "Deposit - Cheque"}, {"type": "acctNb", "value": "100054001"}]},
-{"external_id": "100055001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100055001"}, {"type": "date", "value": "2024-07-16"}, {"type": "amount", "value": "-15"}, {"type": "source", "value": "Parking"}, {"type": "acctNb", "value": "100055001"}]},
-{"external_id": "300055002", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "300055002"}, {"type": "date", "value": "2024-07-15"}, {"type": "amount", "value": "200"}, {"type": "source", "value": "Interest Earned"}, {"type": "acctNb", "value": "300055002"}]},
-{"external_id": "100056001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100056001"}, {"type": "date", "value": "2024-07-14"}, {"type": "amount", "value": "-60"}, {"type": "source", "value": "Gas Station"}, {"type": "acctNb", "value": "100056001"}]},
-{"external_id": "100057001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100057001"}, {"type": "date", "value": "2024-07-13"}, {"type": "amount", "value": "-10.5"}, {"type": "source", "value": "Vending Machine"}, {"type": "acctNb", "value": "100057001"}]},
-{"external_id": "100058001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100058001"}, {"type": "date", "value": "2024-07-12"}, {"type": "amount", "value": "-150"}, {"type": "source", "value": "Electronics Store"}, {"type": "acctNb", "value": "100058001"}]},
-{"external_id": "200058002", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "200058002"}, {"type": "date", "value": "2024-07-11"}, {"type": "amount", "value": "-30"}, {"type": "source", "value": "Subscription"}, {"type": "acctNb", "value": "200058002"}]},
-{"external_id": "100059001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100059001"}, {"type": "date", "value": "2024-07-10"}, {"type": "amount", "value": "150"}, {"type": "source", "value": "Deposit - Cash"}, {"type": "acctNb", "value": "100059001"}]},
-{"external_id": "100060001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100060001"}, {"type": "date", "value": "2024-07-09"}, {"type": "amount", "value": "-45.75"}, {"type": "source", "value": "Pharmacy"}, {"type": "acctNb", "value": "100060001"}]},
-{"external_id": "300060002", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "300060002"}, {"type": "date", "value": "2024-07-08"}, {"type": "amount", "value": "500"}, {"type": "source", "value": "Transfer from Chequing"}, {"type": "acctNb", "value": "300060002"}]},
-{"external_id": "100061001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100061001"}, {"type": "date", "value": "2024-07-07"}, {"type": "amount", "value": "-80"}, {"type": "source", "value": "Taxi Fare"}, {"type": "acctNb", "value": "100061001"}]},
-{"external_id": "100062001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100062001"}, {"type": "date", "value": "2024-07-06"}, {"type": "amount", "value": "-20"}, {"type": "source", "value": "Movie Tickets"}, {"type": "acctNb", "value": "100062001"}]},
-{"external_id": "100063001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100063001"}, {"type": "date", "value": "2024-07-05"}, {"type": "amount", "value": "-99.99"}, {"type": "source", "value": "Online Game"}, {"type": "acctNb", "value": "100063001"}]},
-{"external_id": "200063002", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "200063002"}, {"type": "date", "value": "2024-07-04"}, {"type": "amount", "value": "-250"}, {"type": "source", "value": "Credit Card Payment"}, {"type": "acctNb", "value": "200063002"}]},
-{"external_id": "100064001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100064001"}, {"type": "date", "value": "2024-07-03"}, {"type": "amount", "value": "-12"}, {"type": "source", "value": "Public Transport"}, {"type": "acctNb", "value": "100064001"}]},
-{"external_id": "100065001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100065001"}, {"type": "date", "value": "2024-07-02"}, {"type": "amount", "value": "750"}, {"type": "source", "value": "Investment Income"}, {"type": "acctNb", "value": "100065001"}]},
-{"external_id": "100066001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100066001"}, {"type": "date", "value": "2024-07-01"}, {"type": "amount", "value": "-65"}, {"type": "source", "value": "Apparel Store"}, {"type": "acctNb", "value": "100066001"}]},
-{"external_id": "300066002", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "300066002"}, {"type": "date", "value": "2024-06-30"}, {"type": "amount", "value": "50"}, {"type": "source", "value": "Dividends"}, {"type": "acctNb", "value": "300066002"}]},
-{"external_id": "100067001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100067001"}, {"type": "date", "value": "2024-06-29"}, {"type": "amount", "value": "-18.5"}, {"type": "source", "value": "Fast Food"}, {"type": "acctNb", "value": "100067001"}]},
-{"external_id": "100068001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100068001"}, {"type": "date", "value": "2024-06-28"}, {"type": "amount", "value": "-200"}, {"type": "source", "value": "Home Improvement"}, {"type": "acctNb", "value": "100068001"}]},
-{"external_id": "200068002", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "200068002"}, {"type": "date", "value": "2024-06-27"}, {"type": "amount", "value": "-45"}, {"type": "source", "value": "Book Store"}, {"type": "acctNb", "value": "200068002"}]},
-{"external_id": "100069001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100069001"}, {"type": "date", "value": "2024-06-26"}, {"type": "amount", "value": "-10"}, {"type": "source", "value": "Donation"}, {"type": "acctNb", "value": "100069001"}]},
-{"external_id": "100070001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100070001"}, {"type": "date", "value": "2024-06-25"}, {"type": "amount", "value": "-30"}, {"type": "source", "value": "Hair Salon"}, {"type": "acctNb", "value": "100070001"}]},
-{"external_id": "300070002", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "300070002"}, {"type": "date", "value": "2024-06-24"}, {"type": "amount", "value": "150"}, {"type": "source", "value": "Transfer from Chequing"}, {"type": "acctNb", "value": "300070002"}]},
-{"external_id": "100071001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100071001"}, {"type": "date", "value": "2024-06-23"}, {"type": "amount", "value": "-70"}, {"type": "source", "value": "Sporting Goods"}, {"type": "acctNb", "value": "100071001"}]},
-{"external_id": "100072001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100072001"}, {"type": "date", "value": "2024-06-22"}, {"type": "amount", "value": "-5"}, {"type": "source", "value": "Coffee"}, {"type": "acctNb", "value": "100072001"}]},
-{"external_id": "100073001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100073001"}, {"type": "date", "value": "2024-06-21"}, {"type": "amount", "value": "-110"}, {"type": "source", "value": "Electronics"}, {"type": "acctNb", "value": "100073001"}]},
-{"external_id": "200073002", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "200073002"}, {"type": "date", "value": "2024-06-20"}, {"type": "amount", "value": "-60"}, {"type": "source", "value": "Online Subscription"}, {"type": "acctNb", "value": "200073002"}]},
-{"external_id": "100074001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100074001"}, {"type": "date", "value": "2024-06-19"}, {"type": "amount", "value": "-22.5"}, {"type": "source", "value": "Convenience Store"}, {"type": "acctNb", "value": "100074001"}]},
-{"external_id": "100075001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100075001"}, {"type": "date", "value": "2024-06-18"}, {"type": "amount", "value": "300"}, {"type": "source", "value": "Refund"}, {"type": "acctNb", "value": "100075001"}]},
-{"external_id": "100076001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100076001"}, {"type": "date", "value": "2024-06-17"}, {"type": "amount", "value": "-95"}, {"type": "source", "value": "Pet Store"}, {"type": "acctNb", "value": "100076001"}]},
-{"external_id": "300076002", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "300076002"}, {"type": "date", "value": "2024-06-16"}, {"type": "amount", "value": "400"}, {"type": "source", "value": "Transfer from Chequing"}, {"type": "acctNb", "value": "300076002"}]},
-{"external_id": "100077001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100077001"}, {"type": "date", "value": "2024-06-15"}, {"type": "amount", "value": "-14"}, {"type": "source", "value": "Bus Fare"}, {"type": "acctNb", "value": "100077001"}]},
-{"external_id": "100078001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100078001"}, {"type": "date", "value": "2024-06-14"}, {"type": "amount", "value": "-250"}, {"type": "source", "value": "Car Repair"}, {"type": "acctNb", "value": "100078001"}]},
-{"external_id": "100079001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100079001"}, {"type": "date", "value": "2024-06-13"}, {"type": "amount", "value": "-180"}, {"type": "source", "value": "Travel"}, {"type": "acctNb", "value": "100079001"}]},
-{"external_id": "200079002", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "200079002"}, {"type": "date", "value": "2024-06-12"}, {"type": "amount", "value": "-75"}, {"type": "source", "value": "Music Streaming"}, {"type": "acctNb", "value": "200079002"}]},
-{"external_id": "100080001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100080001"}, {"type": "date", "value": "2024-06-11"}, {"type": "amount", "value": "80"}, {"type": "source", "value": "Cash Deposit"}, {"type": "acctNb", "value": "100080001"}]},
-{"external_id": "100081001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100081001"}, {"type": "date", "value": "2024-06-10"}, {"type": "amount", "value": "-40"}, {"type": "source", "value": "Dry Cleaning"}, {"type": "acctNb", "value": "100081001"}]},
-{"external_id": "100082001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100082001"}, {"type": "date", "value": "2024-06-09"}, {"type": "amount", "value": "-150"}, {"type": "source", "value": "Rent Payment"}, {"type": "acctNb", "value": "100082001"}]},
-{"external_id": "300082002", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "300082002"}, {"type": "date", "value": "2024-06-08"}, {"type": "amount", "value": "600"}, {"type": "source", "value": "Interest Earned"}, {"type": "acctNb", "value": "300082002"}]},
-{"external_id": "100083001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100083001"}, {"type": "date", "value": "2024-06-07"}, {"type": "amount", "value": "-55"}, {"type": "source", "value": "Home Internet"}, {"type": "acctNb", "value": "100083001"}]},
-{"external_id": "100084001", "type": "Transaction", "is_identity": false, "properties": [{"type": "xID", "value": "100084001"}, {"type": "date", "value": "2024-06-06"}, {"type": "amount", "value": "-25"}, {"type": "source", "value": "Mobile Top-up"}, {"type": "acctNb", "value": "100084001"}]},
-{"external_id": "50", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "50"}, {"type": "email", "value": "john.doe@fakebank.com"}, {"type": "name", "value": "John Doe"}, {"type": "username", "value": "john.doe"}]},
-{"external_id": "51", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "51"}, {"type": "email", "value": "jane.smith@fakebank.com"}, {"type": "name", "value": "Jane Smith"}, {"type": "username", "value": "jane.smith"}]},
-{"external_id": "52", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "52"}, {"type": "email", "value": "robert.jones@fakebank.com"}, {"type": "name", "value": "Robert Jones"}, {"type": "username", "value": "robert.jones"}]},
-{"external_id": "53", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "53"}, {"type": "email", "value": "emily.davis@fakebank.com"}, {"type": "name", "value": "Emily Davis"}, {"type": "username", "value": "emily.davis"}]},
-{"external_id": "54", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "54"}, {"type": "email", "value": "michael.brown@fakebank.com"}, {"type": "name", "value": "Michael Brown"}, {"type": "username", "value": "michael.brown"}]},
-{"external_id": "55", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "55"}, {"type": "email", "value": "sarah.wilson@fakebank.com"}, {"type": "name", "value": "Sarah Wilson"}, {"type": "username", "value": "sarah.wilson"}]},
-{"external_id": "56", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "56"}, {"type": "email", "value": "david.taylor@fakebank.com"}, {"type": "name", "value": "David Taylor"}, {"type": "username", "value": "david.taylor"}]},
-{"external_id": "57", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "57"}, {"type": "email", "value": "olivia.moore@fakebank.com"}, {"type": "name", "value": "Olivia Moore"}, {"type": "username", "value": "olivia.moore"}]},
-{"external_id": "58", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "58"}, {"type": "email", "value": "daniel.jackson@fakebank.com"}, {"type": "name", "value": "Daniel Jackson"}, {"type": "username", "value": "daniel.jackson"}]},
-{"external_id": "59", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "59"}, {"type": "email", "value": "sophia.white@fakebank.com"}, {"type": "name", "value": "Sophia White"}, {"type": "username", "value": "sophia.white"}]},
-{"external_id": "60", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "60"}, {"type": "email", "value": "william.harris@fakebank.com"}, {"type": "name", "value": "William Harris"}, {"type": "username", "value": "william.harris"}]},
-{"external_id": "61", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "61"}, {"type": "email", "value": "ava.martin@fakebank.com"}, {"type": "name", "value": "Ava Martin"}, {"type": "username", "value": "ava.martin"}]},
-{"external_id": "62", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "62"}, {"type": "email", "value": "james.thompson@fakebank.com"}, {"type": "name", "value": "James Thompson"}, {"type": "username", "value": "james.thompson"}]},
-{"external_id": "63", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "63"}, {"type": "email", "value": "mia.garcia@fakebank.com"}, {"type": "name", "value": "Mia Garcia"}, {"type": "username", "value": "mia.garcia"}]},
-{"external_id": "64", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "64"}, {"type": "email", "value": "benjamin.rodriguez@fakebank.com"}, {"type": "name", "value": "Benjamin Rodriguez"}, {"type": "username", "value": "benjamin.rodriguez"}]},
-{"external_id": "65", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "65"}, {"type": "email", "value": "charlotte.martinez@fakebank.com"}, {"type": "name", "value": "Charlotte Martinez"}, {"type": "username", "value": "charlotte.martinez"}]},
-{"external_id": "66", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "66"}, {"type": "email", "value": "ethan.hernandez@fakebank.com"}, {"type": "name", "value": "Ethan Hernandez"}, {"type": "username", "value": "ethan.hernandez"}]},
-{"external_id": "67", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "67"}, {"type": "email", "value": "amelia.lopez@fakebank.com"}, {"type": "name", "value": "Amelia Lopez"}, {"type": "username", "value": "amelia.lopez"}]},
-{"external_id": "68", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "68"}, {"type": "email", "value": "alexander.gonzalez@fakebank.com"}, {"type": "name", "value": "Alexander Gonzalez"}, {"type": "username", "value": "alexander.gonzalez"}]},
-{"external_id": "69", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "69"}, {"type": "email", "value": "harper.perez@fakebank.com"}, {"type": "name", "value": "Harper Perez"}, {"type": "username", "value": "harper.perez"}]},
-{"external_id": "70", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "70"}, {"type": "email", "value": "liam.scott@mailforge.net"}, {"type": "name", "value": "Liam Scott"}, {"type": "username", "value": "liam.scott"}]},
-{"external_id": "71", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "71"}, {"type": "email", "value": "evelyn.king@webprism.org"}, {"type": "name", "value": "Evelyn King"}, {"type": "username", "value": "evelyn.king"}]},
-{"external_id": "72", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "72"}, {"type": "email", "value": "logan.wright@datacove.co"}, {"type": "name", "value": "Logan Wright"}, {"type": "username", "value": "logan.wright"}]},
-{"external_id": "73", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "73"}, {"type": "email", "value": "sofia.hill@cloudburst.io"}, {"type": "name", "value": "Sofia Hill"}, {"type": "username", "value": "sofia.hill"}]},
-{"external_id": "74", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "74"}, {"type": "email", "value": "noah.green@privatelink.biz"}, {"type": "name", "value": "Noah Green"}, {"type": "username", "value": "noah.green"}]},
-{"external_id": "75", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "75"}, {"type": "email", "value": "ella.adams@secureflow.app"}, {"type": "name", "value": "Ella Adams"}, {"type": "username", "value": "ella.adams"}]},
-{"external_id": "76", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "76"}, {"type": "email", "value": "jackson.baker@netshield.pro"}, {"type": "name", "value": "Jackson Baker"}, {"type": "username", "value": "jackson.baker"}]},
-{"external_id": "77", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "77"}, {"type": "email", "value": "avery.nelson@phantomail.xyz"}, {"type": "name", "value": "Avery Nelson"}, {"type": "username", "value": "avery.nelson"}]},
-{"external_id": "78", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "78"}, {"type": "email", "value": "lucas.carter@safemail.one"}, {"type": "name", "value": "Lucas Carter"}, {"type": "username", "value": "lucas.carter"}]},
-{"external_id": "79", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "79"}, {"type": "email", "value": "scarlett.mitchell@cryptobox.tech"}, {"type": "name", "value": "Scarlett Mitchell"}, {"type": "username", "value": "scarlett.mitchell"}]},
-{"external_id": "80", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "80"}, {"type": "email", "value": "mason.ramirez@hushsphere.com"}, {"type": "name", "value": "Mason Ramirez"}, {"type": "username", "value": "mason.ramirez"}]},
-{"external_id": "81", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "81"}, {"type": "email", "value": "aria.parker@ghostsend.net"}, {"type": "name", "value": "Aria Parker"}, {"type": "username", "value": "aria.parker"}]},
-{"external_id": "82", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "82"}, {"type": "email", "value": "elijah.bell@stealthcomm.org"}, {"type": "name", "value": "Elijah Bell"}, {"type": "username", "value": "elijah.bell"}]},
-{"external_id": "83", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "83"}, {"type": "email", "value": "grace.morgan@anonportal.co"}, {"type": "name", "value": "Grace Morgan"}, {"type": "username", "value": "grace.morgan"}]},
-{"external_id": "84", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "84"}, {"type": "email", "value": "sebastian.cooper@zenithmail.io"}, {"type": "name", "value": "Sebastian Cooper"}, {"type": "username", "value": "sebastian.cooper"}]},
-{"external_id": "85", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "85"}, {"type": "email", "value": "chloe.turner@deepwebmail.biz"}, {"type": "name", "value": "Chloe Turner"}, {"type": "username", "value": "chloe.turner"}]},
-{"external_id": "86", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "86"}, {"type": "email", "value": "david.hall@pixelgate.app"}, {"type": "name", "value": "David Hall"}, {"type": "username", "value": "david.hall"}]},
-{"external_id": "87", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "87"}, {"type": "email", "value": "madison.young@voidmail.pro"}, {"type": "name", "value": "Madison Young"}, {"type": "username", "value": "madison.young"}]},
-{"external_id": "88", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "88"}, {"type": "email", "value": "leo.allen@echoemail.xyz"}, {"type": "name", "value": "Leo Allen"}, {"type": "username", "value": "leo.allen"}]},
-{"external_id": "89", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "89"}, {"type": "email", "value": "penelope.sanders@shadowsend.one"}, {"type": "name", "value": "Penelope Sanders"}, {"type": "username", "value": "penelope.sanders"}]},
-{"external_id": "90", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "90"}, {"type": "email", "value": "gabriel.ross@incognitonet.tech"}, {"type": "name", "value": "Gabriel Ross"}, {"type": "username", "value": "gabriel.ross"}]},
-{"external_id": "91", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "91"}, {"type": "email", "value": "victoria.rogers@auroramail.com"}, {"type": "name", "value": "Victoria Rogers"}, {"type": "username", "value": "victoria.rogefs"}]},
-{"external_id": "92", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "92"}, {"type": "email", "value": "samuel.reed@nexuspost.net"}, {"type": "name", "value": "Samuel Reed"}, {"type": "username", "value": "samuel.reed"}]},
-{"external_id": "93", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "93"}, {"type": "email", "value": "aubrey.cook@terraweb.org"}, {"type": "name", "value": "Aubrey Cook"}, {"type": "username", "value": "aubrey.cook"}]},
-{"external_id": "94", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "94"}, {"type": "email", "value": "jackson.morris@vectoremail.co"}, {"type": "name", "value": "Jackson Morris"}, {"type": "username", "value": "jackson.morris"}]},
-{"external_id": "95", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "95"}, {"type": "email", "value": "lily.long@cyclonecomm.io"}, {"type": "name", "value": "Lily Long"}, {"type": "username", "value": "lily.long"}]},
-{"external_id": "96", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "96"}, {"type": "email", "value": "wyatt.patterson@digitalcloak.biz"}, {"type": "name", "value": "Wyatt Patterson"}, {"type": "username", "value": "wyatt.patterson"}]},
-{"external_id": "97", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "97"}, {"type": "email", "value": "zoey.brooks@infinitymail.app"}, {"type": "name", "value": "Zoey Brooks"}, {"type": "username", "value": "zoey.brooks"}]},
-{"external_id": "98", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "98"}, {"type": "email", "value": "nathan.kennedy@sentinelink.pro"}, {"type": "name", "value": "Nathan Kennedy"}, {"type": "username", "value": "nathan.kennedy"}]},
-{"external_id": "99", "type": "User", "is_identity": true, "properties": [{"type": "uID", "value": "99"}, {"type": "email", "value": "hannah.russell@mysticmail.xyz"}, {"type": "name", "value": "Hannah Russell"}, {"type": "username", "value": "hannah.russell"}]}
-]
+    {
+      "external_id": "13",
+      "type": "App",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "AppID",
+          "value": "13"
+        },
+        {
+          "type": "name",
+          "value": "eBanking"
+        }
+      ]
+    },
+    {
+      "external_id": "finApp",
+      "type": "App",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "AppID",
+          "value": "finApp"
+        },
+        {
+          "type": "name",
+          "value": "Financial App"
+        }
+      ]
+    },
+    {
+      "external_id": "finWeb",
+      "type": "App",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "AppID",
+          "value": "finWeb"
+        },
+        {
+          "type": "name",
+          "value": "Financial Web Portal"
+        }
+      ]
+    },
+    {
+      "external_id": "eCredit",
+      "type": "App",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "AppID",
+          "value": "eCredit"
+        },
+        {
+          "type": "name",
+          "value": "Credit Services"
+        }
+      ]
+    },
+    {
+      "external_id": "FBVAN001",
+      "type": "Branch",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "BranchCode",
+          "value": "FBVAN001"
+        },
+        {
+          "type": "BranchNb",
+          "value": "001"
+        },
+        {
+          "type": "name",
+          "value": "FakeBank Vancouver Downtown"
+        },
+        {
+          "type": "address",
+          "value": "789 Main St Vancouver BC V6A 1A1"
+        }
+      ]
+    },
+    {
+      "external_id": "FBTOR002",
+      "type": "Branch",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "BranchCode",
+          "value": "FBTOR002"
+        },
+        {
+          "type": "BranchNb",
+          "value": "002"
+        },
+        {
+          "type": "name",
+          "value": "FakeBank Toronto North"
+        },
+        {
+          "type": "address",
+          "value": "123 Maple Ave North York ON M2N 5B8"
+        }
+      ]
+    },
+    {
+      "external_id": "FBMON003",
+      "type": "Branch",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "BranchCode",
+          "value": "FBMON003"
+        },
+        {
+          "type": "BranchNb",
+          "value": "003"
+        },
+        {
+          "type": "name",
+          "value": "FakeBank Montreal Centre"
+        },
+        {
+          "type": "address",
+          "value": "456 Rue St-Jean Montreal QC H2Y 1W7"
+        }
+      ]
+    },
+    {
+      "external_id": "FBCAL004",
+      "type": "Branch",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "BranchCode",
+          "value": "FBCAL004"
+        },
+        {
+          "type": "BranchNb",
+          "value": "004"
+        },
+        {
+          "type": "name",
+          "value": "FakeBank Calgary South"
+        },
+        {
+          "type": "address",
+          "value": "789 Pine Cres Calgary AB T2J 0S2"
+        }
+      ]
+    },
+    {
+      "external_id": "FBEDM005",
+      "type": "Branch",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "BranchCode",
+          "value": "FBEDM005"
+        },
+        {
+          "type": "BranchNb",
+          "value": "005"
+        },
+        {
+          "type": "name",
+          "value": "FakeBank Edmonton West"
+        },
+        {
+          "type": "address",
+          "value": "101 Gold Rd Edmonton AB T5P 0M1"
+        }
+      ]
+    },
+    {
+      "external_id": "FBHAL006",
+      "type": "Branch",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "BranchCode",
+          "value": "FBHAL006"
+        },
+        {
+          "type": "BranchNb",
+          "value": "006"
+        },
+        {
+          "type": "name",
+          "value": "FakeBank Halifax Waterfront"
+        },
+        {
+          "type": "address",
+          "value": "234 Harbour Dr Halifax NS B3J 2S8"
+        }
+      ]
+    },
+    {
+      "external_id": "FBWIN007",
+      "type": "Branch",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "BranchCode",
+          "value": "FBWIN007"
+        },
+        {
+          "type": "BranchNb",
+          "value": "007"
+        },
+        {
+          "type": "name",
+          "value": "FakeBank Winnipeg East"
+        },
+        {
+          "type": "address",
+          "value": "567 Prairie Blvd Winnipeg MB R2C 2Z2"
+        }
+      ]
+    },
+    {
+      "external_id": "FBQUE008",
+      "type": "Branch",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "BranchCode",
+          "value": "FBQUE008"
+        },
+        {
+          "type": "BranchNb",
+          "value": "008"
+        },
+        {
+          "type": "name",
+          "value": "FakeBank Quebec City Old Town"
+        },
+        {
+          "type": "address",
+          "value": "890 Grande All\u00e9e Quebec City QC G1R 2P9"
+        }
+      ]
+    },
+    {
+      "external_id": "FBREJ009",
+      "type": "Branch",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "BranchCode",
+          "value": "FBREJ009"
+        },
+        {
+          "type": "BranchNb",
+          "value": "009"
+        },
+        {
+          "type": "name",
+          "value": "FakeBank Regina Central"
+        },
+        {
+          "type": "address",
+          "value": "111 Capital Dr Regina SK S4P 3C8"
+        }
+      ]
+    },
+    {
+      "external_id": "FBVIC010",
+      "type": "Branch",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "BranchCode",
+          "value": "FBVIC010"
+        },
+        {
+          "type": "BranchNb",
+          "value": "010"
+        },
+        {
+          "type": "name",
+          "value": "FakeBank Victoria Uptown"
+        },
+        {
+          "type": "address",
+          "value": "333 Royal Ave Victoria BC V8X 3X3"
+        }
+      ]
+    },
+    {
+      "external_id": "100050001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100050001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2018-03-15"
+        },
+        {
+          "type": "balance",
+          "value": "1250.75"
+        },
+        {
+          "type": "user_id",
+          "value": "50"
+        }
+      ]
+    },
+    {
+      "external_id": "200050002",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "200050002"
+        },
+        {
+          "type": "account_type",
+          "value": "Credit"
+        },
+        {
+          "type": "since",
+          "value": "2020-07-20"
+        },
+        {
+          "type": "balance",
+          "value": "3500"
+        },
+        {
+          "type": "user_id",
+          "value": "50"
+        }
+      ]
+    },
+    {
+      "external_id": "100051001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100051001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2019-01-10"
+        },
+        {
+          "type": "balance",
+          "value": "875.2"
+        },
+        {
+          "type": "user_id",
+          "value": "51"
+        }
+      ]
+    },
+    {
+      "external_id": "300051002",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "300051002"
+        },
+        {
+          "type": "account_type",
+          "value": "Saving"
+        },
+        {
+          "type": "since",
+          "value": "2021-04-01"
+        },
+        {
+          "type": "balance",
+          "value": "15200.5"
+        },
+        {
+          "type": "user_id",
+          "value": "51"
+        }
+      ]
+    },
+    {
+      "external_id": "100052001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100052001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2017-09-22"
+        },
+        {
+          "type": "balance",
+          "value": "3400.1"
+        },
+        {
+          "type": "user_id",
+          "value": "52"
+        }
+      ]
+    },
+    {
+      "external_id": "100053001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100053001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2020-11-05"
+        },
+        {
+          "type": "balance",
+          "value": "980.5"
+        },
+        {
+          "type": "user_id",
+          "value": "53"
+        }
+      ]
+    },
+    {
+      "external_id": "200053002",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "200053002"
+        },
+        {
+          "type": "account_type",
+          "value": "Credit"
+        },
+        {
+          "type": "since",
+          "value": "2022-02-14"
+        },
+        {
+          "type": "balance",
+          "value": "1200"
+        },
+        {
+          "type": "user_id",
+          "value": "53"
+        }
+      ]
+    },
+    {
+      "external_id": "100054001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100054001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2016-06-01"
+        },
+        {
+          "type": "balance",
+          "value": "5600.9"
+        },
+        {
+          "type": "user_id",
+          "value": "54"
+        }
+      ]
+    },
+    {
+      "external_id": "100055001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100055001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2019-02-28"
+        },
+        {
+          "type": "balance",
+          "value": "1100.3"
+        },
+        {
+          "type": "user_id",
+          "value": "55"
+        }
+      ]
+    },
+    {
+      "external_id": "300055002",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "300055002"
+        },
+        {
+          "type": "account_type",
+          "value": "Saving"
+        },
+        {
+          "type": "since",
+          "value": "2023-01-01"
+        },
+        {
+          "type": "balance",
+          "value": "7800.25"
+        },
+        {
+          "type": "user_id",
+          "value": "55"
+        }
+      ]
+    },
+    {
+      "external_id": "100056001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100056001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2017-04-12"
+        },
+        {
+          "type": "balance",
+          "value": "2300"
+        },
+        {
+          "type": "user_id",
+          "value": "56"
+        }
+      ]
+    },
+    {
+      "external_id": "100057001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100057001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2018-08-08"
+        },
+        {
+          "type": "balance",
+          "value": "750.6"
+        },
+        {
+          "type": "user_id",
+          "value": "57"
+        }
+      ]
+    },
+    {
+      "external_id": "100058001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100058001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2021-03-17"
+        },
+        {
+          "type": "balance",
+          "value": "4500"
+        },
+        {
+          "type": "user_id",
+          "value": "58"
+        }
+      ]
+    },
+    {
+      "external_id": "200058002",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "200058002"
+        },
+        {
+          "type": "account_type",
+          "value": "Credit"
+        },
+        {
+          "type": "since",
+          "value": "2023-06-01"
+        },
+        {
+          "type": "balance",
+          "value": "500"
+        },
+        {
+          "type": "user_id",
+          "value": "58"
+        }
+      ]
+    },
+    {
+      "external_id": "100059001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100059001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2016-12-01"
+        },
+        {
+          "type": "balance",
+          "value": "1800.4"
+        },
+        {
+          "type": "user_id",
+          "value": "59"
+        }
+      ]
+    },
+    {
+      "external_id": "100060001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100060001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2020-05-20"
+        },
+        {
+          "type": "balance",
+          "value": "290.7"
+        },
+        {
+          "type": "user_id",
+          "value": "60"
+        }
+      ]
+    },
+    {
+      "external_id": "300060002",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "300060002"
+        },
+        {
+          "type": "account_type",
+          "value": "Saving"
+        },
+        {
+          "type": "since",
+          "value": "2022-09-10"
+        },
+        {
+          "type": "balance",
+          "value": "32000"
+        },
+        {
+          "type": "user_id",
+          "value": "60"
+        }
+      ]
+    },
+    {
+      "external_id": "100061001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100061001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2017-07-07"
+        },
+        {
+          "type": "balance",
+          "value": "670"
+        },
+        {
+          "type": "user_id",
+          "value": "61"
+        }
+      ]
+    },
+    {
+      "external_id": "100062001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100062001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2019-10-15"
+        },
+        {
+          "type": "balance",
+          "value": "4800.5"
+        },
+        {
+          "type": "user_id",
+          "value": "62"
+        }
+      ]
+    },
+    {
+      "external_id": "100063001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100063001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2018-02-01"
+        },
+        {
+          "type": "balance",
+          "value": "1300.2"
+        },
+        {
+          "type": "user_id",
+          "value": "63"
+        }
+      ]
+    },
+    {
+      "external_id": "200063002",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "200063002"
+        },
+        {
+          "type": "account_type",
+          "value": "Credit"
+        },
+        {
+          "type": "since",
+          "value": "2021-05-25"
+        },
+        {
+          "type": "balance",
+          "value": "2800"
+        },
+        {
+          "type": "user_id",
+          "value": "63"
+        }
+      ]
+    },
+    {
+      "external_id": "100064001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100064001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2022-04-01"
+        },
+        {
+          "type": "balance",
+          "value": "210.9"
+        },
+        {
+          "type": "user_id",
+          "value": "64"
+        }
+      ]
+    },
+    {
+      "external_id": "100065001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100065001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2016-09-09"
+        },
+        {
+          "type": "balance",
+          "value": "9200.75"
+        },
+        {
+          "type": "user_id",
+          "value": "65"
+        }
+      ]
+    },
+    {
+      "external_id": "100066001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100066001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2020-01-23"
+        },
+        {
+          "type": "balance",
+          "value": "1750.15"
+        },
+        {
+          "type": "user_id",
+          "value": "66"
+        }
+      ]
+    },
+    {
+      "external_id": "300066002",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "300066002"
+        },
+        {
+          "type": "account_type",
+          "value": "Saving"
+        },
+        {
+          "type": "since",
+          "value": "2023-03-03"
+        },
+        {
+          "type": "balance",
+          "value": "8500"
+        },
+        {
+          "type": "user_id",
+          "value": "66"
+        }
+      ]
+    },
+    {
+      "external_id": "100067001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100067001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2019-07-11"
+        },
+        {
+          "type": "balance",
+          "value": "600"
+        },
+        {
+          "type": "user_id",
+          "value": "67"
+        }
+      ]
+    },
+    {
+      "external_id": "100068001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100068001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2017-11-30"
+        },
+        {
+          "type": "balance",
+          "value": "3100.8"
+        },
+        {
+          "type": "user_id",
+          "value": "68"
+        }
+      ]
+    },
+    {
+      "external_id": "200068002",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "200068002"
+        },
+        {
+          "type": "account_type",
+          "value": "Credit"
+        },
+        {
+          "type": "since",
+          "value": "2022-08-18"
+        },
+        {
+          "type": "balance",
+          "value": "4000"
+        },
+        {
+          "type": "user_id",
+          "value": "68"
+        }
+      ]
+    },
+    {
+      "external_id": "100069001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100069001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2018-05-01"
+        },
+        {
+          "type": "balance",
+          "value": "420.5"
+        },
+        {
+          "type": "user_id",
+          "value": "69"
+        }
+      ]
+    },
+    {
+      "external_id": "100070001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100070001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2020-06-01"
+        },
+        {
+          "type": "balance",
+          "value": "1500"
+        },
+        {
+          "type": "user_id",
+          "value": "70"
+        }
+      ]
+    },
+    {
+      "external_id": "300070002",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "300070002"
+        },
+        {
+          "type": "account_type",
+          "value": "Saving"
+        },
+        {
+          "type": "since",
+          "value": "2022-07-07"
+        },
+        {
+          "type": "balance",
+          "value": "10500"
+        },
+        {
+          "type": "user_id",
+          "value": "70"
+        }
+      ]
+    },
+    {
+      "external_id": "100071001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100071001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2017-08-19"
+        },
+        {
+          "type": "balance",
+          "value": "780.2"
+        },
+        {
+          "type": "user_id",
+          "value": "71"
+        }
+      ]
+    },
+    {
+      "external_id": "100072001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100072001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2019-03-25"
+        },
+        {
+          "type": "balance",
+          "value": "2600.4"
+        },
+        {
+          "type": "user_id",
+          "value": "72"
+        }
+      ]
+    },
+    {
+      "external_id": "100073001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100073001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2018-11-11"
+        },
+        {
+          "type": "balance",
+          "value": "1950"
+        },
+        {
+          "type": "user_id",
+          "value": "73"
+        }
+      ]
+    },
+    {
+      "external_id": "200073002",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "200073002"
+        },
+        {
+          "type": "account_type",
+          "value": "Credit"
+        },
+        {
+          "type": "since",
+          "value": "2021-10-05"
+        },
+        {
+          "type": "balance",
+          "value": "1000"
+        },
+        {
+          "type": "user_id",
+          "value": "73"
+        }
+      ]
+    },
+    {
+      "external_id": "100074001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100074001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2020-04-04"
+        },
+        {
+          "type": "balance",
+          "value": "380.1"
+        },
+        {
+          "type": "user_id",
+          "value": "74"
+        }
+      ]
+    },
+    {
+      "external_id": "100075001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100075001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2016-10-20"
+        },
+        {
+          "type": "balance",
+          "value": "7500.6"
+        },
+        {
+          "type": "user_id",
+          "value": "75"
+        }
+      ]
+    },
+    {
+      "external_id": "100076001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100076001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2019-05-13"
+        },
+        {
+          "type": "balance",
+          "value": "1400.9"
+        },
+        {
+          "type": "user_id",
+          "value": "76"
+        }
+      ]
+    },
+    {
+      "external_id": "300076002",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "300076002"
+        },
+        {
+          "type": "account_type",
+          "value": "Saving"
+        },
+        {
+          "type": "since",
+          "value": "2023-04-15"
+        },
+        {
+          "type": "balance",
+          "value": "25000"
+        },
+        {
+          "type": "user_id",
+          "value": "76"
+        }
+      ]
+    },
+    {
+      "external_id": "100077001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100077001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2017-02-01"
+        },
+        {
+          "type": "balance",
+          "value": "920"
+        },
+        {
+          "type": "user_id",
+          "value": "77"
+        }
+      ]
+    },
+    {
+      "external_id": "100078001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100078001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2021-01-08"
+        },
+        {
+          "type": "balance",
+          "value": "5000"
+        },
+        {
+          "type": "user_id",
+          "value": "78"
+        }
+      ]
+    },
+    {
+      "external_id": "100079001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100079001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2018-09-01"
+        },
+        {
+          "type": "balance",
+          "value": "220.3"
+        },
+        {
+          "type": "user_id",
+          "value": "79"
+        }
+      ]
+    },
+    {
+      "external_id": "200079002",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "200079002"
+        },
+        {
+          "type": "account_type",
+          "value": "Credit"
+        },
+        {
+          "type": "since",
+          "value": "2022-11-20"
+        },
+        {
+          "type": "balance",
+          "value": "2000"
+        },
+        {
+          "type": "user_id",
+          "value": "79"
+        }
+      ]
+    },
+    {
+      "external_id": "100080001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100080001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2020-03-10"
+        },
+        {
+          "type": "balance",
+          "value": "1050.5"
+        },
+        {
+          "type": "user_id",
+          "value": "80"
+        }
+      ]
+    },
+    {
+      "external_id": "100081001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100081001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2017-06-25"
+        },
+        {
+          "type": "balance",
+          "value": "310"
+        },
+        {
+          "type": "user_id",
+          "value": "81"
+        }
+      ]
+    },
+    {
+      "external_id": "100082001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100082001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2019-08-01"
+        },
+        {
+          "type": "balance",
+          "value": "6500"
+        },
+        {
+          "type": "user_id",
+          "value": "82"
+        }
+      ]
+    },
+    {
+      "external_id": "300082002",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "300082002"
+        },
+        {
+          "type": "account_type",
+          "value": "Saving"
+        },
+        {
+          "type": "since",
+          "value": "2023-02-01"
+        },
+        {
+          "type": "balance",
+          "value": "45000"
+        },
+        {
+          "type": "user_id",
+          "value": "82"
+        }
+      ]
+    },
+    {
+      "external_id": "100083001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100083001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2018-04-01"
+        },
+        {
+          "type": "balance",
+          "value": "880.7"
+        },
+        {
+          "type": "user_id",
+          "value": "83"
+        }
+      ]
+    },
+    {
+      "external_id": "100084001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100084001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2020-09-19"
+        },
+        {
+          "type": "balance",
+          "value": "160.2"
+        },
+        {
+          "type": "user_id",
+          "value": "84"
+        }
+      ]
+    },
+    {
+      "external_id": "200084002",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "200084002"
+        },
+        {
+          "type": "account_type",
+          "value": "Credit"
+        },
+        {
+          "type": "since",
+          "value": "2022-05-10"
+        },
+        {
+          "type": "balance",
+          "value": "3000"
+        },
+        {
+          "type": "user_id",
+          "value": "84"
+        }
+      ]
+    },
+    {
+      "external_id": "100085001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100085001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2016-11-15"
+        },
+        {
+          "type": "balance",
+          "value": "4200"
+        },
+        {
+          "type": "user_id",
+          "value": "85"
+        }
+      ]
+    },
+    {
+      "external_id": "100086001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100086001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2019-01-05"
+        },
+        {
+          "type": "balance",
+          "value": "730.4"
+        },
+        {
+          "type": "user_id",
+          "value": "86"
+        }
+      ]
+    },
+    {
+      "external_id": "100087001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100087001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2017-05-22"
+        },
+        {
+          "type": "balance",
+          "value": "2900"
+        },
+        {
+          "type": "user_id",
+          "value": "87"
+        }
+      ]
+    },
+    {
+      "external_id": "300087002",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "300087002"
+        },
+        {
+          "type": "account_type",
+          "value": "Saving"
+        },
+        {
+          "type": "since",
+          "value": "2021-12-01"
+        },
+        {
+          "type": "balance",
+          "value": "18000"
+        },
+        {
+          "type": "user_id",
+          "value": "87"
+        }
+      ]
+    },
+    {
+      "external_id": "100088001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100088001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2020-02-14"
+        },
+        {
+          "type": "balance",
+          "value": "90.5"
+        },
+        {
+          "type": "user_id",
+          "value": "88"
+        }
+      ]
+    },
+    {
+      "external_id": "100089001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100089001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2018-10-01"
+        },
+        {
+          "type": "balance",
+          "value": "5500"
+        },
+        {
+          "type": "user_id",
+          "value": "89"
+        }
+      ]
+    },
+    {
+      "external_id": "100090001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100090001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2021-07-01"
+        },
+        {
+          "type": "balance",
+          "value": "350"
+        },
+        {
+          "type": "user_id",
+          "value": "90"
+        }
+      ]
+    },
+    {
+      "external_id": "200090002",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "200090002"
+        },
+        {
+          "type": "account_type",
+          "value": "Credit"
+        },
+        {
+          "type": "since",
+          "value": "2023-08-22"
+        },
+        {
+          "type": "balance",
+          "value": "800"
+        },
+        {
+          "type": "user_id",
+          "value": "90"
+        }
+      ]
+    },
+    {
+      "external_id": "100091001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100091001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2016-07-07"
+        },
+        {
+          "type": "balance",
+          "value": "8100.9"
+        },
+        {
+          "type": "user_id",
+          "value": "91"
+        }
+      ]
+    },
+    {
+      "external_id": "100092001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100092001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2019-04-18"
+        },
+        {
+          "type": "balance",
+          "value": "1200.1"
+        },
+        {
+          "type": "user_id",
+          "value": "92"
+        }
+      ]
+    },
+    {
+      "external_id": "100093001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100093001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2017-10-10"
+        },
+        {
+          "type": "balance",
+          "value": "540"
+        },
+        {
+          "type": "user_id",
+          "value": "93"
+        }
+      ]
+    },
+    {
+      "external_id": "300093002",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "300093002"
+        },
+        {
+          "type": "account_type",
+          "value": "Saving"
+        },
+        {
+          "type": "since",
+          "value": "2022-06-05"
+        },
+        {
+          "type": "balance",
+          "value": "9500"
+        },
+        {
+          "type": "user_id",
+          "value": "93"
+        }
+      ]
+    },
+    {
+      "external_id": "100094001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100094001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2020-08-01"
+        },
+        {
+          "type": "balance",
+          "value": "2300"
+        },
+        {
+          "type": "user_id",
+          "value": "94"
+        }
+      ]
+    },
+    {
+      "external_id": "100095001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100095001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2018-06-12"
+        },
+        {
+          "type": "balance",
+          "value": "470.6"
+        },
+        {
+          "type": "user_id",
+          "value": "95"
+        }
+      ]
+    },
+    {
+      "external_id": "100096001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100096001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2021-09-01"
+        },
+        {
+          "type": "balance",
+          "value": "7000"
+        },
+        {
+          "type": "user_id",
+          "value": "96"
+        }
+      ]
+    },
+    {
+      "external_id": "200096002",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "200096002"
+        },
+        {
+          "type": "account_type",
+          "value": "Credit"
+        },
+        {
+          "type": "since",
+          "value": "2023-07-14"
+        },
+        {
+          "type": "balance",
+          "value": "1500"
+        },
+        {
+          "type": "user_id",
+          "value": "96"
+        }
+      ]
+    },
+    {
+      "external_id": "100097001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100097001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2016-08-25"
+        },
+        {
+          "type": "balance",
+          "value": "190.8"
+        },
+        {
+          "type": "user_id",
+          "value": "97"
+        }
+      ]
+    },
+    {
+      "external_id": "100098001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100098001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2019-11-01"
+        },
+        {
+          "type": "balance",
+          "value": "8900"
+        },
+        {
+          "type": "user_id",
+          "value": "98"
+        }
+      ]
+    },
+    {
+      "external_id": "100099001",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "100099001"
+        },
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "since",
+          "value": "2017-03-01"
+        },
+        {
+          "type": "balance",
+          "value": "2100.2"
+        },
+        {
+          "type": "user_id",
+          "value": "99"
+        }
+      ]
+    },
+    {
+      "external_id": "300099002",
+      "type": "FinAccount",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "acctNb",
+          "value": "300099002"
+        },
+        {
+          "type": "account_type",
+          "value": "Saving"
+        },
+        {
+          "type": "since",
+          "value": "2022-01-20"
+        },
+        {
+          "type": "balance",
+          "value": "6000"
+        },
+        {
+          "type": "user_id",
+          "value": "99"
+        }
+      ]
+    },
+    {
+      "external_id": "CORP001",
+      "type": "Organization",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "orgID",
+          "value": "CORP001"
+        },
+        {
+          "type": "name",
+          "value": "Corporate Banking Division"
+        }
+      ]
+    },
+    {
+      "external_id": "RETL002",
+      "type": "Organization",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "orgID",
+          "value": "RETL002"
+        },
+        {
+          "type": "name",
+          "value": "Retail Banking Services"
+        }
+      ]
+    },
+    {
+      "external_id": "INV003",
+      "type": "Organization",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "orgID",
+          "value": "INV003"
+        },
+        {
+          "type": "name",
+          "value": "Investment Management Group"
+        }
+      ]
+    },
+    {
+      "external_id": "RISK004",
+      "type": "Organization",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "orgID",
+          "value": "RISK004"
+        },
+        {
+          "type": "name",
+          "value": "Risk Management Department"
+        }
+      ]
+    },
+    {
+      "external_id": "HR005",
+      "type": "Organization",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "orgID",
+          "value": "HR005"
+        },
+        {
+          "type": "name",
+          "value": "Human Resources Department"
+        }
+      ]
+    },
+    {
+      "external_id": "IT006",
+      "type": "Organization",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "orgID",
+          "value": "IT006"
+        },
+        {
+          "type": "name",
+          "value": "Information Technology Solutions"
+        }
+      ]
+    },
+    {
+      "external_id": "FIN007",
+      "type": "Organization",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "orgID",
+          "value": "FIN007"
+        },
+        {
+          "type": "name",
+          "value": "Financial Planning Unit"
+        }
+      ]
+    },
+    {
+      "external_id": "MKT008",
+      "type": "Organization",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "orgID",
+          "value": "MKT008"
+        },
+        {
+          "type": "name",
+          "value": "Marketing and Communications"
+        }
+      ]
+    },
+    {
+      "external_id": "OPS009",
+      "type": "Organization",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "orgID",
+          "value": "OPS009"
+        },
+        {
+          "type": "name",
+          "value": "Operations Center"
+        }
+      ]
+    },
+    {
+      "external_id": "LEGAL010",
+      "type": "Organization",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "orgID",
+          "value": "LEGAL010"
+        },
+        {
+          "type": "name",
+          "value": "Legal and Compliance Office"
+        }
+      ]
+    },
+    {
+      "external_id": "100050001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100050001"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-25"
+        },
+        {
+          "type": "amount",
+          "value": "-50"
+        },
+        {
+          "type": "source",
+          "value": "Groceries"
+        },
+        {
+          "type": "acctNb",
+          "value": "100050001"
+        }
+      ]
+    },
+    {
+      "external_id": "100050001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100050001"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-24"
+        },
+        {
+          "type": "amount",
+          "value": "250"
+        },
+        {
+          "type": "source",
+          "value": "Deposit - Payroll"
+        },
+        {
+          "type": "acctNb",
+          "value": "100050001"
+        }
+      ]
+    },
+    {
+      "external_id": "200050002",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "200050002"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-23"
+        },
+        {
+          "type": "amount",
+          "value": "-120.5"
+        },
+        {
+          "type": "source",
+          "value": "Online Shopping"
+        },
+        {
+          "type": "acctNb",
+          "value": "200050002"
+        }
+      ]
+    },
+    {
+      "external_id": "100051001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100051001"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-22"
+        },
+        {
+          "type": "amount",
+          "value": "-35.2"
+        },
+        {
+          "type": "source",
+          "value": "Coffee Shop"
+        },
+        {
+          "type": "acctNb",
+          "value": "100051001"
+        }
+      ]
+    },
+    {
+      "external_id": "300051002",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "300051002"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-21"
+        },
+        {
+          "type": "amount",
+          "value": "100"
+        },
+        {
+          "type": "source",
+          "value": "Transfer from Chequing"
+        },
+        {
+          "type": "acctNb",
+          "value": "300051002"
+        }
+      ]
+    },
+    {
+      "external_id": "100052001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100052001"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-20"
+        },
+        {
+          "type": "amount",
+          "value": "-75"
+        },
+        {
+          "type": "source",
+          "value": "Restaurant"
+        },
+        {
+          "type": "acctNb",
+          "value": "100052001"
+        }
+      ]
+    },
+    {
+      "external_id": "100053001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100053001"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-19"
+        },
+        {
+          "type": "amount",
+          "value": "-25"
+        },
+        {
+          "type": "source",
+          "value": "ATM Withdrawal"
+        },
+        {
+          "type": "acctNb",
+          "value": "100053001"
+        }
+      ]
+    },
+    {
+      "external_id": "200053002",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "200053002"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-18"
+        },
+        {
+          "type": "amount",
+          "value": "-88.99"
+        },
+        {
+          "type": "source",
+          "value": "Utility Bill"
+        },
+        {
+          "type": "acctNb",
+          "value": "200053002"
+        }
+      ]
+    },
+    {
+      "external_id": "100054001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100054001"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-17"
+        },
+        {
+          "type": "amount",
+          "value": "500"
+        },
+        {
+          "type": "source",
+          "value": "Deposit - Cheque"
+        },
+        {
+          "type": "acctNb",
+          "value": "100054001"
+        }
+      ]
+    },
+    {
+      "external_id": "100055001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100055001"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-16"
+        },
+        {
+          "type": "amount",
+          "value": "-15"
+        },
+        {
+          "type": "source",
+          "value": "Parking"
+        },
+        {
+          "type": "acctNb",
+          "value": "100055001"
+        }
+      ]
+    },
+    {
+      "external_id": "300055002",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "300055002"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-15"
+        },
+        {
+          "type": "amount",
+          "value": "200"
+        },
+        {
+          "type": "source",
+          "value": "Interest Earned"
+        },
+        {
+          "type": "acctNb",
+          "value": "300055002"
+        }
+      ]
+    },
+    {
+      "external_id": "100056001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100056001"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-14"
+        },
+        {
+          "type": "amount",
+          "value": "-60"
+        },
+        {
+          "type": "source",
+          "value": "Gas Station"
+        },
+        {
+          "type": "acctNb",
+          "value": "100056001"
+        }
+      ]
+    },
+    {
+      "external_id": "100057001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100057001"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-13"
+        },
+        {
+          "type": "amount",
+          "value": "-10.5"
+        },
+        {
+          "type": "source",
+          "value": "Vending Machine"
+        },
+        {
+          "type": "acctNb",
+          "value": "100057001"
+        }
+      ]
+    },
+    {
+      "external_id": "100058001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100058001"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-12"
+        },
+        {
+          "type": "amount",
+          "value": "-150"
+        },
+        {
+          "type": "source",
+          "value": "Electronics Store"
+        },
+        {
+          "type": "acctNb",
+          "value": "100058001"
+        }
+      ]
+    },
+    {
+      "external_id": "200058002",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "200058002"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-11"
+        },
+        {
+          "type": "amount",
+          "value": "-30"
+        },
+        {
+          "type": "source",
+          "value": "Subscription"
+        },
+        {
+          "type": "acctNb",
+          "value": "200058002"
+        }
+      ]
+    },
+    {
+      "external_id": "100059001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100059001"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-10"
+        },
+        {
+          "type": "amount",
+          "value": "150"
+        },
+        {
+          "type": "source",
+          "value": "Deposit - Cash"
+        },
+        {
+          "type": "acctNb",
+          "value": "100059001"
+        }
+      ]
+    },
+    {
+      "external_id": "100060001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100060001"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-09"
+        },
+        {
+          "type": "amount",
+          "value": "-45.75"
+        },
+        {
+          "type": "source",
+          "value": "Pharmacy"
+        },
+        {
+          "type": "acctNb",
+          "value": "100060001"
+        }
+      ]
+    },
+    {
+      "external_id": "300060002",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "300060002"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-08"
+        },
+        {
+          "type": "amount",
+          "value": "500"
+        },
+        {
+          "type": "source",
+          "value": "Transfer from Chequing"
+        },
+        {
+          "type": "acctNb",
+          "value": "300060002"
+        }
+      ]
+    },
+    {
+      "external_id": "100061001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100061001"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-07"
+        },
+        {
+          "type": "amount",
+          "value": "-80"
+        },
+        {
+          "type": "source",
+          "value": "Taxi Fare"
+        },
+        {
+          "type": "acctNb",
+          "value": "100061001"
+        }
+      ]
+    },
+    {
+      "external_id": "100062001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100062001"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-06"
+        },
+        {
+          "type": "amount",
+          "value": "-20"
+        },
+        {
+          "type": "source",
+          "value": "Movie Tickets"
+        },
+        {
+          "type": "acctNb",
+          "value": "100062001"
+        }
+      ]
+    },
+    {
+      "external_id": "100063001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100063001"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-05"
+        },
+        {
+          "type": "amount",
+          "value": "-99.99"
+        },
+        {
+          "type": "source",
+          "value": "Online Game"
+        },
+        {
+          "type": "acctNb",
+          "value": "100063001"
+        }
+      ]
+    },
+    {
+      "external_id": "200063002",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "200063002"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-04"
+        },
+        {
+          "type": "amount",
+          "value": "-250"
+        },
+        {
+          "type": "source",
+          "value": "Credit Card Payment"
+        },
+        {
+          "type": "acctNb",
+          "value": "200063002"
+        }
+      ]
+    },
+    {
+      "external_id": "100064001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100064001"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-03"
+        },
+        {
+          "type": "amount",
+          "value": "-12"
+        },
+        {
+          "type": "source",
+          "value": "Public Transport"
+        },
+        {
+          "type": "acctNb",
+          "value": "100064001"
+        }
+      ]
+    },
+    {
+      "external_id": "100065001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100065001"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-02"
+        },
+        {
+          "type": "amount",
+          "value": "750"
+        },
+        {
+          "type": "source",
+          "value": "Investment Income"
+        },
+        {
+          "type": "acctNb",
+          "value": "100065001"
+        }
+      ]
+    },
+    {
+      "external_id": "100066001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100066001"
+        },
+        {
+          "type": "date",
+          "value": "2024-07-01"
+        },
+        {
+          "type": "amount",
+          "value": "-65"
+        },
+        {
+          "type": "source",
+          "value": "Apparel Store"
+        },
+        {
+          "type": "acctNb",
+          "value": "100066001"
+        }
+      ]
+    },
+    {
+      "external_id": "300066002",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "300066002"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-30"
+        },
+        {
+          "type": "amount",
+          "value": "50"
+        },
+        {
+          "type": "source",
+          "value": "Dividends"
+        },
+        {
+          "type": "acctNb",
+          "value": "300066002"
+        }
+      ]
+    },
+    {
+      "external_id": "100067001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100067001"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-29"
+        },
+        {
+          "type": "amount",
+          "value": "-18.5"
+        },
+        {
+          "type": "source",
+          "value": "Fast Food"
+        },
+        {
+          "type": "acctNb",
+          "value": "100067001"
+        }
+      ]
+    },
+    {
+      "external_id": "100068001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100068001"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-28"
+        },
+        {
+          "type": "amount",
+          "value": "-200"
+        },
+        {
+          "type": "source",
+          "value": "Home Improvement"
+        },
+        {
+          "type": "acctNb",
+          "value": "100068001"
+        }
+      ]
+    },
+    {
+      "external_id": "200068002",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "200068002"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-27"
+        },
+        {
+          "type": "amount",
+          "value": "-45"
+        },
+        {
+          "type": "source",
+          "value": "Book Store"
+        },
+        {
+          "type": "acctNb",
+          "value": "200068002"
+        }
+      ]
+    },
+    {
+      "external_id": "100069001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100069001"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-26"
+        },
+        {
+          "type": "amount",
+          "value": "-10"
+        },
+        {
+          "type": "source",
+          "value": "Donation"
+        },
+        {
+          "type": "acctNb",
+          "value": "100069001"
+        }
+      ]
+    },
+    {
+      "external_id": "100070001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100070001"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-25"
+        },
+        {
+          "type": "amount",
+          "value": "-30"
+        },
+        {
+          "type": "source",
+          "value": "Hair Salon"
+        },
+        {
+          "type": "acctNb",
+          "value": "100070001"
+        }
+      ]
+    },
+    {
+      "external_id": "300070002",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "300070002"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-24"
+        },
+        {
+          "type": "amount",
+          "value": "150"
+        },
+        {
+          "type": "source",
+          "value": "Transfer from Chequing"
+        },
+        {
+          "type": "acctNb",
+          "value": "300070002"
+        }
+      ]
+    },
+    {
+      "external_id": "100071001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100071001"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-23"
+        },
+        {
+          "type": "amount",
+          "value": "-70"
+        },
+        {
+          "type": "source",
+          "value": "Sporting Goods"
+        },
+        {
+          "type": "acctNb",
+          "value": "100071001"
+        }
+      ]
+    },
+    {
+      "external_id": "100072001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100072001"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-22"
+        },
+        {
+          "type": "amount",
+          "value": "-5"
+        },
+        {
+          "type": "source",
+          "value": "Coffee"
+        },
+        {
+          "type": "acctNb",
+          "value": "100072001"
+        }
+      ]
+    },
+    {
+      "external_id": "100073001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100073001"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-21"
+        },
+        {
+          "type": "amount",
+          "value": "-110"
+        },
+        {
+          "type": "source",
+          "value": "Electronics"
+        },
+        {
+          "type": "acctNb",
+          "value": "100073001"
+        }
+      ]
+    },
+    {
+      "external_id": "200073002",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "200073002"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-20"
+        },
+        {
+          "type": "amount",
+          "value": "-60"
+        },
+        {
+          "type": "source",
+          "value": "Online Subscription"
+        },
+        {
+          "type": "acctNb",
+          "value": "200073002"
+        }
+      ]
+    },
+    {
+      "external_id": "100074001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100074001"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-19"
+        },
+        {
+          "type": "amount",
+          "value": "-22.5"
+        },
+        {
+          "type": "source",
+          "value": "Convenience Store"
+        },
+        {
+          "type": "acctNb",
+          "value": "100074001"
+        }
+      ]
+    },
+    {
+      "external_id": "100075001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100075001"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-18"
+        },
+        {
+          "type": "amount",
+          "value": "300"
+        },
+        {
+          "type": "source",
+          "value": "Refund"
+        },
+        {
+          "type": "acctNb",
+          "value": "100075001"
+        }
+      ]
+    },
+    {
+      "external_id": "100076001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100076001"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-17"
+        },
+        {
+          "type": "amount",
+          "value": "-95"
+        },
+        {
+          "type": "source",
+          "value": "Pet Store"
+        },
+        {
+          "type": "acctNb",
+          "value": "100076001"
+        }
+      ]
+    },
+    {
+      "external_id": "300076002",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "300076002"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-16"
+        },
+        {
+          "type": "amount",
+          "value": "400"
+        },
+        {
+          "type": "source",
+          "value": "Transfer from Chequing"
+        },
+        {
+          "type": "acctNb",
+          "value": "300076002"
+        }
+      ]
+    },
+    {
+      "external_id": "100077001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100077001"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-15"
+        },
+        {
+          "type": "amount",
+          "value": "-14"
+        },
+        {
+          "type": "source",
+          "value": "Bus Fare"
+        },
+        {
+          "type": "acctNb",
+          "value": "100077001"
+        }
+      ]
+    },
+    {
+      "external_id": "100078001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100078001"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-14"
+        },
+        {
+          "type": "amount",
+          "value": "-250"
+        },
+        {
+          "type": "source",
+          "value": "Car Repair"
+        },
+        {
+          "type": "acctNb",
+          "value": "100078001"
+        }
+      ]
+    },
+    {
+      "external_id": "100079001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100079001"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-13"
+        },
+        {
+          "type": "amount",
+          "value": "-180"
+        },
+        {
+          "type": "source",
+          "value": "Travel"
+        },
+        {
+          "type": "acctNb",
+          "value": "100079001"
+        }
+      ]
+    },
+    {
+      "external_id": "200079002",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "200079002"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-12"
+        },
+        {
+          "type": "amount",
+          "value": "-75"
+        },
+        {
+          "type": "source",
+          "value": "Music Streaming"
+        },
+        {
+          "type": "acctNb",
+          "value": "200079002"
+        }
+      ]
+    },
+    {
+      "external_id": "100080001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100080001"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-11"
+        },
+        {
+          "type": "amount",
+          "value": "80"
+        },
+        {
+          "type": "source",
+          "value": "Cash Deposit"
+        },
+        {
+          "type": "acctNb",
+          "value": "100080001"
+        }
+      ]
+    },
+    {
+      "external_id": "100081001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100081001"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-10"
+        },
+        {
+          "type": "amount",
+          "value": "-40"
+        },
+        {
+          "type": "source",
+          "value": "Dry Cleaning"
+        },
+        {
+          "type": "acctNb",
+          "value": "100081001"
+        }
+      ]
+    },
+    {
+      "external_id": "100082001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100082001"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-09"
+        },
+        {
+          "type": "amount",
+          "value": "-150"
+        },
+        {
+          "type": "source",
+          "value": "Rent Payment"
+        },
+        {
+          "type": "acctNb",
+          "value": "100082001"
+        }
+      ]
+    },
+    {
+      "external_id": "300082002",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "300082002"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-08"
+        },
+        {
+          "type": "amount",
+          "value": "600"
+        },
+        {
+          "type": "source",
+          "value": "Interest Earned"
+        },
+        {
+          "type": "acctNb",
+          "value": "300082002"
+        }
+      ]
+    },
+    {
+      "external_id": "100083001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100083001"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-07"
+        },
+        {
+          "type": "amount",
+          "value": "-55"
+        },
+        {
+          "type": "source",
+          "value": "Home Internet"
+        },
+        {
+          "type": "acctNb",
+          "value": "100083001"
+        }
+      ]
+    },
+    {
+      "external_id": "100084001",
+      "type": "Transaction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "xID",
+          "value": "100084001"
+        },
+        {
+          "type": "date",
+          "value": "2024-06-06"
+        },
+        {
+          "type": "amount",
+          "value": "-25"
+        },
+        {
+          "type": "source",
+          "value": "Mobile Top-up"
+        },
+        {
+          "type": "acctNb",
+          "value": "100084001"
+        }
+      ]
+    },
+    {
+      "external_id": "50",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "50"
+        },
+        {
+          "type": "email",
+          "value": "john.doe@fakebank.com"
+        },
+        {
+          "type": "name",
+          "value": "John Doe"
+        },
+        {
+          "type": "username",
+          "value": "john.doe"
+        }
+      ]
+    },
+    {
+      "external_id": "51",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "51"
+        },
+        {
+          "type": "email",
+          "value": "jane.smith@fakebank.com"
+        },
+        {
+          "type": "name",
+          "value": "Jane Smith"
+        },
+        {
+          "type": "username",
+          "value": "jane.smith"
+        }
+      ]
+    },
+    {
+      "external_id": "52",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "52"
+        },
+        {
+          "type": "email",
+          "value": "robert.jones@fakebank.com"
+        },
+        {
+          "type": "name",
+          "value": "Robert Jones"
+        },
+        {
+          "type": "username",
+          "value": "robert.jones"
+        }
+      ]
+    },
+    {
+      "external_id": "53",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "53"
+        },
+        {
+          "type": "email",
+          "value": "emily.davis@fakebank.com"
+        },
+        {
+          "type": "name",
+          "value": "Emily Davis"
+        },
+        {
+          "type": "username",
+          "value": "emily.davis"
+        }
+      ]
+    },
+    {
+      "external_id": "54",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "54"
+        },
+        {
+          "type": "email",
+          "value": "michael.brown@fakebank.com"
+        },
+        {
+          "type": "name",
+          "value": "Michael Brown"
+        },
+        {
+          "type": "username",
+          "value": "michael.brown"
+        }
+      ]
+    },
+    {
+      "external_id": "55",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "55"
+        },
+        {
+          "type": "email",
+          "value": "sarah.wilson@fakebank.com"
+        },
+        {
+          "type": "name",
+          "value": "Sarah Wilson"
+        },
+        {
+          "type": "username",
+          "value": "sarah.wilson"
+        }
+      ]
+    },
+    {
+      "external_id": "56",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "56"
+        },
+        {
+          "type": "email",
+          "value": "david.taylor@fakebank.com"
+        },
+        {
+          "type": "name",
+          "value": "David Taylor"
+        },
+        {
+          "type": "username",
+          "value": "david.taylor"
+        }
+      ]
+    },
+    {
+      "external_id": "57",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "57"
+        },
+        {
+          "type": "email",
+          "value": "olivia.moore@fakebank.com"
+        },
+        {
+          "type": "name",
+          "value": "Olivia Moore"
+        },
+        {
+          "type": "username",
+          "value": "olivia.moore"
+        }
+      ]
+    },
+    {
+      "external_id": "58",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "58"
+        },
+        {
+          "type": "email",
+          "value": "daniel.jackson@fakebank.com"
+        },
+        {
+          "type": "name",
+          "value": "Daniel Jackson"
+        },
+        {
+          "type": "username",
+          "value": "daniel.jackson"
+        }
+      ]
+    },
+    {
+      "external_id": "59",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "59"
+        },
+        {
+          "type": "email",
+          "value": "sophia.white@fakebank.com"
+        },
+        {
+          "type": "name",
+          "value": "Sophia White"
+        },
+        {
+          "type": "username",
+          "value": "sophia.white"
+        }
+      ]
+    },
+    {
+      "external_id": "60",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "60"
+        },
+        {
+          "type": "email",
+          "value": "william.harris@fakebank.com"
+        },
+        {
+          "type": "name",
+          "value": "William Harris"
+        },
+        {
+          "type": "username",
+          "value": "william.harris"
+        }
+      ]
+    },
+    {
+      "external_id": "61",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "61"
+        },
+        {
+          "type": "email",
+          "value": "ava.martin@fakebank.com"
+        },
+        {
+          "type": "name",
+          "value": "Ava Martin"
+        },
+        {
+          "type": "username",
+          "value": "ava.martin"
+        }
+      ]
+    },
+    {
+      "external_id": "62",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "62"
+        },
+        {
+          "type": "email",
+          "value": "james.thompson@fakebank.com"
+        },
+        {
+          "type": "name",
+          "value": "James Thompson"
+        },
+        {
+          "type": "username",
+          "value": "james.thompson"
+        }
+      ]
+    },
+    {
+      "external_id": "63",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "63"
+        },
+        {
+          "type": "email",
+          "value": "mia.garcia@fakebank.com"
+        },
+        {
+          "type": "name",
+          "value": "Mia Garcia"
+        },
+        {
+          "type": "username",
+          "value": "mia.garcia"
+        }
+      ]
+    },
+    {
+      "external_id": "64",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "64"
+        },
+        {
+          "type": "email",
+          "value": "benjamin.rodriguez@fakebank.com"
+        },
+        {
+          "type": "name",
+          "value": "Benjamin Rodriguez"
+        },
+        {
+          "type": "username",
+          "value": "benjamin.rodriguez"
+        }
+      ]
+    },
+    {
+      "external_id": "65",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "65"
+        },
+        {
+          "type": "email",
+          "value": "charlotte.martinez@fakebank.com"
+        },
+        {
+          "type": "name",
+          "value": "Charlotte Martinez"
+        },
+        {
+          "type": "username",
+          "value": "charlotte.martinez"
+        }
+      ]
+    },
+    {
+      "external_id": "66",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "66"
+        },
+        {
+          "type": "email",
+          "value": "ethan.hernandez@fakebank.com"
+        },
+        {
+          "type": "name",
+          "value": "Ethan Hernandez"
+        },
+        {
+          "type": "username",
+          "value": "ethan.hernandez"
+        }
+      ]
+    },
+    {
+      "external_id": "67",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "67"
+        },
+        {
+          "type": "email",
+          "value": "amelia.lopez@fakebank.com"
+        },
+        {
+          "type": "name",
+          "value": "Amelia Lopez"
+        },
+        {
+          "type": "username",
+          "value": "amelia.lopez"
+        }
+      ]
+    },
+    {
+      "external_id": "68",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "68"
+        },
+        {
+          "type": "email",
+          "value": "alexander.gonzalez@fakebank.com"
+        },
+        {
+          "type": "name",
+          "value": "Alexander Gonzalez"
+        },
+        {
+          "type": "username",
+          "value": "alexander.gonzalez"
+        }
+      ]
+    },
+    {
+      "external_id": "69",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "69"
+        },
+        {
+          "type": "email",
+          "value": "harper.perez@fakebank.com"
+        },
+        {
+          "type": "name",
+          "value": "Harper Perez"
+        },
+        {
+          "type": "username",
+          "value": "harper.perez"
+        }
+      ]
+    },
+    {
+      "external_id": "70",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "70"
+        },
+        {
+          "type": "email",
+          "value": "liam.scott@mailforge.net"
+        },
+        {
+          "type": "name",
+          "value": "Liam Scott"
+        },
+        {
+          "type": "username",
+          "value": "liam.scott"
+        }
+      ]
+    },
+    {
+      "external_id": "71",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "71"
+        },
+        {
+          "type": "email",
+          "value": "evelyn.king@webprism.org"
+        },
+        {
+          "type": "name",
+          "value": "Evelyn King"
+        },
+        {
+          "type": "username",
+          "value": "evelyn.king"
+        }
+      ]
+    },
+    {
+      "external_id": "72",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "72"
+        },
+        {
+          "type": "email",
+          "value": "logan.wright@datacove.co"
+        },
+        {
+          "type": "name",
+          "value": "Logan Wright"
+        },
+        {
+          "type": "username",
+          "value": "logan.wright"
+        }
+      ]
+    },
+    {
+      "external_id": "73",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "73"
+        },
+        {
+          "type": "email",
+          "value": "sofia.hill@cloudburst.io"
+        },
+        {
+          "type": "name",
+          "value": "Sofia Hill"
+        },
+        {
+          "type": "username",
+          "value": "sofia.hill"
+        }
+      ]
+    },
+    {
+      "external_id": "74",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "74"
+        },
+        {
+          "type": "email",
+          "value": "noah.green@privatelink.biz"
+        },
+        {
+          "type": "name",
+          "value": "Noah Green"
+        },
+        {
+          "type": "username",
+          "value": "noah.green"
+        }
+      ]
+    },
+    {
+      "external_id": "75",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "75"
+        },
+        {
+          "type": "email",
+          "value": "ella.adams@secureflow.app"
+        },
+        {
+          "type": "name",
+          "value": "Ella Adams"
+        },
+        {
+          "type": "username",
+          "value": "ella.adams"
+        }
+      ]
+    },
+    {
+      "external_id": "76",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "76"
+        },
+        {
+          "type": "email",
+          "value": "jackson.baker@netshield.pro"
+        },
+        {
+          "type": "name",
+          "value": "Jackson Baker"
+        },
+        {
+          "type": "username",
+          "value": "jackson.baker"
+        }
+      ]
+    },
+    {
+      "external_id": "77",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "77"
+        },
+        {
+          "type": "email",
+          "value": "avery.nelson@phantomail.xyz"
+        },
+        {
+          "type": "name",
+          "value": "Avery Nelson"
+        },
+        {
+          "type": "username",
+          "value": "avery.nelson"
+        }
+      ]
+    },
+    {
+      "external_id": "78",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "78"
+        },
+        {
+          "type": "email",
+          "value": "lucas.carter@safemail.one"
+        },
+        {
+          "type": "name",
+          "value": "Lucas Carter"
+        },
+        {
+          "type": "username",
+          "value": "lucas.carter"
+        }
+      ]
+    },
+    {
+      "external_id": "79",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "79"
+        },
+        {
+          "type": "email",
+          "value": "scarlett.mitchell@cryptobox.tech"
+        },
+        {
+          "type": "name",
+          "value": "Scarlett Mitchell"
+        },
+        {
+          "type": "username",
+          "value": "scarlett.mitchell"
+        }
+      ]
+    },
+    {
+      "external_id": "80",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "80"
+        },
+        {
+          "type": "email",
+          "value": "mason.ramirez@hushsphere.com"
+        },
+        {
+          "type": "name",
+          "value": "Mason Ramirez"
+        },
+        {
+          "type": "username",
+          "value": "mason.ramirez"
+        }
+      ]
+    },
+    {
+      "external_id": "81",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "81"
+        },
+        {
+          "type": "email",
+          "value": "aria.parker@ghostsend.net"
+        },
+        {
+          "type": "name",
+          "value": "Aria Parker"
+        },
+        {
+          "type": "username",
+          "value": "aria.parker"
+        }
+      ]
+    },
+    {
+      "external_id": "82",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "82"
+        },
+        {
+          "type": "email",
+          "value": "elijah.bell@stealthcomm.org"
+        },
+        {
+          "type": "name",
+          "value": "Elijah Bell"
+        },
+        {
+          "type": "username",
+          "value": "elijah.bell"
+        }
+      ]
+    },
+    {
+      "external_id": "83",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "83"
+        },
+        {
+          "type": "email",
+          "value": "grace.morgan@anonportal.co"
+        },
+        {
+          "type": "name",
+          "value": "Grace Morgan"
+        },
+        {
+          "type": "username",
+          "value": "grace.morgan"
+        }
+      ]
+    },
+    {
+      "external_id": "84",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "84"
+        },
+        {
+          "type": "email",
+          "value": "sebastian.cooper@zenithmail.io"
+        },
+        {
+          "type": "name",
+          "value": "Sebastian Cooper"
+        },
+        {
+          "type": "username",
+          "value": "sebastian.cooper"
+        }
+      ]
+    },
+    {
+      "external_id": "85",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "85"
+        },
+        {
+          "type": "email",
+          "value": "chloe.turner@deepwebmail.biz"
+        },
+        {
+          "type": "name",
+          "value": "Chloe Turner"
+        },
+        {
+          "type": "username",
+          "value": "chloe.turner"
+        }
+      ]
+    },
+    {
+      "external_id": "86",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "86"
+        },
+        {
+          "type": "email",
+          "value": "david.hall@pixelgate.app"
+        },
+        {
+          "type": "name",
+          "value": "David Hall"
+        },
+        {
+          "type": "username",
+          "value": "david.hall"
+        }
+      ]
+    },
+    {
+      "external_id": "87",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "87"
+        },
+        {
+          "type": "email",
+          "value": "madison.young@voidmail.pro"
+        },
+        {
+          "type": "name",
+          "value": "Madison Young"
+        },
+        {
+          "type": "username",
+          "value": "madison.young"
+        }
+      ]
+    },
+    {
+      "external_id": "88",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "88"
+        },
+        {
+          "type": "email",
+          "value": "leo.allen@echoemail.xyz"
+        },
+        {
+          "type": "name",
+          "value": "Leo Allen"
+        },
+        {
+          "type": "username",
+          "value": "leo.allen"
+        }
+      ]
+    },
+    {
+      "external_id": "89",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "89"
+        },
+        {
+          "type": "email",
+          "value": "penelope.sanders@shadowsend.one"
+        },
+        {
+          "type": "name",
+          "value": "Penelope Sanders"
+        },
+        {
+          "type": "username",
+          "value": "penelope.sanders"
+        }
+      ]
+    },
+    {
+      "external_id": "90",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "90"
+        },
+        {
+          "type": "email",
+          "value": "gabriel.ross@incognitonet.tech"
+        },
+        {
+          "type": "name",
+          "value": "Gabriel Ross"
+        },
+        {
+          "type": "username",
+          "value": "gabriel.ross"
+        }
+      ]
+    },
+    {
+      "external_id": "91",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "91"
+        },
+        {
+          "type": "email",
+          "value": "victoria.rogers@auroramail.com"
+        },
+        {
+          "type": "name",
+          "value": "Victoria Rogers"
+        },
+        {
+          "type": "username",
+          "value": "victoria.rogefs"
+        }
+      ]
+    },
+    {
+      "external_id": "92",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "92"
+        },
+        {
+          "type": "email",
+          "value": "samuel.reed@nexuspost.net"
+        },
+        {
+          "type": "name",
+          "value": "Samuel Reed"
+        },
+        {
+          "type": "username",
+          "value": "samuel.reed"
+        }
+      ]
+    },
+    {
+      "external_id": "93",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "93"
+        },
+        {
+          "type": "email",
+          "value": "aubrey.cook@terraweb.org"
+        },
+        {
+          "type": "name",
+          "value": "Aubrey Cook"
+        },
+        {
+          "type": "username",
+          "value": "aubrey.cook"
+        }
+      ]
+    },
+    {
+      "external_id": "94",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "94"
+        },
+        {
+          "type": "email",
+          "value": "jackson.morris@vectoremail.co"
+        },
+        {
+          "type": "name",
+          "value": "Jackson Morris"
+        },
+        {
+          "type": "username",
+          "value": "jackson.morris"
+        }
+      ]
+    },
+    {
+      "external_id": "95",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "95"
+        },
+        {
+          "type": "email",
+          "value": "lily.long@cyclonecomm.io"
+        },
+        {
+          "type": "name",
+          "value": "Lily Long"
+        },
+        {
+          "type": "username",
+          "value": "lily.long"
+        }
+      ]
+    },
+    {
+      "external_id": "96",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "96"
+        },
+        {
+          "type": "email",
+          "value": "wyatt.patterson@digitalcloak.biz"
+        },
+        {
+          "type": "name",
+          "value": "Wyatt Patterson"
+        },
+        {
+          "type": "username",
+          "value": "wyatt.patterson"
+        }
+      ]
+    },
+    {
+      "external_id": "97",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "97"
+        },
+        {
+          "type": "email",
+          "value": "zoey.brooks@infinitymail.app"
+        },
+        {
+          "type": "name",
+          "value": "Zoey Brooks"
+        },
+        {
+          "type": "username",
+          "value": "zoey.brooks"
+        }
+      ]
+    },
+    {
+      "external_id": "98",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "98"
+        },
+        {
+          "type": "email",
+          "value": "nathan.kennedy@sentinelink.pro"
+        },
+        {
+          "type": "name",
+          "value": "Nathan Kennedy"
+        },
+        {
+          "type": "username",
+          "value": "nathan.kennedy"
+        }
+      ]
+    },
+    {
+      "external_id": "99",
+      "type": "User",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "uID",
+          "value": "99"
+        },
+        {
+          "type": "email",
+          "value": "hannah.russell@mysticmail.xyz"
+        },
+        {
+          "type": "name",
+          "value": "Hannah Russell"
+        },
+        {
+          "type": "username",
+          "value": "hannah.russell"
+        }
+      ]
+    }
+  ]
 }

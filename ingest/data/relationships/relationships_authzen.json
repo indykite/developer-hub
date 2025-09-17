@@ -1,92 +1,92 @@
 {
-    "relationships": [
-        {
-            "source": {
-                "externalId": "knightrider",
-                "type": "Person"
-            },
-            "target": {
-                "externalId": "kitt",
-                "type": "Car"
-            },
-            "type": "DRIVES"
-        },
-        {
-            "source": {
-                "externalId": "satchmo",
-                "type": "Person"
-            },
-            "target": {
-                "externalId": "cadillacv16",
-                "type": "Car"
-            },
-            "type": "DRIVES"
-        },
-        {
-            "source": {
-                "externalId": "karel",
-                "type": "Person"
-            },
-            "target": {
-                "externalId": "listek",
-                "type": "Ticket"
-            },
-            "type": "HAS"
-        },
-        {
-            "source": {
-                "externalId": "listek",
-                "type": "Ticket"
-            },
-            "target": {
-                "externalId": "harmonika",
-                "type": "Bus"
-            },
-            "type": "FOR"
-        },
-        {
-            "source": {
-                "externalId": "karel",
-                "type": "Person"
-            },
-            "target": {
-                "externalId": "airbook-xyz",
-                "type": "Laptop"
-            },
-            "type": "OWNS"
-        },
-        {
-            "source": {
-                "externalId": "alice",
-                "type": "Person"
-            },
-            "target": {
-                "externalId": "airbook-xyz",
-                "type": "Laptop"
-            },
-            "type": "OWNS"
-        },
-        {
-            "source": {
-                "externalId": "knightrider",
-                "type": "Person"
-            },
-            "target": {
-                "externalId": "kitt",
-                "type": "Car"
-            },
-            "type": "OWNS"
-        },
-         {
-            "source": {
-                "externalId": "alice",
-                "type": "Person"
-            },
-            "target": {
-                "externalId": "cadillacv16",
-                "type": "Car"
-            },
-            "type": "DRIVES"
-        }
-    ]
+  "relationships": [
+    {
+      "source": {
+        "externalId": "knightrider",
+        "type": "Person"
+      },
+      "target": {
+        "externalId": "kitt",
+        "type": "Car"
+      },
+      "type": "DRIVES"
+    },
+    {
+      "source": {
+        "externalId": "satchmo",
+        "type": "Person"
+      },
+      "target": {
+        "externalId": "cadillacv16",
+        "type": "Car"
+      },
+      "type": "DRIVES"
+    },
+    {
+      "source": {
+        "externalId": "karel",
+        "type": "Person"
+      },
+      "target": {
+        "externalId": "listek",
+        "type": "Ticket"
+      },
+      "type": "HAS"
+    },
+    {
+      "source": {
+        "externalId": "listek",
+        "type": "Ticket"
+      },
+      "target": {
+        "externalId": "harmonika",
+        "type": "Bus"
+      },
+      "type": "FOR"
+    },
+    {
+      "source": {
+        "externalId": "karel",
+        "type": "Person"
+      },
+      "target": {
+        "externalId": "airbook-xyz",
+        "type": "Laptop"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "externalId": "alice",
+        "type": "Person"
+      },
+      "target": {
+        "externalId": "airbook-xyz",
+        "type": "Laptop"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "externalId": "knightrider",
+        "type": "Person"
+      },
+      "target": {
+        "externalId": "kitt",
+        "type": "Car"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "externalId": "alice",
+        "type": "Person"
+      },
+      "target": {
+        "externalId": "cadillacv16",
+        "type": "Car"
+      },
+      "type": "DRIVES"
+    }
+  ]
 }

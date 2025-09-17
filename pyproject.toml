@@ -1,0 +1,131 @@
+[tool.coverage.run]
+omit = [
+    "test/*",
+    "tmp/*",
+]
+
+# NOTE: flake8 doesn't use this TOML by default, requires 'Flake8-pyproject' for that
+#   https://github.com/PyCQA/flake8/issues/234
+#   https://flake8.pycqa.org/en/latest/user/configuration.html
+#   https://github.com/john-hen/Flake8-pyproject
+[tool.flake8]
+
+max-line-length = 120
+
+extend-ignore = [
+    "E203", # whitespace before ':'
+]
+
+exclude = [
+    "manual_testing",
+    "tmp",
+]
+
+#
+# Pylint config section
+#
+[tool.pylint.main]
+# fail-on=
+# fail-under=10.0
+# FIXME: remove issues in the code# revert fail- settings to the above
+fail-on = "F"
+fail-under = 1.0
+
+# Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
+# number of processors available to use.
+jobs=0
+
+# Pickle collected data for later comparisons.
+persistent="yes"
+
+# Min Python version to use for version depended checks. Will default to the version used to run pylint.
+py-version=3.11
+
+# When enabled, pylint would attempt to guess common misconfiguration and emit
+# user-friendly hints instead of false-positive error messages.
+suggestion-mode="yes"
+
+# Allow loading of arbitrary C extensions. Extensions are imported into the
+# active Python interpreter and may run arbitrary code.
+unsafe-load-any-extension="no"
+
+extension-pkg-allow-list = [
+    "ortools",
+]
+
+init-hook = """
+import os, sys
+from pylint.config import find_default_config_files
+base_dirname = os.path.dirname(next(find_default_config_files()))
+sys.path.append(base_dirname)
+sys.path.append(os.path.join(base_dirname, "integration"))
+"""
+
+[tool.pylint."messages control"]
+# List of messages:
+# https://pylint.readthedocs.io/en/stable/user_guide/messages/messages_overview.html
+#disable = [
+    # "missing-module-docstring",
+    # "missing-class-docstring",
+    # "import-outside-toplevel",
+    # "fixme",
+    # "unspecified-encoding",
+    # "too-few-public-methods",
+    # "invalid-sequence-index",
+    # "consider-using-dict-items",
+    # "no-name-in-module",
+    # "unnecessary-lambda-assignment",
+    # "disallowed-name"
+#]
+
+variable-rgx = '^_?[a-zA-Z][_a-zA-Z\d]*$'
+argument-rgx = '^[a-zA-Z][_a-z\d]*$'
+attr-rgx = '^_?[a-zA-Z][_a-z\d]*$'
+method-rgx = '^_{0,2}[a-z][_a-z\d]*$'
+
+
+#
+# 'ruff' config section
+# https://github.com/astral-sh/ruff
+[tool.ruff]
+target-version = 'py311'
+line-length = 120
+
+[tool.ruff.lint]
+# Enable All rules.
+select = ['ALL']
+# unfixable = []
+ignore = [
+    "D100", # Missing docstring in public module
+    "D101", # Missing docstring in public class
+    "D103", # Missing docstring in public function
+    "D104", # Missing docstring in public package
+    "ANN001", # FIXME: Missing type annotation for function argument
+    "ANN201", # FIXME: Missing return type annotation for public function
+    "ANN202", # FIXME: Missing return type annotation for private function
+    "BLE001", # Do not catch blind exception: `Exception`
+    "INP001", # File ... is part of an implicit namespace package. Add an `__init__.py`
+]
+
+# TODO: TBD later
+# [tool.ruff.lint.pydocstyle]
+# convention = 'google'  # Or 'numpy', or 'pep257'
+
+# Override to single quotes
+# must be set in accordance, otherwise will get a warning:
+#   The `flake8-quotes.inline-quotes="double"` option is incompatible with the formatter's `format.quote-style="single"`
+[tool.ruff.format]
+quote-style = 'double'
+[tool.ruff.lint.flake8-quotes]
+inline-quotes = 'double'
+
+
+#
+# 'black' config section
+# https://github.com/psf/black
+#
+[tool.black]
+line-length = 120
+target-version = ['py311', 'py313']
+diff = 1
+color = 1

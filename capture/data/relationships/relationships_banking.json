@@ -1,3916 +1,3916 @@
 {
-"relationships": [
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100050001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100051001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100052001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100053001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100054001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100055001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100056001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100057001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100058001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100059001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100060001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100061001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100062001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100063001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100064001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100065001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100066001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100067001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100068001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100069001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100070001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100071001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100072001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100073001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100074001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100075001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100076001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100077001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100078001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100079001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100080001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100081001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100082001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100083001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100084001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100085001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100086001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100087001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100088001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100089001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100090001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100091001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100092001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100093001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100094001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100095001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100096001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100097001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100098001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "100099001",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "finApp",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "300051002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "finApp",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "300055002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "finApp",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "300060002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "finApp",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "300066002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "finApp",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "300070002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "finApp",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "300076002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "finApp",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "300082002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "finApp",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "300087002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "finApp",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "300093002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "finApp",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "300099002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "finWeb",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "300051002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "finWeb",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "300055002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "finWeb",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "300060002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "finWeb",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "300066002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "finWeb",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "300070002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "finWeb",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "300076002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "finWeb",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "300082002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "finWeb",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "300087002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "finWeb",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "300093002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "finWeb",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "300099002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eCredit",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "200050002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eCredit",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "200053002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eCredit",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "200058002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eCredit",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "200063002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eCredit",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "200068002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eCredit",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "200073002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eCredit",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "200079002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eCredit",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "200084002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eCredit",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "200090002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "eCredit",
-            "type": "App"
-        },
-        "target": {
-            "external_id": "200096002",
-            "type": "FinAccount"
-        },
-        "type": "MANAGES",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBVAN001",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100050001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBVAN001",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "200050002",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBTOR002",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100051001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBTOR002",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "300051002",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBMON003",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100052001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBMON003",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100053001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBMON003",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "200053002",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBCAL004",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100054001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBCAL004",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100055001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBCAL004",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "300055002",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBEDM005",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100056001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBEDM005",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100057001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBHAL006",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100058001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBHAL006",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "200058002",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBWIN007",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100059001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBWIN007",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100060001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBWIN007",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "300060002",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBQUE008",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100061001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBQUE008",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100062001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBREJ009",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100063001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBREJ009",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "200063002",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBREJ009",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100064001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBVIC010",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100065001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBVIC010",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100066001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBVIC010",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "300066002",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBVAN001",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100067001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBVAN001",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100068001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBVAN001",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "200068002",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBTOR002",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100069001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBTOR002",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100070001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBTOR002",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "300070002",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBMON003",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100071001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBMON003",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100072001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBCAL004",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100073001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBCAL004",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "200073002",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBEDM005",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100074001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBEDM005",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100075001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBHAL006",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100076001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBHAL006",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "300076002",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBWIN007",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100077001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBWIN007",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100078001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBQUE008",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100079001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBQUE008",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "200079002",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBREJ009",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100080001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBREJ009",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100081001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBVIC010",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100082001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBVIC010",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "300082002",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBVAN001",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100083001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBVAN001",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100084001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBTOR002",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "200084002",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBTOR002",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100085001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBMON003",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100086001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBMON003",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100087001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBVAN001",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "300087002",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBCAL004",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100088001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBEDM005",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100089001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBEDM005",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100090001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBHAL006",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "200090002",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBHAL006",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100091001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBWIN007",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100092001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBWIN007",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100093001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBQUE008",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "300093002",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBQUE008",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100094001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBREJ009",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100095001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBREJ009",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100096001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBVIC010",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "200096002",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBVIC010",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100097001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBVAN001",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100098001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBTOR002",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "100099001",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FBMON003",
-            "type": "Branch"
-        },
-        "target": {
-            "external_id": "300099002",
-            "type": "FinAccount"
-        },
-        "type": "HOLDS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100050001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100050001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100050001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100050001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "200050002",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "200050002",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100051001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100051001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "300051002",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "300051002",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100052001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100052001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100053001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100053001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "200053002",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "200053002",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100054001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100054001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100055001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100055001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "300055002",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "300055002",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100056001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100056001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100057001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100057001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100058001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100058001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "200058002",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "200058002",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100059001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100059001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100060001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100060001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "300060002",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "300060002",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100061001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100061001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100062001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100062001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100063001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100063001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "200063002",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "200063002",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100064001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100064001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100065001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100065001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100066001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100066001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "300066002",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "300066002",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100067001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100067001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100068001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100068001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "200068002",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "200068002",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100069001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100069001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100070001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100070001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "300070002",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "300070002",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100071001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100071001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100072001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100072001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100073001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100073001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "200073002",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "200073002",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100074001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100074001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100075001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100075001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100076001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100076001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "300076002",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "300076002",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100077001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100077001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100078001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100078001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100079001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100079001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "200079002",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "200079002",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100080001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100080001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100081001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100081001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100082001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100082001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "300082002",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "300082002",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100083001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100083001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "100084001",
-            "type": "FinAccount"
-        },
-        "target": {
-            "external_id": "100084001",
-            "type": "Transaction"
-        },
-        "type": "HAS",
-        "properties": []
-    },
-      {
-        "source": {
-            "external_id": "INV003",
-            "type": "Organization"
-        },
-        "target": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "type": "CAN_READ",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FIN007",
-            "type": "Organization"
-        },
-        "target": {
-            "external_id": "eBanking",
-            "type": "App"
-        },
-        "type": "CAN_READ",
-        "properties": []
-    },
-     {
-        "source": {
-            "external_id": "CORP001",
-            "type": "Organization"
-        },
-        "target": {
-            "external_id": "finApp",
-            "type": "App"
-        },
-        "type": "CAN_WRITE",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "CORP001",
-            "type": "Organization"
-        },
-        "target": {
-            "external_id": "finWeb",
-            "type": "App"
-        },
-        "type": "CAN_WRITE",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "RETL002",
-            "type": "Organization"
-        },
-        "target": {
-            "external_id": "finApp",
-            "type": "App"
-        },
-        "type": "CAN_WRITE",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "RETL002",
-            "type": "Organization"
-        },
-        "target": {
-            "external_id": "finWeb",
-            "type": "App"
-        },
-        "type": "CAN_WRITE",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "INV003",
-            "type": "Organization"
-        },
-        "target": {
-            "external_id": "finWeb",
-            "type": "App"
-        },
-        "type": "CAN_WRITE",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "RISK004",
-            "type": "Organization"
-        },
-        "target": {
-            "external_id": "finApp",
-            "type": "App"
-        },
-        "type": "CAN_WRITE",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "HR005",
-            "type": "Organization"
-        },
-        "target": {
-            "external_id": "finApp",
-            "type": "App"
-        },
-        "type": "CAN_WRITE",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "IT006",
-            "type": "Organization"
-        },
-        "target": {
-            "external_id": "finApp",
-            "type": "App"
-        },
-        "type": "CAN_WRITE",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "IT006",
-            "type": "Organization"
-        },
-        "target": {
-            "external_id": "finWeb",
-            "type": "App"
-        },
-        "type": "CAN_WRITE",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "FIN007",
-            "type": "Organization"
-        },
-        "target": {
-            "external_id": "finApp",
-            "type": "App"
-        },
-        "type": "CAN_WRITE",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "MKT008",
-            "type": "Organization"
-        },
-        "target": {
-            "external_id": "finWeb",
-            "type": "App"
-        },
-        "type": "CAN_WRITE",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "OPS009",
-            "type": "Organization"
-        },
-        "target": {
-            "external_id": "finApp",
-            "type": "App"
-        },
-        "type": "CAN_WRITE",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "OPS009",
-            "type": "Organization"
-        },
-        "target": {
-            "external_id": "eCredit",
-            "type": "App"
-        },
-        "type": "CAN_WRITE",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "LEGAL010",
-            "type": "Organization"
-        },
-        "target": {
-            "external_id": "finApp",
-            "type": "App"
-        },
-        "type": "CAN_WRITE",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "50",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FBVAN001",
-            "type": "Branch"
-        },
-        "type": "WORKS_FOR",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "51",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FBVAN001",
-            "type": "Branch"
-        },
-        "type": "WORKS_FOR",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "52",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FBTOR002",
-            "type": "Branch"
-        },
-        "type": "WORKS_FOR",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "53",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FBTOR002",
-            "type": "Branch"
-        },
-        "type": "WORKS_FOR",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "54",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FBMON003",
-            "type": "Branch"
-        },
-        "type": "WORKS_FOR",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "55",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FBMON003",
-            "type": "Branch"
-        },
-        "type": "WORKS_FOR",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "56",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FBCAL004",
-            "type": "Branch"
-        },
-        "type": "WORKS_FOR",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "57",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FBCAL004",
-            "type": "Branch"
-        },
-        "type": "WORKS_FOR",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "58",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FBEDM005",
-            "type": "Branch"
-        },
-        "type": "WORKS_FOR",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "59",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FBEDM005",
-            "type": "Branch"
-        },
-        "type": "WORKS_FOR",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "60",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FBHAL006",
-            "type": "Branch"
-        },
-        "type": "WORKS_FOR",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "61",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FBHAL006",
-            "type": "Branch"
-        },
-        "type": "WORKS_FOR",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "62",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FBWIN007",
-            "type": "Branch"
-        },
-        "type": "WORKS_FOR",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "63",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FBWIN007",
-            "type": "Branch"
-        },
-        "type": "WORKS_FOR",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "64",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FBQUE008",
-            "type": "Branch"
-        },
-        "type": "WORKS_FOR",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "65",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FBQUE008",
-            "type": "Branch"
-        },
-        "type": "WORKS_FOR",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "66",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FBREJ009",
-            "type": "Branch"
-        },
-        "type": "WORKS_FOR",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "67",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FBREJ009",
-            "type": "Branch"
-        },
-        "type": "WORKS_FOR",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "68",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FBVIC010",
-            "type": "Branch"
-        },
-        "type": "WORKS_FOR",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "69",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FBVIC010",
-            "type": "Branch"
-        },
-        "type": "WORKS_FOR",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "50",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100050001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "50",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "200050002",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "51",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100051001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "51",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "300051002",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "52",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100052001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "53",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100053001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "53",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "200053002",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "54",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100054001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "55",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100055001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "55",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "300055002",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "56",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100056001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "57",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100057001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "58",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100058001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "58",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "200058002",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "59",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100059001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "60",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100060001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "60",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "300060002",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "61",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100061001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "62",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100062001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "63",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100063001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "63",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "200063002",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "64",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100064001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "65",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100065001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "66",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100066001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "66",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "300066002",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "67",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100067001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "68",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100068001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "68",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "200068002",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "69",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100069001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "70",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100070001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "70",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "300070002",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "71",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100071001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "72",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100072001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "73",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100073001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "73",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "200073002",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "74",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100074001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "75",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100075001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "76",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100076001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "76",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "300076002",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "77",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100077001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "78",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100078001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "79",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100079001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "79",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "200079002",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "80",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100080001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "81",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100081001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "82",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100082001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "82",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "300082002",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "83",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100083001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "84",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100084001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "84",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "200084002",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "85",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100085001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "86",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100086001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "87",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100087001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "87",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "300087002",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "88",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100088001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "89",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100089001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "90",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100090001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "90",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "200090002",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "91",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100091001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "92",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100092001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "93",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100093001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "93",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "300093002",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "94",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100094001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "95",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100095001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "96",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100096001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "96",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "200096002",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "97",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100097001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "98",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100098001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "99",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "100099001",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "99",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "300099002",
-            "type": "FinAccount"
-        },
-        "type": "OWNS",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "50",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "CORP001",
-            "type": "Organization"
-        },
-        "type": "MEMBER_OF",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "51",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "CORP001",
-            "type": "Organization"
-        },
-        "type": "MEMBER_OF",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "52",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "RETL002",
-            "type": "Organization"
-        },
-        "type": "MEMBER_OF",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "53",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "RETL002",
-            "type": "Organization"
-        },
-        "type": "MEMBER_OF",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "54",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "INV003",
-            "type": "Organization"
-        },
-        "type": "MEMBER_OF",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "55",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "INV003",
-            "type": "Organization"
-        },
-        "type": "MEMBER_OF",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "56",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "RISK004",
-            "type": "Organization"
-        },
-        "type": "MEMBER_OF",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "57",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "RISK004",
-            "type": "Organization"
-        },
-        "type": "MEMBER_OF",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "58",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "HR005",
-            "type": "Organization"
-        },
-        "type": "MEMBER_OF",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "59",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "HR005",
-            "type": "Organization"
-        },
-        "type": "MEMBER_OF",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "60",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "IT006",
-            "type": "Organization"
-        },
-        "type": "MEMBER_OF",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "61",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "IT006",
-            "type": "Organization"
-        },
-        "type": "MEMBER_OF",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "62",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FIN007",
-            "type": "Organization"
-        },
-        "type": "MEMBER_OF",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "63",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "FIN007",
-            "type": "Organization"
-        },
-        "type": "MEMBER_OF",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "64",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "MKT008",
-            "type": "Organization"
-        },
-        "type": "MEMBER_OF",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "65",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "MKT008",
-            "type": "Organization"
-        },
-        "type": "MEMBER_OF",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "66",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "OPS009",
-            "type": "Organization"
-        },
-        "type": "MEMBER_OF",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "67",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "OPS009",
-            "type": "Organization"
-        },
-        "type": "MEMBER_OF",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "68",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "LEGAL010",
-            "type": "Organization"
-        },
-        "type": "MEMBER_OF",
-        "properties": []
-    },
-    {
-        "source": {
-            "external_id": "69",
-            "type": "User"
-        },
-        "target": {
-            "external_id": "LEGAL010",
-            "type": "Organization"
-        },
-        "type": "MEMBER_OF",
-        "properties": []
+  "relationships": [
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100050001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100051001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100052001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100053001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100054001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100055001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100056001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100057001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100058001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100059001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100060001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100061001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100062001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100063001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100064001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100065001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100066001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100067001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100068001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100069001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100070001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100071001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100072001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100073001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100074001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100075001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100076001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100077001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100078001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100079001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100080001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100081001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100082001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100083001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100084001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100085001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100086001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100087001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100088001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100089001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100090001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100091001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100092001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100093001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100094001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100095001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100096001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100097001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100098001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "100099001",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "finApp",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "300051002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "finApp",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "300055002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "finApp",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "300060002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "finApp",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "300066002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "finApp",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "300070002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "finApp",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "300076002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "finApp",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "300082002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "finApp",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "300087002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "finApp",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "300093002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "finApp",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "300099002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "finWeb",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "300051002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "finWeb",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "300055002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "finWeb",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "300060002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "finWeb",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "300066002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "finWeb",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "300070002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "finWeb",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "300076002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "finWeb",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "300082002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "finWeb",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "300087002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "finWeb",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "300093002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "finWeb",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "300099002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eCredit",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "200050002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eCredit",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "200053002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eCredit",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "200058002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eCredit",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "200063002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eCredit",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "200068002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eCredit",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "200073002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eCredit",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "200079002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eCredit",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "200084002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eCredit",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "200090002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "eCredit",
+        "type": "App"
+      },
+      "target": {
+        "external_id": "200096002",
+        "type": "FinAccount"
+      },
+      "type": "MANAGES",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBVAN001",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100050001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBVAN001",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "200050002",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBTOR002",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100051001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBTOR002",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "300051002",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBMON003",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100052001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBMON003",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100053001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBMON003",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "200053002",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBCAL004",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100054001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBCAL004",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100055001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBCAL004",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "300055002",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBEDM005",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100056001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBEDM005",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100057001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBHAL006",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100058001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBHAL006",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "200058002",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBWIN007",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100059001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBWIN007",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100060001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBWIN007",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "300060002",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBQUE008",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100061001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBQUE008",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100062001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBREJ009",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100063001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBREJ009",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "200063002",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBREJ009",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100064001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBVIC010",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100065001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBVIC010",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100066001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBVIC010",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "300066002",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBVAN001",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100067001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBVAN001",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100068001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBVAN001",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "200068002",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBTOR002",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100069001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBTOR002",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100070001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBTOR002",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "300070002",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBMON003",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100071001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBMON003",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100072001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBCAL004",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100073001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBCAL004",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "200073002",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBEDM005",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100074001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBEDM005",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100075001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBHAL006",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100076001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBHAL006",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "300076002",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBWIN007",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100077001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBWIN007",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100078001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBQUE008",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100079001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBQUE008",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "200079002",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBREJ009",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100080001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBREJ009",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100081001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBVIC010",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100082001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBVIC010",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "300082002",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBVAN001",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100083001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBVAN001",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100084001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBTOR002",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "200084002",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBTOR002",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100085001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBMON003",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100086001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBMON003",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100087001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBVAN001",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "300087002",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBCAL004",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100088001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBEDM005",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100089001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBEDM005",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100090001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBHAL006",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "200090002",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBHAL006",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100091001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBWIN007",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100092001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBWIN007",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100093001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBQUE008",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "300093002",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBQUE008",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100094001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBREJ009",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100095001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBREJ009",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100096001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBVIC010",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "200096002",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBVIC010",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100097001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBVAN001",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100098001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBTOR002",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "100099001",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FBMON003",
+        "type": "Branch"
+      },
+      "target": {
+        "external_id": "300099002",
+        "type": "FinAccount"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100050001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100050001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100050001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100050001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "200050002",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "200050002",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100051001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100051001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "300051002",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "300051002",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100052001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100052001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100053001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100053001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "200053002",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "200053002",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100054001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100054001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100055001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100055001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "300055002",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "300055002",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100056001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100056001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100057001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100057001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100058001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100058001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "200058002",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "200058002",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100059001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100059001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100060001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100060001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "300060002",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "300060002",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100061001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100061001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100062001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100062001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100063001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100063001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "200063002",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "200063002",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100064001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100064001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100065001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100065001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100066001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100066001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "300066002",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "300066002",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100067001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100067001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100068001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100068001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "200068002",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "200068002",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100069001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100069001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100070001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100070001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "300070002",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "300070002",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100071001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100071001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100072001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100072001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100073001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100073001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "200073002",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "200073002",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100074001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100074001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100075001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100075001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100076001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100076001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "300076002",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "300076002",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100077001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100077001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100078001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100078001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100079001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100079001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "200079002",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "200079002",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100080001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100080001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100081001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100081001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100082001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100082001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "300082002",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "300082002",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100083001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100083001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "100084001",
+        "type": "FinAccount"
+      },
+      "target": {
+        "external_id": "100084001",
+        "type": "Transaction"
+      },
+      "type": "HAS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "INV003",
+        "type": "Organization"
+      },
+      "target": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "type": "CAN_READ",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FIN007",
+        "type": "Organization"
+      },
+      "target": {
+        "external_id": "eBanking",
+        "type": "App"
+      },
+      "type": "CAN_READ",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "CORP001",
+        "type": "Organization"
+      },
+      "target": {
+        "external_id": "finApp",
+        "type": "App"
+      },
+      "type": "CAN_WRITE",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "CORP001",
+        "type": "Organization"
+      },
+      "target": {
+        "external_id": "finWeb",
+        "type": "App"
+      },
+      "type": "CAN_WRITE",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "RETL002",
+        "type": "Organization"
+      },
+      "target": {
+        "external_id": "finApp",
+        "type": "App"
+      },
+      "type": "CAN_WRITE",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "RETL002",
+        "type": "Organization"
+      },
+      "target": {
+        "external_id": "finWeb",
+        "type": "App"
+      },
+      "type": "CAN_WRITE",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "INV003",
+        "type": "Organization"
+      },
+      "target": {
+        "external_id": "finWeb",
+        "type": "App"
+      },
+      "type": "CAN_WRITE",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "RISK004",
+        "type": "Organization"
+      },
+      "target": {
+        "external_id": "finApp",
+        "type": "App"
+      },
+      "type": "CAN_WRITE",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "HR005",
+        "type": "Organization"
+      },
+      "target": {
+        "external_id": "finApp",
+        "type": "App"
+      },
+      "type": "CAN_WRITE",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "IT006",
+        "type": "Organization"
+      },
+      "target": {
+        "external_id": "finApp",
+        "type": "App"
+      },
+      "type": "CAN_WRITE",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "IT006",
+        "type": "Organization"
+      },
+      "target": {
+        "external_id": "finWeb",
+        "type": "App"
+      },
+      "type": "CAN_WRITE",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "FIN007",
+        "type": "Organization"
+      },
+      "target": {
+        "external_id": "finApp",
+        "type": "App"
+      },
+      "type": "CAN_WRITE",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "MKT008",
+        "type": "Organization"
+      },
+      "target": {
+        "external_id": "finWeb",
+        "type": "App"
+      },
+      "type": "CAN_WRITE",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "OPS009",
+        "type": "Organization"
+      },
+      "target": {
+        "external_id": "finApp",
+        "type": "App"
+      },
+      "type": "CAN_WRITE",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "OPS009",
+        "type": "Organization"
+      },
+      "target": {
+        "external_id": "eCredit",
+        "type": "App"
+      },
+      "type": "CAN_WRITE",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "LEGAL010",
+        "type": "Organization"
+      },
+      "target": {
+        "external_id": "finApp",
+        "type": "App"
+      },
+      "type": "CAN_WRITE",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "50",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FBVAN001",
+        "type": "Branch"
+      },
+      "type": "WORKS_FOR",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "51",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FBVAN001",
+        "type": "Branch"
+      },
+      "type": "WORKS_FOR",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "52",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FBTOR002",
+        "type": "Branch"
+      },
+      "type": "WORKS_FOR",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "53",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FBTOR002",
+        "type": "Branch"
+      },
+      "type": "WORKS_FOR",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "54",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FBMON003",
+        "type": "Branch"
+      },
+      "type": "WORKS_FOR",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "55",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FBMON003",
+        "type": "Branch"
+      },
+      "type": "WORKS_FOR",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "56",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FBCAL004",
+        "type": "Branch"
+      },
+      "type": "WORKS_FOR",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "57",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FBCAL004",
+        "type": "Branch"
+      },
+      "type": "WORKS_FOR",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "58",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FBEDM005",
+        "type": "Branch"
+      },
+      "type": "WORKS_FOR",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "59",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FBEDM005",
+        "type": "Branch"
+      },
+      "type": "WORKS_FOR",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "60",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FBHAL006",
+        "type": "Branch"
+      },
+      "type": "WORKS_FOR",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "61",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FBHAL006",
+        "type": "Branch"
+      },
+      "type": "WORKS_FOR",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "62",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FBWIN007",
+        "type": "Branch"
+      },
+      "type": "WORKS_FOR",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "63",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FBWIN007",
+        "type": "Branch"
+      },
+      "type": "WORKS_FOR",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "64",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FBQUE008",
+        "type": "Branch"
+      },
+      "type": "WORKS_FOR",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "65",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FBQUE008",
+        "type": "Branch"
+      },
+      "type": "WORKS_FOR",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "66",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FBREJ009",
+        "type": "Branch"
+      },
+      "type": "WORKS_FOR",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "67",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FBREJ009",
+        "type": "Branch"
+      },
+      "type": "WORKS_FOR",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "68",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FBVIC010",
+        "type": "Branch"
+      },
+      "type": "WORKS_FOR",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "69",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FBVIC010",
+        "type": "Branch"
+      },
+      "type": "WORKS_FOR",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "50",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100050001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "50",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "200050002",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "51",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100051001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "51",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "300051002",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "52",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100052001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "53",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100053001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "53",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "200053002",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "54",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100054001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "55",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100055001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "55",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "300055002",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "56",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100056001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "57",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100057001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "58",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100058001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "58",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "200058002",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "59",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100059001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "60",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100060001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "60",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "300060002",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "61",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100061001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "62",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100062001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "63",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100063001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "63",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "200063002",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "64",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100064001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "65",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100065001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "66",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100066001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "66",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "300066002",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "67",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100067001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "68",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100068001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "68",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "200068002",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "69",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100069001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "70",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100070001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "70",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "300070002",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "71",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100071001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "72",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100072001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "73",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100073001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "73",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "200073002",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "74",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100074001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "75",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100075001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "76",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100076001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "76",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "300076002",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "77",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100077001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "78",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100078001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "79",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100079001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "79",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "200079002",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "80",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100080001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "81",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100081001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "82",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100082001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "82",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "300082002",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "83",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100083001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "84",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100084001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "84",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "200084002",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "85",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100085001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "86",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100086001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "87",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100087001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "87",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "300087002",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "88",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100088001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "89",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100089001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "90",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100090001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "90",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "200090002",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "91",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100091001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "92",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100092001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "93",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100093001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "93",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "300093002",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "94",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100094001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "95",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100095001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "96",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100096001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "96",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "200096002",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "97",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100097001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "98",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100098001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "99",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "100099001",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "99",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "300099002",
+        "type": "FinAccount"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "50",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "CORP001",
+        "type": "Organization"
+      },
+      "type": "MEMBER_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "51",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "CORP001",
+        "type": "Organization"
+      },
+      "type": "MEMBER_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "52",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "RETL002",
+        "type": "Organization"
+      },
+      "type": "MEMBER_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "53",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "RETL002",
+        "type": "Organization"
+      },
+      "type": "MEMBER_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "54",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "INV003",
+        "type": "Organization"
+      },
+      "type": "MEMBER_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "55",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "INV003",
+        "type": "Organization"
+      },
+      "type": "MEMBER_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "56",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "RISK004",
+        "type": "Organization"
+      },
+      "type": "MEMBER_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "57",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "RISK004",
+        "type": "Organization"
+      },
+      "type": "MEMBER_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "58",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "HR005",
+        "type": "Organization"
+      },
+      "type": "MEMBER_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "59",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "HR005",
+        "type": "Organization"
+      },
+      "type": "MEMBER_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "60",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "IT006",
+        "type": "Organization"
+      },
+      "type": "MEMBER_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "61",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "IT006",
+        "type": "Organization"
+      },
+      "type": "MEMBER_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "62",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FIN007",
+        "type": "Organization"
+      },
+      "type": "MEMBER_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "63",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "FIN007",
+        "type": "Organization"
+      },
+      "type": "MEMBER_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "64",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "MKT008",
+        "type": "Organization"
+      },
+      "type": "MEMBER_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "65",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "MKT008",
+        "type": "Organization"
+      },
+      "type": "MEMBER_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "66",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "OPS009",
+        "type": "Organization"
+      },
+      "type": "MEMBER_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "67",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "OPS009",
+        "type": "Organization"
+      },
+      "type": "MEMBER_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "68",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "LEGAL010",
+        "type": "Organization"
+      },
+      "type": "MEMBER_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "69",
+        "type": "User"
+      },
+      "target": {
+        "external_id": "LEGAL010",
+        "type": "Organization"
+      },
+      "type": "MEMBER_OF",
+      "properties": []
     }
-]
+  ]
 }
