@@ -1,169 +1,168 @@
- {
+{
   "nodes": [
     {
-  "external_id": "alice",
-  "is_identity": true,
-  "type": "Person",
-  "properties": [
-    {
-      "type": "email",
-      "value": "alice@email.com"
+      "external_id": "alice",
+      "is_identity": true,
+      "type": "Person",
+      "properties": [
+        {
+          "type": "email",
+          "value": "alice@email.com"
+        },
+        {
+          "type": "given_name",
+          "value": "Alice"
+        },
+        {
+          "type": "last_name",
+          "value": "Smith"
+        }
+      ]
     },
     {
-      "type": "given_name",
-      "value": "Alice"
-    },
-    {
-      "type": "last_name",
-      "value": "Smith"
-    }
-  ]
-  },
-   {
       "external_id": "bob",
       "type": "Person",
       "is_identity": true,
       "properties": [
-       {
-	      "type": "email",
-	      "value": "bob@email.com"
-	    },
-       {
-        "type": "given_name",
-        "value": "Bob"
-       }
+        {
+          "type": "email",
+          "value": "bob@email.com"
+        },
+        {
+          "type": "given_name",
+          "value": "Bob"
+        }
       ]
     },
-  {
-  "external_id": "cb123",
-  "type": "PaymentMethod",
-  "properties": [
     {
-      "type": "payment_name",
-      "value": "Credit Card"
-    }
-  ]
-  },
- {
-  "external_id": "kl123",
-  "type": "PaymentMethod",
-  "properties": [
-    {
-      "type": "payment_name",
-      "value": "Klarna"
-    }
-  ]
-  },
-  {
-  "external_id": "ct123",
-  "type": "Contract",
-  "properties": [
-    {
-      "type": "category",
-      "value": "Parking"
+      "external_id": "cb123",
+      "type": "PaymentMethod",
+      "properties": [
+        {
+          "type": "payment_name",
+          "value": "Credit Card"
+        }
+      ]
     },
     {
-      "type": "status",
-      "value": "Active"
-    }
-  ]
-  },
-  {
-  "external_id": "ct234",
-  "type": "Contract",
-  "properties": [
-    {
-      "type": "category",
-      "value": "Parking"
+      "external_id": "kl123",
+      "type": "PaymentMethod",
+      "properties": [
+        {
+          "type": "payment_name",
+          "value": "Klarna"
+        }
+      ]
     },
     {
-      "type": "status",
-      "value": "Active"
-    }
-  ]
-  },
-  {
-  "external_id": "car1",
-  "type": "Vehicle",
-  "properties": [
-    {
-      "type": "category",
-      "value": "Car"
+      "external_id": "ct123",
+      "type": "Contract",
+      "properties": [
+        {
+          "type": "category",
+          "value": "Parking"
+        },
+        {
+          "type": "status",
+          "value": "Active"
+        }
+      ]
     },
     {
-      "type": "is_active",
-      "value": true
+      "external_id": "ct234",
+      "type": "Contract",
+      "properties": [
+        {
+          "type": "category",
+          "value": "Parking"
+        },
+        {
+          "type": "status",
+          "value": "Active"
+        }
+      ]
     },
     {
-      "type": "vin",
-      "value": "rtfhcnvjt471"
-    }
-  ]
-  },
-  {
-  "external_id": "car2",
-  "type": "Vehicle",
-  "properties": [
-    {
-      "type": "category",
-      "value": "Car"
+      "external_id": "car1",
+      "type": "Vehicle",
+      "properties": [
+        {
+          "type": "category",
+          "value": "Car"
+        },
+        {
+          "type": "is_active",
+          "value": true
+        },
+        {
+          "type": "vin",
+          "value": "rtfhcnvjt471"
+        }
+      ]
     },
     {
-      "type": "is_active",
-      "value": true
+      "external_id": "car2",
+      "type": "Vehicle",
+      "properties": [
+        {
+          "type": "category",
+          "value": "Car"
+        },
+        {
+          "type": "is_active",
+          "value": true
+        },
+        {
+          "type": "vin",
+          "value": "kdcbfrt178"
+        }
+      ]
     },
     {
-      "type": "vin",
-      "value": "kdcbfrt178"
-    }
-  ]
-  },
-   {
-  "external_id": "license1",
-  "type": "LicenseNumber",
-  "properties": [
-    {
-      "type": "status",
-      "value":"Active"
+      "external_id": "license1",
+      "type": "LicenseNumber",
+      "properties": [
+        {
+          "type": "status",
+          "value": "Active"
+        },
+        {
+          "type": "number",
+          "value": "AX123456",
+          "metadata": {
+            "assurance_level": 3,
+            "source": "BRREG"
+          }
+        }
+      ]
     },
     {
-      "type": "number",
-      "value": "AX123456",
-       "metadata": {
-	    "assurance_level": 3,
-        "source": "BRREG"
-       }
-    }
-  ]
-  },
-   {
-  "external_id": "license2",
-  "type": "LicenseNumber",
-  "properties": [
-    {
-      "type": "status",
-      "value": "Active"
+      "external_id": "license2",
+      "type": "LicenseNumber",
+      "properties": [
+        {
+          "type": "status",
+          "value": "Active"
+        },
+        {
+          "type": "number",
+          "value": "OL123456",
+          "metadata": {
+            "assurance_level": 3,
+            "source": "BRREG"
+          }
+        }
+      ]
     },
     {
-      "type": "number",
-      "value": "OL123456",
-       "metadata": {
-	    "assurance_level": 3,
-        "source": "BRREG"
-       }
+      "external_id": "companyParking",
+      "type": "Company",
+      "properties": [
+        {
+          "type": "name",
+          "value": "City Parking Inc"
+        }
+      ]
     }
-  ]
-  },
-   {
-  "external_id": "companyParking",
-  "type": "Company",
-  "properties": [
-    {
-      "type": "name",
-      "value": "City Parking Inc"
-    }
-  ]
-  }
   ]
 }
-

@@ -1,10 +1,11 @@
 # developer-hub
 
-Codes examples to clone and test locally 
+Codes examples to clone and test locally
+
 - Ingest data into your IKG (Aura instance) in the IndyKite platform using the Ingest gRPC API
 - Capture data into your IKG (Aura instance) in the IndyKite platform using the Capture REST API
 
-Endpoints definitions: https://openapi.indykite.com
+Endpoints definitions: <https://openapi.indykite.com>
 
 ## How to use
 
@@ -13,7 +14,8 @@ Endpoints definitions: https://openapi.indykite.com
 - run `pipenv install`
 - run `pipenv shell`
 - export the required env variables
-- run 
-```shell script
-flask run
-```
+- run
+
+  ```sh
+  flask run
+  ```

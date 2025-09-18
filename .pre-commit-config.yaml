@@ -1,0 +1,259 @@
+---
+# Copyright (c) 2022 IndyKite
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Usage & installation, the first configures the default stages only, the others must be installed explicitly:
+#   pre-commit install
+#   pre-commit install -t post-checkout -t commit-msg
+#
+# Prerequisites:
+#   brew install pre-commit yamlfmt yamllint actionlint markdownlint-cli2 shellcheck shfmt trivy
+#
+# Update hooks and their dependencies regularly via:
+#   (remote) pre-commit autoupdate --jobs $(getconf _NPROCESSORS_ONLN)
+#   (local) brew update && brew upgrade -g
+# TODO: do NOT use '--freeze' until https://github.com/renovatebot/renovate/issues/22567 is completed
+#
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+default_stages: [pre-commit, pre-push]
+default_install_hook_types: [pre-commit]
+fail_fast: false
+minimum_pre_commit_version: 4.0.0
+
+#
+repos:
+  - repo: meta
+    hooks:
+      # - id: check-hooks-apply
+      - id: check-useless-excludes
+        name: pre-commit/check-useless-excludes
+
+  - repo: ssh://git@github.com/indykite/ops-common
+    rev: "93f7e5f4c05a1b86d36993cd0b2a47fd5cfba54b" # using a branch name (or HEAD) is not supported
+    hooks:
+      # POST-CHECKOUT
+      # install explicitly with: pre-commit install -t post-checkout
+      - id: git-pull
+      - id: git-branch-delete-stale
+
+      # pre-commit validations
+      # - id: pre-commit-autoupdate # done via 'renovate'; left for reference and possible options
+      #   args: [--freeze] # store hashes in 'rev' instead of tag names
+      - id: pre-commit-validate-config
+      - id: pre-commit-validate-manifest
+
+      # SAST
+      - id: trivy
+
+      # Shellcheck
+      - id: shfmt
+      - id: shellcheck
+
+  #
+  # Renovate
+  - repo: https://github.com/renovatebot/pre-commit-hooks # ci:ignore:OK to validate locally only, otherwise it adds 850MB+ to unpacked cache
+    rev: "41.111.0"
+    hooks:
+      - id: renovate-config-validator
+        args: [--strict]
+
+  #
+  # Commit Message linting
+  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook # ci:ignore:executed under a separate GitHub action
+    rev: v9.22.0
+    hooks:
+      # NON-DEFAULT stage, install explicitly with: pre-commit install -t commit-msg
+      - id: commitlint
+        stages: [commit-msg]
+        # not the best of using shareable config across the org
+        # 'strict' equals to 'failOnWarnings' in Github Action setting
+        args: ["--strict", "--config", "../.github/.github/actions/commitlint/.commitlintrc.mjs"]
+        additional_dependencies:
+          - "@commitlint/config-conventional"
+          - commitlint-plugin-function-rules
+
+  #
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      # Git style
+      - id: check-added-large-files
+        args: [--maxkb=1500]
+      - id: check-merge-conflict
+      - id: check-vcs-permalinks
+      - id: forbid-new-submodules
+      # - id: forbid-submodules # XXX: either of two is enough
+      - id: no-commit-to-branch
+        name: no-commit-to-master
+        args: [--branch, dev, --branch, develop, --branch, master, --branch, main]
+
+      # Common errors
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+      - id: check-symlinks
+      - id: destroyed-symlinks
+
+      # Cross platform
+      - id: check-illegal-windows-names
+      - id: check-case-conflict
+      - id: fix-byte-order-marker
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+      # Format linters
+      # 'check-yaml' and 'sort-simple-yaml' disabled intentionally, use hooks below
+      - id: check-xml
+      - id: check-toml
+      - id: check-json
+      - id: pretty-format-json
+        args: [--no-sort-keys, --autofix]
+        exclude: "Pipfile.lock"
+
+      # Security
+      - id: detect-private-key
+      - id: detect-aws-credentials
+        args: [--allow-missing-credentials]
+
+      # Python
+      - id: check-ast
+        name: python-check-ast
+      - id: check-builtin-literals
+        name: python-check-builtin-literals
+      - id: check-docstring-first
+        name: python-check-docstring-first
+      - id: debug-statements
+        name: python-debug-statements
+      - id: name-tests-test
+        name: python-name-tests-test
+      - id: requirements-txt-fixer
+        name: python-requirements-txt-fixer
+
+  #
+  # more Python
+  - repo: https://github.com/abravalheri/validate-pyproject
+    rev: v0.24.1
+    hooks:
+      - id: validate-pyproject
+        name: python-validate-pyproject
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.12
+    hooks:
+      - id: ruff-format
+        name: python-ruff-format
+      - id: ruff-check
+        name: python-ruff-check
+        args: [--fix] # enable autofixes
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.8.6
+    hooks:
+      - id: bandit
+        name: python-bandit
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 6.0.1
+    hooks:
+      - id: isort
+        name: python-isort
+
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.3.0
+    hooks:
+      - id: flake8
+        name: python-flake8
+        additional_dependencies: [Flake8-pyproject]
+
+  - repo: https://github.com/PyCQA/pylint
+    rev: v3.3.8
+    hooks:
+      - id: pylint
+        name: pylint
+
+  - repo: https://github.com/psf/black-pre-commit-mirror # ci:ignore:manual stage only
+    # Using this mirror lets us use mypyc-compiled black, which is about 2x faster
+    rev: 25.1.0
+    hooks:
+      - id: black
+        # It is recommended to specify the latest version of Python supported by the project
+        # language_version: python3.11
+        name: python-black
+        stages: [manual] # XXX: not used by default, but left as a reference for potential tool introduction
+
+  - repo: https://github.com/pre-commit/mirrors-mypy # ci:ignore:manual stage only
+    rev: v1.17.1
+    hooks:
+      - id: mypy
+        name: python-mypy
+        args: [--strict, --ignore-missing-imports]
+        stages: [manual] # XXX: not used by default, but left as a reference for potential tool introduction
+
+  #
+  # Detect hardcoded secrets
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.28.0
+    hooks:
+      - id: gitleaks
+        name: gitleaks
+
+  #
+  # YAML
+  # - repo: https://github.com/rhysd/actionlint <- "language: golang" slower & takes larger CI cache comparing to "system"
+  #   rev: v1.7.7
+  - repo: local
+    hooks:
+      # place any overrides in '.actionlint.yaml' https://github.com/rhysd/actionlint/blob/main/docs/config.md
+      #   args: ["-config-file=.actionlint.yaml"]
+      - id: actionlint-system
+        name: github-actionlint
+        language: system
+        entry: actionlint
+        types: [yaml]
+        files: ^\.github/workflows/
+  # - repo: https://github.com/google/yamlfmt <- "language: golang" slower & takes larger CI cache comparing to "system"
+  #   rev: v0.17.2
+  - repo: local
+    hooks:
+      - id: yamlfmt
+        name: yamlfmt
+        language: system
+        entry: yamlfmt
+        types: [yaml]
+  # - repo: https://github.com/adrienverge/yamllint <- "language: python" slower & takes larger CI cache comparing to "system"
+  #   rev: v1.37.1
+  - repo: local
+    hooks:
+      - id: yamllint
+        name: yamllint
+        language: system
+        entry: yamllint
+        types: [yaml]
+        args: ["--strict"]
+
+  #
+  # Markdown
+  # - repo: https://github.com/DavidAnson/markdownlint-cli2 <- "language: node" slower & takes larger CI cache comparing to "system"
+  #   rev: v0.18.1
+  - repo: local
+    hooks:
+      - id: markdownlint
+        name: markdownlint
+        language: system
+        entry: markdownlint-cli2
+        types: [markdown]
