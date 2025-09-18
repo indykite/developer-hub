@@ -1,7 +1,22 @@
+# https://docs.deepsource.com/docs/dashboard/repository/.deepsource.toml
 version = 1
 
+#
+[[analyzers]]
+name = "secrets"
+enabled = true
+
+#
 [[analyzers]]
 name = "python"
+enabled = true
+dependency_file_paths = ["Pipfile"]
 
   [analyzers.meta]
   runtime_version = "3.x.x"
+  max_line_length = 120
+  skip_doc_coverage = ["module", "magic", "init", "class", "nonpublic"]
+
+[[transformers]]
+name = "ruff" # "black"
+enabled = true
