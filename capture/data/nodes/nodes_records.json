@@ -26,9 +26,7 @@
         },
         {
           "type": "title",
-          "value": {
-            "stringValue": "Othello"
-          }
+          "value": "Othello"
         }
       ]
     },
