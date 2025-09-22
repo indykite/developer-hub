@@ -65,7 +65,7 @@ repos:
   #
   # Renovate
   - repo: https://github.com/renovatebot/pre-commit-hooks # ci:ignore:OK to validate locally only, otherwise it adds 850MB+ to unpacked cache
-    rev: "41.116.8"
+    rev: "41.122.3"
     hooks:
       - id: renovate-config-validator
         args: [--strict]
@@ -153,7 +153,7 @@ repos:
         name: python-validate-pyproject
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.13.0
+    rev: v0.13.1
     hooks:
       - id: ruff-format
         name: python-ruff-format
@@ -188,7 +188,7 @@ repos:
 
   - repo: https://github.com/psf/black-pre-commit-mirror # ci:ignore:manual stage only
     # Using this mirror lets us use mypyc-compiled black, which is about 2x faster
-    rev: 25.1.0
+    rev: 25.9.0
     hooks:
       - id: black
         # It is recommended to specify the latest version of Python supported by the project
@@ -197,7 +197,7 @@ repos:
         stages: [manual] # XXX: not used by default, but left as a reference for potential tool introduction
 
   - repo: https://github.com/pre-commit/mirrors-mypy # ci:ignore:manual stage only
-    rev: v1.18.1
+    rev: v1.18.2
     hooks:
       - id: mypy
         name: python-mypy
