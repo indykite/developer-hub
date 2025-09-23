@@ -82,9 +82,7 @@
       "properties": [
         {
           "type": "record_id",
-          "value": {
-            "integerValue": 106
-          }
+          "value": 106
         },
         {
           "type": "title",
@@ -189,9 +187,7 @@
       "properties": [
         {
           "type": "record_id",
-          "value": {
-            "integerValue": 113
-          }
+          "value": 113
         },
         {
           "type": "title",
