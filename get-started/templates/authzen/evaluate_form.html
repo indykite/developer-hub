@@ -1,0 +1,42 @@
+{% extends "layouts/base.html" %}
+{% block title %}AuthZen Evaluation{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <h3 class="mb-4">AuthZen Evaluation</h3>
+                    <p class="text-muted mb-4">Edit the authorization evaluation data below and click "Evaluate" to check access.</p>
+
+                    <form method="POST" action="{{ url_for('api_authzen.evaluate_authzen') }}">
+                        <div class="mb-3">
+                            <label for="authzen_data" class="form-label">Evaluation Data (JSON) *</label>
+                            <textarea class="form-control font-monospace" id="authzen_data" name="authzen_data" rows="15" required>{
+  "subject": {
+    "type": "Person",
+    "id": "knightrider"
+  },
+  "resource": {
+    "type": "Car",
+    "id": "kitt"
+  },
+  "action": {
+    "name": "CAN_DRIVE"
+  }
+}</textarea>
+                            <small class="form-text text-muted">JSON object containing subject, resource, and action</small>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">Evaluate Authorization</button>
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "layouts/base.html" %}
+{% block title %}Create Application Agent{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <h3 class="mb-4">Create New Application Agent</h3>
+                    <p class="text-muted mb-4">Configure your application agent settings below and click "Create Application Agent" to submit.</p>
+
+                    <form method="POST" action="{{ url_for('api_app_agent.create_app_agent') }}">
+                        <div class="mb-3">
+                            <label for="application_id" class="form-label">Application ID *</label>
+                            <input type="text" class="form-control" id="application_id" name="application_id" value="{{ default_data.application_id }}" required>
+                            <small class="form-text text-muted">The ID of the application this agent belongs to</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Agent Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ default_data.name }}"
+                                   pattern="^[a-z][a-z0-9-]*$"
+                                   title="Must start with a lowercase letter, followed by lowercase letters, numbers, or hyphens"
+                                   required>
+                            <small class="form-text text-muted">Must start with a lowercase letter, followed by lowercase letters, numbers, or hyphens (e.g., my-agent)</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="display_name" class="form-label">Display Name</label>
+                            <input type="text" class="form-control" id="display_name" name="display_name" value="{{ default_data.display_name }}">
+                            <small class="form-text text-muted">Human-readable agent name</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ default_data.description }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="api_permissions" class="form-label">API Permissions</label>
+                            <textarea class="form-control" id="api_permissions" name="api_permissions" rows="5" placeholder="Enter permissions, one per line">{% for perm in default_data.api_permissions %}{{ perm }}
+{% endfor %}</textarea>
+                            <small class="form-text text-muted">Enter API permissions, one per line</small>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">Create Application Agent</button>
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends "layouts/base.html" %}
+{% block title %}Capture Relationships{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <h3 class="mb-4">Capture Relationships</h3>
+                    <p class="text-muted mb-4">Edit the relationships JSON below and click "Capture" to submit to the Identity Knowledge Graph.</p>
+
+                    <form method="POST" action="{{ url_for('api_relationships.create_relationships') }}">
+                        <div class="mb-3">
+                            <label for="relationships" class="form-label">Relationships (JSON) *</label>
+                            <textarea class="form-control font-monospace" id="relationships" name="relationships" rows="20" required>{
+  "relationships": [
+    {
+      "source": {
+        "external_id": "knightrider",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "kitt",
+        "type": "Car"
+      },
+      "type": "DRIVES"
+    },
+    {
+      "source": {
+        "external_id": "satchmo",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "cadillacv16",
+        "type": "Car"
+      },
+      "type": "DRIVES"
+    },
+    {
+      "source": {
+        "external_id": "karel",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "listek",
+        "type": "Ticket"
+      },
+      "type": "HAS"
+    },
+    {
+      "source": {
+        "external_id": "listek",
+        "type": "Ticket"
+      },
+      "target": {
+        "external_id": "harmonika",
+        "type": "Bus"
+      },
+      "type": "FOR"
+    },
+    {
+      "source": {
+        "external_id": "karel",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "airbook-xyz",
+        "type": "Laptop"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "external_id": "alice",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "airbook-xyz",
+        "type": "Laptop"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "external_id": "knightrider",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "kitt",
+        "type": "Car"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "external_id": "alice",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "cadillacv16",
+        "type": "Car"
+      },
+      "type": "DRIVES"
+    }
+  ]
+}
+
+
+                            </textarea>
+                            <small class="form-text text-muted">JSON object containing relationships array with source, target, and type</small>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">Capture Relationships</button>
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

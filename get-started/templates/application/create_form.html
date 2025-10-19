@@ -1,0 +1,50 @@
+{% extends "layouts/base.html" %}
+{% block title %}Create Application{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <h3 class="mb-4">Create New Application</h3>
+                    <p class="text-muted mb-4">Configure your application settings below and click "Create Application" to submit.</p>
+
+                    <form method="POST" action="{{ url_for('api_application.create_application') }}">
+                        <div class="mb-3">
+                            <label for="project_id" class="form-label">Project ID *</label>
+                            <input type="text" class="form-control" id="project_id" name="project_id" value="{{ default_data.project_id }}" required>
+                            <small class="form-text text-muted">The ID of the project this application belongs to</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Application Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ default_data.name }}"
+                                   pattern="^[a-z][a-z0-9-]*$"
+                                   title="Must start with a lowercase letter, followed by lowercase letters, numbers, or hyphens"
+                                   required>
+                            <small class="form-text text-muted">Must start with a lowercase letter, followed by lowercase letters, numbers, or hyphens (e.g., my-app)</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="display_name" class="form-label">Display Name</label>
+                            <input type="text" class="form-control" id="display_name" name="display_name" value="{{ default_data.display_name }}">
+                            <small class="form-text text-muted">Human-readable project name</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ default_data.description }}</textarea>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">Create Application</button>
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
