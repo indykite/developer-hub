@@ -1,0 +1,56 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Select JSON File{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="row">
+        <div class="col-12 col-xl-8">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                   <h3 class="mb-3">Create environment in the IndyKite platform</h3>
+                        <ul>
+                        <li><a href="/api_project/create" class="link-indigo">Create project</a></li>
+                            <li><a href="/api_application/create" class="link-indigo">Create application</a></li>
+                            <li><a href="/api_app_agent/create" class="link-indigo">Create application agent</a></li>
+                            <li><a href="/api_token_introspect/create" class="link-indigo">Create token introspect</a></li>
+                            <li><a href="/api_authorization_policy/create" class="link-indigo">Create authorization policy</a></li>
+                            <li><a href="/api_capture/create" class="link-indigo">Capture nodes</a></li>
+                            <li><a href="/api_relationships/create" class="link-indigo">Capture relationships</a></li>
+                            <li><a href="/api_authzen/evaluate" class="link-indigo">Evaluate authorization (AuthZen)</a></li>
+                            <li><a href="/api_project/delete" class="link-indigo">Delete project</a></li>
+                       </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <div class="row">
+        <div class="col-12 col-xl-8">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                   <h3 class="mb-3">Requirements </h3>
+                        <ul>
+                            <li>Service account credentials created on the IndyKite platform: https://eu.hub.indykite.com/service-accounts (or https://us.hub.indykite.com/service-accounts)</li>
+                       </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12 col-xl-8">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                   <h3 class="mb-3">Environment variables </h3>
+                        <ul>
+                            <li>SA_TOKEN: SA credentials token obtained on https://eu.hub.indykite.com/service-accounts (or https://us.hub.indykite.com/service-accounts)</li>
+                            <li>URL_ENDPOINTS: https://eu.api.indykite.com (or https://us.api.indykite.com)</li>
+                       </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</main>
+{% endblock %}

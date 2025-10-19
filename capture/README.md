@@ -14,5 +14,17 @@ Codes examples to clone and test locally
 ## Environment variables
 
     APP_TOKEN: AppAgent token from the AppAgent credentials
-    URL_ENDPOINTS: https://jarvis.indykite.com
+    URL_ENDPOINTS: https://eu.api.indykite.com (or https://us.api.indykite.com)
     PROJECT_ID: gid of your project on the IK platform
+
+## Install and run
+
+- install pipenv
+- run `pipenv install`
+- run `pipenv shell`
+- export the required env variables
+- run
+
+    flask run
+
+- open the app by clicking the local url (like [http://127.0.0.1:5000](http://127.0.0.1:5000))

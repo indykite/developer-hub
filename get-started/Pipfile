@@ -1,0 +1,24 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pip = "*"
+requests = "*"
+flask = "*"
+Werkzeug = "*"
+Flask-JWT-Extended = "*"
+Flask-Migrate = "*"
+Flask-SQLAlchemy = "*"
+SQLAlchemy = "*"
+pydantic = "*"
+flask-openapi3 = "*"
+rq = "*"
+redis = "*"
+python-dotenv = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.13"

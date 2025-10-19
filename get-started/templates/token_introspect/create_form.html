@@ -1,0 +1,78 @@
+{% extends "layouts/base.html" %}
+{% block title %}Create Token Introspect{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <h3 class="mb-4">Create Token Introspect</h3>
+                    <p class="text-muted mb-4">Configure token introspection settings and click "Create" to submit.</p>
+
+                    <form method="POST" action="{{ url_for('api_token_introspect.create_token_introspect') }}">
+                        <div class="mb-3">
+                            <label for="project_id" class="form-label">Project ID *</label>
+                            <input type="text" class="form-control" id="project_id" name="project_id" value="{{ default_data.project_id }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ default_data.name }}"
+                                   pattern="^[a-z][a-z0-9-]*$"
+                                   title="Must start with a lowercase letter"
+                                   required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="display_name" class="form-label">Display Name</label>
+                            <input type="text" class="form-control" id="display_name" name="display_name" value="{{ default_data.display_name }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="2">{{ default_data.description }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="ikg_node_type" class="form-label">IKG Node Type</label>
+                            <input type="text" class="form-control" id="ikg_node_type" name="ikg_node_type" value="{{ default_data.ikg_node_type }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="perform_upsert" class="form-label">Perform Upsert</label>
+                            <select class="form-control" id="perform_upsert" name="perform_upsert">
+                                <option value="true" {% if default_data.perform_upsert %}selected{% endif %}>True</option>
+                                <option value="false" {% if not default_data.perform_upsert %}selected{% endif %}>False</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="claims_mapping" class="form-label">Claims Mapping (JSON)</label>
+                            <textarea class="form-control font-monospace" id="claims_mapping" name="claims_mapping" rows="6">{{ default_data.claims_mapping | tojson }}</textarea>
+                            <small class="form-text text-muted">JSON object mapping claims</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="jwt_matcher" class="form-label">JWT Matcher (JSON)</label>
+                            <textarea class="form-control font-monospace" id="jwt_matcher" name="jwt_matcher" rows="4">{{ default_data.jwt_matcher | tojson }}</textarea>
+                            <small class="form-text text-muted">JSON object for JWT matching</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="online_validation" class="form-label">Online Validation (JSON)</label>
+                            <textarea class="form-control font-monospace" id="online_validation" name="online_validation" rows="3">{{ default_data.online_validation | tojson }}</textarea>
+                            <small class="form-text text-muted">JSON object for validation settings</small>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">Create Token Introspect</button>
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

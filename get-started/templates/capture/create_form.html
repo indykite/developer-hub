@@ -1,0 +1,154 @@
+{% extends "layouts/base.html" %}
+{% block title %}Capture Nodes{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <h3 class="mb-4">Capture Nodes</h3>
+                    <p class="text-muted mb-4">Edit the nodes JSON below and click "Capture" to submit to the Identity Knowledge Graph.</p>
+
+                    <form method="POST" action="{{ url_for('api_capture.create_capture') }}">
+                        <div class="mb-3">
+                            <label for="nodes" class="form-label">Nodes (JSON) *</label>
+                            <textarea class="form-control font-monospace" id="nodes" name="nodes" rows="20" required>{
+                        "nodes": [
+                        {
+                          "external_id": "alice",
+                          "is_identity": true,
+                          "type": "Person",
+                          "properties": [
+                            {
+                              "type": "email",
+                              "value": "alice@email.com"
+                            },
+                            {
+                              "type": "given_name",
+                              "value": "Alice"
+                            },
+                            {
+                              "type": "last_name",
+                              "value": "Smith"
+                            }
+                          ]
+                        },
+                        {
+                          "external_id": "knightrider",
+                          "type": "Person",
+                          "is_identity": true,
+                          "properties": [
+                            {
+                              "type": "email",
+                              "value": "knightrider@demo.com"
+                            },
+                            {
+                              "type": "name",
+                              "value": "Michael Knight"
+                            }
+                          ]
+                        },
+                        {
+                          "external_id": "satchmo",
+                          "type": "Person",
+                          "is_identity": true,
+                          "properties": [
+                            {
+                              "type": "email",
+                              "value": "satchmo@demo.com"
+                            },
+                            {
+                              "type": "name",
+                              "value": "Louis Armstrong"
+                            }
+                          ]
+                        },
+                        {
+                          "external_id": "karel",
+                          "type": "Person",
+                          "is_identity": true,
+                          "properties": [
+                            {
+                              "type": "email",
+                              "value": "karel@demo.com"
+                            },
+                            {
+                              "type": "name",
+                              "value": "Karel Plihal"
+                            }
+                          ]
+                        },
+                        {
+                          "external_id": "kitt",
+                          "type": "Car",
+                          "is_identity": false,
+                          "properties": [
+                            {
+                              "type": "manufacturer",
+                              "value": "pontiac"
+                            },
+                            {
+                              "type": "model",
+                              "value": "Firebird"
+                            }
+                          ]
+                        },
+                        {
+                          "external_id": "cadillacv16",
+                          "type": "Car",
+                          "is_identity": false,
+                          "properties": [
+                            {
+                              "type": "manufacturer",
+                              "value": "Cadillac"
+                            },
+                            {
+                              "type": "model",
+                              "value": "V-16"
+                            }
+                          ]
+                        },
+                        {
+                          "external_id": "harmonika",
+                          "type": "Bus",
+                          "is_identity": false,
+                          "properties": [
+                            {
+                              "type": "manufacturer",
+                              "value": "Ikarus"
+                            },
+                            {
+                              "type": "model",
+                              "value": "280"
+                            }
+                          ]
+                        },
+                        {
+                          "external_id": "listek",
+                          "type": "Ticket",
+                          "is_identity": false
+                        },
+                        {
+                          "external_id": "airbook-xyz",
+                          "type": "Laptop",
+                          "is_identity": false
+                        }
+                        ]
+                        }
+
+                            </textarea>
+                            <small class="form-text text-muted">JSON object containing nodes array with external_id, type, is_identity, and properties</small>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">Capture Nodes</button>
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

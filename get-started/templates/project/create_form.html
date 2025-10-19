@@ -1,0 +1,87 @@
+{% extends "layouts/base.html" %}
+{% block title %}Create Project{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <h3 class="mb-4">Create New Project</h3>
+                    <p class="text-muted mb-4">Configure your project settings below and click "Create Project" to submit.</p>
+
+                    <form method="POST" action="{{ url_for('api_project.create_project') }}">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Project Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ default_data.name }}"
+                                   pattern="^[a-z][a-z0-9-]*$"
+                                   title="Must start with a lowercase letter, followed by lowercase letters, numbers, or hyphens"
+                                   required>
+                            <small class="form-text text-muted">Must start with a lowercase letter, followed by lowercase letters, numbers, or hyphens (e.g., my-project)</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="display_name" class="form-label">Display Name</label>
+                            <input type="text" class="form-control" id="display_name" name="display_name" value="{{ default_data.display_name }}">
+                            <small class="form-text text-muted">Human-readable project name</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ default_data.description }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="organization_id" class="form-label">Organization ID *</label>
+                            <input type="text" class="form-control" id="organization_id" name="organization_id" value="{{ default_data.organization_id }}" required>
+                            <small class="form-text text-muted">Your IndyKite organization ID</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="region" class="form-label">Region</label>
+                                <select class="form-control" id="region" name="region">
+                                    <option value="europe-west1" {% if default_data.region == 'europe-west1' %}selected{% endif %}>europe-west1</option>
+                                    <option value="us-east1" {% if default_data.region == 'us-east1' %}selected{% endif %}>us-east1</option>
+                                    <option value="us-west1" {% if default_data.region == 'us-west1' %}selected{% endif %}>us-west1</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h5 class="mb-3">Database Connection (Optional)</h5>
+
+                        <div class="mb-3">
+                            <label for="db_name" class="form-label">Database Name</label>
+                            <input type="text" class="form-control" id="db_name" name="db_name" value="{{ default_data.db_connection.name }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="db_url" class="form-label">Database URL</label>
+                            <input type="text" class="form-control" id="db_url" name="db_url" value="{{ default_data.db_connection.url }}">
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="db_username" class="form-label">Database Username</label>
+                                <input type="text" class="form-control" id="db_username" name="db_username" value="{{ default_data.db_connection.username }}">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="db_password" class="form-label">Database Password</label>
+                                <input type="password" class="form-control" id="db_password" name="db_password" value="{{ default_data.db_connection.password }}">
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">Create Project</button>
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
