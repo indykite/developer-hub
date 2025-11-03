@@ -181,7 +181,7 @@ repos:
         additional_dependencies: [Flake8-pyproject]
 
   - repo: https://github.com/PyCQA/pylint
-    rev: v3.3.9
+    rev: v4.0.1
     hooks:
       - id: pylint
         name: pylint
