@@ -65,7 +65,7 @@ repos:
   #
   # Renovate
   - repo: https://github.com/renovatebot/pre-commit-hooks # ci:ignore:OK to validate locally only, otherwise it adds 850MB+ to unpacked cache
-    rev: "41.169.1"
+    rev: "41.173.1"
     hooks:
       - id: renovate-config-validator
         args: [--strict]
@@ -153,7 +153,7 @@ repos:
         name: python-validate-pyproject
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.3
+    rev: v0.14.5
     hooks:
       - id: ruff-format
         name: python-ruff-format
@@ -162,7 +162,7 @@ repos:
         args: [--fix] # enable autofixes
 
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.8.6
+    rev: 1.9.0
     hooks:
       - id: bandit
         name: python-bandit
@@ -181,14 +181,14 @@ repos:
         additional_dependencies: [Flake8-pyproject]
 
   - repo: https://github.com/PyCQA/pylint
-    rev: v4.0.1
+    rev: v4.0.3
     hooks:
       - id: pylint
         name: pylint
 
   - repo: https://github.com/psf/black-pre-commit-mirror # ci:ignore:manual stage only
     # Using this mirror lets us use mypyc-compiled black, which is about 2x faster
-    rev: 25.9.0
+    rev: 25.11.0
     hooks:
       - id: black
         # It is recommended to specify the latest version of Python supported by the project
@@ -207,7 +207,7 @@ repos:
   #
   # Detect hardcoded secrets
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.28.0
+    rev: v8.29.0
     hooks:
       - id: gitleaks
         name: gitleaks
