@@ -9,7 +9,11 @@ Codes examples to clone and test locally
 
 ## Requirements
 
-    Environment created on the IndyKite platform: Project, Application, AppAgent, AppAgent Credentials
+Environment created on the IndyKite platform: Project, Application, AppAgent, AppAgent Credentials using :
+
+- <https://eu.api.indykite.com> (or <https://us.api.indykite.com>),
+- the Terraform plugin(<https://registry.terraform.io/providers/indykite/indykite/latest>) or
+- the REST APIs (<https://openapi.indykite.com/>).
 
 ## Environment variables
 
@@ -25,6 +29,6 @@ Codes examples to clone and test locally
 - export the required env variables
 - run
 
-    flask run
+      flask run
 
 - open the app by clicking the local url (like [http://127.0.0.1:5000](http://127.0.0.1:5000))
