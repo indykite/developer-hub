@@ -65,7 +65,7 @@ repos:
   #
   # Renovate
   - repo: https://github.com/renovatebot/pre-commit-hooks # ci:ignore:OK to validate locally only, otherwise it adds 850MB+ to unpacked cache
-    rev: "42.39.4"
+    rev: "42.54.2"
     hooks:
       - id: renovate-config-validator
         args: [--strict]
@@ -153,7 +153,7 @@ repos:
         name: python-validate-pyproject
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.8
+    rev: v0.14.9
     hooks:
       - id: ruff-format
         name: python-ruff-format
@@ -197,7 +197,7 @@ repos:
         stages: [manual] # XXX: not used by default, but left as a reference for potential tool introduction
 
   - repo: https://github.com/pre-commit/mirrors-mypy # ci:ignore:manual stage only
-    rev: v1.19.0
+    rev: v1.19.1
     hooks:
       - id: mypy
         name: python-mypy
