@@ -7,7 +7,6 @@ name = "pypi"
 pip = "*"
 requests = "*"
 flask = "*"
-Werkzeug = "*"
 Flask-JWT-Extended = "*"
 Flask-Migrate = "*"
 Flask-SQLAlchemy = "*"
@@ -17,6 +16,8 @@ flask-openapi3 = "*"
 rq = "*"
 redis = "*"
 python-dotenv = "*"
+urllib3 = "*"
+werkzeug = "*"
 
 [dev-packages]
 

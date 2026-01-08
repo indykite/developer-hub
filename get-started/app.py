@@ -7,6 +7,9 @@ from api.application import api_application
 from api.authorization_policy import api_authorization_policy
 from api.authzen import api_authzen
 from api.capture import api_capture
+from api.ciq_execute import api_ciq_execute
+from api.ciq_knowledge_query import api_ciq_knowledge_query
+from api.ciq_policy import api_ciq_policy
 from api.project import api_project
 from api.relationships import api_relationships
 from api.token_introspect import api_token_introspect
@@ -35,6 +38,9 @@ logging.getLogger("api.authorization_policy").setLevel(logging.DEBUG)
 logging.getLogger("api.capture").setLevel(logging.DEBUG)
 logging.getLogger("api.relationships").setLevel(logging.DEBUG)
 logging.getLogger("api.authzen").setLevel(logging.DEBUG)
+logging.getLogger("api.ciq_policy").setLevel(logging.DEBUG)
+logging.getLogger("api.ciq_knowledge_query").setLevel(logging.DEBUG)
+logging.getLogger("api.ciq_execute").setLevel(logging.DEBUG)
 
 # Log that the app is starting
 logger.info("=" * 50)
@@ -66,6 +72,9 @@ app.register_api(api_authorization_policy)
 app.register_api(api_capture)
 app.register_api(api_relationships)
 app.register_api(api_authzen)
+app.register_api(api_ciq_policy)
+app.register_api(api_ciq_knowledge_query)
+app.register_api(api_ciq_execute)
 
 
 @app.get("/")

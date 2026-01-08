@@ -1,0 +1,68 @@
+{% extends "layouts/base.html" %}
+{% block title %}Create ContX IQ Knowledge Query{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <h3 class="mb-4">Create ContX IQ Knowledge Query</h3>
+                    <p class="text-muted mb-3">What to do</p>
+                    <p class="text-muted mb-3">A query example is set as default. </p>
+                    <p class="text-muted mb-3">Configure ContX IQ knowledge query settings and click "Create" to submit.</p>
+
+                    <form method="POST" action="{{ url_for('api_ciq_knowledge_query.create_ciq_knowledge_query') }}">
+                        <div class="mb-3">
+                            <label for="project_id" class="form-label">Project ID *</label>
+                            <input type="text" class="form-control" id="project_id" name="project_id" value="{{ default_data.project_id }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ default_data.name }}"
+                                   pattern="^[a-z][a-z0-9-]*$"
+                                   title="Must start with a lowercase letter"
+                                   required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="display_name" class="form-label">Display Name</label>
+                            <input type="text" class="form-control" id="display_name" name="display_name" value="{{ default_data.display_name }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="2">{{ default_data.description }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="policy_id" class="form-label">Policy ID *</label>
+                            <input type="text" class="form-control" id="policy_id" name="policy_id" value="{{ default_data.policy_id }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="query" class="form-label">Query (JSON String) *</label>
+                            <textarea class="form-control font-monospace" id="query" name="query" rows="10" required>{{ default_data.query }}</textarea>
+                            <small class="form-text text-muted">JSON string containing the query definition</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-control" id="status" name="status">
+                                <option value="ACTIVE" {% if default_data.status == 'ACTIVE' %}selected{% endif %}>ACTIVE</option>
+                                <option value="INACTIVE" {% if default_data.status == 'INACTIVE' %}selected{% endif %}>INACTIVE</option>
+                            </select>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">Create ContX IQ Knowledge Query</button>
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "layouts/base.html" %}
+{% block title %}ContX IQ Execution{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <h3 class="mb-4">ContX IQ Execution</h3>
+                    <p class="text-muted mb-4">Edit the ContX IQ execution data below and click "Execute".</p>
+
+                    <form method="POST" action="{{ url_for('api_ciq_execute.execution') }}">
+                         <div class="mb-3">
+                            <label for="knowledge_query_id" class="form-label">Knowledge query ID *</label>
+                            <input type="text" class="form-control" id="knowledge_query_id" name="knowledge_query_id" value="{{ default_data.knowledge_query_id }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="input_params" class="form-label">Inputs for execution *</label>
+                            <textarea class="form-control font-monospace" id="input_params" name="input_params" rows="15" required>{
+                                "license": "AL98745",
+                                "app_external_id": "applicationParking"
+                                }</textarea>
+                            <small class="form-text text-muted">Mandatory input parameters</small>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">Execute ContX IQ</button>
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
