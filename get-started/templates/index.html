@@ -8,7 +8,10 @@
         <div class="col-12 col-xl-8">
             <div class="card border-0 shadow mb-4">
                 <div class="card-body">
-                   <h3 class="mb-3">Create environment in the IndyKite platform</h3>
+                   <h3 class="mb-3">Create an environment in the IndyKite platform using the REST endpoints.</h3>
+                    <p class="text-muted mb-3">Create each element following the order list to create an environment, capture data and test KBAC and ContX IQ policies.</p>
+                    <p class="text-muted mb-3">Each element created is automatically added in the .env file.</p>
+                    <p class="text-muted mb-3">Each element created is also displayed in the UI IndyKite platform: https://eu.hub.indykite.com (or https://us.hub.indykite.com)</p>
                         <ul>
                         <li><a href="/api_project/create" class="link-indigo">Create project</a></li>
                             <li><a href="/api_application/create" class="link-indigo">Create application</a></li>
@@ -18,6 +21,9 @@
                             <li><a href="/api_capture/create" class="link-indigo">Capture nodes</a></li>
                             <li><a href="/api_relationships/create" class="link-indigo">Capture relationships</a></li>
                             <li><a href="/api_authzen/evaluate" class="link-indigo">Evaluate authorization (AuthZen)</a></li>
+                            <li><a href="/api_ciq_policy/create" class="link-indigo">Create ContX IQ policy</a></li>
+                            <li><a href="/api_ciq_knowledge_query/create" class="link-indigo">Create ContX IQ knowledge query</a></li>
+                            <li><a href="/api_ciq_execute/execute" class="link-indigo">Execute ContX IQ</a></li>
                             <li><a href="/api_project/delete" class="link-indigo">Delete project</a></li>
                        </ul>
                 </div>
