@@ -123,7 +123,6 @@ repos:
       - id: check-json
       - id: pretty-format-json
         args: [--no-sort-keys, --autofix]
-        exclude: "Pipfile.lock"
 
       # Security
       - id: detect-private-key
