@@ -152,7 +152,7 @@ repos:
         name: python-validate-pyproject
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.13
+    rev: v0.14.14
     hooks:
       - id: ruff-format
         name: python-ruff-format
@@ -161,7 +161,7 @@ repos:
         args: [--fix] # enable autofixes
 
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.9.2
+    rev: 1.9.3
     hooks:
       - id: bandit
         name: python-bandit
