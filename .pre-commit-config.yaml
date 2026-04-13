@@ -1,4 +1,3 @@
----
 # Copyright (c) 2025 IndyKite
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -42,7 +41,7 @@ repos:
         name: pre-commit/check-useless-excludes
 
   - repo: ssh://git@github.com/indykite/ops-common
-    rev: "93f7e5f4c05a1b86d36993cd0b2a47fd5cfba54b" # using a branch name (or HEAD) is not supported
+    rev: "a61741a56496a215ffc1b64503a5fa598c049245" # using a branch name (or HEAD) is not supported
     hooks:
       # POST-CHECKOUT
       # install explicitly with: pre-commit install -t post-checkout
