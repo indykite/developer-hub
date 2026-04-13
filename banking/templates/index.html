@@ -1,0 +1,252 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Banking{% endblock %}
+
+{% block content %}
+<style>
+    .btn-primary:hover {
+        color: #212529 !important;
+    }
+    .btn-success {
+        color: #ffffff !important;
+    }
+    .btn-success:hover {
+        color: #212529 !important;
+    }
+</style>
+<main class="content py-4">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <!-- Header -->
+            <div class="mb-4">
+                <h1 class="mb-2" style="font-size: 2rem;">IndyKite Banking</h1>
+                <p class="text-muted mb-0">Use Knowledge-Based Access Control (KBAC) and ContX IQ (CIQ) to retrieve or upsert banking data according to context. CIQ provides fine-grained, context-aware data access for users, accounts, transactions and branches.</p>
+            </div>
+
+            <!-- How It Works Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">How ContX IQ Works</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="p-3 rounded" style="background-color: var(--ik-bg-tertiary);">
+                                <h6 class="text-white mb-2">1. Policy</h6>
+                                <p class="text-muted small mb-0">Defines <strong>what data can be accessed</strong> and <strong>who can access it</strong>. Uses Cypher patterns to match graph structures and filters to bind parameters. Specifies allowed reads, upserts, and deletes.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="p-3 rounded" style="background-color: var(--ik-bg-tertiary);">
+                                <h6 class="text-white mb-2">2. Knowledge Query</h6>
+                                <p class="text-muted small mb-0">Defines <strong>what data to return</strong> from the matched graph. Specifies which node properties and relationships to include in results.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="p-3 rounded" style="background-color: var(--ik-bg-tertiary);">
+                                <h6 class="text-white mb-2">3. Execute</h6>
+                                <p class="text-muted small mb-0"><strong>Runs the query</strong> with input parameters. The policy validates access, the query retrieves data, and results are returned. Uses the application's credentials for authorization.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Getting Started Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Getting Started</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Set up your IndyKite environment. Each element is saved to <code>.env</code> and visible in the <a href="https://eu.hub.indykite.com" target="_blank">IndyKite Hub</a>.</p>
+
+                    <div class="row">
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <a href="/api_project/create" class="card h-100 text-decoration-none">
+                                <div class="card-body text-center py-4">
+                                    <div class="mb-3" style="font-size: 2rem;">1</div>
+                                    <h6>Create Project</h6>
+                                    <p class="text-muted small mb-0">Container for apps and policies</p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <a href="/api_application/create" class="card h-100 text-decoration-none">
+                                <div class="card-body text-center py-4">
+                                    <div class="mb-3" style="font-size: 2rem;">2</div>
+                                    <h6>Create Application</h6>
+                                    <p class="text-muted small mb-0">Represents your banking app</p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <a href="/api_app_agent/create" class="card h-100 text-decoration-none">
+                                <div class="card-body text-center py-4">
+                                    <div class="mb-3" style="font-size: 2rem;">3</div>
+                                    <h6>Create App Agent</h6>
+                                    <p class="text-muted small mb-0">Credentials for API access</p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <a href="/api_token_introspect/create" class="card h-100 text-decoration-none">
+                                <div class="card-body text-center py-4">
+                                    <div class="mb-3" style="font-size: 2rem;">4</div>
+                                    <h6>Token Introspect</h6>
+                                    <p class="text-muted small mb-0">Configure token validation</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Capture Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Data Capture</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Import the banking dataset (<code>data/nodes/nodes_banking.json</code>) into the IndyKite Knowledge Graph (IKG). Creates nodes for users, accounts, transactions, branches and organizations, plus the relationships connecting them.</p>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="/api_capture/create" class="card h-100 text-decoration-none">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Capture Nodes</h6>
+                                    <p class="text-muted small mb-0">Import entities: <code>User</code>, <code>FinAccount</code>, <code>Transaction</code>, <code>Branch</code>, <code>Organization</code>, <code>App</code></p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="/api_relationships/create" class="card h-100 text-decoration-none">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Capture Relationships</h6>
+                                    <p class="text-muted small mb-0">Import connections: <code>OWNS</code>, <code>HAS_TRANSACTION</code>, <code>REGISTERED_AT</code>, <code>BELONGS_TO</code>, <code>USES</code></p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Authorization Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Authorization (KBAC / AuthZen)</h5>
+                    <span class="badge bg-primary">Knowledge-Based Access Control</span>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Test authorization decisions using the AuthZen standard. Evaluate whether a user can perform an action on a banking resource based on defined policies.</p>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="/api_authorization_policy/create" class="card h-100 text-decoration-none">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Create Authorization Policy</h6>
+                                    <p class="text-muted small mb-0">Define KBAC policies for banking access (e.g. "User can VIEW_ACCOUNT for accounts they own").</p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="/api_authzen/evaluate" class="card h-100 text-decoration-none">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Evaluate Authorization</h6>
+                                    <p class="text-muted small mb-0">Test a request: <code>User 50</code> wants to <code>VIEW_ACCOUNT</code> on <code>FinAccount 100050001</code>.</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ContX IQ Use Cases Card -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">ContX IQ Use Cases</h5>
+                </div>
+                <div class="card-body p-0">
+
+                    <!-- Policy 1 -->
+                    <div class="p-4 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge bg-secondary me-2">1</span>
+                                <strong>Account Statement Access</strong>
+                            </div>
+                            <div>
+                                <a href="/api_ciq_policy/create" class="btn btn-sm btn-primary me-1">Policy</a>
+                                <a href="/api_ciq_knowledge_query/create" class="btn btn-sm btn-secondary me-1">Query</a>
+                                <a href="/api_ciq_execute/execute" class="btn btn-sm btn-success">Execute</a>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-2">Get a user's own FinAccount details (account number, type, balance, opening date). Verifies the caller actually owns the account.</p>
+                        <div class="small">
+                            <strong>Reads:</strong> caller info, owned FinAccount details<br>
+                            <strong>Graph Pattern:</strong> <code>(caller:User)-[:OWNS]->(account:FinAccount)</code><br>
+                            <strong>Input:</strong> <code>caller_id</code>
+                        </div>
+                    </div>
+
+                    <!-- Policy 2 -->
+                    <div class="p-4 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge bg-secondary me-2">2</span>
+                                <strong>Recent Transactions Lookup</strong>
+                            </div>
+                            <div>
+                                <a href="/api_ciq_policy/create2" class="btn btn-sm btn-primary me-1">Policy</a>
+                                <a href="/api_ciq_knowledge_query/create2" class="btn btn-sm btn-secondary me-1">Query</a>
+                                <a href="/api_ciq_execute/execute2" class="btn btn-sm btn-success">Execute</a>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-2">For a given account, return recent transactions (date, amount, source). Caller must own the account.</p>
+                        <div class="small">
+                            <strong>Reads:</strong> account number, transaction date / amount / source<br>
+                            <strong>Graph Pattern:</strong> <code>(caller:User)-[:OWNS]->(account:FinAccount)-[:HAS_TRANSACTION]->(tx:Transaction)</code><br>
+                            <strong>Input:</strong> <code>caller_id</code>, <code>account_external_id</code>
+                        </div>
+                    </div>
+
+                    <!-- Policy 3 -->
+                    <div class="p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge bg-secondary me-2">3</span>
+                                <strong>Branches used by an Organization's members</strong>
+                            </div>
+                            <div>
+                                <a href="/api_ciq_policy/create3" class="btn btn-sm btn-primary me-1">Policy</a>
+                                <a href="/api_ciq_knowledge_query/create3" class="btn btn-sm btn-secondary me-1">Query</a>
+                                <a href="/api_ciq_execute/execute3" class="btn btn-sm btn-success">Execute</a>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-2">List the branches where users that are members of a given organization work.</p>
+                        <div class="small">
+                            <strong>Reads:</strong> organization name, user name, branch code / name / address<br>
+                            <strong>Graph Pattern:</strong> <code>(user:User)-[:MEMBER_OF]->(org:Organization)</code>, <code>(user)-[:WORKS_FOR]->(branch:Branch)</code><br>
+                            <strong>Input:</strong> <code>org_id</code>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Danger Zone Card -->
+            <div class="card border-danger">
+                <div class="card-header" style="background-color: rgba(239, 68, 68, 0.1);">
+                    <h5 class="mb-0 text-danger">Danger Zone</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Permanently delete the project and all associated resources. This action cannot be undone.</p>
+                    <a href="/api_project/delete" class="btn btn-danger">
+                        <svg class="icon icon-xs me-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        Delete Project
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

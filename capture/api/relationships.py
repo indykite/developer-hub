@@ -1,9 +1,9 @@
 import concurrent.futures
 import json
 import logging
+import os
 from pathlib import Path
 
-import app
 import requests
 from flask import flash, redirect, render_template, request, url_for
 from flask_openapi3 import APIBlueprint, Tag
@@ -52,7 +52,7 @@ def upsert_file():
     with json_file_path.open() as file:
         json_data = json.load(file)
 
-        rel_list = json_data.get("relationships", [])
+        rel_list = json_data if isinstance(json_data, list) else json_data.get("relationships", [])
         rel_count = len(rel_list)
         logger.info("Total rel entries: %s", rel_count)
 
@@ -64,10 +64,10 @@ def upsert_file():
             chunk_data = {"relationships": chunk}
 
             response = requests.post(
-                app.url + "/capture/v1/relationships",
+                os.getenv("URL_ENDPOINTS", "") + "/capture/v1/relationships",
                 headers={
                     "Content-Type": "application/json",
-                    "X-IK-ClientKey": app.app_token,
+                    "X-IK-ClientKey": os.getenv("APP_TOKEN", ""),
                 },
                 json=chunk_data,
                 timeout=30,  # add timeout
@@ -89,23 +89,27 @@ def upsert_file():
 
         chunk_size = 200
         chunks = list(chunk_list(rel_list, chunk_size))
+        logger.info("Splitting %s relationships into %s chunks of size %s", rel_count, len(chunks), chunk_size)
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
             futures = {executor.submit(process_chunk, chunk, i): i for i, chunk in enumerate(chunks)}
 
             results = []
+            last_status_code = 200
             for future in concurrent.futures.as_completed(futures):
                 index = futures[future]
                 try:
                     result = future.result()
                     results.append(result["response_json"])
+                    last_status_code = result["status_code"]
                 except Exception as e:
                     logger.exception("Chunk %s failed", index)
-                    results.append({"message": str(e)})
+                    results.append({"message": str(e), "chunk_index": index})
+                    last_status_code = 500
 
             return render_template(
                 "capture/result_relationships.html",
                 response_json=results,
-                status_code=result["status_code"],
+                status_code=last_status_code,
                 selected_file=selected_file,
             )

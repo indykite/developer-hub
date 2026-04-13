@@ -57,7 +57,8 @@ def create_capture():
 
     api_url = f"{url_endpoints}/capture/v1/nodes"
 
-    nodes_list = json_data.get("nodes", [])
+    # Handle both formats: {"nodes": [...]} or bare array [...]
+    nodes_list = json_data if isinstance(json_data, list) else json_data.get("nodes", [])
     nodes_count = len(nodes_list)
     logger.info("Total nodes entries: %s", nodes_count)
 
@@ -68,8 +69,8 @@ def create_capture():
     def process_chunk(index, chunk):
         chunk_data = {"nodes": chunk}
 
-        logger.info("Processing chunk %s with {len(chunk)} nodes", index)
-        logger.debug("Chunk %s payload: {json.dumps(chunk_data, indent=2)}", index)
+        logger.info("Processing chunk %s with %s nodes", index, len(chunk))
+        logger.debug("Chunk %s payload: %s", index, json.dumps(chunk_data, indent=2))
 
         response = requests.put(
             api_url,
@@ -89,7 +90,7 @@ def create_capture():
                 "status": response.status_code,
             }
 
-        logger.info("Chunk %s response status: {response.status_code}", index)
+        logger.info("Chunk %s response status: %s", index, response.status_code)
 
         return {
             "chunk_index": index,
@@ -99,9 +100,8 @@ def create_capture():
 
     chunk_size = 200
     chunks = list(chunk_list(nodes_list, chunk_size))
-    len(chunks)
 
-    logger.info("Splitting %s nodes into {chunks_count} chunks of size {chunk_size}", nodes_count)
+    logger.info("Splitting %s nodes into %s chunks of size %s", nodes_count, len(chunks), chunk_size)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         futures = {executor.submit(process_chunk, i, chunk): i for i, chunk in enumerate(chunks)}
