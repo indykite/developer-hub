@@ -57,7 +57,8 @@ def create_relationships():
 
     api_url = f"{url_endpoints}/capture/v1/relationships"
 
-    rel_list = json_data.get("relationships", [])
+    # Handle both formats: {"relationships": [...]} or bare array [...]
+    rel_list = json_data if isinstance(json_data, list) else json_data.get("relationships", [])
     rel_count = len(rel_list)
     logger.info("Total relationship entries: %s", rel_count)
 
@@ -68,8 +69,8 @@ def create_relationships():
     def process_chunk(index, chunk):
         chunk_data = {"relationships": chunk}
 
-        logger.info("Processing chunk %s with {len(chunk)} relationships", index)
-        logger.debug("Chunk %s payload: {json.dumps(chunk_data, indent=2)}", index)
+        logger.info("Processing chunk %s with %s relationships", index, len(chunk))
+        logger.debug("Chunk %s payload: %s", index, json.dumps(chunk_data, indent=2))
 
         response = requests.post(
             api_url,
@@ -89,7 +90,7 @@ def create_relationships():
                 "status": response.status_code,
             }
 
-        logger.info("Chunk %s response status: {response.status_code}", index)
+        logger.info("Chunk %s response status: %s", index, response.status_code)
 
         return {
             "chunk_index": index,
@@ -99,9 +100,8 @@ def create_relationships():
 
     chunk_size = 200
     chunks = list(chunk_list(rel_list, chunk_size))
-    len(chunks)
 
-    logger.info("Splitting %s relationships into {chunks_count} chunks of size {chunk_size}", rel_count)
+    logger.info("Splitting %s relationships into %s chunks of size %s", rel_count, len(chunks), chunk_size)
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
         futures = {executor.submit(process_chunk, i, chunk): i for i, chunk in enumerate(chunks)}

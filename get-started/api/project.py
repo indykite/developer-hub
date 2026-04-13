@@ -124,7 +124,7 @@ api_project = APIBlueprint(
 def show_create_form():
     """Display the project creation form with default values."""
     default_data = {
-        "db_connection": {"name": "", "password": "", "url": "", "username": ""},
+        "db_connection": {"name": "", "password": "", "url": "", "username": ""},  # nosec B105
         "description": "",
         "display_name": "",
         "name": "",

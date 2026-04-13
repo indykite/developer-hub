@@ -1,0 +1,30 @@
+{% extends "layouts/base.html" %}
+{% block title %}Capture Banking Nodes{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <h3 class="mb-4">Capture Banking Nodes</h3>
+                    <p class="text-muted mb-4">The form below is pre-populated with the default banking nodes from <code>data/nodes/nodes_banking.json</code>. Edit as needed and click "Capture" to submit to the Identity Knowledge Graph.</p>
+
+                    <form method="POST" action="{{ url_for('api_capture.create_capture') }}">
+                        <div class="mb-3">
+                            <label for="nodes" class="form-label">Nodes (JSON) *</label>
+                            <textarea class="form-control font-monospace" id="nodes" name="nodes" rows="25" required>{{ default_json }}</textarea>
+                            <small class="form-text text-muted">JSON object containing nodes array with external_id, type, is_identity, and properties</small>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">Capture Nodes</button>
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

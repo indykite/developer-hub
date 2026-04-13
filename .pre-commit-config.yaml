@@ -92,6 +92,7 @@ repos:
       # Git style
       - id: check-added-large-files
         args: [--maxkb=1500]
+        exclude: ^(capture|get-started|banking)/data/
       - id: check-merge-conflict
       - id: check-vcs-permalinks
       - id: forbid-new-submodules

@@ -1,9 +1,9 @@
 import concurrent.futures
 import json
 import logging
+import os
 from pathlib import Path
 
-import app
 import requests
 from flask import flash, redirect, render_template, request, url_for
 from flask_openapi3 import APIBlueprint, Tag
@@ -49,7 +49,7 @@ def upsert_file():
     with json_file_path.open() as file:
         json_data = json.load(file)
 
-        nodes_list = json_data.get("nodes", [])
+        nodes_list = json_data if isinstance(json_data, list) else json_data.get("nodes", [])
         nodes_count = len(nodes_list)
         logger.info("Total nodes entries: %s", nodes_count)
 
@@ -57,15 +57,16 @@ def upsert_file():
             for i in range(0, len(lst), chunk_size):
                 yield lst[i : i + chunk_size]
 
-        def process_chunk(index):  # removed unused `chunk`
+        def process_chunk(index, chunk):
+            chunk_data = {"nodes": chunk}
             response = requests.put(
-                app.url + "/capture/v1/nodes",
+                os.getenv("URL_ENDPOINTS", "") + "/capture/v1/nodes",
                 headers={
                     "Content-Type": "application/json",
-                    "X-IK-ClientKey": app.app_token,
+                    "X-IK-ClientKey": os.getenv("APP_TOKEN", ""),
                 },
-                json=json_data,
-                timeout=30,  # added timeout
+                json=chunk_data,
+                timeout=30,
             )
 
             try:
@@ -84,23 +85,27 @@ def upsert_file():
 
         chunk_size = 200
         chunks = list(chunk_list(nodes_list, chunk_size))
+        logger.info("Splitting %s nodes into %s chunks of size %s", nodes_count, len(chunks), chunk_size)
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-            futures = {executor.submit(process_chunk, i): i for i, _ in enumerate(chunks)}
+            futures = {executor.submit(process_chunk, i, chunk): i for i, chunk in enumerate(chunks)}
 
             results = []
+            last_status_code = 200
             for future in concurrent.futures.as_completed(futures):
                 index = futures[future]
                 try:
                     result = future.result()
                     results.append(result["response_json"])
+                    last_status_code = result["status_code"]
                 except Exception as e:
                     logger.exception("Chunk %s failed", index)
-                    results.append({"message": str(e)})
+                    results.append({"message": str(e), "chunk_index": index})
+                    last_status_code = 500
 
             return render_template(
                 "capture/result.html",
                 response_json=results,
-                status_code=result["status_code"],
+                status_code=last_status_code,
                 selected_file=selected_file,
             )
