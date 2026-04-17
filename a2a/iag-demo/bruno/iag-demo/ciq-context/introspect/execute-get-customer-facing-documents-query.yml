@@ -1,0 +1,40 @@
+---
+info:
+  name: Execute Get Customer Facing Documents Query
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/contx-iq/v1/execute"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Authorization
+      value: Bearer {{user_token_auth0}}
+  body:
+    type: json
+    data: |-
+      {
+          "id": "get-customer-facing-documents",
+          "input_params": {
+          }
+      }
+  auth:
+    type: apikey
+    key: X-IK-ClientKey
+    value: "{{agent_token}}"
+    placement: header
+
+runtime:
+  variables:
+    - name: get_agent_workflows_policy
+      value: gid:AAAAFn8x970x80CPrzeCXVe_eYU
+    - name: user_token_auth0
+      value: "{{end_user_token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

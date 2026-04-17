@@ -1,0 +1,52 @@
+{% extends "layouts/base.html" %}
+{% block title %}ContX IQ Execution Result{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <h3 class="mb-4">ContX IQ Execution Result</h3>
+
+                    {% if status_code >= 200 and status_code < 300 %}
+                        <div class="alert alert-success" role="alert">
+                            <strong>Success!</strong> ContX IQ executed successfully (Status Code: {{ status_code }})
+                            {% if response_json.decision %}
+                                <hr>
+                                <p class="mb-0"><strong>Decision:</strong> <code>{{ response_json.decision }}</code></p>
+                            {% endif %}
+                        </div>
+                    {% elif status_code >= 400 and status_code < 500 %}
+                        <div class="alert alert-warning" role="alert">
+                            <strong>Client Error</strong> - Status Code: {{ status_code }}
+                        </div>
+                    {% elif status_code >= 500 %}
+                        <div class="alert alert-danger" role="alert">
+                            <strong>Server Error</strong> - Status Code: {{ status_code }}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info" role="alert">
+                            Status Code: {{ status_code }}
+                        </div>
+                    {% endif %}
+
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <strong>API Response</strong>
+                        </div>
+                        <div class="card-body">
+                            <pre style="max-height: 600px; overflow-y: auto;">{{ response_json | tojson(indent=4) }}</pre>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{{ url_for('api_ciq_execute.show_execute_form') }}" class="btn btn-primary">Execute Another</a>
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

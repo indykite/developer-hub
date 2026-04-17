@@ -1,0 +1,30 @@
+---
+info:
+  name: Create Get Customer Facing Documents Policy
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "get-customer-facing-documents",
+          "display_name": "Get Customer Facing Documents",
+          "description": "Return a list of customer facing documents",
+          "project_id": "{{project_id}}",
+          "policy": "{ \"meta\": { \"policy_version\": \"1.0-ciq\" }, \"subject\": { \"type\": \"_Application\" }, \"condition\": { \"cypher\": \"MATCH (subject:_Application {external_id: $_appId}) WITH subject MATCH (doc:Document)-[:SUBJECT_TO]->(ra:RegulatoryAgreement), (doc)-[:CLASSIFIED_AS]->(ic:InvestmentCategory)\", \"filter\": [ ] }, \"allowed_reads\": { \"nodes\": [ \"doc.*\", \"ra.*\", \"ic.*\" ], \"relationships\": [  ], \"aggregate_values\": [ ] } }",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

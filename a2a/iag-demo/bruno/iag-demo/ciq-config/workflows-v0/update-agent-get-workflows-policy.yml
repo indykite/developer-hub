@@ -1,0 +1,35 @@
+---
+info:
+  name: Update Agent Get Workflows Policy
+  type: http
+  seq: 2
+
+http:
+  method: PUT
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies/{{authz_policy_sub_can_invoke_workflow_policy}}"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "authz-policy-sub-can-invoke-workflow",
+        "display_name": "Subject Can Invoke Workflow",
+        "description": "Decides whether a user can or cannot invoke a certain workflow",
+        "project_id": "{{project_id}}",
+        "policy": "{ \"meta\": { \"policy_version\": \"1.0-ciq\" }, \"subject\": { \"type\": \"_Application\" }, \"condition\": { \"cypher\": \"MATCH (subject:_Application {external_id: $_appId}), (user:User {external_id: $person_external_id})-[:WORKS_IN|INVOKES*..2]->(workflow:Workflow)-[invokes:INVOKES*1..3]->(agent:Agent) WITH subject, workflow, COLLECT(DISTINCT agent) AS agent_list, COLLECT(invokes) AS invoke_list\", \"filter\": [ ] }, \"allowed_reads\": { \"nodes\": [ \"workflow.*\" ], \"relationships\": [ ], \"aggregate_values\": [ \"agent_list\", \"invoke_list\" ] } }",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: authz_policy_sub_can_invoke_workflow_policy
+      value: gid:AAAAFoViCAhrz0eJgzE263NQubA
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

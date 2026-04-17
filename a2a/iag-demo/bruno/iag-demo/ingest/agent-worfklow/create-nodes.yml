@@ -1,0 +1,163 @@
+---
+info:
+  name: Create Nodes
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/capture/v1/nodes"
+  body:
+    type: json
+    data: |-
+      {
+        "nodes": [
+          {
+            "external_id": "alice",
+            "type": "User",
+            "is_identity": true,
+            "tags": [
+            ],
+            "properties": [
+              {
+                "type": "name",
+                "value": "Alice Smith"
+              }
+            ]
+          },
+          {
+            "external_id": "alexb",
+            "type": "User",
+            "is_identity": true,
+            "tags": [
+            ],
+            "properties": [
+              {
+                "type": "name",
+                "value": "Alex B"
+              }
+            ]
+          },
+          {
+            "external_id": "jeff",
+            "type": "User",
+            "is_identity": true,
+            "tags": [
+            ],
+            "properties": [
+              {
+                "type": "name",
+                "value": "Jeff Sanders"
+              }
+            ]
+          },
+          {
+            "external_id": "joe",
+            "type": "User",
+            "is_identity": true,
+            "tags": [
+            ],
+            "properties": [
+              {
+                "type": "name",
+                "value": "Joe Smith"
+              }
+            ]
+          },
+          {
+            "external_id": "jane",
+            "type": "User",
+            "is_identity": true,
+            "tags": [
+            ],
+            "properties": [
+              {
+                "type": "name",
+                "value": "Jane Jacobs"
+              }
+            ]
+          },
+          {
+            "external_id": "wf1",
+            "type": "Workflow",
+            "is_identity": false,
+            "properties": [
+            ]
+          },
+          {
+            "external_id": "wf2",
+            "type": "Workflow",
+            "is_identity": false,
+            "properties": [
+            ]
+          },
+          {
+            "external_id": "indykiteagent",
+            "type": "Agent",
+            "is_identity": false,
+            "properties": [
+            ]
+          },
+          {
+            "external_id": "indykiteagent-2",
+            "type": "Agent",
+            "is_identity": false,
+            "properties": [
+            ]
+          },
+          {
+            "external_id": "indykiteagent-3",
+            "type": "Agent",
+            "is_identity": false,
+            "properties": [
+            ]
+          },
+          {
+            "external_id": "s1",
+            "type": "Skill",
+            "is_identity": false,
+            "properties": [
+            ]
+          },
+          {
+            "external_id": "s2",
+            "type": "Skill",
+            "is_identity": false,
+            "properties": [
+            ]
+          },
+          {
+            "external_id": "s3",
+            "type": "Skill",
+            "is_identity": false,
+            "properties": [
+            ]
+          },
+          {
+            "external_id": "t1",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+            ]
+          },
+          {
+            "external_id": "t2",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+            ]
+          }
+        ]
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: ik_api_host
+      value: https://us.api.indykite.com
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

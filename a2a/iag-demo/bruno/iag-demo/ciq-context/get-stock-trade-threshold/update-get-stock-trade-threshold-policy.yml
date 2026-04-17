@@ -1,0 +1,30 @@
+---
+info:
+  name: Update Get Stock Trade Threshold Policy
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies/{{get_stock_trade_threshold_policy}}"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "get-stock-trade-threshold",
+          "display_name": "Get stock Trade Threshold",
+          "description": "Given a users Bearer token and a customer external_id return the customer and the trading threshold on their stock account.",
+          "project_id": "{{project_id}}",
+          "policy": "{ \"meta\": { \"policy_version\": \"1.0-ciq\" }, \"subject\": { \"type\": \"User\" }, \"condition\": { \"cypher\": \"MATCH (subject:User {external_id: $token.sub})-[:WORKS_IN]->(department:Department)-[:CAN_ACCESS|CONTAINS*..2]->(customer:Customer {external_id: $customer_external_id})-[:OWNS]-(account:Account)-[:IS_TIER]->(tier:AccountTier) WHERE (account)-[:IS_TYPE]->(:InvestmentCategory {external_id: 'cat_stocks'})\", \"filter\": [ ] }, \"allowed_reads\": { \"nodes\": [ \"subject.*\", \"customer.*\", \"account.*\", \"tier.*\" ], \"relationships\": [  ], \"aggregate_values\": [ ] } }",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

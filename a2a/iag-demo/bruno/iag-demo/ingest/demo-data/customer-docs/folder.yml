@@ -1,0 +1,8 @@
+---
+info:
+  name: customer-docs
+  type: folder
+  seq: 1
+
+request:
+  auth: inherit
