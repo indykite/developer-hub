@@ -1,0 +1,42 @@
+---
+info:
+  name: Create Get Self Query
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/knowledge-queries"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "get-self",
+          "display_name": "Get Self",
+          "description": "get-self retrieves the complete profile and employment information for the currently authenticated user who is making the request using their Bearer token. This query only requires the user's bearer token; use this instead of asking the user for their user id or email address. Use this function when the user asks questions about themselves, such as: 'Tell me about myself.', 'Who am I?', 'What is my email address?', 'What is my employee ID?', 'Who is my manager?', 'What is my job title?', 'Show me my own profile.', 'Show me the agents acting on my behalf.' Returns: An object containing the user's details, including full_name, email_address, manager_name, and cost_center. Call tool 'ciq_execute' with the user's bearer token as the authorization header. Use the following arguments: \"id\": \"get-self\", no \"input_params\". Example: { \"id\": \"get-self\", \"input_params\": { } }.",
+          "project_id": "{{project_id}}",
+          "policy_id": "{{get_self_policy}}",
+          "query": "{ \"nodes\": [ \"subject.external_id\", \"subject.property.name\", \"subject.property.email\", \"subject.property.title\", \"department.property.name\", \"manager.property.name\" ], \"relationships\": [  ], \"aggregate_values\": [ \"agent\"] }",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: get_agent_workflows_policy
+      value: gid:AAAAFn8x970x80CPrzeCXVe_eYU
+    - name: get_regulatory_agreements_policy
+      value: gid:AAAAFjQRXtVGWk-4twKxr1bEGXw
+    - name: get_customer_facing_documents
+      value: gid:AAAAFhed-YC5t0zTs3XtRez0WhI
+    - name: get_self_policy
+      value: gid:AAAAFpytRclEdkbbi8YwKxgqlN4
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

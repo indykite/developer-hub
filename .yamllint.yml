@@ -17,6 +17,11 @@ ignore: |
   node_modules/
   tmp/
   .terraform/
+  # Bruno API client collections. These .yml files are a Bruno DSL artifact with
+  # serialized JSON payloads embedded as single long strings — wrapping them
+  # breaks the collection format, so the default yamllint rules (line-length,
+  # empty-values) don't apply.
+  a2a/iag-demo/bruno/
 
 rules:
   braces:

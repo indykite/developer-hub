@@ -1,0 +1,30 @@
+---
+info:
+  name: Create Get Self Policy
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "get-self",
+          "display_name": "Get self",
+          "description": "Return the user and the act claim based on the user's bearer $token",
+          "project_id": "{{project_id}}",
+          "policy": "{ \"meta\": { \"policy_version\": \"1.0-ciq\" }, \"subject\": { \"type\": \"User\" }, \"condition\": { \"cypher\": \"MATCH (subject:User {external_id: $token.sub}) WITH subject OPTIONAL MATCH (subject)-[:WORKS_IN]->(department:Department) WITH subject, department OPTIONAL MATCH (subject)-[:REPORTS_TO]->(manager:User) WITH subject, department, manager, $token.act.sub AS agent\", \"filter\": [ ] }, \"allowed_reads\": { \"nodes\": [ \"subject.*\", \"department.*\", \"manager.*\" ], \"relationships\": [  ], \"aggregate_values\": [ \"agent\" ] } }",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

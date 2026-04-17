@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indykite Chatbot – Orchestrator Client</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="header-left">
+            <img src="/static/assets/IndyKITE_Tidy_Orange_horizontal.png" alt="Indykite" class="header-logo">
+            <div class="header-title">Indykite Chatbot</div>
+        </div>
+        <div class="header-actions">
+            <a href="/api/auth/login" id="loginButton" class="btn btn-login" style="display: none;">Login</a>
+            <button id="logoutButton" class="btn btn-logout" style="display: none;">Logout</button>
+            <div class="status" id="status">Connecting...</div>
+        </div>
+    </div>
+
+    <div class="main-content" style="display: flex;">
+        <!-- Chat area -->
+        <div class="chat-container" id="chatContainer">
+            <div class="empty-state">
+                <p>Chat with the Orchestrator Agent</p>
+                <p>Your prompts are sent as A2A messages and the orchestrator's LLM response is displayed here.</p>
+            </div>
+        </div>
+
+        <!-- Terminal sidebar -->
+        <div class="terminal-container" id="terminalContainer">
+            <div class="terminal-title" style="font-weight: bold; margin-bottom: 10px;">Audit Log Terminal</div>
+            <div class="terminal-messages" id="terminalMessages"></div>
+        </div>
+
+    </div>
+
+    <div class="input-container">
+        <input type="text" id="messageInput" placeholder="Type your message here..." autocomplete="off">
+        <button id="sendButton">Send</button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+
+<script>
+    const API_URL = window.location.origin || 'http://127.0.0.1:6000';
+    const chatContainer = document.getElementById('chatContainer');
+    const messageInput = document.getElementById('messageInput');
+    const sendButton = document.getElementById('sendButton');
+    const status = document.getElementById('status');
+    const loginButton = document.getElementById('loginButton');
+    const logoutButton = document.getElementById('logoutButton');
+
+    let LOGOUT_URL = '';
+
+    function removeEmptyState() {
+        const emptyState = chatContainer.querySelector('.empty-state');
+        if (emptyState) emptyState.remove();
+    }
+
+    function formatMessageContent(content) {
+        if (!content) return '';
+
+        // Convert markdown to HTML
+        const rawHtml = marked.parse(content, {
+            breaks: true,      // treat newlines like GitHub markdown
+            gfm: true
+        });
+
+        // Sanitize the HTML
+        return DOMPurify.sanitize(rawHtml);
+    }
+
+    const CONTEXT_ID_KEY = 'chatbot_context_id';
+
+    function getContextId() {
+        return localStorage.getItem(CONTEXT_ID_KEY) || '';
+    }
+
+    function setContextId(id) {
+        if (id) localStorage.setItem(CONTEXT_ID_KEY, id);
+    }
+
+    function addMessage(content, isUser) {
+        removeEmptyState();
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isUser ? 'user' : 'assistant'}`;
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        if (isUser) contentDiv.textContent = content;
+        else contentDiv.innerHTML = formatMessageContent(content);
+        messageDiv.appendChild(contentDiv);
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function createStreamingMessage() {
+        removeEmptyState();
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message assistant';
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        contentDiv.dataset.streaming = 'true';
+        messageDiv.appendChild(contentDiv);
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+        return contentDiv;
+    }
+
+    function addError(message) {
+        removeEmptyState();
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message assistant';
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content error';
+        contentDiv.textContent = `Error: ${message}`;
+        messageDiv.appendChild(contentDiv);
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    let isLoggedIn = false;
+
+    async function checkAuth() {
+        try {
+            const response = await fetch(`${API_URL}/api/auth/status`, {credentials: 'include'});
+            const data = await response.json();
+            isLoggedIn = !!data.logged_in;
+            if (isLoggedIn) {
+                loginButton.style.display = 'none';
+                logoutButton.style.display = 'inline-block';
+                startUpdatesStream()
+            } else {
+                loginButton.style.display = 'inline-block';
+                logoutButton.style.display = 'none';
+            }
+        } catch (error) {
+            loginButton.style.display = 'inline-block';
+            logoutButton.style.display = 'none';
+        }
+    }
+
+    async function checkHealth() {
+        try {
+            const response = await fetch(`${API_URL}/api/health`);
+            const data = await response.json();
+            if (data.status === 'healthy') {
+                status.textContent = `Connected to orchestrator @ ${data.orchestrator || 'unknown'}`;
+                status.className = 'status connected';
+            } else {
+                status.textContent = 'Server error';
+                status.className = 'status error';
+            }
+        } catch (error) {
+            status.textContent = 'Cannot connect to server';
+            status.className = 'status error';
+        }
+    }
+
+        logoutButton.addEventListener('click', async () => {
+            // 1) Clear server session (Flask session) so the app no longer has an access token.
+            try {
+                await fetch(`${API_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
+            } catch (e) {
+                console.warn('Server logout request failed', e);
+            }
+            if (updatesSource) updatesSource.close();
+            isLoggedIn = false;
+            // 2) Redirect to IdP logout URL (clears identity provider session, then redirects back to chatbot).
+            if (LOGOUT_URL) {
+                window.location.href = LOGOUT_URL;
+            } else {
+                loginButton.style.display = 'inline-block';
+                logoutButton.style.display = 'none';
+            }
+        });
+
+    const terminalMessages = document.getElementById('terminalMessages');
+
+    async function sendMessage() {
+        const message = messageInput.value.trim();
+        if (!message) return;
+
+        terminalMessages.innerHTML = '';
+        seenMessages.clear();
+        const startingLine = document.createElement('div');
+        startingLine.className = 'terminal-message system';
+        startingLine.textContent = `[system]\nSending new request...`;
+        terminalMessages.appendChild(startingLine);
+        requestAnimationFrame(() => {
+            terminalMessages.scrollTop = terminalMessages.scrollHeight;
+        });
+
+        sendButton.disabled = true;
+        sendButton.innerHTML = '<div class="loading"></div>';
+        addMessage(message, true);
+        messageInput.value = '';
+
+        const contentDiv = createStreamingMessage();
+        let accumulated = '';
+
+        try {
+            const response = await fetch(`${API_URL}/api/chat/stream`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                credentials: 'include',
+                body: JSON.stringify({message, context_id: getContextId()}),
+            });
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                addError(err.error || `HTTP ${response.status}`);
+                contentDiv.parentElement?.remove();
+                return;
+            }
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            let hasError = false;
+
+            function processChunk(line) {
+                if (hasError) return;
+                const trimmed = line.trim();
+                if (!trimmed.startsWith('data: ')) return;
+                try {
+                    const data = JSON.parse(trimmed.slice(6));
+                    console.debug('SSE event:', data.type, data.text?.length, 'chars');
+                    if (data.type === 'chunk' && data.text) {
+                        accumulated += data.text;
+                        contentDiv.innerHTML = formatMessageContent(accumulated);
+                        chatContainer.scrollTop = chatContainer.scrollHeight;
+                    } else if (data.type === 'done') {
+                        if (data.context_id) setContextId(data.context_id);
+                        if (data.text) {
+                            accumulated = data.text;
+                            contentDiv.innerHTML = formatMessageContent(accumulated);
+                        }
+                        delete contentDiv.dataset.streaming;
+                    } else if (data.type === 'error') {
+                        addError(data.error || 'Unknown error');
+                        contentDiv.parentElement?.remove();
+                        hasError = true;
+                    }
+                } catch (e) {
+                    console.warn('SSE parse error:', e);
+                }
+            }
+
+            while (true) {
+                const {value, done} = await reader.read();
+                if (value) buffer += decoder.decode(value, {stream: true});
+                const chunks = buffer.split('\n\n');
+                buffer = chunks.pop() || '';
+                for (const chunk of chunks) processChunk(chunk);
+                if (done) {
+                    if (buffer.trim()) processChunk(buffer);
+                    break;
+                }
+            }
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        } catch (error) {
+            contentDiv.parentElement?.remove();
+            addError(`Failed to send: ${error.message}`);
+        } finally {
+            sendButton.disabled = false;
+            sendButton.textContent = 'Send';
+            messageInput.focus();
+        }
+    }
+
+    sendButton.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    async function loadConfig() {
+        try {
+            const res = await fetch(`${API_URL}/api/config`);
+            const data = await res.json();
+            if (data.logout_url) LOGOUT_URL = data.logout_url;
+        } catch (e) {
+            console.warn('Failed to load config', e);
+        }
+    }
+
+    loadConfig();
+    checkAuth();
+    checkHealth();
+    messageInput.focus();
+
+    // Parse ?error= from URL (e.g. auth callback errors)
+    const params = new URLSearchParams(window.location.search);
+    const urlError = params.get('error');
+    if (urlError) {
+        addError(decodeURIComponent(urlError));
+        window.history.replaceState({}, '', window.location.pathname);
+    }
+
+    let seenMessages = new Set();
+    function addTerminalMessage(event) {
+        const messageKey = `${event.service}:${event.reason}`;
+        if (seenMessages.has(messageKey)) {
+            return;
+        }
+        seenMessages.add(messageKey);
+
+        const line = document.createElement('div');
+        line.className = `terminal-message ${event.decision.toLowerCase()}`;
+        line.textContent = `${event.timestamp}\n[${event.service}]\n\n[${event.subject}] is [${event.decision}] to invoke [${event.actor}]\n\nReason: ${event.reason}`;
+        terminalMessages.appendChild(line);
+
+        // Ensure autoscroll after layout update
+        requestAnimationFrame(() => {
+            terminalMessages.scrollTop = terminalMessages.scrollHeight;
+        });
+    }
+
+    let updatesSource;
+    function startUpdatesStream() {
+        if (updatesSource) updatesSource.close();
+
+        // Use the API_URL constant you defined earlier
+        updatesSource = new EventSource(`${API_URL}/api/updates`, {
+            withCredentials: true
+        });
+
+        updatesSource.onmessage = (e) => {
+            try {
+                const event = JSON.parse(e.data);
+                addTerminalMessage(event);
+            } catch (err) {
+                console.error("Error parsing terminal event:", err);
+            }
+        };
+
+        updatesSource.onerror = (err) => {
+            console.error("EventSource failed:", err);
+            updatesSource.close();
+            // Exponential backoff or simple delay
+            setTimeout(startUpdatesStream, 3000);
+        };
+    }
+
+</script>
+</body>
+</html>

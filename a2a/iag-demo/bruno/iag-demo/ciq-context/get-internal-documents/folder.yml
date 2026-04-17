@@ -1,0 +1,8 @@
+---
+info:
+  name: get-internal-documents
+  type: folder
+  seq: 6
+
+request:
+  auth: inherit

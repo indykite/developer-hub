@@ -1,0 +1,37 @@
+---
+info:
+  name: Execute Agent Get Workflows Query
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/contx-iq/v1/execute"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "id": "get-agent-workflows-2",
+          "input_params": {
+              "agent_id": "indykiteagent"
+          }
+      }
+  auth:
+    type: apikey
+    key: X-IK-ClientKey
+    value: "{{agent_token}}"
+    placement: header
+
+runtime:
+  variables:
+    - name: get_agent_workflows_policy
+      value: gid:AAAAFn8x970x80CPrzeCXVe_eYU
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

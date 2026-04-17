@@ -1,0 +1,192 @@
+---
+
+# Build images with
+#   docker build -t chatbot ./chatbot
+#   docker build -t orchestrator-agent ./orchestrator_agent
+#   docker build -t retriever-agent ./retriever_agent
+#   docker build -t weather-agent ./weather_agent
+#
+# or use the make command
+#
+# For the IAG images, change directory to jarvis-proto repository and build with
+# docker build -t indykite/local/agent-gateway:latest -f services/agent-gateway/Dockerfile .
+
+services:
+  # Web UI
+  chatbot:
+    image: chatbot:latest
+    #    platform: linux/amd64
+    #    build:
+    #      context: .
+    #      dockerfile: ./chatbot/Dockerfile
+    ports:
+      - "${CHATBOT_PORT}:${CHATBOT_PORT}"
+    networks:
+      - console-network
+      - orchestrator-iag-network
+      - retriever-iag-network
+      - weather-iag-network
+    volumes:
+      - flask_session_data:/tmp/flask_session
+    environment:
+      CHATBOT_PORT: ${CHATBOT_PORT}
+      ORCHESTRATOR_HOST: ${IAG_ORCHESTRATOR_HOST}
+      ORCHESTRATOR_PORT: ${IAG_ORCHESTRATOR_PORT}
+      ID_SERVER_BASE_URL: https://idsvr.indykite.one/oauth/v2/
+      ID_SERVER_TOKEN_ENDPOINT: oauth-token
+      ID_SERVER_AUTHORIZE_ENDPOINT: oauth-authorize
+      ID_SERVER_CLIENT_ID: ${CHATBOT_IDP_CLIENT_ID}
+      ID_SERVER_CLIENT_SECRET: ${CHATBOT_IDP_CLIENT_SECRET}
+      ID_SERVER_TOKEN_AUTH: basic
+      CHATBOT_REDIRECT_URL: http://${CHATBOT_HOST}:${CHATBOT_PORT}/auth/callback
+      FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
+      LOG_LEVEL: ${LOG_LEVEL}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: python app.py --host 0.0.0.0 --port ${CHATBOT_PORT}
+
+  # Protects Orchestrator
+  orchestrator-iag:
+    extends:
+      service: iag-base
+      file: iag-base-docker.yaml
+    ports:
+      - "${IAG_ORCHESTRATOR_PORT}:${IAG_ORCHESTRATOR_PORT}"
+    networks:
+      - orchestrator-iag-network
+    environment:
+      K_SERVICE: orchestrator-iag
+      JARVIS_SERVICE_NAME: orchestrator-iag
+      JARVIS_SERVICE_PORT: ${IAG_ORCHESTRATOR_PORT}
+      JARVIS_PROTECTED_AGENT_BASE_URL: http://${ORCHESTRATOR_HOST}:${ORCHESTRATOR_PORT}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${ORCHESTRATOR_IDP_CLIENT_ID}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${ORCHESTRATOR_IDP_CLIENT_SECRET}
+    volumes:
+      - ./audit-config.yaml:/app/.configs/audit-config.yaml
+    command: ["--config=/app/.configs/audit-config.yaml"]
+
+  orchestrator:
+    image: orchestrator-agent:latest
+    #    platform: linux/amd64
+    #    build:
+    #      context: .
+    #      dockerfile: ./orchestrator_agent/Dockerfile
+    ports:
+      - "${ORCHESTRATOR_PORT}:${ORCHESTRATOR_PORT}"
+    networks:
+      - orchestrator-iag-network
+      - retriever-iag-network
+      - weather-iag-network
+    environment:
+      ADVERTISED_HOST: ${ORCHESTRATOR_HOST}
+      ORCHESTRATOR_PORT: ${ORCHESTRATOR_PORT}
+      ORCHESTRATOR_AGENT_NAME: orchestrator_agent
+      RETRIEVER_HOST: ${IAG_RETRIEVER_HOST}
+      RETRIEVER_PORT: ${IAG_RETRIEVER_PORT}
+      WEATHER_HOST: ${IAG_WEATHER_HOST}
+      WEATHER_PORT: ${IAG_WEATHER_PORT}
+      GEMINI_ENABLED: ${GEMINI_ENABLED}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL}
+      LLM_MODEL: ${LOCAL_LLM_MODEL}
+      LOG_LEVEL: ${LOG_LEVEL}
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  #  Protects Retriever
+  retriever-iag:
+    extends:
+      service: iag-base
+      file: iag-base-docker.yaml
+    ports:
+      - "${IAG_RETRIEVER_PORT}:${IAG_RETRIEVER_PORT}"
+    networks:
+      - retriever-iag-network
+    environment:
+      K_SERVICE: retriever-iag
+      JARVIS_SERVICE_NAME: retriever-iag
+      JARVIS_SERVICE_PORT: ${IAG_RETRIEVER_PORT}
+      JARVIS_PROTECTED_AGENT_BASE_URL: http://${RETRIEVER_HOST}:${RETRIEVER_PORT}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${RETRIEVER_IDP_CLIENT_ID}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${RETRIEVER_IDP_CLIENT_SECRET}
+    volumes:
+      - ./audit-config.yaml:/app/.configs/audit-config.yaml
+    command: ["--config=/app/.configs/audit-config.yaml"]
+
+  retriever:
+    image: retriever-agent:latest
+    #    platform: linux/amd64
+    #    build:
+    #      context: .
+    #      dockerfile: ./retriever_agent/Dockerfile
+    ports:
+      - "${RETRIEVER_PORT}:${RETRIEVER_PORT}"
+    networks:
+      - retriever-iag-network
+    environment:
+      ADVERTISED_HOST: ${RETRIEVER_HOST}
+      RETRIEVER_PORT: ${RETRIEVER_PORT}
+      RETRIEVER_AGENT_NAME: retriever_agent
+      MCP_SERVER_URL: ${MCP_SERVER_URL}
+      IK_APP_AGENT_KEY: ${IK_APP_AGENT_KEY}
+      GEMINI_ENABLED: ${GEMINI_ENABLED}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL}
+      LLM_MODEL: ${LOCAL_LLM_MODEL}
+      INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
+      LOG_LEVEL: ${LOG_LEVEL}
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  #  Protects Weather
+  weather-iag:
+    extends:
+      service: iag-base
+      file: iag-base-docker.yaml
+    ports:
+      - "${IAG_WEATHER_PORT}:${IAG_WEATHER_PORT}"
+    networks:
+      - weather-iag-network
+    environment:
+      K_SERVICE: weather-iag
+      JARVIS_SERVICE_NAME: weather-iag
+      JARVIS_SERVICE_PORT: ${IAG_WEATHER_PORT}
+      JARVIS_PROTECTED_AGENT_BASE_URL: http://${WEATHER_HOST}:${WEATHER_PORT}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${WEATHER_IDP_CLIENT_ID}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${WEATHER_IDP_CLIENT_SECRET}
+    volumes:
+      - ./audit-config.yaml:/app/.configs/audit-config.yaml
+    command: ["--config=/app/.configs/audit-config.yaml"]
+
+  weather:
+    image: weather-agent:latest
+    #    platform: linux/amd64
+    #    build:
+    #      context: .
+    #      dockerfile: ./weather_agent/Dockerfile
+    ports:
+      - "${WEATHER_PORT}:${WEATHER_PORT}"
+    networks:
+      - weather-iag-network
+    environment:
+      ADVERTISED_HOST: ${WEATHER_HOST}
+      WEATHER_PORT: ${WEATHER_PORT}
+      WEATHER_AGENT_NAME: weather_agent
+      LOG_LEVEL: ${LOG_LEVEL}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  console-network:
+    driver: bridge
+  orchestrator-iag-network:
+    driver: bridge
+  retriever-iag-network:
+    driver: bridge
+  weather-iag-network:
+    driver: bridge
+
+volumes:
+  flask_session_data: {}

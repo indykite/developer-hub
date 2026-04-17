@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>{% block title %}{% endblock %} | IndyKite Developer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Volt CSS -->
+    <link type="text/css" href="{{ url_for('static', filename='css/volt.css') }}" rel="stylesheet">
+    <!-- IndyKite Theme CSS (must be after Volt to override) -->
+    <link type="text/css" href="{{ url_for('static', filename='css/indykite-theme.css') }}" rel="stylesheet">
+</head>
+
+<body>
+    {% include 'includes/sidebar.html' %}
+    <div class="main-content" id="panel">
+        <div class="container-fluid">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- Volt JS -->
+    <script src="{{ url_for('static', filename='assets/js/volt.js') }}"></script>
+</body>
+
+</html>

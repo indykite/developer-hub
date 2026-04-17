@@ -1,0 +1,28 @@
+---
+version: '3.9'
+
+# Change directory to jarvis-proto repository and build with
+# docker build -t indykite/local/agent-gateway:latest -f services/agent-gateway/Dockerfile .
+
+services:
+  iag-base:
+    image: indykite/agent-gateway:1.783.1
+    environment:
+      JARVIS_SERVICE_LOG_LEVEL: debug
+      JARVIS_SERVICE_ENVIRONMENT: demo
+      #      GCP_PROJECT: fake-project
+      JARVIS_IDENTITY_PROVIDER_BASE_URL: "https://idsvr.indykite.one/oauth/v2/"
+      JARVIS_IDENTITY_PROVIDER_INTROSPECT_ENDPOINT: "oauth-introspect"
+      JARVIS_IDENTITY_PROVIDER_CLIENT_CREDENTIAL_ENDPOINT: "oauth-token"
+      JARVIS_IDENTITY_PROVIDER_EXCHANGE_ENDPOINT: "oauth-token"
+      JARVIS_CONTX_IQ_BASE_URL: ${INDYKITE_BASE_URL}/contx-iq/v1
+      JARVIS_CONTX_IQ_QUERY_ID: ${CIQ_QUERY_ID}
+      JARVIS_CONTX_IQ_APP_AGENT_CREDENTIALS_TOKEN: ${APP_AGENT_CREDENTIALS_TOKEN}
+      JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${WORKFLOW_ID}
+      JARVIS_AUTHZEN_BASE_URL: ${INDYKITE_BASE_URL}/access/v1
+      JARVIS_AUTHZEN_ACTION: CAN_TRIGGER
+      JARVIS_AUTHZEN_SUBJECT_TYPES: User
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+      - "themis:host-gateway" # Access platform Themis via local docker host (port 8083) -- not needed in dev/rc

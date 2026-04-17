@@ -1,0 +1,36 @@
+---
+info:
+  name: Update Agent Get Workflows Query
+  type: http
+  seq: 2
+
+http:
+  method: PUT
+  url: "{{ik_api_url_prefix}}/configs/v1/knowledge-queries/{{get_agent_workflows_query}}"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "get-agent-workflows",
+          "display_name": "Get Agent Workflows",
+          "description": "Given an agent id return the list of workflows within which that agent participates. Example: { \"id\": \"get-agent-workflows\", \"input_params\": { \"agent_id\": \"indykiteagent\" } }",
+          "project_id": "{{project_id}}",
+          "policy_id": "{{get_agent_workflows_policy}}",
+          "query": "{ \"nodes\": [ \"agent\" ], \"relationships\": [  ], \"aggregate_values\": [ \"workflow_list\" ] }",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: get_agent_workflows_policy
+      value: gid:AAAAFn8x970x80CPrzeCXVe_eYU
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

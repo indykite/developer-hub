@@ -1,0 +1,1379 @@
+{
+  "nodes": [
+    {
+      "external_id": "canbank",
+      "type": "Entity",
+      "is_identity": false,
+      "tags": [
+        "Organization"
+      ],
+      "properties": [
+        {
+          "type": "name",
+          "value": "CanBank"
+        }
+      ]
+    },
+    {
+      "external_id": "canbank-depts",
+      "type": "Container",
+      "is_identity": false,
+      "tags": [],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Departments"
+        }
+      ]
+    },
+    {
+      "external_id": "exec",
+      "type": "Department",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Executive",
+          "metadata": {
+            "source": "Workday"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "lob",
+      "type": "Department",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Lines of Business",
+          "metadata": {
+            "source": "Workday"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "governance",
+      "type": "Department",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Governance",
+          "metadata": {
+            "source": "Workday"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "shared",
+      "type": "Department",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Shared Services",
+          "metadata": {
+            "source": "Workday"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "support",
+      "type": "Department",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Customer Support",
+          "metadata": {
+            "source": "Workday"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "consumer",
+      "type": "Department",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Consumer Banking",
+          "metadata": {
+            "source": "Workday"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "commercial",
+      "type": "Department",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Commercial Banking",
+          "metadata": {
+            "source": "Workday"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "private",
+      "type": "Department",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Private Banking",
+          "metadata": {
+            "source": "Workday"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "trading",
+      "type": "Department",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Trading",
+          "metadata": {
+            "source": "Workday"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "risk",
+      "type": "Department",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Risk Management",
+          "metadata": {
+            "source": "Workday"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "crimes",
+      "type": "Department",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Financial Crimes Compliance",
+          "metadata": {
+            "source": "Workday"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "regulatory",
+      "type": "Department",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Regulatory Affairs",
+          "metadata": {
+            "source": "Workday"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "treasury",
+      "type": "Department",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Treasury & Asset-Liability Management",
+          "metadata": {
+            "source": "Workday"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "tech",
+      "type": "Department",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Global Tech",
+          "metadata": {
+            "source": "Workday"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "ops",
+      "type": "Department",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Business Operations",
+          "metadata": {
+            "source": "Workday"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "strategy",
+      "type": "Department",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Corporate Strategy",
+          "metadata": {
+            "source": "Workday"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "procurement",
+      "type": "Department",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Strategic Sourcing",
+          "metadata": {
+            "source": "Workday"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "leslie",
+      "type": "User",
+      "is_identity": true,
+      "labels": [
+        "Employee"
+      ],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Leslie Higgins",
+          "metadata": {
+            "source": "Workday",
+            "verified_time": "2026-02-26T00:57:13Z",
+            "assurance_level": 3
+          }
+        },
+        {
+          "type": "title",
+          "value": "CSR 2",
+          "metadata": {
+            "source": "Workday",
+            "verified_time": "2026-02-26T00:57:13Z",
+            "assurance_level": 3
+          }
+        },
+        {
+          "type": "email",
+          "value": "leslie@canbank.com",
+          "metadata": {
+            "source": "Exchange",
+            "verified_time": "2026-02-20T00:57:13Z",
+            "assurance_level": 3
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "flo",
+      "type": "User",
+      "is_identity": true,
+      "labels": [
+        "Employee"
+      ],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Flo Collins",
+          "metadata": {
+            "source": "Workday",
+            "verified_time": "2026-02-26T00:57:13Z",
+            "assurance_level": 3
+          }
+        },
+        {
+          "type": "title",
+          "value": "Customer Service Supervisor",
+          "metadata": {
+            "source": "Workday",
+            "verified_time": "2026-02-26T00:57:13Z",
+            "assurance_level": 3
+          }
+        },
+        {
+          "type": "email",
+          "value": "flo@canbank.com",
+          "metadata": {
+            "source": "Exchange",
+            "verified_time": "2026-02-20T00:57:13Z",
+            "assurance_level": 3
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "roy",
+      "type": "User",
+      "is_identity": true,
+      "labels": [
+        "Employee"
+      ],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Roy Kent",
+          "metadata": {
+            "source": "Workday",
+            "verified_time": "2026-02-26T00:57:13Z",
+            "assurance_level": 3
+          }
+        },
+        {
+          "type": "title",
+          "value": "Trader",
+          "metadata": {
+            "source": "Workday",
+            "verified_time": "2026-02-26T00:57:13Z",
+            "assurance_level": 3
+          }
+        },
+        {
+          "type": "email",
+          "value": "roy@canbank.com",
+          "metadata": {
+            "source": "Exchange",
+            "verified_time": "2026-02-20T00:57:13Z",
+            "assurance_level": 3
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "stock_quote",
+      "type": "Quote",
+      "is_identity": false,
+      "labels": [],
+      "properties": [
+        {
+          "type": "price",
+          "external_value": "stock-quote"
+        }
+      ]
+    },
+    {
+      "external_id": "cs_policy",
+      "type": "Folder",
+      "is_identity": false,
+      "labels": [],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Customer Service Policy",
+          "metadata": {
+            "source": "Sharepoint"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "refund_policy",
+      "type": "Document",
+      "is_identity": false,
+      "labels": [],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Customer Refund Policy",
+          "metadata": {
+            "source": "Sharepoint"
+          }
+        },
+        {
+          "type": "description",
+          "value": "Clear criteria for when a refund is authorized, who has the power to grant it, and what documentation is required. Tier 4 customers can have their credit card late payment penalties waived without consulting a supervisor."
+        },
+        {
+          "type": "url",
+          "value": "https://sharepoint.miscrosoft.com/canbank/site/csr/refund_policy.pdf",
+          "metadata": {
+            "source": "Sharepoint"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "discount_policy",
+      "type": "Document",
+      "is_identity": false,
+      "labels": [],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Discount Policy",
+          "metadata": {
+            "source": "Sharepoint"
+          }
+        },
+        {
+          "type": "description",
+          "value": "Guidelines on what \"goodwill\" gestures an agent can offer to resolve a complaint without needing managerial approval."
+        },
+        {
+          "type": "url",
+          "value": "https://sharepoint.miscrosoft.com/canbank/site/csr/discount_policy.pdf",
+          "metadata": {
+            "source": "Sharepoint"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "kyc_policy",
+      "type": "Document",
+      "is_identity": false,
+      "labels": [],
+      "properties": [
+        {
+          "type": "name",
+          "value": "KYC Policy",
+          "metadata": {
+            "source": "Sharepoint"
+          }
+        },
+        {
+          "type": "description",
+          "value": "The exact steps an agent must take to verify a customer's identity before proceeding to assist them."
+        },
+        {
+          "type": "url",
+          "value": "https://sharepoint.miscrosoft.com/canbank/site/csr/kyc_policy.pdf",
+          "metadata": {
+            "source": "Sharepoint"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "policy",
+      "type": "Taxonomy",
+      "is_identity": false,
+      "labels": [],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Policy"
+        },
+        {
+          "type": "description",
+          "value": "Formal governing documents that define the rules, standards, and principles of the organization. These documents mandate specific conduct to ensure legal compliance, mitigate risk, and align operations with our core mission and values."
+        }
+      ]
+    },
+    {
+      "external_id": "ticket_001",
+      "type": "Ticket",
+      "is_identity": false,
+      "labels": [],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Credit card late payment penalty"
+        },
+        {
+          "type": "description",
+          "value": "I was only a few hours late with my credit card payment but I still received the fine. I would like the fine reversed."
+        }
+      ]
+    },
+    {
+      "external_id": "ticket_002",
+      "type": "Ticket",
+      "is_identity": false,
+      "labels": [],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Credit card late payment penalty"
+        },
+        {
+          "type": "description",
+          "value": "I was only a few hours late with my credit card payment but I still received the fine. I would like the fine reversed."
+        }
+      ]
+    },
+    {
+      "external_id": "decision_001",
+      "type": "Decision",
+      "is_identity": false,
+      "labels": [],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Waive Credit Card Late Payment Charge",
+          "metadata": {
+            "source": "Salesforce"
+          }
+        },
+        {
+          "type": "description",
+          "value": "Flo Collins, CSR 2, waived the late payment change for Ted Lasso because Ted was a loyal customer and did not have any other late payment chanrges. Flo was concerned that Ted was at risk of leaving CanBank over the late credit card payment charge.",
+          "metadata": {
+            "source": "Salesforce"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "sys_canbank_core",
+      "type": "System",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "CanBank Core Banking Retail"
+        }
+      ]
+    },
+    {
+      "external_id": "alison",
+      "type": "Customer",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Alice Martin",
+          "metadata": {
+            "source": "RetailCore"
+          }
+        },
+        {
+          "type": "email",
+          "value": "alison@example.ca"
+        }
+      ]
+    },
+    {
+      "external_id": "bob",
+      "type": "Customer",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Bob Vance",
+          "metadata": {
+            "source": "RetailCore"
+          }
+        },
+        {
+          "type": "email",
+          "value": "bob@vancefridge.com"
+        }
+      ]
+    },
+    {
+      "external_id": "charlie",
+      "type": "Customer",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Charlie Day",
+          "metadata": {
+            "source": "RetailCore"
+          }
+        },
+        {
+          "type": "email",
+          "value": "ratking@philly.com"
+        }
+      ]
+    },
+    {
+      "external_id": "rebecca",
+      "type": "Customer",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Rebecca Welton",
+          "metadata": {
+            "source": "Core"
+          }
+        },
+        {
+          "type": "email",
+          "value": "rebeccaw@afcrichmond.com"
+        }
+      ]
+    },
+    {
+      "external_id": "ted",
+      "type": "Customer",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Ted Lasso",
+          "metadata": {
+            "source": "RetailCore"
+          }
+        },
+        {
+          "type": "email",
+          "value": "tedl@afcrichmond.com"
+        }
+      ]
+    },
+    {
+      "external_id": "acc_alison_chequing",
+      "type": "Account",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "balance",
+          "value": "5200.00"
+        }
+      ]
+    },
+    {
+      "external_id": "acc_alison_mortgage",
+      "type": "Account",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "account_type",
+          "value": "Mortgage"
+        },
+        {
+          "type": "interest_rate",
+          "value": "4.5%"
+        }
+      ]
+    },
+    {
+      "external_id": "acc_bob_401k",
+      "type": "Account",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "account_type",
+          "value": "401k"
+        },
+        {
+          "type": "provider",
+          "value": "CanBank USA"
+        }
+      ]
+    },
+    {
+      "external_id": "acc_charlie_loan",
+      "type": "Account",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "account_type",
+          "value": "Personal Loan"
+        },
+        {
+          "type": "status",
+          "value": "Active"
+        }
+      ]
+    },
+    {
+      "external_id": "acc_rebecca_chequing",
+      "type": "Account",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "account_type",
+          "value": "Chequing"
+        },
+        {
+          "type": "status",
+          "value": "Active"
+        }
+      ]
+    },
+    {
+      "external_id": "acc_rebecca_investing",
+      "type": "Account",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "account_type",
+          "value": "Investing"
+        },
+        {
+          "type": "status",
+          "value": "Active"
+        },
+        {
+          "type": "holdings",
+          "value": "Active"
+        }
+      ]
+    },
+    {
+      "external_id": "acc_ted_investing",
+      "type": "Account",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "account_type",
+          "value": "Investing"
+        },
+        {
+          "type": "status",
+          "value": "Active"
+        },
+        {
+          "type": "holdings",
+          "value": "Active"
+        }
+      ]
+    },
+    {
+      "external_id": "acc_ted_cc",
+      "type": "Account",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "account_type",
+          "value": "CreditCard"
+        },
+        {
+          "type": "status",
+          "value": "paid"
+        }
+      ]
+    },
+    {
+      "external_id": "acc_rebecca_cc",
+      "type": "Account",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "account_type",
+          "value": "CreditCard"
+        },
+        {
+          "type": "status",
+          "value": "late"
+        }
+      ]
+    },
+    {
+      "external_id": "tier_1",
+      "type": "AccountTier",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Tier 1"
+        },
+        {
+          "type": "tier",
+          "value": 1
+        },
+        {
+          "type": "threshold_amount",
+          "value": 1000
+        }
+      ]
+    },
+    {
+      "external_id": "tier_2",
+      "type": "AccountTier",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Tier 2"
+        },
+        {
+          "type": "tier",
+          "value": 2
+        },
+        {
+          "type": "threshold_amount",
+          "value": 5000
+        }
+      ]
+    },
+    {
+      "external_id": "tier_3",
+      "type": "AccountTier",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Tier 3"
+        },
+        {
+          "type": "tier",
+          "value": 3
+        },
+        {
+          "type": "threshold_amount",
+          "value": 10000
+        }
+      ]
+    },
+    {
+      "external_id": "tier_4",
+      "type": "AccountTier",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Tier 4"
+        },
+        {
+          "type": "tier",
+          "value": 4
+        },
+        {
+          "type": "threshold_amount",
+          "value": 1000000
+        }
+      ]
+    },
+    {
+      "external_id": "customer",
+      "type": "Site",
+      "is_identity": false,
+      "tags": [],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Customer"
+        }
+      ]
+    },
+    {
+      "external_id": "docs",
+      "type": "Folder",
+      "is_identity": false,
+      "tags": [],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Documents"
+        }
+      ]
+    },
+    {
+      "external_id": "jur-canada",
+      "type": "Jurisdiction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Canada"
+        },
+        {
+          "type": "iso_3166_2",
+          "value": "CA"
+        }
+      ]
+    },
+    {
+      "external_id": "jur-usa",
+      "type": "Jurisdiction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "USA"
+        },
+        {
+          "type": "iso_3166_2",
+          "value": "US"
+        }
+      ]
+    },
+    {
+      "external_id": "jur-emea",
+      "type": "Jurisdiction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "EMEA"
+        }
+      ]
+    },
+    {
+      "external_id": "jur-switzerland",
+      "type": "Jurisdiction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Switzerland"
+        }
+      ]
+    },
+    {
+      "external_id": "cat-mutual-fund",
+      "type": "InvestmentCategory",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Mutual Fund"
+        }
+      ]
+    },
+    {
+      "external_id": "cat-etf",
+      "type": "InvestmentCategory",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Exchange Traded Fund"
+        }
+      ]
+    },
+    {
+      "external_id": "cat-fixed-income",
+      "type": "InvestmentCategory",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Fixed Income"
+        }
+      ]
+    },
+    {
+      "external_id": "cat-derivatives",
+      "type": "InvestmentCategory",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Derivatives"
+        }
+      ]
+    },
+    {
+      "external_id": "cat-private-equity",
+      "type": "InvestmentCategory",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Private Equity"
+        }
+      ]
+    },
+    {
+      "external_id": "cat-islamic-finance",
+      "type": "InvestmentCategory",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Sukuk"
+        }
+      ]
+    },
+    {
+      "external_id": "cat-cash",
+      "type": "InvestmentCategory",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Guaranteed Investment"
+        }
+      ]
+    },
+    {
+      "external_id": "cat-lending",
+      "type": "InvestmentCategory",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Lombard Lending"
+        }
+      ]
+    },
+    {
+      "external_id": "cat_stocks",
+      "type": "InvestmentCategory",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Stocks"
+        }
+      ]
+    },
+    {
+      "external_id": "reg-csa-ni81",
+      "type": "RegulatoryAgreement",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "CSA NI 81-101"
+        },
+        {
+          "type": "description",
+          "value": "Compliance with National Instrument 81-101 (NI 81-101), including the preparation, filing, and delivery of simplified prospectuses, annual information forms (AIFs), and fund facts documents to investors in accordance with Canadian securities legislation."
+        }
+      ]
+    },
+    {
+      "external_id": "reg-cdic",
+      "type": "RegulatoryAgreement",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "CDIC Act"
+        },
+        {
+          "type": "description",
+          "value": "An agreement between [Institution Name] and the Canada Deposit Insurance Corporation ('CDIC'), intended to ensure ongoing compliance with the Canada Deposit Insurance Corporation Act and its associated By-laws, specifically regarding the proper identification of insured deposits, timely reporting of financial data, and adherence to sound business and financial practices as required under the Act."
+        }
+      ]
+    },
+    {
+      "external_id": "reg-sec-40",
+      "type": "RegulatoryAgreement",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "SEC 1940 Act"
+        },
+        {
+          "type": "description",
+          "value": "This Agreement is entered into to ensure that [Fund Name] (the 'Fund') operates in compliance with the applicable provisions of the Investment Company Act of 1940, as amended (the '1940 Act'), and the rules thereunder. The parties agree to adhere to all requirements regarding the registration, valuation of portfolio securities, custody of assets, and limitations on transactions with affiliates. This agreement ensures the Fund maintains its status as a registered investment company or properly relies on a specific exemption."
+        }
+      ]
+    },
+    {
+      "external_id": "reg-sec-498",
+      "type": "RegulatoryAgreement",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "SEC Rule 498"
+        },
+        {
+          "type": "description",
+          "value": "Compliant with SEC Rule 498, allowing for the delivery of a 'Summary Prospectus' for open-end mutual funds. Requires that key investor information be provided upfront, while detailed documents are available online. Ensures compliance with 'access equals delivery' provisions, provided that the required documents are hosted on a publicly accessible website, properly hyperlinked, and that requests for paper copies are met within three business days."
+        }
+      ]
+    },
+    {
+      "external_id": "reg-ucits-v",
+      "type": "RegulatoryAgreement",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "UCITS V"
+        },
+        {
+          "type": "description",
+          "value": "Under this agreement, the Depositary assumes strict liability for the loss of financial instruments held in custody, maintains legally protected segregation of assets (including at the sub-custodian level), and ensures that all delegation of safekeeping functions meets the stringent due diligence and independence standards of UCITS V."
+        }
+      ]
+    },
+    {
+      "external_id": "reg-priips",
+      "type": "RegulatoryAgreement",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "PRIIPS Regulation"
+        },
+        {
+          "type": "description",
+          "value": "The firm complies with Regulation (EU) No 1286/2014 (and the UK equivalent, where applicable) regarding Packaged Retail and Insurance-based Investment Products (PRIIPs). We ensure that a Key Information Document (KID) is produced for all in-scope products, is accurate, fair, clear, and not misleading, and that it is provided to retail investors in good time prior to their investment. The KID is reviewed annually and updated promptly upon any significant change to risk, cost, or performance."
+        }
+      ]
+    },
+    {
+      "external_id": "reg-isda",
+      "type": "RegulatoryAgreement",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "ISDA Master"
+        },
+        {
+          "type": "description",
+          "value": "An industry-standardized, bilateral contract governing over-the-counter (OTC) derivatives, designed to enforce close-out netting, mitigate credit risk, and provide a compliant framework for regulatory reporting and margin exchange (e.g., EMIR, Dodd-Frank)."
+        }
+      ]
+    },
+    {
+      "external_id": "reg-ni45",
+      "type": "RegulatoryAgreement",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "NI 45-106"
+        },
+        {
+          "type": "description",
+          "value": "The issuance of Securities is being made in reliance upon exemptions from the prospectus requirements of applicable Canadian provincial and territorial securities legislation, specifically in accordance with the exemptions set out in National Instrument 45-106 \u2013 Prospectus Exemptions ('NI 45-106'). The Issuer represents that no prospectus has been filed, and therefore no statutory rights of action or rescission exist, except as otherwise provided by applicable law or the terms of an Offering Memorandum."
+        }
+      ]
+    },
+    {
+      "external_id": "reg-fidleg",
+      "type": "RegulatoryAgreement",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Swiss FIDLEG"
+        },
+        {
+          "type": "description",
+          "value": "This Agreement is subject to the Swiss Financial Services Act (FIDLEG/FinSA), which entered into force on January 1, 2020. [Company Name] acts as a financial service provider in accordance with FIDLEG. Based on the client information provided, the Client is classified as [Retail/Professional/Institutional]. In accordance with the Rules of Conduct (Art. 7-20 FIDLEG), [Company Name] is committed to acting in the client's best interest, providing transparency regarding products (including Key Information Documents - KIDs), disclosing fees/retrocessions, and ensuring best execution of orders. A [Suitability/Appropriateness] test will be performed. The client is aware of the risks associated with financial instruments as detailed in the 'Risks Involved in Trading Financial Instruments' brochure. This agreement ensures compliance with documentation and accountability requirements."
+        }
+      ]
+    },
+    {
+      "external_id": "reg-emir",
+      "type": "RegulatoryAgreement",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "EU EMIR"
+        },
+        {
+          "type": "description",
+          "value": "This Agreement governs the compliance of [Party A] and [Party B] with the European Market Infrastructure Regulation (EU) No 648/2012 as amended (EMIR/EMIR Refit). It encompasses all applicable obligations, including the reporting of OTC and Exchange Traded Derivatives (ETD) to an authorized Trade Repository (Article 9), the central clearing of eligible OTC derivatives (Article 4), and the application of Risk Mitigation Techniques (including timely confirmation, portfolio reconciliation, dispute resolution, and margin exchange for non-cleared trades)."
+        }
+      ]
+    },
+    {
+      "external_id": "reg-uae-cb",
+      "type": "RegulatoryAgreement",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "New CBUAE Law"
+        },
+        {
+          "type": "description",
+          "value": "Law No. (6) of 2025 (the \"New CBUAE Law\") is a landmark overhaul that consolidates the UAE's financial regulatory framework, unifying the oversight of banking, insurance, and payment systems under the Central Bank of the UAE (CBUAE). It effectively repeals the previous 2018 Central Bank Law and the 2023 Insurance Law."
+        }
+      ]
+    },
+    {
+      "external_id": "doc-001",
+      "type": "Document",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "CanBank Maple Balanced Fund Facts"
+        }
+      ]
+    },
+    {
+      "external_id": "doc-002",
+      "type": "Document",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "5-Year GIC Disclosure Statement"
+        }
+      ]
+    },
+    {
+      "external_id": "doc-003",
+      "type": "Document",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "CanBank Blue-Chip Growth Prospectus"
+        }
+      ]
+    },
+    {
+      "external_id": "doc-004",
+      "type": "Document",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "CanBank S&P 500 ETF Summary Prospectus"
+        }
+      ]
+    },
+    {
+      "external_id": "doc-005",
+      "type": "Document",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "CanBank Euro-Agg UCITS KIID"
+        }
+      ]
+    },
+    {
+      "external_id": "doc-006",
+      "type": "Document",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Sustainable EMEA Equity KID"
+        }
+      ]
+    },
+    {
+      "external_id": "doc-007",
+      "type": "Document",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Global Multi-Asset Term Sheet"
+        }
+      ]
+    },
+    {
+      "external_id": "doc-008",
+      "type": "Document",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "CanBank Treasury Bond Offering Circular"
+        }
+      ]
+    },
+    {
+      "external_id": "doc-009",
+      "type": "Document",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Private Wealth Equity Pool OM"
+        }
+      ]
+    },
+    {
+      "external_id": "doc-010",
+      "type": "Document",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Lombard Loan Facility Agreement"
+        }
+      ]
+    },
+    {
+      "external_id": "doc-011",
+      "type": "Document",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Gulf Opportunities Sukuk Prospectus"
+        }
+      ]
+    },
+    {
+      "external_id": "doc-012",
+      "type": "Document",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "US High-Yield Debt Wrapper"
+        }
+      ]
+    },
+    {
+      "external_id": "doc-013",
+      "type": "Document",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Venture Tech LP Partnership Deed"
+        }
+      ]
+    },
+    {
+      "external_id": "doc-014",
+      "type": "Document",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Swiss Wealth Mgmt Addendum"
+        }
+      ]
+    },
+    {
+      "external_id": "doc-015",
+      "type": "Document",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Cross-Asset Hedging Disclosure"
+        }
+      ]
+    }
+  ]
+}
