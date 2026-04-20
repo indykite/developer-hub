@@ -129,3 +129,15 @@ line-length = 120
 target-version = ['py311', 'py313']
 diff = 1
 color = 1
+
+#
+# 'isort' config section
+# https://pycqa.github.io/isort/docs/configuration/options.html
+#
+# Use the black profile so isort agrees with ruff-format on import shape.
+# Without this, default isort wraps `from a2a.types import (…)` differently
+# than ruff-format / black, causing pre-commit to bounce the same files
+# between hooks on every run.
+[tool.isort]
+profile = "black"
+line_length = 120

@@ -1,0 +1,137 @@
+import concurrent.futures
+import json
+import logging
+import os
+from pathlib import Path
+
+import requests
+from flask import render_template, request
+from flask_openapi3 import APIBlueprint, Tag
+from pydantic import BaseModel, Field
+
+tag = Tag(name="api_capture", description="Capture")
+security = [{"ApiKeyAuth": []}]
+
+logger = logging.getLogger(__name__)
+
+
+class Unauthorized(BaseModel):
+    code: int = Field(-1, description="Status Code")
+    message: str = Field("Unauthorized!", description="Exception Information")
+
+
+api_capture = APIBlueprint(
+    "api_capture",
+    __name__,
+    url_prefix="/api_capture",
+    abp_tags=[tag],
+    abp_security=security,
+    abp_responses={"401": Unauthorized},
+    doc_ui=True,
+)
+
+NODES_FILE = Path(__file__).parent.parent / "data" / "nodes" / "nodes_banking.json"
+
+
+def _load_default_nodes():
+    try:
+        with NODES_FILE.open() as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        logger.warning("Could not load nodes_banking.json: %s", e)
+        return {"nodes": []}
+
+
+@api_capture.get("/create", tags=[tag])
+def show_create_form():
+    """Display the capture form pre-populated with banking node defaults."""
+    default_data = _load_default_nodes()
+    default_json = json.dumps(default_data, indent=2)
+    return render_template(
+        "capture/create_form.html",
+        default_data=default_data,
+        default_json=default_json,
+    )
+
+
+@api_capture.post("/create", tags=[tag])
+def create_capture():
+    """Capture nodes with the provided form data."""
+    try:
+        nodes_json = request.form.get("nodes", "{}")
+        json_data = json.loads(nodes_json)
+    except json.JSONDecodeError as e:
+        logger.exception("Failed to parse nodes JSON")
+        return render_template(
+            "capture/result.html",
+            response_json={"message": f"Invalid JSON: {e!s}"},
+            status_code=400,
+        )
+
+    url_endpoints = os.getenv("URL_ENDPOINTS")
+    app_token = os.getenv("APP_TOKEN")
+
+    api_url = f"{url_endpoints}/capture/v1/nodes"
+
+    nodes_list = json_data if isinstance(json_data, list) else json_data.get("nodes", [])
+    nodes_count = len(nodes_list)
+    logger.info("Total nodes entries: %s", nodes_count)
+
+    def chunk_list(lst, chunk_size):
+        for i in range(0, len(lst), chunk_size):
+            yield lst[i : i + chunk_size]
+
+    def process_chunk(index, chunk):
+        chunk_data = {"nodes": chunk}
+
+        logger.info("Processing chunk %s with %s nodes", index, len(chunk))
+
+        response = requests.put(
+            api_url,
+            headers={
+                "Content-Type": "application/json",
+                "X-IK-ClientKey": app_token,
+            },
+            json=chunk_data,
+            timeout=30,
+        )
+
+        try:
+            response_json = response.json()
+        except ValueError:
+            response_json = {
+                "message": "Invalid JSON response",
+                "status": response.status_code,
+            }
+
+        logger.info("Chunk %s response status: %s", index, response.status_code)
+
+        return {
+            "chunk_index": index,
+            "status_code": response.status_code,
+            "response_json": response_json,
+        }
+
+    chunk_size = 200
+    chunks = list(chunk_list(nodes_list, chunk_size))
+
+    logger.info("Splitting %s nodes into %s chunks of size %s", nodes_count, len(chunks), chunk_size)
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        futures = {executor.submit(process_chunk, i, chunk): i for i, chunk in enumerate(chunks)}
+
+        results = []
+        last_status_code = 200
+
+        for future in concurrent.futures.as_completed(futures):
+            index = futures[future]
+            try:
+                result = future.result()
+                results.append(result["response_json"])
+                last_status_code = result["status_code"]
+            except Exception as e:
+                logger.exception("Chunk %s failed", index)
+                results.append({"message": str(e), "chunk_index": index})
+                last_status_code = 500
+
+        return render_template("capture/result.html", response_json=results, status_code=last_status_code)

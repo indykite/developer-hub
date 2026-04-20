@@ -1,0 +1,5 @@
+a2a-sdk[http-server,sql]>=1.0.0a0
+a2a.server
+httpx>=0.27.0
+python-dotenv>=1.0.0
+uvicorn>=0.35.0

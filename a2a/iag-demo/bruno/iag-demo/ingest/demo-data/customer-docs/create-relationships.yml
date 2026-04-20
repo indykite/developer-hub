@@ -1,0 +1,104 @@
+---
+info:
+  name: Create Relationships
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/capture/v1/relationships"
+  body:
+    type: json
+    data: |-
+      {
+        "relationships": [
+          {
+            "source": {
+              "type": "Site",
+              "external_id": "customer"
+            },
+            "target": {
+              "type": "Folder",
+              "external_id": "docs"
+            },
+            "properties": [
+            ],
+            "type": "CONTAINS"
+          },
+          { "source": { "type": "Folder", "external_id": "docs" }, "target": { "type": "InvestmentCategory", "external_id": "cat-mutual-fund" }, "type": "CONTAINS" },
+          { "source": { "type": "Folder", "external_id": "docs" }, "target": { "type": "InvestmentCategory", "external_id": "cat-etf" }, "type": "CONTAINS" },
+          { "source": { "type": "Folder", "external_id": "docs" }, "target": { "type": "InvestmentCategory", "external_id": "cat-fixed-income" }, "type": "CONTAINS" },
+          { "source": { "type": "Folder", "external_id": "docs" }, "target": { "type": "InvestmentCategory", "external_id": "cat-derivatives" }, "type": "CONTAINS" },
+          { "source": { "type": "Folder", "external_id": "docs" }, "target": { "type": "InvestmentCategory", "external_id": "cat-private-equity" }, "type": "CONTAINS" },
+          { "source": { "type": "Folder", "external_id": "docs" }, "target": { "type": "InvestmentCategory", "external_id": "cat-islamic-finance" }, "type": "CONTAINS" },
+          { "source": { "type": "Folder", "external_id": "docs" }, "target": { "type": "InvestmentCategory", "external_id": "cat-cash" }, "type": "CONTAINS" },
+          { "source": { "type": "Folder", "external_id": "docs" }, "target": { "type": "InvestmentCategory", "external_id": "cat-lending" }, "type": "CONTAINS" },
+          { "source": { "type": "Document", "external_id": "doc-001" }, "target": { "type": "InvestmentCategory", "external_id": "cat-mutual-fund" }, "type": "CLASSIFIED_AS" },
+          { "source": { "type": "Document", "external_id": "doc-001" }, "target": { "type": "RegulatoryAgreement", "external_id": "reg-csa-ni81" }, "type": "SUBJECT_TO" },
+
+          { "source": { "type": "Document", "external_id": "doc-002" }, "target": { "type": "InvestmentCategory", "external_id": "cat-cash" }, "type": "CLASSIFIED_AS" },
+          { "source": { "type": "Document", "external_id": "doc-002" }, "target": { "type": "RegulatoryAgreement", "external_id": "reg-cdic" }, "type": "SUBJECT_TO" },
+
+          { "source": { "type": "Document", "external_id": "doc-013" }, "target": { "type": "InvestmentCategory", "external_id": "cat-private-equity" }, "type": "CLASSIFIED_AS" },
+          { "source": { "type": "Document", "external_id": "doc-013" }, "target": { "type": "RegulatoryAgreement", "external_id": "reg-ni45" }, "type": "SUBJECT_TO" },
+          { "source": { "type": "Document", "external_id": "doc-003" }, "target": { "type": "InvestmentCategory", "external_id": "cat-mutual-fund" }, "type": "CLASSIFIED_AS" },
+          { "source": { "type": "Document", "external_id": "doc-003" }, "target": { "type": "RegulatoryAgreement", "external_id": "reg-sec-40" }, "type": "SUBJECT_TO" },
+
+          { "source": { "type": "Document", "external_id": "doc-004" }, "target": { "type": "InvestmentCategory", "external_id": "cat-etf" }, "type": "CLASSIFIED_AS" },
+          { "source": { "type": "Document", "external_id": "doc-004" }, "target": { "type": "RegulatoryAgreement", "external_id": "reg-sec-498" }, "type": "SUBJECT_TO" },
+
+          { "source": { "type": "Document", "external_id": "doc-012" }, "target": { "type": "InvestmentCategory", "external_id": "cat-fixed-income" }, "type": "CLASSIFIED_AS" },
+          { "source": { "type": "Document", "external_id": "doc-012" }, "target": { "type": "RegulatoryAgreement", "external_id": "reg-isda" }, "type": "SUBJECT_TO" },
+          { "source": { "type": "Document", "external_id": "doc-005" }, "target": { "type": "InvestmentCategory", "external_id": "cat-mutual-fund" }, "type": "CLASSIFIED_AS" },
+          { "source": { "type": "Document", "external_id": "doc-005" }, "target": { "type": "RegulatoryAgreement", "external_id": "reg-ucits-v" }, "type": "SUBJECT_TO" },
+
+          { "source": { "type": "Document", "external_id": "doc-006" }, "target": { "type": "InvestmentCategory", "external_id": "cat-mutual-fund" }, "type": "CLASSIFIED_AS" },
+          { "source": { "type": "Document", "external_id": "doc-006" }, "target": { "type": "RegulatoryAgreement", "external_id": "reg-priips" }, "type": "SUBJECT_TO" },
+
+          { "source": { "type": "Document", "external_id": "doc-010" }, "target": { "type": "InvestmentCategory", "external_id": "cat-lending" }, "type": "CLASSIFIED_AS" },
+          { "source": { "type": "Document", "external_id": "doc-010" }, "target": { "type": "RegulatoryAgreement", "external_id": "reg-priips" }, "type": "SUBJECT_TO" },
+
+          { "source": { "type": "Document", "external_id": "doc-011" }, "target": { "type": "InvestmentCategory", "external_id": "cat-islamic-finance" }, "type": "CLASSIFIED_AS" },
+          { "source": { "type": "Document", "external_id": "doc-011" }, "target": { "type": "RegulatoryAgreement", "external_id": "reg-uae-cb" }, "type": "SUBJECT_TO" },
+
+          { "source": { "type": "Document", "external_id": "doc-014" }, "target": { "type": "RegulatoryAgreement", "external_id": "reg-fidleg" }, "type": "SUBJECT_TO" },
+          { "source": { "type": "Document", "external_id": "doc-014" }, "target": { "type": "InvestmentCategory", "external_id": "cat-mutual-fund" }, "type": "CLASSIFIED_AS" },
+          { "source": { "type": "Document", "external_id": "doc-014" }, "target": { "type": "InvestmentCategory", "external_id": "cat-fixed-income" }, "type": "CLASSIFIED_AS" },
+          { "source": { "type": "Document", "external_id": "doc-007" }, "target": { "type": "InvestmentCategory", "external_id": "cat-fixed-income" }, "type": "CLASSIFIED_AS" },
+          { "source": { "type": "Document", "external_id": "doc-007" }, "target": { "type": "InvestmentCategory", "external_id": "cat-derivatives" }, "type": "CLASSIFIED_AS" },
+          { "source": { "type": "Document", "external_id": "doc-007" }, "target": { "type": "RegulatoryAgreement", "external_id": "reg-isda" }, "type": "SUBJECT_TO" },
+
+          { "source": { "type": "Document", "external_id": "doc-008" }, "target": { "type": "InvestmentCategory", "external_id": "cat-fixed-income" }, "type": "CLASSIFIED_AS" },
+          { "source": { "type": "Document", "external_id": "doc-008" }, "target": { "type": "RegulatoryAgreement", "external_id": "reg-isda" }, "type": "SUBJECT_TO" },
+
+          { "source": { "type": "Document", "external_id": "doc-009" }, "target": { "type": "InvestmentCategory", "external_id": "cat-private-equity" }, "type": "CLASSIFIED_AS" },
+          { "source": { "type": "Document", "external_id": "doc-009" }, "target": { "type": "RegulatoryAgreement", "external_id": "reg-ni45" }, "type": "SUBJECT_TO" },
+          { "source": { "type": "Document", "external_id": "doc-009" }, "target": { "type": "RegulatoryAgreement", "external_id": "reg-sec-40" }, "type": "SUBJECT_TO" },
+
+          { "source": { "type": "Document", "external_id": "doc-015" }, "target": { "type": "InvestmentCategory", "external_id": "cat-derivatives" }, "type": "CLASSIFIED_AS" },
+          { "source": { "type": "Document", "external_id": "doc-015" }, "target": { "type": "RegulatoryAgreement", "external_id": "reg-emir" }, "type": "SUBJECT_TO" },
+          { "source": { "type": "Document", "external_id": "doc-015" }, "target": { "type": "RegulatoryAgreement", "external_id": "reg-isda" }, "type": "SUBJECT_TO" },
+          { "source": { "type": "RegulatoryAgreement", "external_id": "reg-csa-ni81" }, "target": { "type": "Jurisdiction", "external_id": "jur-canada" }, "type": "ENFORCED_IN" },
+          { "source": { "type": "RegulatoryAgreement", "external_id": "reg-cdic" }, "target": { "type": "Jurisdiction", "external_id": "jur-canada" }, "type": "ENFORCED_IN" },
+          { "source": { "type": "RegulatoryAgreement", "external_id": "reg-ni45" }, "target": { "type": "Jurisdiction", "external_id": "jur-canada" }, "type": "ENFORCED_IN" },
+          { "source": { "type": "RegulatoryAgreement", "external_id": "reg-sec-40" }, "target": { "type": "Jurisdiction", "external_id": "jur-usa" }, "type": "ENFORCED_IN" },
+          { "source": { "type": "RegulatoryAgreement", "external_id": "reg-sec-498" }, "target": { "type": "Jurisdiction", "external_id": "jur-usa" }, "type": "ENFORCED_IN" },
+          { "source": { "type": "RegulatoryAgreement", "external_id": "reg-ucits-v" }, "target": { "type": "Jurisdiction", "external_id": "jur-emea" }, "type": "ENFORCED_IN" },
+          { "source": { "type": "RegulatoryAgreement", "external_id": "reg-priips" }, "target": { "type": "Jurisdiction", "external_id": "jur-emea" }, "type": "ENFORCED_IN" },
+          { "source": { "type": "RegulatoryAgreement", "external_id": "reg-uae-cb" }, "target": { "type": "Jurisdiction", "external_id": "jur-emea" }, "type": "ENFORCED_IN" },
+          { "source": { "type": "RegulatoryAgreement", "external_id": "reg-emir" }, "target": { "type": "Jurisdiction", "external_id": "jur-emea" }, "type": "ENFORCED_IN" },
+          { "source": { "type": "RegulatoryAgreement", "external_id": "reg-fidleg" }, "target": { "type": "Jurisdiction", "external_id": "jur-switzerland" }, "type": "ENFORCED_IN" }
+        ]
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: ik_api_host
+      value: https://api.rc.indykite.xyz
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
