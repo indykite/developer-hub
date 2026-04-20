@@ -1,0 +1,336 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Banking{% endblock %}
+
+{% block content %}
+<style>
+    .btn-primary:hover {
+        color: #212529 !important;
+    }
+    .btn-success {
+        color: #ffffff !important;
+    }
+    .btn-success:hover {
+        color: #212529 !important;
+    }
+</style>
+<main class="content py-4">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <!-- Header -->
+            <div class="mb-4">
+                <h1 class="mb-2" style="font-size: 2rem;">IndyKite Banking</h1>
+                <p class="text-muted mb-0">Use Knowledge-Based Access Control (KBAC) and ContX IQ (CIQ) to retrieve or upsert CanBank data according to context. CIQ provides fine-grained, context-aware data access across the CanBank organization: departments, employees, customers, accounts, policy documents, regulatory agreements and decisions.</p>
+            </div>
+
+            <!-- How It Works Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">How ContX IQ Works</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="p-3 rounded" style="background-color: var(--ik-bg-tertiary);">
+                                <h6 class="text-white mb-2">1. Policy</h6>
+                                <p class="text-muted small mb-0">Defines <strong>what data can be accessed</strong> and <strong>who can access it</strong>. Uses Cypher patterns to match graph structures and filters to bind parameters. Specifies allowed reads, upserts, and deletes.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="p-3 rounded" style="background-color: var(--ik-bg-tertiary);">
+                                <h6 class="text-white mb-2">2. Knowledge Query</h6>
+                                <p class="text-muted small mb-0">Defines <strong>what data to return</strong> from the matched graph. Specifies which node properties and relationships to include in results.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="p-3 rounded" style="background-color: var(--ik-bg-tertiary);">
+                                <h6 class="text-white mb-2">3. Execute</h6>
+                                <p class="text-muted small mb-0"><strong>Runs the query</strong> with input parameters. The policy validates access, the query retrieves data, and results are returned. Uses the application's credentials for authorization.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Getting Started Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Getting Started</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Set up your IndyKite environment. Each element is saved to <code>.env</code> and visible in the <a href="https://eu.hub.indykite.com" target="_blank">IndyKite Hub</a>.</p>
+
+                    <div class="row">
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <a href="/api_project/create" class="card h-100 text-decoration-none">
+                                <div class="card-body text-center py-4">
+                                    <div class="mb-3" style="font-size: 2rem;">1</div>
+                                    <h6>Create Project</h6>
+                                    <p class="text-muted small mb-0">Container for apps and policies</p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <a href="/api_application/create" class="card h-100 text-decoration-none">
+                                <div class="card-body text-center py-4">
+                                    <div class="mb-3" style="font-size: 2rem;">2</div>
+                                    <h6>Create Application</h6>
+                                    <p class="text-muted small mb-0">Represents your banking app</p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <a href="/api_app_agent/create" class="card h-100 text-decoration-none">
+                                <div class="card-body text-center py-4">
+                                    <div class="mb-3" style="font-size: 2rem;">3</div>
+                                    <h6>Create App Agent</h6>
+                                    <p class="text-muted small mb-0">Credentials for API access</p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <a href="/api_token_introspect/create" class="card h-100 text-decoration-none">
+                                <div class="card-body text-center py-4">
+                                    <div class="mb-3" style="font-size: 2rem;">4</div>
+                                    <h6>Token Introspect</h6>
+                                    <p class="text-muted small mb-0">Configure token validation</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Capture Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Data Capture</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Import the CanBank dataset (<code>data/nodes/nodes_banking.json</code> and <code>data/relationships/relationships_banking.json</code>) into the IndyKite Knowledge Graph (IKG). Creates the CanBank organization hierarchy, employees, customers, accounts, policy documents, regulatory agreements, tickets and decisions — plus the relationships connecting them.</p>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="/api_capture/create" class="card h-100 text-decoration-none">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Capture Nodes</h6>
+                                    <p class="text-muted small mb-0">Import entities: <code>Entity</code>, <code>Department</code>, <code>User</code>, <code>Customer</code>, <code>Account</code>, <code>AccountTier</code>, <code>Document</code>, <code>Folder</code>, <code>RegulatoryAgreement</code>, <code>InvestmentCategory</code>, <code>Jurisdiction</code>, <code>Ticket</code>, <code>Decision</code>, <code>Quote</code>, <code>System</code></p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="/api_relationships/create" class="card h-100 text-decoration-none">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Capture Relationships</h6>
+                                    <p class="text-muted small mb-0">Import connections: <code>CONTAINS</code>, <code>WORKS_IN</code>, <code>REPORTS_TO</code>, <code>OWNS</code>, <code>CAN_ACCESS</code>, <code>CAN_RETRIEVE</code>, <code>IS_TYPE</code>, <code>IS_TIER</code>, <code>CLASSIFIED_AS</code>, <code>SUBJECT_TO</code>, <code>ENFORCED_IN</code>, <code>CREATED_BY</code>, <code>REGARDING</code>, <code>CLOSED_BY</code>, <code>MADE</code>, <code>EXCEPTION_TO</code></p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Authorization Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Authorization (KBAC / AuthZen)</h5>
+                    <span class="badge bg-primary">Knowledge-Based Access Control</span>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Test authorization decisions using the AuthZen standard. Evaluate whether a CanBank user can perform an action on a resource based on defined policies.</p>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="/api_authorization_policy/create" class="card h-100 text-decoration-none">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Create Authorization Policy</h6>
+                                    <p class="text-muted small mb-0">Define KBAC policies for CanBank access (e.g. "a User can <code>CAN_ACCESS</code> a <code>Document</code> through their department's folder").</p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="/api_authzen/evaluate" class="card h-100 text-decoration-none">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Evaluate Authorization</h6>
+                                    <p class="text-muted small mb-0">Test a request: <code>User flo</code> wants to <code>CAN_ACCESS</code> <code>Document refund_policy</code>.</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ContX IQ Use Cases Card -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">ContX IQ Use Cases</h5>
+                </div>
+                <div class="card-body p-0">
+
+                    <!-- Policy 1 -->
+                    <div class="p-4 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge bg-secondary me-2">1</span>
+                                <strong>Get Self</strong>
+                            </div>
+                            <div>
+                                <a href="/api_ciq_policy/create" class="btn btn-sm btn-primary me-1">Policy</a>
+                                <a href="/api_ciq_knowledge_query/create" class="btn btn-sm btn-secondary me-1">Query</a>
+                                <a href="/api_ciq_execute/execute" class="btn btn-sm btn-success">Execute</a>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-2">Return the authenticated user's profile together with their department and (optionally) their manager.</p>
+                        <div class="small">
+                            <strong>Reads:</strong> user, department, manager<br>
+                            <strong>Graph Pattern:</strong> <code>(subject:User)-[:WORKS_IN]->(:Department)</code>, <code>(subject)-[:REPORTS_TO]->(:User)</code><br>
+                            <strong>Input:</strong> <em>bearer token only</em>
+                        </div>
+                    </div>
+
+                    <!-- Policy 2 -->
+                    <div class="p-4 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge bg-secondary me-2">2</span>
+                                <strong>Get Stock Quote</strong>
+                            </div>
+                            <div>
+                                <a href="/api_ciq_policy/create2" class="btn btn-sm btn-primary me-1">Policy</a>
+                                <a href="/api_ciq_knowledge_query/create2" class="btn btn-sm btn-secondary me-1">Query</a>
+                                <a href="/api_ciq_execute/execute2" class="btn btn-sm btn-success">Execute</a>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-2">Return a stock quote when the caller's department is allowed to retrieve it (e.g. Trading).</p>
+                        <div class="small">
+                            <strong>Reads:</strong> user, department, quote<br>
+                            <strong>Graph Pattern:</strong> <code>(:User)-[:WORKS_IN]->(:Department)-[:CAN_RETRIEVE]->(:Quote)</code><br>
+                            <strong>Input:</strong> <code>ticker</code>
+                        </div>
+                    </div>
+
+                    <!-- Policy 3 -->
+                    <div class="p-4 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge bg-secondary me-2">3</span>
+                                <strong>Get Stock Trade Threshold</strong>
+                            </div>
+                            <div>
+                                <a href="/api_ciq_policy/create3" class="btn btn-sm btn-primary me-1">Policy</a>
+                                <a href="/api_ciq_knowledge_query/create3" class="btn btn-sm btn-secondary me-1">Query</a>
+                                <a href="/api_ciq_execute/execute3" class="btn btn-sm btn-success">Execute</a>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-2">Return a customer's stock account tier and threshold. Only reachable from users in the Trading department.</p>
+                        <div class="small">
+                            <strong>Reads:</strong> user, customer, stock account, tier<br>
+                            <strong>Graph Pattern:</strong> <code>(:User)-[:WORKS_IN]->(:Department)-[:CAN_ACCESS|CONTAINS*..2]->(:Customer)-[:OWNS]->(:Account)-[:IS_TIER]->(:AccountTier)</code><br>
+                            <strong>Input:</strong> <code>customer_external_id</code>
+                        </div>
+                    </div>
+
+                    <!-- Policy 4 -->
+                    <div class="p-4 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge bg-secondary me-2">4</span>
+                                <strong>Get Internal Documents</strong>
+                            </div>
+                            <div>
+                                <a href="/api_ciq_policy/create4" class="btn btn-sm btn-primary me-1">Policy</a>
+                                <a href="/api_ciq_knowledge_query/create4" class="btn btn-sm btn-secondary me-1">Query</a>
+                                <a href="/api_ciq_execute/execute4" class="btn btn-sm btn-success">Execute</a>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-2">Return internal documents reachable from the caller's department, filtered by a taxonomy (e.g. <code>policy</code>).</p>
+                        <div class="small">
+                            <strong>Reads:</strong> user, document<br>
+                            <strong>Graph Pattern:</strong> <code>(:User)-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(:Document)-[:IS_TYPE]->(:Taxonomy)</code><br>
+                            <strong>Input:</strong> <code>taxonomy_external_id</code>
+                        </div>
+                    </div>
+
+                    <!-- Policy 5 -->
+                    <div class="p-4 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge bg-secondary me-2">5</span>
+                                <strong>Get Customer Facing Documents</strong>
+                            </div>
+                            <div>
+                                <a href="/api_ciq_policy/create5" class="btn btn-sm btn-primary me-1">Policy</a>
+                                <a href="/api_ciq_knowledge_query/create5" class="btn btn-sm btn-secondary me-1">Query</a>
+                                <a href="/api_ciq_execute/execute5" class="btn btn-sm btn-success">Execute</a>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-2">Return customer facing documents together with their regulatory agreements and investment categories.</p>
+                        <div class="small">
+                            <strong>Reads:</strong> document, regulatory agreement, investment category<br>
+                            <strong>Graph Pattern:</strong> <code>(:Document)-[:SUBJECT_TO]->(:RegulatoryAgreement)</code>, <code>(:Document)-[:CLASSIFIED_AS]->(:InvestmentCategory)</code><br>
+                            <strong>Input:</strong> <em>none</em>
+                        </div>
+                    </div>
+
+                    <!-- Policy 6 -->
+                    <div class="p-4 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge bg-secondary me-2">6</span>
+                                <strong>Get Regulatory Agreements</strong>
+                            </div>
+                            <div>
+                                <a href="/api_ciq_policy/create6" class="btn btn-sm btn-primary me-1">Policy</a>
+                                <a href="/api_ciq_knowledge_query/create6" class="btn btn-sm btn-secondary me-1">Query</a>
+                                <a href="/api_ciq_execute/execute6" class="btn btn-sm btn-success">Execute</a>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-2">Return the full list of regulatory agreements known to the graph.</p>
+                        <div class="small">
+                            <strong>Reads:</strong> regulatory agreement name + description<br>
+                            <strong>Graph Pattern:</strong> <code>(:RegulatoryAgreement)</code><br>
+                            <strong>Input:</strong> <em>none</em>
+                        </div>
+                    </div>
+
+                    <!-- Policy 7 -->
+                    <div class="p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge bg-secondary me-2">7</span>
+                                <strong>Get Decisions</strong>
+                            </div>
+                            <div>
+                                <a href="/api_ciq_policy/create7" class="btn btn-sm btn-primary me-1">Policy</a>
+                                <a href="/api_ciq_knowledge_query/create7" class="btn btn-sm btn-secondary me-1">Query</a>
+                                <a href="/api_ciq_execute/execute7" class="btn btn-sm btn-success">Execute</a>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-2">For a given document, return the decisions that referenced it along with the ticket, customer and account.</p>
+                        <div class="small">
+                            <strong>Reads:</strong> user, document, decision, ticket, account, customer<br>
+                            <strong>Graph Pattern:</strong> <code>(:Document)&lt;-[:EXCEPTION_TO]-(:Decision)&lt;-[:CLOSED_BY]-(:Ticket)-[:REGARDING]->(:Account)</code>, <code>(:Ticket)-[:CREATED_BY]->(:Customer)</code><br>
+                            <strong>Input:</strong> <code>document_external_id</code>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Danger Zone Card -->
+            <div class="card border-danger">
+                <div class="card-header" style="background-color: rgba(239, 68, 68, 0.1);">
+                    <h5 class="mb-0 text-danger">Danger Zone</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Permanently delete the project and all associated resources. This action cannot be undone.</p>
+                    <a href="/api_project/delete" class="btn btn-danger">
+                        <svg class="icon icon-xs me-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        Delete Project
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

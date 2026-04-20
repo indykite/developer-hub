@@ -1,0 +1,66 @@
+---
+info:
+  name: Create Customer Nodes
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/capture/v1/nodes"
+  body:
+    type: json
+    data: |-
+      {
+        "nodes": [
+          /* Customer System */
+          {
+            "external_id": "sys_canbank_core",
+            "type": "System",
+            "is_identity": false,
+            "properties": [{ "type": "name", "value": "CanBank Core Banking Retail" }]
+          },
+
+          /* CUSTOMERS */
+          { "external_id": "alison", "type": "Customer", "is_identity": true, "properties": [{ "type": "name", "value": "Alice Martin", "metadata": {"source": "RetailCore"} }, { "type": "email", "value": "alison@example.ca" }] },
+          { "external_id": "bob", "type": "Customer", "is_identity": true, "properties": [{ "type": "name", "value": "Bob Vance", "metadata": {"source": "RetailCore"} }, { "type": "email", "value": "bob@vancefridge.com" }] },
+          { "external_id": "charlie", "type": "Customer", "is_identity": true, "properties": [{ "type": "name", "value": "Charlie Day", "metadata": {"source": "RetailCore"} }, { "type": "email", "value": "ratking@philly.com" }] },
+          { "external_id": "rebecca", "type": "Customer", "is_identity": true, "properties": [{ "type": "name", "value": "Rebecca Welton", "metadata": {"source": "Core"} }, { "type": "email", "value": "rebeccaw@afcrichmond.com" }] },
+          { "external_id": "ted", "type": "Customer", "is_identity": true, "properties": [{ "type": "name", "value": "Ted Lasso", "metadata": {"source": "RetailCore"} }, { "type": "email", "value": "tedl@afcrichmond.com" }] },
+      /*    { "external_id": "keely", "type": "Customer", "is_identity": true, "properties": [{ "type": "name", "value": "Keely Jones" }, { "type": "email", "value": "keely@afcrichmond.com" }] },
+          { "external_id": "jamie", "type": "Customer", "is_identity": true, "properties": [{ "type": "name", "value": "Jamie Tart" }, { "type": "email", "value": "jamie@afcrichmond.com" }] },
+          { "external_id": "willis", "type": "Customer", "is_identity": true, "properties": [{ "type": "name", "value": "Willis Beard" }, { "type": "email", "value": "willis@afcrichmond.com" }] },*/
+
+          /* PRODUCT INSTANCES (ACCOUNTS) */
+          { "external_id": "acc_alison_chequing", "type": "Account", "is_identity": false, "properties": [{ "type": "account_type", "value": "Chequing" }, { "type": "balance", "value": "5200.00" }] },
+          { "external_id": "acc_alison_mortgage", "type": "Account", "is_identity": false, "properties": [{ "type": "account_type", "value": "Mortgage" }, { "type": "interest_rate", "value": "4.5%" }] },
+          { "external_id": "acc_bob_401k", "type": "Account", "is_identity": false, "properties": [{ "type": "account_type", "value": "401k" }, { "type": "provider", "value": "CanBank USA" }] },
+          { "external_id": "acc_charlie_loan", "type": "Account", "is_identity": false, "properties": [{ "type": "account_type", "value": "Personal Loan" }, { "type": "status", "value": "Active" }] },
+          { "external_id": "acc_rebecca_chequing", "type": "Account", "is_identity": false, "properties": [{ "type": "account_type", "value": "Chequing" }, { "type": "status", "value": "Active" }] },
+          { "external_id": "acc_rebecca_investing", "type": "Account", "is_identity": false, "properties": [{ "type": "account_type", "value": "Investing" }, { "type": "status", "value": "Active" }, { "type": "holdings", "value": "Active" }] },
+          { "external_id": "acc_ted_investing", "type": "Account", "is_identity": false, "properties": [{ "type": "account_type", "value": "Investing" }, { "type": "status", "value": "Active" }, { "type": "holdings", "value": "Active" }] },
+          { "external_id": "acc_ted_cc", "type": "Account", "is_identity": false, "properties": [{ "type": "account_type", "value": "CreditCard" }, { "type": "status", "value": "paid" }] },
+          { "external_id": "acc_rebecca_cc", "type": "Account", "is_identity": false, "properties": [{ "type": "account_type", "value": "CreditCard" }, { "type": "status", "value": "late" }] },
+      /*    { "external_id": "acc_keely_cc", "type": "Account", "is_identity": false, "properties": [{ "type": "account_type", "value": "CreditCard" }, { "type": "status", "value": "late" }] },
+          { "external_id": "acc_jamie_cc", "type": "Account", "is_identity": false, "properties": [{ "type": "account_type", "value": "CreditCard" }, { "type": "status", "value": "late" }] },
+          { "external_id": "acc_willis_cc", "type": "Account", "is_identity": false, "properties": [{ "type": "account_type", "value": "CreditCard" }, { "type": "status", "value": "late" }] },*/
+
+          /* Account Tiers */
+          { "external_id": "tier_1", "type": "AccountTier", "is_identity": false, "properties": [{ "type": "name", "value": "Tier 1" }, { "type": "tier", "value": 1 }, { "type": "threshold_amount", "value": 1000 }] },
+          { "external_id": "tier_2", "type": "AccountTier", "is_identity": false, "properties": [{ "type": "name", "value": "Tier 2" }, { "type": "tier", "value": 2 }, { "type": "threshold_amount", "value": 5000 }] },
+          { "external_id": "tier_3", "type": "AccountTier", "is_identity": false, "properties": [{ "type": "name", "value": "Tier 3" }, { "type": "tier", "value": 3 }, { "type": "threshold_amount", "value": 10000 }] },
+          { "external_id": "tier_4", "type": "AccountTier", "is_identity": false, "properties": [{ "type": "name", "value": "Tier 4" }, { "type": "tier", "value": 4 }, { "type": "threshold_amount", "value": 1000000 }] }
+
+        ]
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: ik_api_host
+      value: https://us.api.indykite.com
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

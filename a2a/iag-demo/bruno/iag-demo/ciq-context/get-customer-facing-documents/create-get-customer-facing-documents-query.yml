@@ -1,0 +1,40 @@
+---
+info:
+  name: Create Get Customer Facing Documents Query
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/knowledge-queries"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "get-customer-facing-documents",
+          "display_name": "Get Customer Facing Documents",
+          "description": "Call tool 'ciq_execute' with argument: \"id\": \"get-customer-facing-documents\" and no \"input_params\". Example: { \"id\": \"get-customer-facing-documents\", \"input_params\": { } }. Returns a list of customer facing documents that includes the external_id, name, regulatory agreements and investment categories.",
+          "project_id": "{{project_id}}",
+          "policy_id": "{{get_customer_facing_documents}}",
+          "query": "{ \"nodes\": [ \"doc.external_id\", \"doc.property.name\", \"ra.property.name\", \"ic.property.name\" ], \"relationships\": [  ], \"aggregate_values\": [ ] }",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: get_agent_workflows_policy
+      value: gid:AAAAFn8x970x80CPrzeCXVe_eYU
+    - name: get_regulatory_agreements_policy
+      value: gid:AAAAFjQRXtVGWk-4twKxr1bEGXw
+    - name: get_customer_facing_documents
+      value: gid:AAAAFhed-YC5t0zTs3XtRez0WhI
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
