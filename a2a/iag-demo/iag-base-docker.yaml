@@ -3,8 +3,10 @@ version: '3.9'
 
 services:
   iag-base:
-    image: indykite/agent-gateway:1.783.1
+    image: indykite/agent-gateway:latest
     environment:
+      JARVIS_SERVICE_LOG_LEVEL: debug
+      JARVIS_SERVICE_ENVIRONMENT: demo
       JARVIS_IDENTITY_PROVIDER_BASE_URL: "https://idsvr.indykite.one/oauth/v2/"
       JARVIS_IDENTITY_PROVIDER_INTROSPECT_ENDPOINT: "oauth-introspect"
       JARVIS_IDENTITY_PROVIDER_CLIENT_CREDENTIAL_ENDPOINT: "oauth-token"
@@ -16,3 +18,6 @@ services:
       JARVIS_AUTHZEN_BASE_URL: ${INDYKITE_BASE_URL}/access/v1
       JARVIS_AUTHZEN_ACTION: CAN_TRIGGER
       JARVIS_AUTHZEN_SUBJECT_TYPES: User
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
