@@ -178,7 +178,7 @@ def auth_login():
 
 
 @app.route("/auth/callback", methods=["GET"])
-def auth_callback():  # noqa: PLR0911
+def auth_callback():  # noqa: PLR0911, C901
     """Handle OAuth2 callback, exchange code for token, store in session."""
     state = request.args.get("state")
     code = request.args.get("code")
@@ -222,7 +222,10 @@ def auth_callback():  # noqa: PLR0911
         access_token = data.get("access_token")
         if not access_token:
             return redirect("/?error=no_access_token")
-        logger.info("User logged in successfully")
+        session["access_token"] = access_token
+        id_token = data.get("id_token")
+        if id_token:
+            session["id_token"] = id_token
         return redirect("/")
     except httpx.HTTPStatusError as e:
         logger.warning("Token exchange failed: %s %s", e.response.status_code, e.response.text[:200])
@@ -235,7 +238,16 @@ def auth_callback():  # noqa: PLR0911
 @app.route("/api/config", methods=["GET"])
 def get_config():
     """Public config for the frontend (e.g. logout URL from ID_SERVER_BASE_URL)."""
-    return jsonify({"logout_url": ""})
+    # Where to send the user after IdP logout (main chatbot page)
+    post_logout_redirect = f"http://{CHATBOT_HOST}:{CHATBOT_PORT}/"
+    logout_url = ""
+    if ID_SERVER_BASE_URL:
+        query_parts = [f"post_logout_redirect_uri={urllib.parse.quote(post_logout_redirect, safe='')}"]
+        id_token = session.get("id_token")
+        if id_token:
+            query_parts.append(f"id_token_hint={urllib.parse.quote(id_token, safe='')}")
+        logout_url = f"{ID_SERVER_BASE_URL}/oauth-session/logout?{'&'.join(query_parts)}"
+    return jsonify({"logout_url": logout_url})
 
 
 @app.route("/api/auth/logout", methods=["POST"])
