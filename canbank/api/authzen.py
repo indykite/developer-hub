@@ -33,9 +33,9 @@ api_authzen = APIBlueprint(
 def show_evaluate_form():
     """Display the AuthZen evaluation form with default values."""
     default_payload = {
-        "subject": {"type": "User", "id": "flo"},
-        "resource": {"type": "Document", "id": "refund_policy"},
-        "action": {"name": "CAN_ACCESS"},
+        "subject": {"type": "User", "id": "leslie"},
+        "resource": {"type": "Workflow", "id": "wf1"},
+        "action": {"name": "CAN_TRIGGER"},
     }
     default_data = {
         "authzen_json": json.dumps(default_payload, indent=2),

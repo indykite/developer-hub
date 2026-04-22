@@ -136,13 +136,13 @@
                     <span class="badge bg-primary">Knowledge-Based Access Control</span>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted mb-3">Test authorization decisions using the AuthZen standard. Evaluate whether a CanBank user can perform an action on a resource based on defined policies.</p>
+                    <p class="text-muted mb-3">Test authorization decisions using the <a href="https://openid.net/specs/authorization-api-1_0.html" target="_blank">AuthZEN specification</a>. Evaluate whether a CanBank user can perform an action on a resource based on defined policies.</p>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <a href="/api_authorization_policy/create" class="card h-100 text-decoration-none">
                                 <div class="card-body">
                                     <h6 class="mb-2">Create Authorization Policy</h6>
-                                    <p class="text-muted small mb-0">Define KBAC policies for CanBank access (e.g. "a User can <code>CAN_ACCESS</code> a <code>Document</code> through their department's folder").</p>
+                                    <p class="text-muted small mb-0">Define KBAC policies for CanBank access (e.g. "a <code>User</code> can <code>CAN_TRIGGER</code> a <code>Workflow</code> as a member of a department or via direct assignment").</p>
                                 </div>
                             </a>
                         </div>
@@ -150,7 +150,7 @@
                             <a href="/api_authzen/evaluate" class="card h-100 text-decoration-none">
                                 <div class="card-body">
                                     <h6 class="mb-2">Evaluate Authorization</h6>
-                                    <p class="text-muted small mb-0">Test a request: <code>User flo</code> wants to <code>CAN_ACCESS</code> <code>Document refund_policy</code>.</p>
+                                    <p class="text-muted small mb-0">Test a request: <code>User leslie</code> wants to <code>CAN_TRIGGER</code> <code>Workflow wf1</code>.</p>
                                 </div>
                             </a>
                         </div>
