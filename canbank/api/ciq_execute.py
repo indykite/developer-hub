@@ -70,6 +70,11 @@ _EXECUTE_DEFS = [
         "title": "Get Decisions",
         "input_params": {"document_external_id": "refund_policy"},
     },
+    {
+        "slot": "8",
+        "title": "Get Workflows",
+        "input_params": {"agent_id": "indykiteagent"},
+    },
 ]
 
 
@@ -148,6 +153,13 @@ def show_execute_form_7():
         default_data=_execute_default("7"),
     )
 
+@api_ciq_execute.get("/execute8", tags=[tag])
+def show_execute_form_8():
+    """CanBank CIQ Execute 8 - Get Workflows."""
+    return render_template(
+        "ciq_execute/ciq_execute_form.html",
+        default_data=_execute_default("8"),
+    )
 
 @api_ciq_execute.post("/execute", tags=[tag])
 def execution():

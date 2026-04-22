@@ -312,6 +312,26 @@
                         </div>
                     </div>
 
+                    <!-- Policy 8 -->
+                    <div class="p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge bg-secondary me-2">8</span>
+                                <strong>Get Workflows</strong>
+                            </div>
+                            <div>
+                                <a href="/api_ciq_policy/create8" class="btn btn-sm btn-primary me-1">Policy</a>
+                                <a href="/api_ciq_knowledge_query/create8" class="btn btn-sm btn-secondary me-1">Query</a>
+                                <a href="/api_ciq_execute/execute8" class="btn btn-sm btn-success">Execute</a>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-2">For a given agent, return the workflows and all of the possible relationships.</p>
+                        <div class="small">
+                            <strong>Reads:</strong> workflows, agents<br>
+                            <strong>Graph Pattern:</strong> <code>(:Workflow)-[rels:INVOKES*]->(:Agent)</code><br>
+                            <strong>Input:</strong> <code>agent_id</code>
+                        </div>
+                    </div>
                 </div>
             </div>
 

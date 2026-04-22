@@ -156,6 +156,16 @@ QUERY_7 = {
     "aggregate_values": [],
 }
 
+QUERY_8 = {
+    "nodes": [],
+    "relationships": [],
+    "aggregate_values": [
+        "workflow",
+        "agent_list",
+    ],
+}
+
+
 
 _QUERY_DEFS = [
     {
@@ -234,6 +244,18 @@ _QUERY_DEFS = [
         ),
         "query": QUERY_7,
     },
+    {
+        "slot": "8",
+        "name": "get-agent-workflows",
+        "display_name": "Get Agent Workflows",
+        "description": (
+            """
+            Given an agent id return the list of workflows within which that agent participates.
+            Example: { "id": "get-agent-workflows", "input_params": { "agent_id": "agent_id" } }
+            """
+        ),
+        "query": QUERY_8,
+    },
 ]
 
 
@@ -305,6 +327,10 @@ def show_create_form_7():
     """CanBank CIQ Knowledge Query 7 - Get Decisions."""
     return render_template("ciq_knowledge_query/create_form.html", default_data=_default_for_slot("7"))
 
+@api_ciq_knowledge_query.get("/create8", tags=[tag])
+def show_create_form_8():
+    """CanBank CIQ Knowledge Query 8 - Get Workflows."""
+    return render_template("ciq_knowledge_query/create_form.html", default_data=_default_for_slot("8"))
 
 @api_ciq_knowledge_query.post("/create", tags=[tag])
 def create_ciq_knowledge_query():
