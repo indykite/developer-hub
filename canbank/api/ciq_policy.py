@@ -261,40 +261,40 @@ POLICY_8 = {
 _POLICY_DEFS = [
     {
         "slot": "1",
-        "name": "canbank-get-self",
-        "display_name": "CanBank - Get Self",
+        "name": "get-self",
+        "display_name": "Get Self",
         "description": "Return the authenticated user, their department and their manager.",
         "policy": POLICY_1,
         "tags": ["canbank", "self", "profile"],
     },
     {
         "slot": "2",
-        "name": "canbank-get-stock-quote",
-        "display_name": "CanBank - Get Stock Quote",
+        "name": "get-stock-quote",
+        "display_name": "Get Stock Quote",
         "description": "Return a stock quote when the caller's department is allowed to retrieve it.",
         "policy": POLICY_2,
         "tags": ["canbank", "trading", "quote"],
     },
     {
         "slot": "3",
-        "name": "canbank-get-stock-trade-threshold",
-        "display_name": "CanBank - Get Stock Trade Threshold",
+        "name": "get-stock-trade-threshold",
+        "display_name": "Get Stock Trade Threshold",
         "description": "Return a customer's stock account tier when accessed by a trading user.",
         "policy": POLICY_3,
         "tags": ["canbank", "trading", "threshold"],
     },
     {
         "slot": "4",
-        "name": "canbank-get-internal-documents",
-        "display_name": "CanBank - Get Internal Documents",
+        "name": "get-internal-documents",
+        "display_name": "Get Internal Documents",
         "description": "Return internal documents reachable from the caller filtered by taxonomy.",
         "policy": POLICY_4,
         "tags": ["canbank", "documents", "taxonomy"],
     },
     {
         "slot": "5",
-        "name": "canbank-get-customer-facing-documents",
-        "display_name": "CanBank - Get Customer Facing Documents",
+        "name": "get-customer-facing-documents",
+        "display_name": "Get Customer Facing Documents",
         "description": (
             "List customer facing documents together with their regulatory agreements and investment categories."
         ),
@@ -303,16 +303,16 @@ _POLICY_DEFS = [
     },
     {
         "slot": "6",
-        "name": "canbank-get-regulatory-agreements",
-        "display_name": "CanBank - Get Regulatory Agreements",
+        "name": "get-regulatory-agreements",
+        "display_name": "Get Regulatory Agreements",
         "description": "List all regulatory agreements known to the graph.",
         "policy": POLICY_6,
         "tags": ["canbank", "regulatory"],
     },
     {
         "slot": "7",
-        "name": "canbank-get-decisions",
-        "display_name": "CanBank - Get Decisions",
+        "name": "get-decisions",
+        "display_name": "Get Decisions",
         "description": (
             "Given a document, return the decisions that referenced it along with the ticket, "
             "the customer and the affected account."
