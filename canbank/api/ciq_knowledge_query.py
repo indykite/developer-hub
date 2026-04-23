@@ -86,7 +86,7 @@ QUERY_2 = {
         "subject.property.name",
         "subject.property.title",
         "department.property.name",
-        "quote.price",
+        "quote.property.price",
     ],
     "relationships": [],
     "aggregate_values": [],
@@ -183,9 +183,13 @@ _QUERY_DEFS = [
         "name": "get-stock-quote",
         "display_name": "Get Stock Quote",
         "description": (
-            "Retrieve a stock quote for a ticker when the caller's department is allowed to "
-            "access it. Call tool 'ciq_execute' with a ticker. "
-            'Example: { "id": "get-stock-quote", "input_params": { "ticker": "NVDA" } }.'
+            "Get Stock Quote retrieves the user, their department and a stock quote for the requested ticker symbol."
+            "The only information required is the currently authenticated user's bearer token and a ticker symbol "
+            "for the stock. Use this function when the user asks questions about stock quotes, such as: 'What is the "
+            "current price of <ticker>?' Returns: An object containing the user's details, including full_name, "
+            "department, and the stock price. Call tool 'ciq_execute' with the user's bearer token as the "
+            'authorization header. Use the following arguments: "id": "get-stock-quote" and "ticker". Example: '
+            '{ "id": "get-stock-quote", "input_params": { "ticker": "NVDA"} }."'
         ),
         "query": QUERY_2,
     },
