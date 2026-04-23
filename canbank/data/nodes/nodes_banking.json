@@ -1530,38 +1530,32 @@
     {
       "external_id": "wf1",
       "type": "Workflow",
-      "is_identity": false,
-      "properties": []
+      "is_identity": false
     },
     {
       "external_id": "wf2",
       "type": "Workflow",
-      "is_identity": false,
-      "properties": []
+      "is_identity": false
     },
     {
       "external_id": "wf3",
       "type": "Workflow",
-      "is_identity": false,
-      "properties": []
+      "is_identity": false
     },
     {
       "external_id": "agent-1",
       "type": "Agent",
-      "is_identity": false,
-      "properties": []
+      "is_identity": false
     },
     {
       "external_id": "agent-2",
       "type": "Agent",
-      "is_identity": false,
-      "properties": []
+      "is_identity": false
     },
     {
       "external_id": "agent-3",
       "type": "Agent",
-      "is_identity": false,
-      "properties": []
+      "is_identity": false
     }
   ]
 }
