@@ -224,6 +224,28 @@
     {
       "source": {
         "type": "User",
+        "external_id": "leslie"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "type": "WORKS_IN"
+    },
+    {
+      "source": {
+        "type": "User",
+        "external_id": "millicent"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "type": "WORKS_IN"
+    },
+    {
+      "source": {
+        "type": "User",
         "external_id": "roy"
       },
       "target": {
@@ -231,6 +253,61 @@
         "external_id": "trading"
       },
       "type": "WORKS_IN"
+    },
+    {
+      "source": {
+        "type": "User",
+        "external_id": "roy"
+      },
+      "target": {
+        "type": "User",
+        "external_id": "mild"
+      },
+      "type": "REPORTS_TO"
+    },
+    {
+      "source": {
+        "type": "User",
+        "external_id": "preston"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "type": "WORKS_IN"
+    },
+    {
+      "source": {
+        "type": "User",
+        "external_id": "preston"
+      },
+      "target": {
+        "type": "User",
+        "external_id": "mild"
+      },
+      "type": "REPORTS_TO"
+    },
+    {
+      "source": {
+        "type": "User",
+        "external_id": "leslie"
+      },
+      "target": {
+        "type": "User",
+        "external_id": "flo"
+      },
+      "type": "REPORTS_TO"
+    },
+    {
+      "source": {
+        "type": "User",
+        "external_id": "millicent"
+      },
+      "target": {
+        "type": "User",
+        "external_id": "flo"
+      },
+      "type": "REPORTS_TO"
     },
     {
       "source": {
@@ -278,6 +355,28 @@
     },
     {
       "source": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "target": {
+        "type": "Folder",
+        "external_id": "trading_docs"
+      },
+      "type": "CAN_ACCESS"
+    },
+    {
+      "source": {
+        "type": "Folder",
+        "external_id": "trading_docs"
+      },
+      "target": {
+        "type": "Document",
+        "external_id": "trading_policy"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
         "type": "Folder",
         "external_id": "cs_policy"
       },
@@ -335,6 +434,17 @@
       "source": {
         "type": "Document",
         "external_id": "kyc_policy"
+      },
+      "target": {
+        "type": "Taxonomy",
+        "external_id": "policy"
+      },
+      "type": "IS_TYPE"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "trading_policy"
       },
       "target": {
         "type": "Taxonomy",
