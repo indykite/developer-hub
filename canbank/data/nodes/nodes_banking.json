@@ -302,6 +302,43 @@
       ]
     },
     {
+      "external_id": "millicent",
+      "type": "User",
+      "is_identity": true,
+      "labels": [
+        "Employee"
+      ],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Millicent Contextsworth",
+          "metadata": {
+            "source": "Workday",
+            "verified_time": "2026-02-26T00:57:13Z",
+            "assurance_level": 3
+          }
+        },
+        {
+          "type": "title",
+          "value": "CSR 2",
+          "metadata": {
+            "source": "Workday",
+            "verified_time": "2026-02-26T00:57:13Z",
+            "assurance_level": 3
+          }
+        },
+        {
+          "type": "email",
+          "value": "millicent@canbank.com",
+          "metadata": {
+            "source": "Exchange",
+            "verified_time": "2026-02-20T00:57:13Z",
+            "assurance_level": 3
+          }
+        }
+      ]
+    },
+    {
       "external_id": "flo",
       "type": "User",
       "is_identity": true,
@@ -330,6 +367,43 @@
         {
           "type": "email",
           "value": "flo@canbank.com",
+          "metadata": {
+            "source": "Exchange",
+            "verified_time": "2026-02-20T00:57:13Z",
+            "assurance_level": 3
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "mild",
+      "type": "User",
+      "is_identity": true,
+      "labels": [
+        "Employee"
+      ],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Mild Concern",
+          "metadata": {
+            "source": "Workday",
+            "verified_time": "2026-02-26T00:57:13Z",
+            "assurance_level": 3
+          }
+        },
+        {
+          "type": "title",
+          "value": "Trading Supervisor",
+          "metadata": {
+            "source": "Workday",
+            "verified_time": "2026-02-26T00:57:13Z",
+            "assurance_level": 3
+          }
+        },
+        {
+          "type": "email",
+          "value": "mild@canbank.com",
           "metadata": {
             "source": "Exchange",
             "verified_time": "2026-02-20T00:57:13Z",
@@ -376,6 +450,43 @@
       ]
     },
     {
+      "external_id": "preston",
+      "type": "User",
+      "is_identity": true,
+      "labels": [
+        "Employee"
+      ],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Preston Capitalworth",
+          "metadata": {
+            "source": "Workday",
+            "verified_time": "2026-02-26T00:57:13Z",
+            "assurance_level": 3
+          }
+        },
+        {
+          "type": "title",
+          "value": "Trader",
+          "metadata": {
+            "source": "Workday",
+            "verified_time": "2026-02-26T00:57:13Z",
+            "assurance_level": 3
+          }
+        },
+        {
+          "type": "email",
+          "value": "preston@canbank.com",
+          "metadata": {
+            "source": "Exchange",
+            "verified_time": "2026-02-20T00:57:13Z",
+            "assurance_level": 3
+          }
+        }
+      ]
+    },
+    {
       "external_id": "stock_quote",
       "type": "Quote",
       "is_identity": false,
@@ -396,6 +507,21 @@
         {
           "type": "name",
           "value": "Customer Service Policy",
+          "metadata": {
+            "source": "Sharepoint"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "trading_docs",
+      "type": "Folder",
+      "is_identity": false,
+      "labels": [],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Trading Documents",
           "metadata": {
             "source": "Sharepoint"
           }
@@ -474,6 +600,32 @@
         {
           "type": "url",
           "value": "https://sharepoint.miscrosoft.com/canbank/site/csr/kyc_policy.pdf",
+          "metadata": {
+            "source": "Sharepoint"
+          }
+        }
+      ]
+    },
+    {
+      "external_id": "trading_policy",
+      "type": "Document",
+      "is_identity": false,
+      "labels": [],
+      "properties": [
+        {
+          "type": "name",
+          "value": "KYC Policy",
+          "metadata": {
+            "source": "Sharepoint"
+          }
+        },
+        {
+          "type": "description",
+          "value": "Clear criteria for when brokers can perform transactions on behalf of customers. Customers must have a full service account and brokers must adhere to the trading limits in the user profile."
+        },
+        {
+          "type": "url",
+          "value": "https://sharepoint.miscrosoft.com/canbank/site/trading/trading_policy.pdf",
           "metadata": {
             "source": "Sharepoint"
           }
@@ -1374,6 +1526,36 @@
           "value": "Cross-Asset Hedging Disclosure"
         }
       ]
+    },
+    {
+      "external_id": "wf1",
+      "type": "Workflow",
+      "is_identity": false
+    },
+    {
+      "external_id": "wf2",
+      "type": "Workflow",
+      "is_identity": false
+    },
+    {
+      "external_id": "wf3",
+      "type": "Workflow",
+      "is_identity": false
+    },
+    {
+      "external_id": "agent-1",
+      "type": "Agent",
+      "is_identity": false
+    },
+    {
+      "external_id": "agent-2",
+      "type": "Agent",
+      "is_identity": false
+    },
+    {
+      "external_id": "agent-3",
+      "type": "Agent",
+      "is_identity": false
     }
   ]
 }

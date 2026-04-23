@@ -83,20 +83,18 @@ def show_create_form():
     default_policy = (
         '{"meta":{"policy_version":"1.0-indykite"},'
         '"subject":{"type":"User"},'
-        '"actions":["CAN_ACCESS"],'
-        '"resource":{"type":"Document"},'
-        '"condition":{"cypher":"MATCH (subject:User)-[:WORKS_IN]->(:Department)'
-        '-[:CAN_ACCESS]->(:Folder)-[:CONTAINS]->(resource:Document)"}}'
+        '"actions":["CAN_TRIGGER"],'
+        '"resource":{"type":"Workflow"},'
+        '"condition":{"cypher":"MATCH (subject:User)-[:WORKS_IN|CAN_TRIGGER*..3]->(resource:Workflow)"}}'
     )
     default_data = {
         "project_id": project_id,
         "description": (
-            "Allow a CanBank employee to access a policy document when their department "
-            "owns the folder that contains it (e.g. Customer Support reading the "
-            "Customer Service Policy)."
+            "Allow a user to trigger an agentic workflow when their department can trigger it OR"
+            "they have been assigned to it directly."
         ),
-        "display_name": "CanBank - Employee Access to Department Documents",
-        "name": "canbank-employee-access-department-documents",
+        "display_name": "User can trigger workflow",
+        "name": "user-can-trigger-workflow",
         "policy": default_policy,
         "status": "ACTIVE",
     }

@@ -156,83 +156,103 @@ QUERY_7 = {
     "aggregate_values": [],
 }
 
+QUERY_8 = {
+    "nodes": [],
+    "relationships": [],
+    "aggregate_values": [
+        "workflow",
+        "agent_list",
+    ],
+}
+
 
 _QUERY_DEFS = [
     {
         "slot": "1",
-        "name": "canbank-get-self-query",
-        "display_name": "CanBank - Get Self Query",
+        "name": "get-self",
+        "display_name": "Get Self",
         "description": (
             "Retrieve the authenticated user's profile, department and manager. "
             "Call tool 'ciq_execute' with no input_params. "
-            'Example: { "id": "canbank-get-self", "input_params": { } }.'
+            'Example: { "id": "get-self", "input_params": { } }.'
         ),
         "query": QUERY_1,
     },
     {
         "slot": "2",
-        "name": "canbank-get-stock-quote-query",
-        "display_name": "CanBank - Get Stock Quote Query",
+        "name": "get-stock-quote",
+        "display_name": "Get Stock Quote",
         "description": (
             "Retrieve a stock quote for a ticker when the caller's department is allowed to "
             "access it. Call tool 'ciq_execute' with a ticker. "
-            'Example: { "id": "canbank-get-stock-quote", "input_params": { "ticker": "NVDA" } }.'
+            'Example: { "id": "get-stock-quote", "input_params": { "ticker": "NVDA" } }.'
         ),
         "query": QUERY_2,
     },
     {
         "slot": "3",
-        "name": "canbank-get-stock-trade-threshold-query",
-        "display_name": "CanBank - Get Stock Trade Threshold Query",
+        "name": "get-stock-trade-threshold",
+        "display_name": "Get Stock Trade Threshold",
         "description": (
             "Retrieve a customer's stock account tier and threshold. Caller must be in the "
-            'trading department. Example: { "id": "canbank-get-stock-trade-threshold", '
+            'trading department. Example: { "id": "get-stock-trade-threshold", '
             '"input_params": { "customer_external_id": "ted" } }.'
         ),
         "query": QUERY_3,
     },
     {
         "slot": "4",
-        "name": "canbank-get-internal-documents-query",
-        "display_name": "CanBank - Get Internal Documents Query",
+        "name": "get-internal-documents",
+        "display_name": "Get Internal Documents",
         "description": (
             "Retrieve internal documents visible to the caller filtered by taxonomy. "
-            'Example: { "id": "canbank-get-internal-documents", '
+            'Example: { "id": "get-internal-documents", '
             '"input_params": { "taxonomy_external_id": "policy" } }.'
         ),
         "query": QUERY_4,
     },
     {
         "slot": "5",
-        "name": "canbank-get-customer-facing-documents-query",
-        "display_name": "CanBank - Get Customer Facing Documents Query",
+        "name": "get-customer-facing-documents",
+        "display_name": "Get Customer Facing Documents",
         "description": (
             "Retrieve customer facing documents with their regulatory agreements and investment "
-            'categories. Example: { "id": "canbank-get-customer-facing-documents", '
-            '"input_params": { } }.'
+            'categories. Example: { "id": "get-customer-facing-documents", "input_params": { } }.'
         ),
         "query": QUERY_5,
     },
     {
         "slot": "6",
-        "name": "canbank-get-regulatory-agreements-query",
-        "display_name": "CanBank - Get Regulatory Agreements Query",
+        "name": "get-regulatory-agreements",
+        "display_name": "Get Regulatory Agreements",
         "description": (
             "Retrieve the full list of regulatory agreements. "
-            'Example: { "id": "canbank-get-regulatory-agreements", "input_params": { } }.'
+            'Example: { "id": "get-regulatory-agreements", "input_params": { } }.'
         ),
         "query": QUERY_6,
     },
     {
         "slot": "7",
-        "name": "canbank-get-decisions-query",
-        "display_name": "CanBank - Get Decisions Query",
+        "name": "get-decisions",
+        "display_name": "Get Decisions",
         "description": (
             "Retrieve decisions that referenced a given document, along with the ticket, "
-            'customer and account involved. Example: { "id": "canbank-get-decisions", '
+            'customer and account involved. Example: { "id": "get-decisions", '
             '"input_params": { "document_external_id": "refund_policy" } }.'
         ),
         "query": QUERY_7,
+    },
+    {
+        "slot": "8",
+        "name": "get-agent-workflows",
+        "display_name": "Get Agent Workflows",
+        "description": (
+            """
+            Given an agent id return the list of workflows within which that agent participates.
+            Example: { "id": "get-agent-workflows", "input_params": { "agent_id": "agent_id" } }
+            """
+        ),
+        "query": QUERY_8,
     },
 ]
 
@@ -304,6 +324,12 @@ def show_create_form_6():
 def show_create_form_7():
     """CanBank CIQ Knowledge Query 7 - Get Decisions."""
     return render_template("ciq_knowledge_query/create_form.html", default_data=_default_for_slot("7"))
+
+
+@api_ciq_knowledge_query.get("/create8", tags=[tag])
+def show_create_form_8():
+    """CanBank CIQ Knowledge Query 8 - Get Workflows."""
+    return render_template("ciq_knowledge_query/create_form.html", default_data=_default_for_slot("8"))
 
 
 @api_ciq_knowledge_query.post("/create", tags=[tag])
