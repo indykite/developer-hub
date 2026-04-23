@@ -250,10 +250,7 @@ POLICY_8 = {
     "allowed_reads": {
         "nodes": [],
         "relationships": [],
-        "aggregate_values": [
-            "workflow",
-            "agent_list"
-        ],
+        "aggregate_values": ["workflow", "agent_list"],
     },
 }
 
@@ -324,9 +321,7 @@ _POLICY_DEFS = [
         "slot": "8",
         "name": "get-agent-workflows",
         "display_name": "Get Agent Workflows",
-        "description": (
-            "Given an agent get the workflow and all of the possible relationships"
-        ),
+        "description": ("Given an agent get the workflow and all of the possible relationships"),
         "policy": POLICY_8,
         "tags": [],
     },
@@ -391,10 +386,12 @@ def show_create_form_7():
     """CanBank CIQ Policy 7 - Get Decisions."""
     return render_template("ciq_policy/create_form.html", default_data=_default_for_slot("7"))
 
+
 @api_ciq_policy.get("/create8", tags=[tag])
 def show_create_form_8():
     """CanBank CIQ Policy 8 - Get Workflows."""
     return render_template("ciq_policy/create_form.html", default_data=_default_for_slot("8"))
+
 
 @api_ciq_policy.post("/create", tags=[tag])
 def create_ciq_policy():

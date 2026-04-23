@@ -166,7 +166,6 @@ QUERY_8 = {
 }
 
 
-
 _QUERY_DEFS = [
     {
         "slot": "1",
@@ -326,10 +325,12 @@ def show_create_form_7():
     """CanBank CIQ Knowledge Query 7 - Get Decisions."""
     return render_template("ciq_knowledge_query/create_form.html", default_data=_default_for_slot("7"))
 
+
 @api_ciq_knowledge_query.get("/create8", tags=[tag])
 def show_create_form_8():
     """CanBank CIQ Knowledge Query 8 - Get Workflows."""
     return render_template("ciq_knowledge_query/create_form.html", default_data=_default_for_slot("8"))
+
 
 @api_ciq_knowledge_query.post("/create", tags=[tag])
 def create_ciq_knowledge_query():
