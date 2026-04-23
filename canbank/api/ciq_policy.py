@@ -116,10 +116,9 @@ POLICY_2 = {
     "subject": {"type": "User"},
     "condition": {
         "cypher": (
-            "MATCH (subject:User {external_id: $token.sub}) "
-            "WITH subject "
-            "OPTIONAL MATCH (subject)-[:WORKS_IN]->(department:Department)"
-            "-[:CAN_RETRIEVE]->(quote:Quote)"
+            "MATCH (subject:User {external_id: $token.sub})"
+            "-[:WORKS_IN]->(department:Department)"
+            "-[:CAN_RETRIEVE]->(quote:Quote {external_id: 'stock_quote'})"
         ),
         "filter": [],
     },
