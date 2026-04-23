@@ -1266,6 +1266,154 @@
         "external_id": "jur-switzerland"
       },
       "type": "ENFORCED_IN"
+    },
+    {
+      "source": {
+        "type": "Container",
+        "external_id": "workflows"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf1"
+      },
+      "properties": [],
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Container",
+        "external_id": "workflows"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf2"
+      },
+      "properties": [],
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Container",
+        "external_id": "workflows"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf3"
+      },
+      "properties": [],
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf1"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "agent-1"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf3"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "agent-1"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "agent-1"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "agent-2"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "agent-1"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "agent-3"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf1"
+      },
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf1"
+      },
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf3"
+      },
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf3"
+      },
+      "type": "CAN_TRIGGER"
     }
   ]
 }
