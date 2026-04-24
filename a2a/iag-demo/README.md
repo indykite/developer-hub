@@ -123,12 +123,28 @@ running compose, pin a concrete version in
 ```yaml
 services:
   iag-base:
-    image: indykite/agent-gateway:1.783.1   # or any tag from Docker Hub
+    image: indykite/agent-gateway:latest   # or any tag from Docker Hub
 ```
+
+if you are on Apple Silicon then use this instead.
+
+```yaml
+services:
+  iag-base:
+    image: indykite/agent-gateway:latest
+    platform: linux/amd64
+```
+
+If you receive the following message from `docker compose up` then you likely need a `platform`
+attribute.
+
+> [!CAUTION]
+> The requested image's platform (linux/amd64) does not match the detected host platform
+> (linux/arm64/v8) and no specific platform was requested
 
 Check
 [the tag list on Docker Hub](https://hub.docker.com/r/indykite/agent-gateway/tags)
-for newer releases.
+for different releases.
 
 ### 5. Start the stack
 
