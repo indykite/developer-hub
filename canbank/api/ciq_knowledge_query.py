@@ -142,21 +142,19 @@ QUERY_6 = {
 
 QUERY_7 = {
     "nodes": [
-        "actor.property.name", 
-        "actor.property.title", 
-        "document.property.name", 
-        "document.property.description", 
-        "document.property.url", 
-        "decision.external_id", 
-        "decision.property.description", 
-        "decision.create_time", 
-        "account.property.account_type", 
-        "ticket.external_id", 
+        "actor.property.name",
+        "actor.property.title",
+        "document.property.name",
+        "document.property.description",
+        "document.property.url",
+        "decision.external_id",
+        "decision.property.description",
+        "decision.create_time",
+        "account.property.account_type",
+        "ticket.external_id",
         "ticket.property.description",
     ],
-    "relationships": [
-        "document_applied.type"
-    ],
+    "relationships": ["document_applied.type"],
     "aggregate_values": [],
 }
 
@@ -244,18 +242,18 @@ _QUERY_DEFS = [
         "name": "get-decisions",
         "display_name": "Get Decisions",
         "description": (
-            'get-decision retrieves past decisions that have been made based on a document, '
-            'probably a policy of some kind. The results include: the actor, the decision, '
-            'the document applied in the decision, a relationship document_applied.type that '
-            'describes the relationship between the decision and the documnet, the support '
-            'ticket, and account. The only information required is the currently authenticated '
-            'user\'s bearer token. Use this function when we need to find past decisions such as: '
+            "get-decision retrieves past decisions that have been made based on a document, "
+            "probably a policy of some kind. The results include: the actor, the decision, "
+            "the document applied in the decision, a relationship document_applied.type that "
+            "describes the relationship between the decision and the documnet, the support "
+            "ticket, and account. The only information required is the currently authenticated "
+            "user's bearer token. Use this function when we need to find past decisions such as: "
             '"What decisions incorporated the refund policy document?"'
-            'Returns: An object containing the decision, the document, a relationship that '
-            'explains how the document was applied, the actor, the support ticket and the affected '
-            'account. Call tool \'ciq_execute\' with the user\'s bearer token as the authorization '
+            "Returns: An object containing the decision, the document, a relationship that "
+            "explains how the document was applied, the actor, the support ticket and the affected "
+            "account. Call tool 'ciq_execute' with the user's bearer token as the authorization "
             'header. Use the following arguments: "id": "get-decision". Example: { "id": '
-            '"get-decision", "input_params": { "document_external_id": "refund_policy" } }.'            
+            '"get-decision", "input_params": { "document_external_id": "refund_policy" } }.'
         ),
         "query": QUERY_7,
     },

@@ -210,10 +210,10 @@ POLICY_7 = {
     "subject": {"type": "User"},
     "condition": {
         "cypher": (
-            'MATCH (subject:User {external_id: $token.sub})-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]-> '
-            '(document:Document {external_id: $document_external_id})<-[document_applied]-(decision:Decision) '
-            '<--(ticket:Ticket)-[:REGARDING]->(account:Account), (ticket)-[:CREATED_BY]-(customer:Customer), '
-            '(decision)<-[:MADE]-(actor:User)'
+            "MATCH (subject:User {external_id: $token.sub})-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]-> "
+            "(document:Document {external_id: $document_external_id})<-[document_applied]-(decision:Decision) "
+            "<--(ticket:Ticket)-[:REGARDING]->(account:Account), (ticket)-[:CREATED_BY]-(customer:Customer), "
+            "(decision)<-[:MADE]-(actor:User)"
         ),
         "filter": [],
     },
@@ -227,9 +227,7 @@ POLICY_7 = {
             "account.*",
             "customer.*",
         ],
-        "relationships": [
-            "document_applied.*"
-        ],
+        "relationships": ["document_applied.*"],
         "aggregate_values": [],
     },
 }
