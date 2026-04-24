@@ -4,3 +4,6 @@ CVE-2025-8869
 # Ignore secrets in .env files (gitignored)
 secret:*:.env
 secret:*:flask_app.log
+
+# Ignore pip polyglot vulnerability until patch is released; recently discovered
+CVE-2026-3219
