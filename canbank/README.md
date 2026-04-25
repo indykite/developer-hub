@@ -21,6 +21,7 @@ create .env file with the variables:
 
     SA_TOKEN: SA credentials token obtained on https://eu.hub.indykite.com/service-accounts (or https://us.hub.indykite.com/service-accounts)
     URL_ENDPOINTS: https://eu.api.indykite.com (or https://us.api.indykite.com)
+    ORGANIZATION_ID: ID attribute available in Organization > Settings
 
 ## Install and run
 

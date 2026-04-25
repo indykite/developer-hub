@@ -157,8 +157,8 @@ GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "").strip()
 MCP_AUTH_HEADER = os.getenv("IK_APP_AGENT_KEY", "").strip()
 INDYKITE_BASE_URL = os.getenv("INDYKITE_BASE_URL", "").strip()
-CIQ_QUERY_STOCK_PRICE = os.getenv("CIQ_QUERY_STOCK_PRICE", "").strip() or "gid:AAAAI0xxgURZQk9Gr8iIdht9NNg"
-CIQ_QUERY_PURCHASE_LIMIT = os.getenv("CIQ_QUERY_PURCHASE_LIMIT", "").strip() or "gid:AAAAI2aelN84zU2roEYahol1_4s"
+CIQ_QUERY_STOCK_PRICE = os.getenv("CIQ_QUERY_STOCK_PRICE", "").strip() or "get-stock-quote"
+CIQ_QUERY_PURCHASE_LIMIT = os.getenv("CIQ_QUERY_PURCHASE_LIMIT", "").strip() or "get-stock-trade-threshold"
 CIQ_QUERY_STORE_DECISION = os.getenv("CIQ_QUERY_STORE_DECISION", "").strip() or "store-decision"
 _LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
