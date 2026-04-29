@@ -29,6 +29,7 @@ scan:
   detection-priority: "precise"
   disable-telemetry: true
   offline: true
+  show-suppressed: true
   scanners:
     - vuln
     - secret
