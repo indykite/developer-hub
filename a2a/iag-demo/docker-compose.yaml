@@ -171,6 +171,10 @@ services:
       ADVERTISED_HOST: ${WEATHER_HOST}
       WEATHER_PORT: ${WEATHER_PORT}
       WEATHER_AGENT_NAME: weather_agent
+      MCP_SERVER_URL: ${MCP_SERVER_URL}
+      IK_APP_AGENT_KEY: ${IK_APP_AGENT_KEY}
+      INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
+      CIQ_QUERY_HQ_WEATHER: ${CIQ_QUERY_HQ_WEATHER:-get-hq-weather}
       LOG_LEVEL: ${LOG_LEVEL}
     extra_hosts:
       - "host.docker.internal:host-gateway"

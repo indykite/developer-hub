@@ -97,6 +97,15 @@
                                 </div>
                             </a>
                         </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <a href="/api_mcp_server/create" class="card h-100 text-decoration-none">
+                                <div class="card-body text-center py-4">
+                                    <div class="mb-3" style="font-size: 2rem;">5</div>
+                                    <h6>MCP Server</h6>
+                                    <p class="text-muted small mb-0">Bind App Agent + Token Introspect for inbound MCP traffic</p>
+                                </div>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -151,6 +160,42 @@
                                 <div class="card-body">
                                     <h6 class="mb-2">Evaluate Authorization</h6>
                                     <p class="text-muted small mb-0">Test a request: <code>User leslie</code> wants to <code>CAN_TRIGGER</code> <code>Workflow wf1</code>.</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- External Data Resolver Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">External Data Resolvers</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Configure a resolver that pulls a property value from a remote API at query time. Reference it from a node by setting <code>"external_value": "&lt;resolver-name&gt;"</code> on a property instead of <code>"value"</code>. URLs support template substitution (e.g. <code>{$latitude}</code>) drawn from the calling node's other properties.</p>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="/api_external_data_resolver/create" class="card h-100 text-decoration-none">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Create Weather Resolver</h6>
+                                    <p class="text-muted small mb-0">Calls open-meteo with <code>{$latitude}</code> / <code>{$longitude}</code> from the calling node. Selector <code>.current</code> returns temperature, apparent temperature, wind speed and weather code. Bound to <code>hq_weather.current</code>.</p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="/api_external_data_resolver/create2" class="card h-100 text-decoration-none">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Create Weather Units Resolver</h6>
+                                    <p class="text-muted small mb-0">Same call as the weather resolver, selector <code>.current_units</code>. Bound to <code>hq_weather.units</code>; returns the unit labels (e.g. <code>°C</code>, <code>km/h</code>) alongside the raw values from the <code>weather</code> resolver.</p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="/api_external_data_resolver/create3" class="card h-100 text-decoration-none">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Create Stock Quote Resolver</h6>
+                                    <p class="text-muted small mb-0">Calls Yahoo Finance with the <code>{$ticker}</code> drawn from the knowledge query's <code>input_params</code>. Selector <code>.chart.result[0].meta.regularMarketPrice</code>. Bound to <code>stock_quote.price</code>; consumed by the iag-demo <code>retriever_agent</code> via <code>get-stock-quote</code>.</p>
                                 </div>
                             </a>
                         </div>
@@ -313,7 +358,7 @@
                     </div>
 
                     <!-- Policy 8 -->
-                    <div class="p-4">
+                    <div class="p-4 border-bottom">
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div>
                                 <span class="badge bg-secondary me-2">8</span>
@@ -330,6 +375,28 @@
                             <strong>Reads:</strong> workflows, agents<br>
                             <strong>Graph Pattern:</strong> <code>(:Workflow)-[rels:INVOKES*]->(:Agent)</code><br>
                             <strong>Input:</strong> <code>agent_id</code>
+                        </div>
+                    </div>
+
+                    <!-- Policy 9 -->
+                    <div class="p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge bg-secondary me-2">9</span>
+                                <strong>Get HQ Weather</strong>
+                            </div>
+                            <div>
+                                <a href="/api_ciq_policy/create9" class="btn btn-sm btn-primary me-1">Policy</a>
+                                <a href="/api_ciq_knowledge_query/create9" class="btn btn-sm btn-secondary me-1">Query</a>
+                                <a href="/api_ciq_execute/execute9" class="btn btn-sm btn-success">Execute</a>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-2">Return the live weather block for CanBank's London headquarters: temperature, apparent temperature, wind speed, weather code and unit labels. The <code>weather</code> and <code>weather-units</code> external data resolvers fetch from open-meteo at query time using <code>{$latitude}</code> / <code>{$longitude}</code> drawn from the <code>hq_weather</code> node.</p>
+                        <div class="small">
+                            <strong>Reads:</strong> user, weather (location, latitude, longitude, current, units)<br>
+                            <strong>Graph Pattern:</strong> <code>(:User)</code>, <code>(:Weather {external_id: 'hq_weather'})</code><br>
+                            <strong>Input:</strong> <em>bearer token only</em><br>
+                            <strong>External Data Resolvers:</strong> <code>weather</code> (selector <code>.current</code>) and <code>weather-units</code> (selector <code>.current_units</code>) → <code>https://api.open-meteo.com/v1/forecast</code>
                         </div>
                     </div>
                 </div>

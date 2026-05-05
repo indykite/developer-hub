@@ -499,6 +499,34 @@
       ]
     },
     {
+      "external_id": "hq_weather",
+      "type": "Weather",
+      "is_identity": false,
+      "labels": [],
+      "properties": [
+        {
+          "type": "location",
+          "value": "London"
+        },
+        {
+          "type": "latitude",
+          "value": 51.5072
+        },
+        {
+          "type": "longitude",
+          "value": -0.1276
+        },
+        {
+          "type": "current",
+          "external_value": "weather"
+        },
+        {
+          "type": "units",
+          "external_value": "weather-units"
+        }
+      ]
+    },
+    {
       "external_id": "cs_policy",
       "type": "Folder",
       "is_identity": false,

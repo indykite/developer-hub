@@ -167,6 +167,19 @@ QUERY_8 = {
     ],
 }
 
+QUERY_9 = {
+    "nodes": [
+        "weather.external_id",
+        "weather.property.location",
+        "weather.property.latitude",
+        "weather.property.longitude",
+        "weather.property.current",
+        "weather.property.units",
+    ],
+    "relationships": [],
+    "aggregate_values": [],
+}
+
 
 _QUERY_DEFS = [
     {
@@ -269,6 +282,21 @@ _QUERY_DEFS = [
         ),
         "query": QUERY_8,
     },
+    {
+        "slot": "9",
+        "name": "get-hq-weather",
+        "display_name": "Get HQ Weather",
+        "description": (
+            "Get HQ Weather returns the current weather reading for CanBank's London "
+            "headquarters: temperature, apparent temperature, wind speed and weather code, "
+            "together with the unit labels. The hq_weather Weather node carries `latitude` "
+            "and `longitude` properties that are substituted into the `weather` external "
+            "data resolver URL. The `current` and `units` properties are populated live "
+            "from open-meteo at query time. Call tool 'ciq_execute' with no input_params. "
+            'Example: { "id": "get-hq-weather", "input_params": { } }.'
+        ),
+        "query": QUERY_9,
+    },
 ]
 
 
@@ -345,6 +373,12 @@ def show_create_form_7():
 def show_create_form_8():
     """CanBank CIQ Knowledge Query 8 - Get Workflows."""
     return render_template("ciq_knowledge_query/create_form.html", default_data=_default_for_slot("8"))
+
+
+@api_ciq_knowledge_query.get("/create9", tags=[tag])
+def show_create_form_9():
+    """CanBank CIQ Knowledge Query 9 - Get HQ Weather."""
+    return render_template("ciq_knowledge_query/create_form.html", default_data=_default_for_slot("9"))
 
 
 @api_ciq_knowledge_query.post("/create", tags=[tag])

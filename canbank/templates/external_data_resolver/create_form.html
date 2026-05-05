@@ -1,0 +1,99 @@
+{% extends "layouts/base.html" %}
+{% block title %}Create External Data Resolver{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <h3 class="mb-4">Create External Data Resolver</h3>
+                    <p class="text-muted mb-3">An External Data Resolver fetches data from a remote system at query time. Pair it with a node property using <code>external_value</code> instead of <code>value</code> so the property is resolved on demand.</p>
+                    <p class="text-muted mb-3">This form is pre-populated with a weather resolver that calls <a href="https://api.open-meteo.com" target="_blank">open-meteo</a> for CanBank's London headquarters and returns the current temperature. The same public endpoint is used by the iag-demo weather agent.</p>
+                    <p class="text-muted mb-3">Fill in the fields and click "Create" to submit a <code>POST /configs/v1/external-data-resolvers</code> request.</p>
+
+                    <form method="POST" action="{{ url_for('api_external_data_resolver.create_external_data_resolver') }}">
+                        <input type="hidden" name="slot" value="{{ default_data.slot }}">
+
+                        <div class="mb-3">
+                            <label for="project_id" class="form-label">Project ID *</label>
+                            <input type="text" class="form-control" id="project_id" name="project_id" value="{{ default_data.project_id }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ default_data.name }}"
+                                   pattern="^[a-z][a-z0-9-]*$"
+                                   title="Must start with a lowercase letter"
+                                   required>
+                            <small class="form-text text-muted">Used as the <code>external_value</code> on a node property.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="display_name" class="form-label">Display Name</label>
+                            <input type="text" class="form-control" id="display_name" name="display_name" value="{{ default_data.display_name }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="2">{{ default_data.description }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="url" class="form-label">URL *</label>
+                            <input type="url" class="form-control" id="url" name="url" value="{{ default_data.url }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="method" class="form-label">Method *</label>
+                            <select class="form-control" id="method" name="method" required>
+                                <option value="GET" {% if default_data.method == 'GET' %}selected{% endif %}>GET</option>
+                                <option value="POST" {% if default_data.method == 'POST' %}selected{% endif %}>POST</option>
+                                <option value="PUT" {% if default_data.method == 'PUT' %}selected{% endif %}>PUT</option>
+                                <option value="PATCH" {% if default_data.method == 'PATCH' %}selected{% endif %}>PATCH</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="headers" class="form-label">Headers (JSON)</label>
+                            <textarea class="form-control font-monospace" id="headers" name="headers" rows="3">{{ default_data.headers }}</textarea>
+                            <small class="form-text text-muted">Map of header name to a list of values, e.g. <code>{"Authorization": ["Bearer token"]}</code>.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="request_payload" class="form-label">Request Payload</label>
+                            <textarea class="form-control font-monospace" id="request_payload" name="request_payload" rows="3">{{ default_data.request_payload }}</textarea>
+                            <small class="form-text text-muted">Body to send for POST/PUT/PATCH. Supports template substitution.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="request_content_type" class="form-label">Request Content Type *</label>
+                            <select class="form-control" id="request_content_type" name="request_content_type" required>
+                                <option value="JSON" {% if default_data.request_content_type == 'JSON' %}selected{% endif %}>JSON</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="response_content_type" class="form-label">Response Content Type *</label>
+                            <select class="form-control" id="response_content_type" name="response_content_type" required>
+                                <option value="JSON" {% if default_data.response_content_type == 'JSON' %}selected{% endif %}>JSON</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="response_selector" class="form-label">Response Selector *</label>
+                            <input type="text" class="form-control font-monospace" id="response_selector" name="response_selector" value="{{ default_data.response_selector }}" required>
+                            <small class="form-text text-muted">JSON path used to extract the value from the response, e.g. <code>.current.temperature_2m</code>.</small>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">Create External Data Resolver</button>
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

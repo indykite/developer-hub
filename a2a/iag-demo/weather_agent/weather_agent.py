@@ -1,9 +1,19 @@
-"""Weather agent - A2A-compliant agent that returns current weather by city."""
+"""Weather agent - A2A-compliant agent that returns current weather by city.
 
+For requests targeting CanBank's headquarters ("HQ", "headquarters", "office") the
+agent calls the canbank `get-hq-weather` knowledge query through the IndyKite MCP
+server. The query reads the `hq_weather` Weather node, which carries `latitude` and
+`longitude` properties feeding the `weather` and `weather-units` external data
+resolvers. For any other city the agent falls back to a direct open-meteo call.
+"""
+
+import json
 import logging
 import os
 import re
 import uuid
+from contextlib import asynccontextmanager
+from typing import Any
 
 import httpx
 import uvicorn
@@ -25,16 +35,79 @@ from a2a.types import (
 from a2a.utils import new_agent_text_message, new_task, new_text_artifact
 from a2a.utils.constants import DEFAULT_RPC_URL
 from dotenv import load_dotenv
+from mcp import ClientSession
+from mcp.client.streamable_http import (
+    StreamableHTTPTransport,
+    streamable_http_client,
+)
+from mcp.shared._httpx_utils import create_mcp_http_client
+from mcp.types import CallToolResult, TextContent
 from starlette.applications import Starlette
 from starlette.exceptions import HTTPException
 
 load_dotenv()
+
+# ---------------------------------------------------------------------------
+# MCP transport workaround for Indykite (same patch retriever_agent uses)
+# ---------------------------------------------------------------------------
+# Indykite MCP returns 202 Accepted with Mcp-Session-Id in headers. The Python MCP
+# SDK returns early on 202 without extracting the session ID, causing the next GET
+# to fail with 404. Patch to extract session ID from 202 responses.
+import mcp.client.streamable_http as _mcp_streamable_http  # noqa: E402
+
+
+async def _patched_handle_post_request(self, ctx):
+    """Patched _handle_post_request that extracts session ID from 202 responses."""
+    headers = self._prepare_headers()
+    message = ctx.session_message.message
+    is_initialization = self._is_initialization_request(message)
+
+    async with ctx.client.stream(
+        "POST",
+        self.url,
+        json=message.model_dump(by_alias=True, mode="json", exclude_none=True),
+        headers=headers,
+    ) as response:
+        if response.status_code == 202:  # noqa: PLR2004
+            _mcp_streamable_http.logger.debug("Received 202 Accepted")
+            if is_initialization:
+                self._maybe_extract_session_id_from_response(response)
+            return
+
+        if response.status_code == 404:  # noqa: PLR2004
+            if isinstance(message.root, _mcp_streamable_http.JSONRPCRequest):
+                await self._send_session_terminated_error(
+                    ctx.read_stream_writer,
+                    message.root.id,
+                )
+            return
+
+        response.raise_for_status()
+        if is_initialization:
+            self._maybe_extract_session_id_from_response(response)
+
+        if isinstance(message.root, _mcp_streamable_http.JSONRPCRequest):
+            content_type = response.headers.get(_mcp_streamable_http.CONTENT_TYPE, "").lower()
+            if content_type.startswith(_mcp_streamable_http.JSON):
+                await self._handle_json_response(response, ctx.read_stream_writer, is_initialization)
+            elif content_type.startswith(_mcp_streamable_http.SSE):
+                await self._handle_sse_response(response, ctx, is_initialization)
+            else:
+                await self._handle_unexpected_content_type(content_type, ctx.read_stream_writer)
+
+
+StreamableHTTPTransport._handle_post_request = _patched_handle_post_request  # noqa: SLF001
 
 WEATHER_PORT = int(os.getenv("WEATHER_PORT", "6004"))
 ADVERTISED_HOST = os.getenv("ADVERTISED_HOST", "weather")
 WEATHER_AGENT_NAME = os.getenv("WEATHER_AGENT_NAME", "weather_agent")
 DEFAULT_CITY = os.getenv("WEATHER_DEFAULT_CITY", "London").strip()
 WEATHER_TIMEOUT = float(os.getenv("WEATHER_TIMEOUT", "15"))
+MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "").strip()
+MCP_AUTH_HEADER = os.getenv("IK_APP_AGENT_KEY", "").strip()
+INDYKITE_BASE_URL = os.getenv("INDYKITE_BASE_URL", "").strip()
+CIQ_QUERY_HQ_WEATHER = os.getenv("CIQ_QUERY_HQ_WEATHER", "").strip() or "get-hq-weather"
+_HQ_KEYWORDS = ("hq", "headquarters", "head office", "head-office", "canbank office", "the office")
 _LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
 logging.basicConfig(
@@ -67,12 +140,18 @@ weather_card = AgentCard(
         AgentSkill(
             id="current-weather",
             name="Current Weather",
-            description="Get current weather conditions for a city.",
-            tags=["weather", "forecast", "temperature"],
+            description=(
+                "Get current weather conditions for a city. CanBank HQ requests "
+                "(prompts mentioning HQ, headquarters or office) are resolved through "
+                "the IndyKite knowledge graph via the get-hq-weather query."
+            ),
+            tags=["weather", "forecast", "temperature", "hq", "ciq"],
             examples=[
                 "What's the weather in London?",
                 "Current weather in New York",
                 "How warm is it in Oslo right now?",
+                "What's the weather at CanBank HQ?",
+                "Current conditions at the office",
             ],
             input_modes=["text/plain"],
             output_modes=["text/plain"],
@@ -120,6 +199,153 @@ def _extract_city(prompt: str) -> str:
     if 0 < len(cleaned) <= 60 and len(cleaned.split()) <= 4:  # noqa: PLR2004
         return cleaned
     return DEFAULT_CITY
+
+
+def _is_hq_request(prompt: str) -> bool:
+    """Return True if the user is asking about CanBank's headquarters weather."""
+    if not prompt:
+        return False
+    lowered = prompt.lower()
+    return any(kw in lowered for kw in _HQ_KEYWORDS)
+
+
+def _format_call_tool_result(result: CallToolResult) -> str:
+    """Convert MCP CallToolResult to a string. Mirrors retriever_agent's helper."""
+    parts: list[str] = []
+    for block in result.content:
+        if isinstance(block, TextContent):
+            parts.append(block.text)  # noqa: PERF401
+    text = "\n".join(parts) if parts else ""
+    if result.structuredContent:
+        if text:
+            text += "\n\n"
+        text += json.dumps(result.structuredContent, indent=2)
+    if result.isError and not text:
+        text = "Tool error (no details returned)"
+    return text or "(empty)"
+
+
+def _extract_node_props(result: CallToolResult) -> dict[str, Any]:
+    """Pull the first row of `data[0].nodes` out of a ciq_execute response.
+
+    The response shape from /contx-iq/v1/execute is:
+      {"data": [{"nodes": {"<alias>": {...}, "<alias>.property.<name>": <value>, ...}}]}
+    Tries structuredContent first, then each text block individually (JSON-parsed).
+    """
+    candidates: list[Any] = []
+    if isinstance(result.structuredContent, dict):
+        candidates.append(result.structuredContent)
+    for block in result.content or []:
+        if isinstance(block, TextContent) and block.text:
+            try:
+                candidates.append(json.loads(block.text))
+            except (json.JSONDecodeError, ValueError):
+                continue
+
+    for payload in candidates:
+        if not isinstance(payload, dict):
+            continue
+        rows = payload.get("data") or []
+        if not rows or not isinstance(rows[0], dict):
+            continue
+        nodes = rows[0].get("nodes")
+        if isinstance(nodes, dict):
+            return nodes
+    return {}
+
+
+def _format_weather_sentence(location: str, current: dict[str, Any], units: dict[str, Any]) -> str:
+    """Format the same sentence the httpx path returns, from the CIQ result objects."""
+    temp = current.get("temperature_2m")
+    feels_like = current.get("apparent_temperature")
+    wind = current.get("wind_speed_10m")
+    weather_code = current.get("weather_code")
+    observed_at = current.get("time")
+    return (
+        f"Current weather for {location}: "
+        f"{temp}{units.get('temperature_2m', 'C')} "
+        f"(feels like {feels_like}{units.get('apparent_temperature', 'C')}), "
+        f"wind {wind}{units.get('wind_speed_10m', 'km/h')}, "
+        f"weather code {weather_code}. "
+        f"Observation time: {observed_at}."
+    )
+
+
+@asynccontextmanager
+async def _mcp_session(access_token: str):
+    """Open an MCP session against IndyKite, mirroring retriever_agent's wiring."""
+    if not MCP_SERVER_URL:
+        msg = "MCP_SERVER_URL not configured"
+        raise RuntimeError(msg)
+
+    headers: dict[str, str] = {}
+    if MCP_AUTH_HEADER:
+        headers["X-IK-ClientKey"] = MCP_AUTH_HEADER
+    if access_token:
+        headers["Authorization"] = f"Bearer {access_token}"
+    if INDYKITE_BASE_URL:
+        headers["X-IndyKite-Base-URL"] = INDYKITE_BASE_URL
+
+    async with (  # noqa: SIM117
+        create_mcp_http_client(headers=headers) as client,
+        streamable_http_client(
+            MCP_SERVER_URL,
+            http_client=client,
+            terminate_on_close=False,  # Indykite returns 403 on DELETE
+        ) as (read, write, _),
+    ):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            yield session
+
+
+def _unwrap_exception(exc: BaseException) -> list[BaseException]:
+    """Walk an ExceptionGroup / chained exception tree and return its leaf exceptions."""
+    seen: set[int] = set()
+    leaves: list[BaseException] = []
+    pending: list[BaseException] = [exc]
+    while pending:
+        current = pending.pop()
+        if id(current) in seen:
+            continue
+        seen.add(id(current))
+        sub = getattr(current, "exceptions", None)
+        if sub:
+            pending.extend(sub)
+            continue
+        leaves.append(current)
+        pending.extend(c for c in (getattr(current, "__cause__", None), getattr(current, "__context__", None)) if c)
+    return leaves
+
+
+def _format_exception_chain(exc: BaseException) -> str:
+    """Render every leaf in an ExceptionGroup as `Type: message`, joined by ' | '."""
+    return " | ".join(f"{type(e).__name__}: {e}" for e in _unwrap_exception(exc)) or repr(exc)
+
+
+async def _fetch_hq_weather_via_ciq(access_token: str) -> str:
+    """Run the canbank get-hq-weather query and format the standard weather sentence."""
+    async with _mcp_session(access_token) as session:
+        result = await session.call_tool(
+            "ciq_execute",
+            {"id": CIQ_QUERY_HQ_WEATHER, "input_params": {}},
+        )
+
+    nodes = _extract_node_props(result)
+    if not nodes:
+        msg = f"ciq_execute({CIQ_QUERY_HQ_WEATHER}) returned no rows: {_format_call_tool_result(result)[:300]}"
+        raise RuntimeError(msg)
+
+    location = nodes.get("weather.property.location") or "CanBank HQ"
+    current = nodes.get("weather.property.current")
+    units = nodes.get("weather.property.units")
+    if not isinstance(current, dict) or not isinstance(units, dict):
+        msg = (
+            f"ciq_execute({CIQ_QUERY_HQ_WEATHER}) missing weather.property.current/units; got keys={list(nodes.keys())}"
+        )
+        raise TypeError(msg)
+
+    return _format_weather_sentence(str(location), current, units)
 
 
 async def _fetch_current_weather(city: str) -> str:
@@ -195,9 +421,28 @@ class WeatherExecutor(AgentExecutor):
             ),
         )
 
-        city = _extract_city(prompt)
+        is_hq = _is_hq_request(prompt)
+        # When the user asked about HQ, _extract_city would yield e.g. "CanBank HQ"
+        # which the geocoder can't resolve. Use DEFAULT_CITY for the HQ fallback so
+        # the user still gets weather data when the CIQ path is unavailable.
+        city = DEFAULT_CITY if is_hq else _extract_city(prompt)
+        use_ciq = is_hq and bool(MCP_SERVER_URL)
         try:
-            result_text = await _fetch_current_weather(city)
+            if use_ciq:
+                _logger.info("HQ weather request — calling ciq_execute(%s)", CIQ_QUERY_HQ_WEATHER)
+                try:
+                    result_text = await _fetch_hq_weather_via_ciq(access_token)
+                except Exception as ciq_exc:
+                    _logger.warning(
+                        "CIQ HQ weather failed, falling back to direct fetch for %s: %s",
+                        city,
+                        _format_exception_chain(ciq_exc),
+                    )
+                    # Full traceback only at DEBUG to keep WARNING rows scannable in production logs.
+                    _logger.debug("CIQ HQ weather traceback", exc_info=ciq_exc)
+                    result_text = await _fetch_current_weather(city)
+            else:
+                result_text = await _fetch_current_weather(city)
         except Exception as exc:
             _logger.warning("Weather lookup failed for %s: %s", city, exc)
             result_text = f"I couldn't fetch weather for '{city}' right now. Please try again in a moment."
@@ -241,6 +486,10 @@ if __name__ == "__main__":
         ],
     )
     _logger.info("Starting %s on port %d", WEATHER_AGENT_NAME, WEATHER_PORT)
+    if MCP_SERVER_URL:
+        _logger.info("HQ weather route enabled: ciq_execute(%s) via %s", CIQ_QUERY_HQ_WEATHER, MCP_SERVER_URL)
+    else:
+        _logger.info("MCP_SERVER_URL not set — HQ weather will fall back to the direct open-meteo path")
     uvicorn.run(
         app,
         host="0.0.0.0",  # nosec B104  # noqa: S104
