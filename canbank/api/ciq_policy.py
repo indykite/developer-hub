@@ -232,6 +232,27 @@ POLICY_7 = {
     },
 }
 
+# Policy 9: Get HQ Weather — return the live weather reading for CanBank's London HQ.
+# The temperature property on the hq_weather node is resolved via the `weather` external
+# data resolver at query time.
+POLICY_9 = {
+    "meta": {"policy_version": "1.0-ciq"},
+    "subject": {"type": "User"},
+    "condition": {
+        "cypher": (
+            "MATCH (subject:User {external_id: $token.sub}) "
+            "WITH subject "
+            "MATCH (weather:Weather {external_id: 'hq_weather'})"
+        ),
+        "filter": [],
+    },
+    "allowed_reads": {
+        "nodes": ["subject.*", "weather.*"],
+        "relationships": [],
+        "aggregate_values": [],
+    },
+}
+
 # Policy 8: Get Workflows — workflows that contain a given agent_id
 POLICY_8 = {
     "meta": {"policy_version": "1.0-ciq"},
@@ -323,6 +344,18 @@ _POLICY_DEFS = [
         "policy": POLICY_8,
         "tags": [],
     },
+    {
+        "slot": "9",
+        "name": "get-hq-weather",
+        "display_name": "Get HQ Weather",
+        "description": (
+            "Return the current weather reading for CanBank's London headquarters. The "
+            "hq_weather Weather node's temperature property is populated at query time by "
+            "the `weather` external data resolver, which calls open-meteo."
+        ),
+        "policy": POLICY_9,
+        "tags": ["canbank", "weather"],
+    },
 ]
 
 
@@ -389,6 +422,12 @@ def show_create_form_7():
 def show_create_form_8():
     """CanBank CIQ Policy 8 - Get Workflows."""
     return render_template("ciq_policy/create_form.html", default_data=_default_for_slot("8"))
+
+
+@api_ciq_policy.get("/create9", tags=[tag])
+def show_create_form_9():
+    """CanBank CIQ Policy 9 - Get HQ Weather."""
+    return render_template("ciq_policy/create_form.html", default_data=_default_for_slot("9"))
 
 
 @api_ciq_policy.post("/create", tags=[tag])

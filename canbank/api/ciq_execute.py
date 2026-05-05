@@ -75,6 +75,11 @@ _EXECUTE_DEFS = [
         "title": "Get Workflows",
         "input_params": {"agent_id": "indykiteagent"},
     },
+    {
+        "slot": "9",
+        "title": "Get HQ Weather",
+        "input_params": {},
+    },
 ]
 
 
@@ -163,6 +168,15 @@ def show_execute_form_8():
     )
 
 
+@api_ciq_execute.get("/execute9", tags=[tag])
+def show_execute_form_9():
+    """CanBank CIQ Execute 9 - Get HQ Weather."""
+    return render_template(
+        "ciq_execute/ciq_execute_form.html",
+        default_data=_execute_default("9"),
+    )
+
+
 @api_ciq_execute.post("/execute", tags=[tag])
 def execution():
     """Execute contX IQ with the provided form data."""
@@ -194,7 +208,14 @@ def execution():
         "X-IK-ClientKey": app_token,
     }
     if slot not in _APP_SUBJECT_SLOTS:
-        headers["Authorization"] = f"Bearer {os.getenv('USER_TOKEN', '')}"
+        user_token = os.getenv("USER_TOKEN", "")
+        headers["Authorization"] = f"Bearer {user_token}"
+        # Log a fingerprint (length + first/last 4 chars) so we can confirm the
+        # process is shipping the token currently in .env — without leaking it.
+        fingerprint = (
+            f"len={len(user_token)} head={user_token[:4]!r} tail={user_token[-4:]!r}" if user_token else "<empty>"
+        )
+        logger.info("Authorization header USER_TOKEN: %s", fingerprint)
 
     response = requests.post(
         api_url,

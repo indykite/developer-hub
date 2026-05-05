@@ -10,6 +10,8 @@ from api.capture import api_capture
 from api.ciq_execute import api_ciq_execute
 from api.ciq_knowledge_query import api_ciq_knowledge_query
 from api.ciq_policy import api_ciq_policy
+from api.external_data_resolver import api_external_data_resolver
+from api.mcp_server import api_mcp_server
 from api.project import api_project
 from api.relationships import api_relationships
 from api.token_introspect import api_token_introspect
@@ -41,6 +43,8 @@ logging.getLogger("api.authzen").setLevel(logging.DEBUG)
 logging.getLogger("api.ciq_policy").setLevel(logging.DEBUG)
 logging.getLogger("api.ciq_knowledge_query").setLevel(logging.DEBUG)
 logging.getLogger("api.ciq_execute").setLevel(logging.DEBUG)
+logging.getLogger("api.external_data_resolver").setLevel(logging.DEBUG)
+logging.getLogger("api.mcp_server").setLevel(logging.DEBUG)
 
 # Log that the app is starting
 logger.info("=" * 50)
@@ -68,6 +72,7 @@ app.register_api(api_project)
 app.register_api(api_application)
 app.register_api(api_app_agent)
 app.register_api(api_token_introspect)
+app.register_api(api_mcp_server)
 app.register_api(api_authorization_policy)
 app.register_api(api_capture)
 app.register_api(api_relationships)
@@ -75,6 +80,7 @@ app.register_api(api_authzen)
 app.register_api(api_ciq_policy)
 app.register_api(api_ciq_knowledge_query)
 app.register_api(api_ciq_execute)
+app.register_api(api_external_data_resolver)
 
 
 @app.get("/")

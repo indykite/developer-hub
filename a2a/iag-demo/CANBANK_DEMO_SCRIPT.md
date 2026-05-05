@@ -34,6 +34,18 @@ Retrieve past decisions that incorporated the 'refund_policy' document.
 
 Tell me how many shares of NVDA the user with the id: rebecca can purchase
 
+### HQ weather (External Data Resolver)
+
+What's the weather at CanBank HQ?
+
+This prompt is routed to the `weather_agent`, which detects the HQ keyword and
+calls the canbank `get-hq-weather` knowledge query through the IndyKite MCP
+server. The query reads the `hq_weather` Weather node, whose `current` and
+`units` properties are populated live by two external data resolvers
+(`weather`, `weather-units`) hitting [open-meteo](https://open-meteo.com).
+For comparison, *"What's the weather in London?"* takes the direct Open-Meteo
+path without going through the IKG.
+
 ## Setup
 
 There are three things required for the demo:

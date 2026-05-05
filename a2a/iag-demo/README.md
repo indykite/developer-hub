@@ -30,6 +30,15 @@ is wired into the stack as an additional downstream agent the `orchestrator_agen
 delegate to — useful for demonstrating multi-agent routing behind the Indykite Agent
 Gateway.
 
+When the prompt mentions CanBank's headquarters (`HQ`, `headquarters`, `office`) **and**
+`MCP_SERVER_URL` is configured, the agent takes a different path: it calls the canbank
+`get-hq-weather` knowledge query through the IndyKite MCP server. That query reads the
+`hq_weather` Weather node, whose `current` and `units` properties are populated live by
+the canbank `weather` and `weather-units` external data resolvers (open-meteo). All
+other cities still go through the direct Open-Meteo path. See
+[`canbank/README.md`](../../canbank/README.md#external-data-resolvers) for the resolver
+setup.
+
 ## `bruno`
 
 Bruno collection of sample data, ciq queries and kbac queries.
@@ -92,6 +101,7 @@ Fill in, at a minimum:
 | `ORCHESTRATOR_IDP_CLIENT_ID` / `_SECRET` | IdP Provider `indykiteagent` client |
 | `RETRIEVER_IDP_CLIENT_ID` / `_SECRET` | IdP Provider `indykiteagent-2` client |
 | `WEATHER_IDP_CLIENT_ID` / `_SECRET` | IdP Provider `indykiteagent-3` client (weather agent) |
+| `CIQ_QUERY_HQ_WEATHER` | Optional. Name/GID of the `get-hq-weather` knowledge query used by the weather agent for HQ prompts (default: `get-hq-weather`). Create it in `canbank` (slot 9 + the `weather` / `weather-units` EDRs). Without it, all weather prompts go to Open-Meteo. |
 | `FLASK_SECRET_KEY` | Generate a fresh one: `python -c "import secrets; print(secrets.token_hex(32))"` |
 
 LLM selection:
@@ -177,7 +187,8 @@ Quick prompts once you're logged in as **Leslie**:
 - *"What policy documents pertain to refunds?"*
 - *"Retrieve past decisions that incorporated the 'refund_policy' document."*
 - *"Tell me how many shares of NVDA the user with the id: rebecca can purchase"*
-- *"What's the weather in London?"* (routed to the `weather_agent`)
+- *"What's the weather in London?"* (routed to the `weather_agent` → direct Open-Meteo)
+- *"What's the weather at CanBank HQ?"* (routed to the `weather_agent` → CIQ `get-hq-weather` → `weather` + `weather-units` resolvers; requires `CIQ_QUERY_HQ_WEATHER` and the canbank EDR setup)
 
 ### 7. Troubleshooting
 
