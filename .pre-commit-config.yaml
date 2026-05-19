@@ -21,9 +21,8 @@
 #   brew install pre-commit yamlfmt yamllint actionlint markdownlint-cli2 shellcheck shfmt trivy
 #
 # Update hooks and their dependencies regularly via:
-#   (remote) pre-commit autoupdate --jobs $(getconf _NPROCESSORS_ONLN)
+#   (remote) pre-commit autoupdate --freeze --jobs $(getconf _NPROCESSORS_ONLN)
 #   (local) brew update && brew upgrade -g
-# TODO: do NOT use '--freeze' until https://github.com/renovatebot/renovate/issues/22567 is completed
 #
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
@@ -42,7 +41,7 @@ repos:
         name: pre-commit/check-useless-excludes
 
   - repo: ssh://git@github.com/indykite/ops-common
-    rev: "93f7e5f4c05a1b86d36993cd0b2a47fd5cfba54b" # using a branch name (or HEAD) is not supported
+    rev: "ea309d10f775a930d20f3fccb58fb93ecdd99fef" # using a branch name (or HEAD) is not supported
     hooks:
       # POST-CHECKOUT
       # install explicitly with: pre-commit install -t post-checkout
@@ -65,7 +64,7 @@ repos:
   #
   # Renovate
   - repo: https://github.com/renovatebot/pre-commit-hooks # ci:ignore:OK to validate locally only, otherwise it adds 850MB+ to unpacked cache
-    rev: "43.150.0"
+    rev: "2a27c9fda39c7c05bc7488a10920c7700979c263" # frozen: 43.150.0
     hooks:
       - id: renovate-config-validator
         args: [--strict]
@@ -73,7 +72,7 @@ repos:
   #
   # Commit Message linting
   - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook # ci:ignore:executed under a separate GitHub action
-    rev: v9.25.0
+    rev: 1d7031e6d0bbfce76e5a625b0cec24fb22e517a0 # frozen: v9.25.0
     hooks:
       # NON-DEFAULT stage, install explicitly with: pre-commit install -t commit-msg
       - id: commitlint
@@ -87,7 +86,7 @@ repos:
 
   #
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # frozen: v6.0.0
     hooks:
       # Git style
       - id: check-added-large-files
@@ -148,13 +147,13 @@ repos:
   #
   # more Python
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.25
+    rev: 4b2e70d08cb2ccd26d1fba73588de41c7a5d50b7 # frozen: v0.25
     hooks:
       - id: validate-pyproject
         name: python-validate-pyproject
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.13
+    rev: 5e2fb545eba1ea9dc051f6f962d52fe8f76a9794 # frozen: v0.15.13
     hooks:
       - id: ruff-format
         name: python-ruff-format
@@ -163,33 +162,33 @@ repos:
         args: [--fix] # enable autofixes
 
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.9.4
+    rev: 92ae8b82fb422a639f0ed8d99e96cea769594e08 # frozen: 1.9.4
     hooks:
       - id: bandit
         name: python-bandit
 
   - repo: https://github.com/PyCQA/isort
-    rev: 8.0.1
+    rev: dac090ce4d9ee313d086e2e89ab1acb8c2664fa1 # frozen: 9.0.0a3
     hooks:
       - id: isort
         name: python-isort
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 7.3.0
+    rev: d93590f5be797aabb60e3b09f2f52dddb02f349f # frozen: 7.3.0
     hooks:
       - id: flake8
         name: python-flake8
         additional_dependencies: [Flake8-pyproject]
 
   - repo: https://github.com/PyCQA/pylint
-    rev: v4.0.5
+    rev: 88e1ab7545a4af4aea15c305a154c164a95ab842 # frozen: v4.0.5
     hooks:
       - id: pylint
         name: pylint
 
   - repo: https://github.com/psf/black-pre-commit-mirror # ci:ignore:manual stage only
     # Using this mirror lets us use mypyc-compiled black, which is about 2x faster
-    rev: 26.5.1
+    rev: 4160603246a6b365d4a2af661c6d71b0a0f50478 # frozen: 26.5.1
     hooks:
       - id: black
         # It is recommended to specify the latest version of Python supported by the project
@@ -198,7 +197,7 @@ repos:
         stages: [manual] # XXX: not used by default, but left as a reference for potential tool introduction
 
   - repo: https://github.com/pre-commit/mirrors-mypy # ci:ignore:manual stage only
-    rev: v1.20.2
+    rev: d2823d321df3af8f878f7ee3414dc94d037145b9 # frozen: v2.1.0
     hooks:
       - id: mypy
         name: python-mypy
@@ -208,7 +207,7 @@ repos:
   #
   # Detect hardcoded secrets
   - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.30.1
+    rev: 2ca41cc1372d1e939a6a879f18cdc19fc1cac1ce # frozen: v8.30.0
     hooks:
       - id: gitleaks
         name: gitleaks
