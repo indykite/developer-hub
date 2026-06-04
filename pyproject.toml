@@ -118,6 +118,10 @@ ignore = [
 quote-style = 'double'
 [tool.ruff.lint.flake8-quotes]
 inline-quotes = 'double'
+# Keep ruff's import sorting in agreement with isort (which classifies the local
+# `api` package as third-party, sorted alphabetically rather than in its own group).
+[tool.ruff.lint.isort]
+known-third-party = ["api"]
 
 
 #

@@ -1,0 +1,191 @@
+{
+  "relationships": [
+    {
+      "source": {
+        "external_id": "knightrider",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "kitt",
+        "type": "Car"
+      },
+      "type": "DRIVES"
+    },
+    {
+      "source": {
+        "external_id": "satchmo",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "cadillacv16",
+        "type": "Car"
+      },
+      "type": "DRIVES"
+    },
+    {
+      "source": {
+        "external_id": "karel",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "listek",
+        "type": "Ticket"
+      },
+      "type": "HAS"
+    },
+    {
+      "source": {
+        "external_id": "listek",
+        "type": "Ticket"
+      },
+      "target": {
+        "external_id": "harmonika",
+        "type": "Bus"
+      },
+      "type": "FOR"
+    },
+    {
+      "source": {
+        "external_id": "karel",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "airbook-xyz",
+        "type": "Laptop"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "external_id": "alice",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "airbook-xyz",
+        "type": "Laptop"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "external_id": "knightrider",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "kitt",
+        "type": "Car"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "external_id": "alice",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "cadillacv16",
+        "type": "Car"
+      },
+      "type": "DRIVES"
+    },
+    {
+      "source": {
+        "external_id": "ole",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "cb2563",
+        "type": "PaymentMethod"
+      },
+      "type": "HAS"
+    },
+    {
+      "source": {
+        "external_id": "ole",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "carOle",
+        "type": "Car"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "external_id": "ole",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "loyalty1",
+        "type": "Loyalty"
+      },
+      "type": "IS_MEMBER"
+    },
+    {
+      "source": {
+        "external_id": "alice",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "loyalty1",
+        "type": "Loyalty"
+      },
+      "type": "IS_MEMBER"
+    },
+    {
+      "source": {
+        "external_id": "ole",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "consent1",
+        "type": "ConsentPayment"
+      },
+      "type": "GRANTED"
+    },
+    {
+      "source": {
+        "external_id": "carOle",
+        "type": "Car"
+      },
+      "target": {
+        "external_id": "licenseOle",
+        "type": "LicenseNumber"
+      },
+      "type": "HAS"
+    },
+    {
+      "source": {
+        "external_id": "consent1",
+        "type": "ConsentPayment"
+      },
+      "target": {
+        "external_id": "cb2563",
+        "type": "PaymentMethod"
+      },
+      "type": "GRANTED"
+    },
+    {
+      "source": {
+        "external_id": "companyParking",
+        "type": "Company"
+      },
+      "target": {
+        "external_id": "applicationParking",
+        "type": "Application"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "external_id": "applicationParking",
+        "type": "Application"
+      },
+      "target": {
+        "external_id": "consent1",
+        "type": "ConsentPayment"
+      },
+      "type": "USES"
+    }
+  ]
+}
