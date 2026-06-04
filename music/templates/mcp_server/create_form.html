@@ -1,0 +1,74 @@
+{% extends "layouts/base.html" %}
+{% block title %}Create MCP Server{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <h3 class="mb-4">Create MCP Server</h3>
+                    <p class="text-muted mb-3">An MCP Server configuration tells IndyKite which App Agent and Token Introspect to use when authenticating inbound MCP traffic for this project. Create one after the App Agent and Token Introspect already exist.</p>
+                    <p class="text-muted mb-3">The form is pre-populated using <code>APP_AGENT_ID</code> and <code>TOKEN_INTROSPECT_ID</code> from <code>.env</code> when those steps were completed in this app. The created MCP Server's id is saved as <code>MCP_SERVER_ID</code>.</p>
+
+                    <form method="POST" action="{{ url_for('api_mcp_server.create_mcp_server') }}">
+                        <div class="mb-3">
+                            <label for="project_id" class="form-label">Project ID *</label>
+                            <input type="text" class="form-control" id="project_id" name="project_id" value="{{ default_data.project_id }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ default_data.name }}"
+                                   pattern="^[a-z][a-z0-9-]*$"
+                                   title="Must start with a lowercase letter"
+                                   required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="display_name" class="form-label">Display Name</label>
+                            <input type="text" class="form-control" id="display_name" name="display_name" value="{{ default_data.display_name }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="2">{{ default_data.description }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="enabled" class="form-label">Enabled *</label>
+                            <select class="form-control" id="enabled" name="enabled" required>
+                                <option value="true" {% if default_data.enabled %}selected{% endif %}>True</option>
+                                <option value="false" {% if not default_data.enabled %}selected{% endif %}>False</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="app_agent_id" class="form-label">App Agent ID *</label>
+                            <input type="text" class="form-control font-monospace" id="app_agent_id" name="app_agent_id" value="{{ default_data.app_agent_id }}" required>
+                            <small class="form-text text-muted">GID of an existing App Agent (saved as <code>APP_AGENT_ID</code> after <code>/api_app_agent/create</code>).</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="token_introspect_id" class="form-label">Token Introspect ID *</label>
+                            <input type="text" class="form-control font-monospace" id="token_introspect_id" name="token_introspect_id" value="{{ default_data.token_introspect_id }}" required>
+                            <small class="form-text text-muted">GID of an existing Token Introspect (saved as <code>TOKEN_INTROSPECT_ID</code> after <code>/api_token_introspect/create</code>).</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="scopes_supported" class="form-label">Scopes Supported *</label>
+                            <input type="text" class="form-control" id="scopes_supported" name="scopes_supported" value="{{ default_data.scopes_supported | join(',') }}" required>
+                            <small class="form-text text-muted">Comma-separated list of scopes the MCP Server accepts (e.g. <code>name,email</code>).</small>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">Create MCP Server</button>
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

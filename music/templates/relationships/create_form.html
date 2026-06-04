@@ -1,0 +1,191 @@
+{% extends "layouts/base.html" %}
+{% block title %}Capture Music Relationships{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <h3 class="mb-4">Capture Music Relationships</h3>
+                    <p class="text-muted mb-2">The default dataset contains <strong>{{ rel_count }}</strong> relationships from
+                        <code>{{ relationships_file }}</code>. The full file is loaded server-side when you click "Capture" —
+                        it is not embedded in this page.</p>
+                    <p class="text-muted mb-4">Below is a preview of the first {{ preview_count }} entries. Untick
+                        "Use defaults from file" to paste a custom JSON payload instead.</p>
+
+                    <form id="rel-form" method="POST" action="{{ url_for('api_relationships.create_relationships') }}">
+                        <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" id="use_defaults" name="use_defaults" value="true" checked
+                                onchange="document.getElementById('relationships').disabled = this.checked;">
+                            <label class="form-check-label" for="use_defaults">
+                                Use defaults from file (<code>{{ relationships_file }}</code>, {{ rel_count }} relationships)
+                            </label>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="relationships" class="form-label">Relationships (JSON) — preview of first {{ preview_count }}</label>
+                            <textarea class="form-control font-monospace" id="relationships" name="relationships" rows="20" disabled>{{ preview_json }}</textarea>
+                            <small class="form-text text-muted">Enabled only when "Use defaults from file" is unchecked. Submit a JSON object with a <code>relationships</code> array.</small>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" id="rel-submit" class="btn btn-primary">Capture Relationships</button>
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+
+                    <div id="rel-progress" class="mt-4 d-none">
+                        <h5 id="progress-title" class="mb-2">Capturing relationships…</h5>
+                        <div class="progress" style="height: 24px;">
+                            <div id="progress-bar" class="progress-bar progress-bar-striped progress-bar-animated"
+                                role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                        </div>
+                        <div class="small text-muted mt-2" id="progress-detail">Starting…</div>
+                        <div class="small text-muted" id="progress-errors"></div>
+                    </div>
+
+                    <div id="rel-result" class="mt-4 d-none">
+                        <div id="result-alert" class="alert" role="alert"></div>
+                        <div class="mt-3">
+                            <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Home</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+(function () {
+    const form = document.getElementById('rel-form');
+    const submitBtn = document.getElementById('rel-submit');
+    const progressBox = document.getElementById('rel-progress');
+    const progressBar = document.getElementById('progress-bar');
+    const progressDetail = document.getElementById('progress-detail');
+    const progressErrors = document.getElementById('progress-errors');
+    const resultBox = document.getElementById('rel-result');
+    const resultAlert = document.getElementById('result-alert');
+
+    let errorCount = 0;
+    let firstErrorText = '';
+    let firstErrorStatus = 0;
+    let worstStatus = 0;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Capturing…';
+        progressBox.classList.remove('d-none');
+        resultBox.classList.add('d-none');
+        errorCount = 0;
+        firstErrorText = '';
+        firstErrorStatus = 0;
+        worstStatus = 0;
+        progressErrors.textContent = '';
+
+        const formData = new FormData(form);
+        let response;
+        try {
+            response = await fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: { 'Accept': 'application/x-ndjson' },
+            });
+        } catch (err) {
+            finishWithError('Network error: ' + err);
+            return;
+        }
+
+        if (!response.ok && !response.body) {
+            finishWithError('Request failed: ' + response.status);
+            return;
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n');
+            buffer = lines.pop();
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed) continue;
+                let evt;
+                try { evt = JSON.parse(trimmed); } catch { continue; }
+                handleEvent(evt);
+            }
+        }
+    });
+
+    function handleEvent(evt) {
+        if (evt.type === 'start') {
+            progressDetail.textContent =
+                `0 / ${evt.total_chunks} chunks (${evt.total_relationships} relationships total)`;
+            progressBar.style.width = '0%';
+            progressBar.setAttribute('aria-valuenow', '0');
+            progressBar.textContent = '0%';
+        } else if (evt.type === 'chunk') {
+            const pct = Math.round((evt.completed / evt.total) * 100);
+            progressBar.style.width = pct + '%';
+            progressBar.setAttribute('aria-valuenow', String(pct));
+            progressBar.textContent = pct + '%';
+            progressDetail.textContent = `${evt.completed} / ${evt.total} chunks`;
+            if (evt.error || (evt.status_code && evt.status_code >= 400)) {
+                errorCount += 1;
+                if (!firstErrorText) {
+                    firstErrorText = evt.response_text || evt.error || '';
+                    firstErrorStatus = evt.status_code || 0;
+                }
+                if ((evt.status_code || 0) > worstStatus) worstStatus = evt.status_code || 0;
+                progressErrors.textContent = `${errorCount} chunk(s) failed so far`;
+            }
+        } else if (evt.type === 'done') {
+            progressBar.classList.remove('progress-bar-animated');
+            if (evt.error && !firstErrorText) firstErrorText = evt.error;
+            if (evt.status_code && !firstErrorStatus) firstErrorStatus = evt.status_code;
+            const displayStatus = errorCount > 0 ? (worstStatus || evt.status_code) : evt.status_code;
+            progressDetail.textContent = `Finished. ${errorCount === 0 ? 'All chunks OK.' : `${errorCount} chunk(s) failed.`}`;
+            const ok = errorCount === 0 && !evt.error && evt.status_code >= 200 && evt.status_code < 300;
+            resultAlert.className = 'alert ' + (ok ? 'alert-success' : 'alert-warning');
+            let html = ok
+                ? `<strong>Success!</strong> All ${evt.results.length} chunks captured.`
+                : `<strong>Completed with issues.</strong> ${errorCount} of ${evt.results.length} chunk(s) failed (failing chunks returned status ${displayStatus}).`;
+            if (!ok && firstErrorText) {
+                html += `<hr><div class="small mb-1"><strong>First failure (status ${firstErrorStatus || displayStatus}):</strong></div>`;
+                html += `<pre class="small mb-0" style="white-space:pre-wrap;">${escapeHtml(firstErrorText)}</pre>`;
+                if (firstErrorStatus === 401) {
+                    html += `<hr><div class="small">401 usually means <code>APP_TOKEN</code> is missing, expired, or belongs to a different project. Recreate the App Agent at <a href="/api_app_agent/create">/api_app_agent/create</a>.</div>`;
+                } else if (firstErrorStatus === 599 || /timed out|Read timed out/i.test(firstErrorText)) {
+                    html += `<hr><div class="small">A timeout means the chunk was retried but never completed in time. The upstream API may be slow or overloaded. Click <strong>Capture Relationships</strong> again — only the failing chunks need to succeed. Each chunk is now retried up to 3 times with backoff and a 120s timeout.</div>`;
+                }
+            }
+            resultAlert.innerHTML = html;
+            resultBox.classList.remove('d-none');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Capture Relationships';
+        }
+    }
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c => ({
+            '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+        }[c]));
+    }
+
+    function finishWithError(msg) {
+        progressBar.classList.remove('progress-bar-animated');
+        progressBar.classList.add('bg-danger');
+        resultAlert.className = 'alert alert-danger';
+        resultAlert.innerHTML = '<strong>Error.</strong> ' + msg;
+        resultBox.classList.remove('d-none');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Capture Relationships';
+    }
+})();
+</script>
+{% endblock %}

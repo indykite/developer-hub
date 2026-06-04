@@ -1,0 +1,1673 @@
+{
+  "project": {
+    "organization_id": "{{organization_gid}}",
+    "name": "music-demo",
+    "display_name": "Music Demo",
+    "description": "Music demo project for IndyKite KBAC and ContX IQ",
+    "region": "europe-west1",
+    "db_connection": {
+      "name": "",
+      "password": "",
+      "url": "",
+      "username": ""
+    }
+  },
+  "project_byodb": {
+    "organization_id": "{{organization_gid}}",
+    "name": "byodb-project",
+    "display_name": "BYODB Project",
+    "region": "europe-west1",
+    "db_connection": {
+      "name": "{{db_name}}",
+      "url": "neo4j+s://{{db_host}}",
+      "username": "neo4j",
+      "password": "{{db_password}}"
+    }
+  },
+  "application": {
+    "project_id": "{{project_gid}}",
+    "name": "music-app",
+    "display_name": "Music App",
+    "description": "Music application that consumes the IndyKite Knowledge Graph"
+  },
+  "app_agent": {
+    "application_id": "{{application_gid}}",
+    "name": "music-agent",
+    "display_name": "Music Agent",
+    "description": "App agent for the music demo",
+    "api_permissions": [
+      "Authorization",
+      "Capture",
+      "ContXIQ",
+      "IKGRead",
+      "EntityMatching",
+      "ReadDataSchema"
+    ]
+  },
+  "app_agent_credentials": {
+    "application_agent_id": "{{app_agent_gid}}",
+    "display_name": "AppAgent Credentials name",
+    "expire_time": "2027-04-28T12:34:56Z"
+  },
+  "token_introspect": {
+    "project_id": "{{project_gid}}",
+    "name": "auth0-person-introspect",
+    "display_name": "Auth0 Person Token Introspect",
+    "description": "Introspect Auth0 tokens and upsert Person nodes",
+    "jwt_matcher": {
+      "issuer": "https://1st.eu.auth0.com/",
+      "audience": "N6VibJHjxIpKEvkBKSWU1xLxh6xnca55"
+    },
+    "ikg_node_type": "Person",
+    "claims_mapping": {
+      "email": {
+        "selector": "email"
+      }
+    },
+    "online_validation": {
+      "cache_ttl": 600
+    },
+    "perform_upsert": true
+  },
+  "mcp_server": {
+    "app_agent_id": "{{app_agent_gid}}",
+    "token_introspect_id": "{{token_introspect_gid}}",
+    "project_id": "{{project_gid}}",
+    "name": "music-mcp-server",
+    "display_name": "Music MCP Server",
+    "description": "MCP Server configuration for the Music demo \u2014 binds the App Agent and Token Introspect used to authenticate inbound MCP traffic.",
+    "enabled": true,
+    "scopes_supported": [
+      "email"
+    ]
+  },
+  "kbacs": [
+    {
+      "project_id": "{{project_gid}}",
+      "name": "concert-performer",
+      "display_name": "Performer Access",
+      "description": "Person can PERFORM at venue if their karaoke_confidence >= venue's min_confidence",
+      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"PERFORM\"],\"resource\":{\"type\":\"Venue\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WILL_ATTEND]->(resource:Venue) WHERE subject.property.karaoke_confidence >= resource.property.min_confidence\"}}",
+      "status": "ACTIVE",
+      "tags": []
+    },
+    {
+      "project_id": "{{project_gid}}",
+      "name": "venue-entry-by-membership",
+      "display_name": "Venue Entry by Attendance Rights",
+      "description": "Person can ENTER a Venue if they have WILL_ATTEND relationship",
+      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"ENTER\"],\"resource\":{\"type\":\"Venue\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WILL_ATTEND]->(resource:Venue)\"}}",
+      "status": "ACTIVE",
+      "tags": []
+    },
+    {
+      "project_id": "{{project_gid}}",
+      "name": "flash-mob-recruitment",
+      "display_name": "Flash Mob Recruitment Eligibility",
+      "description": "Person can JOIN Flash-Mob-Recruitment only if dance_skill >= 0.85",
+      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"JOIN\"],\"resource\":{\"type\":\"Venue\"},\"condition\":{\"cypher\":\"MATCH (subject:Person), (resource:Venue) WHERE resource.property.name = 'Flash-Mob-Recruitment' AND subject.property.dance_skill >= resource.property.min_danceability\"}}",
+      "status": "ACTIVE",
+      "tags": []
+    },
+    {
+      "project_id": "{{project_gid}}",
+      "name": "track-loudness-check",
+      "display_name": "Track Loudness Venue Compatibility",
+      "description": "Track can be PLAYED at Venue if loudness respects venue's max_loudness",
+      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Track\"},\"actions\":[\"PLAY\"],\"resource\":{\"type\":\"Venue\"},\"condition\":{\"cypher\":\"MATCH (subject:Track)-[:PLAYED_AT]->(resource:Venue) WHERE subject.property.loudness >= resource.property.max_loudness\"}}",
+      "status": "ACTIVE",
+      "tags": []
+    },
+    {
+      "project_id": "{{project_gid}}",
+      "name": "dmv-endless-suffering",
+      "display_name": "DMV Endless Track Requirement",
+      "description": "Track can PLAY at DMV-Waiting-Area only if duration >= 6:00 and energy <= 0.2",
+      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Track\"},\"actions\":[\"PLAY\"],\"resource\":{\"type\":\"Venue\"},\"condition\":{\"cypher\":\"MATCH (subject:Track), (resource:Venue) WHERE resource.property.name = 'DMV-Waiting-Area' AND subject.property.energy <= resource.property.max_energy\"}}",
+      "status": "ACTIVE",
+      "tags": []
+    },
+    {
+      "project_id": "{{project_gid}}",
+      "name": "playlist-venue-approval",
+      "display_name": "Playlist Venue Approval",
+      "description": "Playlist can be FEATURED at Venue if it has APPROVED_FOR relationship",
+      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Playlist\"},\"actions\":[\"FEATURE\"],\"resource\":{\"type\":\"Venue\"},\"condition\":{\"cypher\":\"MATCH (subject:Playlist)-[:APPROVED_FOR]->(resource:Venue)\"}}",
+      "status": "ACTIVE",
+      "tags": []
+    },
+    {
+      "project_id": "{{project_gid}}",
+      "name": "share-subscribed-playlist",
+      "display_name": "Share Subscribed Playlist",
+      "description": "Person can SHARE a Playlist if they are SUBSCRIBED_TO it or CREATED it",
+      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"SHARE\"],\"resource\":{\"type\":\"Playlist\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:SUBSCRIBED_TO|CREATED]->(resource:Playlist)\"}}",
+      "status": "ACTIVE",
+      "tags": []
+    },
+    {
+      "project_id": "{{project_gid}}",
+      "name": "family-playlist-access",
+      "display_name": "Family Playlist Access",
+      "description": "Person can VIEW Playlist created by family member (MARRIED_TO, PARENT_OF, or child)",
+      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"VIEW\"],\"resource\":{\"type\":\"Playlist\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:MARRIED_TO|PARENT_OF|PARTNERS]-(family:Person)-[:CREATED]->(resource:Playlist)\"}}",
+      "status": "ACTIVE",
+      "tags": []
+    },
+    {
+      "project_id": "{{project_gid}}",
+      "name": "corporate-no-enthusiasm",
+      "display_name": "Corporate Meeting Room Energy Limit",
+      "description": "Track can PLAY at Corporate-Meeting-Room only if energy <= 0.2 (no enthusiasm allowed)",
+      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Track\"},\"actions\":[\"PLAY\"],\"resource\":{\"type\":\"Venue\"},\"condition\":{\"cypher\":\"MATCH (subject:Track), (resource:Venue) WHERE resource.property.name = 'Corporate-Meeting-Room' AND subject.property.energy <= resource.property.max_energy\"}}",
+      "status": "ACTIVE",
+      "tags": []
+    },
+    {
+      "project_id": "{{project_gid}}",
+      "name": "dj-at-venue",
+      "display_name": "DJ Rights at Venue",
+      "description": "Person can DJ at Venue if they WILL_ATTEND and have karaoke_confidence >= 0.8",
+      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"DJ\"],\"resource\":{\"type\":\"Venue\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WILL_ATTEND]->(resource:Venue) WHERE subject.property.karaoke_confidence >= 0.8\"}}",
+      "status": "ACTIVE",
+      "tags": []
+    }
+  ],
+  "evaluations": [
+    {
+      "name": "Evaluation",
+      "body": {
+        "subject": {
+          "type": "Person",
+          "id": "person-52"
+        },
+        "resource": {
+          "type": "Venue",
+          "id": "venue-1"
+        },
+        "action": {
+          "name": "ENTER"
+        }
+      }
+    },
+    {
+      "name": "Evaluations",
+      "body": {
+        "subject": {
+          "type": "Person",
+          "id": "person-52"
+        },
+        "evaluations": [
+          {
+            "resource": {
+              "type": "Venue",
+              "id": "venue-1"
+            },
+            "action": {
+              "name": "ENTER"
+            }
+          },
+          {
+            "resource": {
+              "type": "Venue",
+              "id": "venue-10"
+            },
+            "action": {
+              "name": "ENTER"
+            }
+          },
+          {
+            "resource": {
+              "type": "Playlist",
+              "id": "playlist-9"
+            },
+            "action": {
+              "name": "SHARE"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Evaluation2",
+      "body": {
+        "subject": {
+          "type": "Person",
+          "id": "person-52"
+        },
+        "resource": {
+          "type": "Venue",
+          "id": "venue-10"
+        },
+        "action": {
+          "name": "ENTER"
+        }
+      }
+    },
+    {
+      "name": "Evaluation3",
+      "body": {
+        "subject": {
+          "type": "Person",
+          "id": "person-44"
+        },
+        "resource": {
+          "type": "Playlist",
+          "id": "playlist-5"
+        },
+        "action": {
+          "name": "VIEW"
+        }
+      }
+    },
+    {
+      "name": "Evaluation4",
+      "body": {
+        "subject": {
+          "type": "Person",
+          "id": "person-47"
+        },
+        "resource": {
+          "type": "Playlist",
+          "id": "playlist-2"
+        },
+        "action": {
+          "name": "SHARE"
+        }
+      }
+    },
+    {
+      "name": "Evaluation5",
+      "body": {
+        "subject": {
+          "type": "Person",
+          "id": "person-40"
+        },
+        "resource": {
+          "type": "Venue",
+          "id": "venue-3"
+        },
+        "action": {
+          "name": "ENTER"
+        }
+      }
+    },
+    {
+      "name": "Evaluation6",
+      "body": {
+        "subject": {
+          "type": "Person",
+          "id": "person-2"
+        },
+        "resource": {
+          "type": "Playlist",
+          "id": "playlist-1"
+        },
+        "action": {
+          "name": "VIEW"
+        }
+      }
+    },
+    {
+      "name": "Evaluation7",
+      "body": {
+        "subject": {
+          "type": "Person",
+          "id": "person-44"
+        },
+        "resource": {
+          "type": "Playlist",
+          "id": "playlist-17"
+        },
+        "action": {
+          "name": "SHARE"
+        }
+      }
+    },
+    {
+      "name": "Evaluation8",
+      "body": {
+        "subject": {
+          "type": "Person",
+          "id": "person-1"
+        },
+        "resource": {
+          "type": "Playlist",
+          "id": "playlist-13"
+        },
+        "action": {
+          "name": "VIEW"
+        }
+      }
+    },
+    {
+      "name": "Evaluation9",
+      "body": {
+        "subject": {
+          "type": "Person",
+          "id": "person-56"
+        },
+        "resource": {
+          "type": "Playlist",
+          "id": "playlist-5"
+        },
+        "action": {
+          "name": "SHARE"
+        }
+      }
+    },
+    {
+      "name": "Evaluation10",
+      "body": {
+        "subject": {
+          "type": "Person",
+          "id": "person-39"
+        },
+        "resource": {
+          "type": "Venue",
+          "id": "venue-21"
+        },
+        "action": {
+          "name": "ENTER"
+        }
+      }
+    }
+  ],
+  "ciq_groups": [
+    {
+      "slot": 1,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-app-venue-playable-tracks",
+        "display_name": "App: Query Venue's Playable Tracks",
+        "description": "Application can read and manage tracks that can be played at a venue",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"_Application\"},\"condition\":{\"cypher\":\"MATCH (subject:_Application) MATCH (track:Track)-[r:PLAYED_AT]->(venue:Venue)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"attribute\":\"venue.property.name\",\"operator\":\"=\",\"value\":\"$venue_name\"},{\"attribute\":\"subject.external_id\",\"operator\":\"=\",\"value\":\"$_appId\"}]}]},\"allowed_reads\":{\"nodes\":[\"track.property.title\",\"track.property.loudness\",\"track.property.energy\",\"track.property.danceability\",\"track.property.duration\",\"track.external_id\",\"venue.external_id\"],\"relationships\":[\"r\"]},\"allowed_upserts\":{\"relationships\":{\"relationship_types\":[{\"type\":\"PLAYED_AT\",\"source_node_label\":\"Track\",\"target_node_label\":\"Venue\"}]}},\"allowed_deletes\":{\"relationships\":[\"r\"]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-app-venue-playable-tracks-read",
+            "display_name": "App Query: Read Venue's Playable Tracks",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {venue_name: (required) name of the Venue (matches venue.property.name)}. Auth: X-IK-ClientKey only (_Application subject), no Bearer token; $_appId is auto-filled. Returns: for each Track playable at that venue: title, loudness, energy, danceability, duration, plus the PLAYED_AT relationship.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"track.property.title\",\"track.property.loudness\",\"track.property.energy\",\"track.property.danceability\",\"track.property.duration\"],\"relationships\":[\"r\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "venue_name": "Shower-Concert-Hall"
+            },
+            "page_token": 1
+          }
+        },
+        {
+          "name": "kqb",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-app-venue-playable-tracks-write",
+            "display_name": "App Query: Add Track to Venue",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {venue_name: (required) name of the Venue whose matched PLAYED_AT links are re-upserted}. Auth: X-IK-ClientKey only (_Application subject), no Bearer token; $_appId is auto-filled. Returns: track.external_id, venue.external_id, and the upserted PLAYED_AT relationship.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"upsert_relationships\":[{\"name\":\"newPlayedAt\",\"source\":\"track\",\"target\":\"venue\",\"type\":\"PLAYED_AT\"}],\"nodes\":[\"track.external_id\",\"venue.external_id\"],\"relationships\":[\"newPlayedAt\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "venue_name": "Shower-Concert-Hall"
+            },
+            "page_token": 1
+          }
+        },
+        {
+          "name": "kqc",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-app-venue-playable-tracks-delete",
+            "display_name": "App Query: Remove Track from Venue",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {venue_name: (required) name of the Venue}. Auth: X-IK-ClientKey only (_Application subject), no Bearer token; $_appId is auto-filled. Returns: track.external_id for each Track whose PLAYED_AT link to the venue was deleted.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"delete_relationships\":[\"r\"],\"nodes\":[\"track.external_id\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "venue_name": "Shower-Concert-Hall"
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 2,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-app-artist-catalog",
+        "display_name": "App: Query Artist's Full Catalog",
+        "description": "Application can read and manage all tracks and albums by an artist",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"_Application\"},\"condition\":{\"cypher\":\"MATCH (subject:_Application) MATCH (artist:Artist)-[r1:CREATED]->(track:Track)-[r2:PART_OF]->(album:Album)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"attribute\":\"artist.property.name\",\"operator\":\"=\",\"value\":\"$artist_name\"},{\"attribute\":\"subject.external_id\",\"operator\":\"=\",\"value\":\"$_appId\"}]}]},\"allowed_reads\":{\"nodes\":[\"track.property.title\",\"track.property.duration\",\"track.property.popularity\",\"album.property.title\",\"album.property.year\"],\"relationships\":[\"r1\",\"r2\"]},\"allowed_upserts\":{\"nodes\":{\"node_types\":[\"Track\",\"Album\"]},\"relationships\":{\"relationship_types\":[{\"type\":\"CREATED\",\"source_node_label\":\"Artist\",\"target_node_label\":\"Track\"},{\"type\":\"PART_OF\",\"source_node_label\":\"Track\",\"target_node_label\":\"Album\"}]}},\"allowed_deletes\":{\"nodes\":[\"track\"],\"relationships\":[\"r1\",\"r2\"]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq2",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-app-artist-catalog-read",
+            "display_name": "App Query: Read Artist's Full Catalog",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {artist_name: (required) name of the Artist}. Auth: X-IK-ClientKey only (_Application subject), no Bearer token; $_appId is auto-filled. Returns: each Track (title, duration, popularity) and its Album (title, year) in the artist's catalog, plus the CREATED and PART_OF relationships.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"track.property.title\",\"track.property.duration\",\"track.property.popularity\",\"album.property.title\",\"album.property.year\"],\"relationships\":[\"r1\",\"r2\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "artist_name": "ABBA"
+            },
+            "page_token": 1
+          }
+        },
+        {
+          "name": "kq2b",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-app-artist-catalog-write-track",
+            "display_name": "App Query: Add Track to Artist Catalog",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {artist_name: (required) name of the existing Artist to attach the track to, track_external_id: (required) external_id for the new Track, track_title: (required) track title, track_duration: (required) duration as a \"M:SS\" string, e.g. \"3:13\", track_popularity: (required) popularity number}. Auth: X-IK-ClientKey only (_Application subject), no Bearer token; $_appId is auto-filled. Returns: the new Track external_id and title, plus the CREATED and PART_OF relationships.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"upsert_nodes\":[{\"name\":\"newTrack\",\"type\":\"Track\",\"external_id\":\"$track_external_id\",\"properties\":[{\"type\":\"title\",\"value\":\"$track_title\"},{\"type\":\"duration\",\"value\":\"$track_duration\"},{\"type\":\"popularity\",\"value\":\"$track_popularity\"}]}],\"upsert_relationships\":[{\"name\":\"createdRel\",\"source\":\"artist\",\"target\":\"newTrack\",\"type\":\"CREATED\"},{\"name\":\"partOfRel\",\"source\":\"newTrack\",\"target\":\"album\",\"type\":\"PART_OF\"}],\"nodes\":[\"newTrack.external_id\",\"newTrack.property.title\"],\"relationships\":[\"createdRel\",\"partOfRel\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "artist_name": "ABBA",
+              "track_external_id": "track-demo-1",
+              "track_title": "Demo Track",
+              "track_duration": "3:30",
+              "track_popularity": 50
+            },
+            "page_token": 1
+          }
+        },
+        {
+          "name": "kq2c",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-app-artist-catalog-write-album",
+            "display_name": "App Query: Add Album to Artist Catalog",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {artist_name: (required) name of the Artist, album_external_id: (required) external_id for the new Album, album_title: (required) album title, album_year: (required) release year as an integer}. Auth: X-IK-ClientKey only (_Application subject), no Bearer token; $_appId is auto-filled. Returns: the new Album external_id and title.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"upsert_nodes\":[{\"name\":\"newAlbum\",\"type\":\"Album\",\"external_id\":\"$album_external_id\",\"properties\":[{\"type\":\"title\",\"value\":\"$album_title\"},{\"type\":\"year\",\"value\":\"$album_year\"}]}],\"nodes\":[\"newAlbum.external_id\",\"newAlbum.property.title\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "artist_name": "ABBA",
+              "album_external_id": "album-demo-1",
+              "album_title": "Demo Album",
+              "album_year": 2024
+            },
+            "page_token": 1
+          }
+        },
+        {
+          "name": "kq2d",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-app-artist-catalog-delete",
+            "display_name": "App Query: Remove Track from Catalog",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {artist_name: (required) name of the Artist whose catalog tracks and CREATED/PART_OF links are deleted}. Auth: X-IK-ClientKey only (_Application subject), no Bearer token; $_appId is auto-filled. Returns: empty result on success.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"delete_nodes\":[\"track\"],\"delete_relationships\":[\"r1\",\"r2\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "artist_name": "ABBA"
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 3,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-app-karaoke-ready-people",
+        "display_name": "App: Query Karaoke-Ready People at Venue",
+        "description": "Application can find people with high karaoke confidence at a venue",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"_Application\"},\"condition\":{\"cypher\":\"MATCH (subject:_Application) MATCH (person:Person)-[r:WILL_ATTEND]->(venue:Venue)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"attribute\":\"venue.property.name\",\"operator\":\"=\",\"value\":\"$venue_name\"},{\"attribute\":\"person.property.karaoke_confidence\",\"operator\":\">=\",\"value\":\"$min_confidence\"},{\"attribute\":\"subject.external_id\",\"operator\":\"=\",\"value\":\"$_appId\"}]}]},\"allowed_reads\":{\"nodes\":[\"person.property.firstname\",\"person.property.lastname\",\"person.property.karaoke_confidence\"],\"relationships\":[\"r\"]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq3",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-app-karaoke-ready-people",
+            "display_name": "App Query: Query Karaoke-Ready People at Venue",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {venue_name: (required) name of the Venue, min_confidence: (required) minimum karaoke_confidence threshold, number 0-1}. Auth: X-IK-ClientKey only (_Application subject), no Bearer token; $_appId is auto-filled. Returns: People attending the venue with karaoke_confidence >= min_confidence: firstname, lastname, karaoke_confidence, plus the relationship.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"person.property.firstname\",\"person.property.lastname\",\"person.property.karaoke_confidence\"],\"relationships\":[\"r\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "min_confidence": 0.7,
+              "venue_name": "Shower-Concert-Hall"
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 4,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-own-profile",
+        "display_name": "Person: Read and Update Own Profile",
+        "description": "Person can read and update their own profile information",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)\",\"filter\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"}]},\"allowed_reads\":{\"nodes\":[\"subject.property.firstname\",\"subject.property.lastname\",\"subject.property.email\",\"subject.property.age\",\"subject.property.city\",\"subject.property.state\",\"subject.property.music_mood\",\"subject.property.karaoke_confidence\",\"subject.property.dance_skill\",\"subject.property.profession\"],\"relationships\":[]},\"allowed_upserts\":{\"nodes\":{\"existing_nodes\":[\"subject\"]}}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq4",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-own-profile-read",
+            "display_name": "Person Query: Read Own Profile",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {} (no input parameters required). Auth: Bearer token required (Person subject); the token 'sub' identifies the caller Person (auto-filled, do not pass). Returns: the caller's own Person profile: firstname, lastname, email, age, city, state, music_mood, karaoke_confidence, dance_skill, profession.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"subject.property.firstname\",\"subject.property.lastname\",\"subject.property.email\",\"subject.property.age\",\"subject.property.city\",\"subject.property.state\",\"subject.property.music_mood\",\"subject.property.karaoke_confidence\",\"subject.property.dance_skill\",\"subject.property.profession\"],\"relationships\":[]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {},
+            "page_token": 1
+          }
+        },
+        {
+          "name": "kq4b",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-own-profile-write",
+            "display_name": "Person Query: Update Own Profile",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {city: (required) new city, state: (required) new state, music_mood: (required) new music_mood string, karaoke_confidence: (required) new karaoke_confidence, number 0-1, dance_skill: (required) new dance_skill, number 0-1, profession: (required) new profession}. Auth: Bearer token required (Person subject); the token 'sub' identifies the caller Person (auto-filled, do not pass). Returns: the updated profile fields: city, state, music_mood, karaoke_confidence, dance_skill, profession.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"upsert_nodes\":[{\"name\":\"subject\",\"properties\":[{\"type\":\"city\",\"value\":\"$city\"},{\"type\":\"state\",\"value\":\"$state\"},{\"type\":\"music_mood\",\"value\":\"$music_mood\"},{\"type\":\"karaoke_confidence\",\"value\":\"$karaoke_confidence\"},{\"type\":\"dance_skill\",\"value\":\"$dance_skill\"},{\"type\":\"profession\",\"value\":\"$profession\"}]}],\"nodes\":[\"subject.property.city\",\"subject.property.state\",\"subject.property.music_mood\",\"subject.property.karaoke_confidence\",\"subject.property.dance_skill\",\"subject.property.profession\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "city": "Firewall Flats",
+              "state": "New York",
+              "music_mood": "Bass Drop Addict",
+              "karaoke_confidence": 0.93,
+              "dance_skill": 0.35,
+              "profession": "Chief Pickle Preservation Officer"
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 5,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-liked-tracks",
+        "display_name": "Person: Read & Unlike Liked Tracks",
+        "description": "Person can read whether they like a given track, and unlike it (delete the LIKES relationship)",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[r:LIKES]->(track:Track)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"},{\"operator\":\"=\",\"attribute\":\"track.external_id\",\"value\":\"$track_external_id\"}]}]},\"allowed_reads\":{\"nodes\":[\"track.property.title\",\"track.property.popularity\",\"track.external_id\"],\"relationships\":[\"r\"]},\"allowed_deletes\":{\"relationships\":[\"r\"]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq5",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-own-liked-tracks-read",
+            "display_name": "Person Query: Read Own Like of a Track",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {track_external_id: (required) external_id of the Track}. Auth: Bearer token (Person subject); 'sub' auto-filled. Returns: the track title/popularity and the LIKES relationship if the caller likes it (empty if not).",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"track.property.title\",\"track.property.popularity\"],\"relationships\":[\"r\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "track_external_id": "track-1"
+            },
+            "page_token": 1
+          }
+        },
+        {
+          "name": "kq5b",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-own-liked-tracks-delete",
+            "display_name": "Person Query: Unlike a Track",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {track_external_id: (required) external_id of the Track to unlike}. Auth: Bearer token (Person subject); 'sub' auto-filled. Returns: track.external_id of the unliked track.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"delete_relationships\":[\"r\"],\"nodes\":[\"track.external_id\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "track_external_id": "track-1"
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": "5c",
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-like-track",
+        "display_name": "Person: Like a Track",
+        "description": "Person can LIKE any existing track (creates a LIKES relationship to it)",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person) MATCH (track:Track)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"},{\"operator\":\"=\",\"attribute\":\"track.external_id\",\"value\":\"$track_external_id\"}]}]},\"allowed_upserts\":{\"relationships\":{\"relationship_types\":[{\"type\":\"LIKES\",\"source_node_label\":\"Person\",\"target_node_label\":\"Track\"}]}}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq5c",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-own-liked-tracks-write",
+            "display_name": "Person Query: Like a Track",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {track_external_id: (required) external_id of the existing Track to like}. Auth: Bearer token (Person subject); 'sub' auto-filled. Returns: the new LIKES relationship.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"upsert_relationships\":[{\"name\":\"newLike\",\"source\":\"subject\",\"target\":\"track\",\"type\":\"LIKES\"}],\"relationships\":[\"newLike\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "track_external_id": "track-1"
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 6,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-playlist-tracks-read",
+        "display_name": "Person: Read Own Playlist & Its Tracks",
+        "description": "Person can read a playlist they created together with the tracks on it (Track-[:PART_OF]->Playlist)",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[r:CREATED]->(playlist:Playlist)<-[pf:PART_OF]-(track:Track)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"},{\"operator\":\"=\",\"attribute\":\"playlist.external_id\",\"value\":\"$playlist_external_id\"}]}]},\"allowed_reads\":{\"nodes\":[\"playlist.property.name\",\"playlist.property.mood\",\"playlist.external_id\",\"track.property.title\",\"track.external_id\"],\"relationships\":[\"r\",\"pf\"]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq6",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-own-playlists-read",
+            "display_name": "Person Query: Read Own Playlist & Tracks",
+            "description": "Call tool 'ciq_execute' with input_params: {playlist_external_id: (required) external_id of the Playlist}. Auth: Bearer token (Person subject); 'sub' auto-filled. Returns the playlist name/mood and one row per track on it (title, external_id) via PART_OF. Empty if the caller did not create it or it has no tracks.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"playlist.property.name\",\"playlist.property.mood\",\"track.property.title\",\"track.external_id\"],\"relationships\":[\"pf\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "playlist_external_id": "playlist-100"
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": "6b",
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-update-playlist",
+        "display_name": "Person: Update Own Playlist",
+        "description": "Person can rename/re-mood a playlist they created (by external_id)",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[r:CREATED]->(playlist:Playlist)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"},{\"operator\":\"=\",\"attribute\":\"playlist.external_id\",\"value\":\"$playlist_external_id\"}]}]},\"allowed_reads\":{\"nodes\":[\"playlist.property.name\",\"playlist.property.mood\",\"playlist.external_id\"],\"relationships\":[\"r\"]},\"allowed_upserts\":{\"nodes\":{\"existing_nodes\":[\"playlist\"]}}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq6b",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-own-playlists-update",
+            "display_name": "Person Query: Update Own Playlist",
+            "description": "Call tool 'ciq_execute' with input_params: {playlist_external_id: (required), playlist_name: (required) new name, playlist_mood: (required) new mood}. Auth: Bearer token (Person subject); 'sub' auto-filled. Returns the playlist external_id and updated name/mood.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"upsert_nodes\":[{\"name\":\"playlist\",\"properties\":[{\"type\":\"name\",\"value\":\"$playlist_name\"},{\"type\":\"mood\",\"value\":\"$playlist_mood\"}]}],\"nodes\":[\"playlist.external_id\",\"playlist.property.name\",\"playlist.property.mood\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "playlist_external_id": "playlist-100",
+              "playlist_name": "My Playlist (renamed)",
+              "playlist_mood": "Upbeat"
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": "6c",
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-delete-playlist",
+        "display_name": "Person: Delete Own Playlist",
+        "description": "Person can delete a playlist they created (by external_id); cascades its PART_OF/CREATED edges",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[r:CREATED]->(playlist:Playlist)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"},{\"operator\":\"=\",\"attribute\":\"playlist.external_id\",\"value\":\"$playlist_external_id\"}]}]},\"allowed_deletes\":{\"nodes\":[\"playlist\"],\"relationships\":[\"r\"]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq6c",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-own-playlists-delete",
+            "display_name": "Person Query: Delete Own Playlist",
+            "description": "Call tool 'ciq_execute' with input_params: {playlist_external_id: (required) external_id of the Playlist to delete}. Auth: Bearer token (Person subject); 'sub' auto-filled. Deletes the playlist node.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"delete_nodes\":[\"playlist\"],\"delete_relationships\":[\"r\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "playlist_external_id": "playlist-100"
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": "6d",
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-create-playlist",
+        "display_name": "Person: Create a Playlist",
+        "description": "Person can create a new Playlist, link it to themselves (CREATED), and add one or more existing tracks to it (Track-[:PART_OF]->Playlist)",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person) MATCH (track:Track)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"},{\"operator\":\"IN\",\"attribute\":\"track.external_id\",\"value\":\"$track_external_ids\"}]}]},\"allowed_reads\":{\"nodes\":[\"track.external_id\"]},\"allowed_upserts\":{\"nodes\":{\"node_types\":[\"Playlist\"]},\"relationships\":{\"relationship_types\":[{\"type\":\"CREATED\",\"source_node_label\":\"Person\",\"target_node_label\":\"Playlist\"},{\"type\":\"PART_OF\",\"source_node_label\":\"Track\",\"target_node_label\":\"Playlist\"}]}}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq6d",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-own-playlists-write",
+            "display_name": "Person Query: Create a Playlist",
+            "description": "Call tool 'ciq_execute' with input_params: {playlist_external_id: (required) external_id for the new Playlist, playlist_name: (required) name, playlist_mood: (required) mood, track_external_ids: (required) array of existing Track external_ids to add}. Auth: Bearer token (Person subject); 'sub' auto-filled. Returns the new Playlist, the CREATED relationship, and a PART_OF relationship per added track.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"upsert_nodes\":[{\"name\":\"newPlaylist\",\"type\":\"Playlist\",\"external_id\":\"$playlist_external_id\",\"properties\":[{\"type\":\"name\",\"value\":\"$playlist_name\"},{\"type\":\"mood\",\"value\":\"$playlist_mood\"}]}],\"upsert_relationships\":[{\"name\":\"createdRel\",\"source\":\"subject\",\"target\":\"newPlaylist\",\"type\":\"CREATED\"},{\"name\":\"partOf\",\"source\":\"track\",\"target\":\"newPlaylist\",\"type\":\"PART_OF\"}],\"nodes\":[\"track.external_id\"],\"relationships\":[\"createdRel\",\"partOf\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "playlist_external_id": "playlist-100",
+              "playlist_name": "My Playlist",
+              "playlist_mood": "Chill",
+              "track_external_ids": [
+                "track-1",
+                "track-2"
+              ]
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 7,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-own-subscriptions",
+        "display_name": "Person: Read & Remove Playlist",
+        "description": "Person can read and remove a SUBSCRIBED_TO relationship to a Playlist (by external_id)",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[r:SUBSCRIBED_TO]->(playlist:Playlist)<-[:CREATED]-(creator:Person)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"},{\"operator\":\"=\",\"attribute\":\"playlist.external_id\",\"value\":\"$playlist_external_id\"}]}]},\"allowed_reads\":{\"nodes\":[\"playlist.property.name\",\"playlist.property.mood\",\"creator.property.firstname\",\"creator.property.lastname\",\"playlist.external_id\"],\"relationships\":[\"r\"]},\"allowed_deletes\":{\"relationships\":[\"r\"]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq7",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-own-subscriptions-read",
+            "display_name": "Person Query: Read Own Subscription",
+            "description": "Call tool 'ciq_execute' with input_params: {playlist_external_id: (required) external_id of the Playlist}. Auth: Bearer token (Person subject); 'sub' auto-filled. Returns the Playlist and the SUBSCRIBED_TO relationship if present (empty if not).",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"playlist.property.name\",\"playlist.property.mood\",\"creator.property.firstname\",\"creator.property.lastname\"],\"relationships\":[\"r\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "playlist_external_id": "playlist-1"
+            },
+            "page_token": 1
+          }
+        },
+        {
+          "name": "kq7b",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-own-subscriptions-delete",
+            "display_name": "Person Query: Remove SUBSCRIBED_TO",
+            "description": "Call tool 'ciq_execute' with input_params: {playlist_external_id: (required) external_id of the Playlist}. Auth: Bearer token (Person subject); 'sub' auto-filled. Removes the caller's SUBSCRIBED_TO edge to it.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"delete_relationships\":[\"r\"],\"nodes\":[\"playlist.external_id\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "playlist_external_id": "playlist-1"
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": "7c",
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-subscribe-playlist",
+        "display_name": "Person: Create SUBSCRIBED_TO",
+        "description": "Person can create a SUBSCRIBED_TO relationship to an existing Playlist (by external_id)",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person) MATCH (playlist:Playlist)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"},{\"operator\":\"=\",\"attribute\":\"playlist.external_id\",\"value\":\"$playlist_external_id\"}]}]},\"allowed_reads\":{\"nodes\":[\"playlist.external_id\",\"playlist.property.name\"]},\"allowed_upserts\":{\"relationships\":{\"relationship_types\":[{\"type\":\"SUBSCRIBED_TO\",\"source_node_label\":\"Person\",\"target_node_label\":\"Playlist\"}]}}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq7c",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-own-subscriptions-write",
+            "display_name": "Person Query: Create SUBSCRIBED_TO",
+            "description": "Call tool 'ciq_execute' with input_params: {playlist_external_id: (required) external_id of the existing Playlist}. Auth: Bearer token (Person subject); 'sub' auto-filled. Returns the new SUBSCRIBED_TO relationship.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"upsert_relationships\":[{\"name\":\"newRel\",\"source\":\"subject\",\"target\":\"playlist\",\"type\":\"SUBSCRIBED_TO\"}],\"nodes\":[\"playlist.external_id\",\"playlist.property.name\"],\"relationships\":[\"newRel\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "playlist_external_id": "playlist-1"
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 8,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-own-followed-artists",
+        "display_name": "Person: Read & Remove Artist",
+        "description": "Person can read and remove a FOLLOWS relationship to a Artist (by external_id)",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[r:FOLLOWS]->(artist:Artist)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"},{\"operator\":\"=\",\"attribute\":\"artist.external_id\",\"value\":\"$artist_external_id\"}]}]},\"allowed_reads\":{\"nodes\":[\"artist.property.name\",\"artist.external_id\"],\"relationships\":[\"r\"]},\"allowed_deletes\":{\"relationships\":[\"r\"]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq8",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-own-followed-artists-read",
+            "display_name": "Person Query: Read Own Followed Artist",
+            "description": "Call tool 'ciq_execute' with input_params: {artist_external_id: (required) external_id of the Artist}. Auth: Bearer token (Person subject); 'sub' auto-filled. Returns the Artist and the FOLLOWS relationship if present (empty if not).",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"artist.property.name\"],\"relationships\":[\"r\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "artist_external_id": "artist-1"
+            },
+            "page_token": 1
+          }
+        },
+        {
+          "name": "kq8b",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-own-followed-artists-delete",
+            "display_name": "Person Query: Remove FOLLOWS",
+            "description": "Call tool 'ciq_execute' with input_params: {artist_external_id: (required) external_id of the Artist}. Auth: Bearer token (Person subject); 'sub' auto-filled. Removes the caller's FOLLOWS edge to it.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"delete_relationships\":[\"r\"],\"nodes\":[\"artist.external_id\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "artist_external_id": "artist-1"
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": "8c",
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-follow-artist",
+        "display_name": "Person: Create FOLLOWS",
+        "description": "Person can create a FOLLOWS relationship to an existing Artist (by external_id)",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person) MATCH (artist:Artist)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"},{\"operator\":\"=\",\"attribute\":\"artist.external_id\",\"value\":\"$artist_external_id\"}]}]},\"allowed_reads\":{\"nodes\":[\"artist.external_id\",\"artist.property.name\"]},\"allowed_upserts\":{\"relationships\":{\"relationship_types\":[{\"type\":\"FOLLOWS\",\"source_node_label\":\"Person\",\"target_node_label\":\"Artist\"}]}}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq8c",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-own-followed-artists-write",
+            "display_name": "Person Query: Create FOLLOWS",
+            "description": "Call tool 'ciq_execute' with input_params: {artist_external_id: (required) external_id of the existing Artist}. Auth: Bearer token (Person subject); 'sub' auto-filled. Returns the new FOLLOWS relationship.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"upsert_relationships\":[{\"name\":\"newRel\",\"source\":\"subject\",\"target\":\"artist\",\"type\":\"FOLLOWS\"}],\"nodes\":[\"artist.external_id\",\"artist.property.name\"],\"relationships\":[\"newRel\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "artist_external_id": "artist-1"
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 9,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-own-venues",
+        "display_name": "Person: Read & Remove Venue",
+        "description": "Person can read and remove a WILL_ATTEND relationship to a Venue (by external_id)",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[r:WILL_ATTEND]->(venue:Venue)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"},{\"operator\":\"=\",\"attribute\":\"venue.external_id\",\"value\":\"$venue_external_id\"}]}]},\"allowed_reads\":{\"nodes\":[\"venue.property.name\",\"venue.property.description\",\"venue.property.min_confidence\",\"venue.property.min_danceability\",\"venue.property.max_loudness\",\"venue.external_id\"],\"relationships\":[\"r\"]},\"allowed_deletes\":{\"relationships\":[\"r\"]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq9",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-own-venues-read",
+            "display_name": "Person Query: Read Own Venue Attendance",
+            "description": "Call tool 'ciq_execute' with input_params: {venue_external_id: (required) external_id of the Venue}. Auth: Bearer token (Person subject); 'sub' auto-filled. Returns the Venue and the WILL_ATTEND relationship if present (empty if not).",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"venue.property.name\",\"venue.property.description\",\"venue.property.min_confidence\",\"venue.property.min_danceability\",\"venue.property.max_loudness\"],\"relationships\":[\"r\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "venue_external_id": "venue-1"
+            },
+            "page_token": 1
+          }
+        },
+        {
+          "name": "kq9b",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-own-venues-delete",
+            "display_name": "Person Query: Remove WILL_ATTEND",
+            "description": "Call tool 'ciq_execute' with input_params: {venue_external_id: (required) external_id of the Venue}. Auth: Bearer token (Person subject); 'sub' auto-filled. Removes the caller's WILL_ATTEND edge to it.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"delete_relationships\":[\"r\"],\"nodes\":[\"venue.external_id\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "venue_external_id": "venue-1"
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": "9c",
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-attend-venue",
+        "display_name": "Person: Create WILL_ATTEND",
+        "description": "Person can create a WILL_ATTEND relationship to an existing Venue (by external_id)",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person) MATCH (venue:Venue)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"},{\"operator\":\"=\",\"attribute\":\"venue.external_id\",\"value\":\"$venue_external_id\"}]}]},\"allowed_reads\":{\"nodes\":[\"venue.external_id\",\"venue.property.name\"]},\"allowed_upserts\":{\"relationships\":{\"relationship_types\":[{\"type\":\"WILL_ATTEND\",\"source_node_label\":\"Person\",\"target_node_label\":\"Venue\"}]}}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq9c",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-own-venues-write",
+            "display_name": "Person Query: Create WILL_ATTEND",
+            "description": "Call tool 'ciq_execute' with input_params: {venue_external_id: (required) external_id of the existing Venue}. Auth: Bearer token (Person subject); 'sub' auto-filled. Returns the new WILL_ATTEND relationship.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"upsert_relationships\":[{\"name\":\"newRel\",\"source\":\"subject\",\"target\":\"venue\",\"type\":\"WILL_ATTEND\"}],\"nodes\":[\"venue.external_id\",\"venue.property.name\"],\"relationships\":[\"newRel\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "venue_external_id": "venue-1"
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 10,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-family-playlists",
+        "display_name": "Person: Read Family's Playlists",
+        "description": "Person can read playlists created by family members",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:MARRIED_TO|PARTNERS|PARENT_OF]-(family:Person)-[:CREATED]->(playlist:Playlist)\",\"filter\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"}]},\"allowed_reads\":{\"nodes\":[\"family.property.firstname\",\"playlist.property.name\",\"playlist.property.mood\"],\"relationships\":[]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq10",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-family-playlists",
+            "display_name": "Person Query: Read Family's Playlists",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {} (no input parameters required). Auth: Bearer token required (Person subject); the token 'sub' identifies the caller Person (auto-filled, do not pass). Returns: playlists created by the caller's family members: family member firstname, playlist name and mood.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"family.property.firstname\",\"playlist.property.name\",\"playlist.property.mood\"],\"relationships\":[]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {},
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 11,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-children-likes",
+        "display_name": "Person: Read Children's Liked Tracks",
+        "description": "Parent can read tracks liked by their children",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:PARENT_OF]->(child:Person)-[:LIKES]->(track:Track)\",\"filter\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"}]},\"allowed_reads\":{\"nodes\":[\"child.property.firstname\",\"track.property.title\",\"track.property.loudness\",\"track.property.energy\"],\"relationships\":[]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq11",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-children-likes",
+            "display_name": "Person Query: Read Children's Liked Tracks",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {} (no input parameters required). Auth: Bearer token required (Person subject); the token 'sub' identifies the caller Person (auto-filled, do not pass). Returns: tracks liked by the caller's children: child firstname, track title, loudness, energy.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"child.property.firstname\",\"track.property.title\",\"track.property.loudness\",\"track.property.energy\"],\"relationships\":[]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {},
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 12,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-venue-other-attendees",
+        "display_name": "Person: Read Other Venue Attendees",
+        "description": "Person can see other people attending the same venue",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WILL_ATTEND]->(venue:Venue)<-[:WILL_ATTEND]-(other:Person)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"},{\"attribute\":\"venue.property.name\",\"operator\":\"=\",\"value\":\"$venue_name\"}]}]},\"allowed_reads\":{\"nodes\":[\"other.property.firstname\",\"other.property.karaoke_confidence\",\"other.property.dance_skill\"],\"relationships\":[]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq12",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-venue-other-attendees",
+            "display_name": "Person Query: Read Other Venue Attendees",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {venue_name: (required) name of a Venue the caller attends}. Auth: Bearer token required (Person subject); the token 'sub' identifies the caller Person (auto-filled, do not pass). Returns: other people attending that venue: firstname, karaoke_confidence, dance_skill.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"other.property.firstname\",\"other.property.karaoke_confidence\",\"other.property.dance_skill\"],\"relationships\":[]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "venue_name": "Shower-Concert-Hall"
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 13,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-venue-playlists",
+        "display_name": "Person: Read & Unapprove Playlist at Venue",
+        "description": "Person can read and remove the APPROVED_FOR link between a playlist they created and a venue they attend",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WILL_ATTEND]->(venue:Venue)<-[r:APPROVED_FOR]-(playlist:Playlist)<-[:CREATED]-(subject)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"},{\"operator\":\"=\",\"attribute\":\"venue.external_id\",\"value\":\"$venue_external_id\"},{\"operator\":\"=\",\"attribute\":\"playlist.external_id\",\"value\":\"$playlist_external_id\"}]}]},\"allowed_reads\":{\"nodes\":[\"venue.property.name\",\"playlist.property.name\",\"playlist.property.mood\",\"playlist.external_id\",\"venue.external_id\"],\"relationships\":[\"r\"]},\"allowed_deletes\":{\"relationships\":[\"r\"]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq13",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-venue-playlists-read",
+            "display_name": "Person Query: Read Playlist Approval at Venue",
+            "description": "Call tool 'ciq_execute' with input_params: {venue_external_id: (required), playlist_external_id: (required)}. Auth: Bearer token (Person subject); 'sub' auto-filled. Returns the venue + playlist and the APPROVED_FOR relationship if the caller (who must attend the venue and have created the playlist) has approved it.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"venue.property.name\",\"playlist.property.name\",\"playlist.property.mood\"],\"relationships\":[\"r\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "venue_external_id": "venue-1",
+              "playlist_external_id": "playlist-100"
+            },
+            "page_token": 1
+          }
+        },
+        {
+          "name": "kq13b",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-venue-playlists-delete",
+            "display_name": "Person Query: Unapprove Playlist at Venue",
+            "description": "Call tool 'ciq_execute' with input_params: {venue_external_id: (required), playlist_external_id: (required)}. Auth: Bearer token (Person subject); 'sub' auto-filled. Removes the APPROVED_FOR link.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"delete_relationships\":[\"r\"],\"nodes\":[\"playlist.external_id\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "venue_external_id": "venue-1",
+              "playlist_external_id": "playlist-100"
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": "13c",
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-approve-playlist-for-venue",
+        "display_name": "Person: Approve Own Playlist for a Venue",
+        "description": "Person can APPROVE a playlist they created for a venue they will attend (creates APPROVED_FOR playlist->venue)",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WILL_ATTEND]->(venue:Venue) MATCH (subject)-[:CREATED]->(playlist:Playlist)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"},{\"operator\":\"=\",\"attribute\":\"venue.external_id\",\"value\":\"$venue_external_id\"},{\"operator\":\"=\",\"attribute\":\"playlist.external_id\",\"value\":\"$playlist_external_id\"}]}]},\"allowed_reads\":{\"nodes\":[\"playlist.external_id\",\"venue.external_id\"]},\"allowed_upserts\":{\"relationships\":{\"relationship_types\":[{\"type\":\"APPROVED_FOR\",\"source_node_label\":\"Playlist\",\"target_node_label\":\"Venue\"}]}}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq13c",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-venue-playlists-write",
+            "display_name": "Person Query: Approve Playlist for Venue",
+            "description": "Call tool 'ciq_execute' with input_params: {venue_external_id: (required) external_id of a Venue the caller WILL_ATTEND, playlist_external_id: (required) external_id of a Playlist the caller CREATED}. Auth: Bearer token (Person subject); 'sub' auto-filled. Returns the new APPROVED_FOR relationship.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"upsert_relationships\":[{\"name\":\"newApproval\",\"source\":\"playlist\",\"target\":\"venue\",\"type\":\"APPROVED_FOR\"}],\"nodes\":[\"playlist.external_id\",\"venue.external_id\"],\"relationships\":[\"newApproval\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "venue_external_id": "venue-1",
+              "playlist_external_id": "playlist-100"
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 14,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-same-taste",
+        "display_name": "Person: Find People with Similar Taste (Overlap-Based)",
+        "description": "Person can find others with similar taste based on overlap counts: shared liked tracks (above a threshold) AND either same city or enough shared followed artists. Uses COUNT aggregates, OPTIONAL MATCH, and nested AND/OR filter.",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person) WHERE subject.external_id = $token.sub MATCH (subject)-[:LIKES]->(track:Track)<-[:LIKES]-(other:Person) WHERE subject <> other WITH subject, other, COUNT(DISTINCT track) AS sharedTracks OPTIONAL MATCH (subject)-[:FOLLOWS]->(artist:Artist)<-[:FOLLOWS]-(other) WITH subject, other, sharedTracks, COUNT(DISTINCT artist) AS sharedArtists\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"},{\"operator\":\">=\",\"attribute\":\"sharedTracks\",\"value\":\"$min_shared_tracks\"},{\"operator\":\"OR\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"other.property.city\",\"value\":\"$subject_city\"},{\"operator\":\">=\",\"attribute\":\"sharedArtists\",\"value\":\"$min_shared_artists\"}]}]}]},\"allowed_reads\":{\"nodes\":[\"other.property.firstname\",\"other.property.lastname\",\"other.property.city\",\"other.property.music_mood\"],\"aggregate_values\":[\"sharedTracks\",\"sharedArtists\"]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq14",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-same-taste",
+            "display_name": "Person Query: Find People with Similar Taste",
+            "description": "Call tool 'ciq_execute' with input_params: {min_shared_tracks: (required) min shared liked-track count, min_shared_artists: (required) min shared followed-artist count, subject_city: (required) the caller's own city (pass it explicitly - the engine cannot compare a person to their own property)}. Auth: Bearer token (Person subject); 'sub' auto-filled. Returns people who share >= min_shared_tracks tracks AND (live in subject_city OR share >= min_shared_artists artists): firstname, lastname, city, music_mood, sharedTracks, sharedArtists.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"other.property.firstname\",\"other.property.lastname\",\"other.property.city\",\"other.property.music_mood\"],\"aggregate_values\":[\"sharedTracks\",\"sharedArtists\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "min_shared_tracks": 1,
+              "min_shared_artists": 1,
+              "subject_city": "Bandwidth Borough"
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 15,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-same-artist-followers",
+        "display_name": "Person: Find Fellow Artist Followers",
+        "description": "Person can find others who follow the same artists",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:FOLLOWS]->(artist:Artist)<-[:FOLLOWS]-(other:Person) WHERE subject <> other\",\"filter\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"}]},\"allowed_reads\":{\"nodes\":[\"other.property.firstname\",\"other.property.city\",\"artist.property.name\"],\"relationships\":[]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq15",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-same-artist-followers",
+            "display_name": "Person Query: Find Fellow Artist Followers",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {} (no input parameters required). Auth: Bearer token required (Person subject); the token 'sub' identifies the caller Person (auto-filled, do not pass). Returns: other people who follow the same artists as the caller: firstname, city, and the artist name.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"other.property.firstname\",\"other.property.city\",\"artist.property.name\"],\"relationships\":[]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {},
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 16,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-created-playlist-subscribers",
+        "display_name": "Person: Read Own Playlist Subscribers",
+        "description": "Person can see who subscribed to their playlists",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:CREATED]->(playlist:Playlist)<-[:SUBSCRIBED_TO]-(subscriber:Person)\",\"filter\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"}]},\"allowed_reads\":{\"nodes\":[\"playlist.property.name\",\"subscriber.property.firstname\",\"subscriber.property.city\"],\"relationships\":[]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq16",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-created-playlist-subscribers",
+            "display_name": "Person Query: Read Own Playlist Subscribers",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {} (no input parameters required). Auth: Bearer token required (Person subject); the token 'sub' identifies the caller Person (auto-filled, do not pass). Returns: subscribers to playlists the caller created: playlist name, subscriber firstname and city.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"playlist.property.name\",\"subscriber.property.firstname\",\"subscriber.property.city\"],\"relationships\":[]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {},
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 17,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-matching-venues",
+        "display_name": "Person: Find and Attend Venues Matching Skills",
+        "description": "Person can find venues where their skills meet requirements and plan attendance",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person) MATCH (venue:Venue)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"},{\"operator\":\"<=\",\"attribute\":\"venue.property.min_confidence\",\"value\":\"$karaoke_confidence\"}]}]},\"allowed_reads\":{\"nodes\":[\"venue.property.name\",\"venue.property.min_confidence\",\"venue.external_id\"]},\"allowed_upserts\":{\"relationships\":{\"relationship_types\":[{\"type\":\"WILL_ATTEND\",\"source_node_label\":\"Person\",\"target_node_label\":\"Venue\"}]}}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq17",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-matching-venues-read",
+            "display_name": "Person Query: Find Venues Matching Skills",
+            "description": "Call tool 'ciq_execute' with input_params: {karaoke_confidence: (required) the caller's own karaoke_confidence (pass it explicitly - the engine cannot read the subject's property for comparison)}. Auth: Bearer token (Person subject); 'sub' auto-filled. Returns venues whose min_confidence <= karaoke_confidence: name, min_confidence, external_id.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"venue.property.name\",\"venue.property.min_confidence\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "karaoke_confidence": 0.89
+            },
+            "page_token": 1
+          }
+        },
+        {
+          "name": "kq17b",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-matching-venues-write",
+            "display_name": "Person Query: Plan Attendance at Matching Venue",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {} (no input parameters required). Auth: Bearer token required (Person subject); the token 'sub' identifies the caller Person (auto-filled, do not pass). Returns: venue external_id, name, and the WILL_ATTEND relationship (re-upserts the caller's matched attendances to matching venues).",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"upsert_relationships\":[{\"name\":\"newAttend\",\"source\":\"subject\",\"target\":\"venue\",\"type\":\"WILL_ATTEND\"}],\"nodes\":[\"venue.external_id\",\"venue.property.name\"],\"relationships\":[\"newAttend\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {},
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 18,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-liked-tracks-at-venue",
+        "display_name": "Person: Find Liked Tracks Playable at Venue",
+        "description": "Person can find their liked tracks that can be played at a venue they attend",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:LIKES]->(track:Track)-[:PLAYED_AT]->(venue:Venue)<-[:WILL_ATTEND]-(subject)\",\"filter\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"}]},\"allowed_reads\":{\"nodes\":[\"track.property.title\",\"track.property.danceability\",\"venue.property.name\"],\"relationships\":[]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq18",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-liked-tracks-at-venue",
+            "display_name": "Person Query: Find Liked Tracks Playable at Venue",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {} (no input parameters required). Auth: Bearer token required (Person subject); the token 'sub' identifies the caller Person (auto-filled, do not pass). Returns: the caller's liked tracks playable at venues they attend: track title, danceability, venue name.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"track.property.title\",\"track.property.danceability\",\"venue.property.name\"],\"relationships\":[]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {},
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 19,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-popular-tracks-by-followed",
+        "display_name": "Person: Popular Tracks Among Followed Artists",
+        "description": "Person can see tracks by artists they follow that have more than N likes",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person) WHERE subject.external_id = $token.sub MATCH (subject)-[:FOLLOWS]->(artist:Artist)-[:CREATED]->(track:Track)<-[:LIKES]-(fan:Person) WHERE fan <> subject WITH subject, artist, track, COUNT(fan) AS likeCount\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"},{\"operator\":\">=\",\"attribute\":\"likeCount\",\"value\":\"$min_likes\"}]}]},\"allowed_reads\":{\"nodes\":[\"track.property.title\",\"track.property.popularity\",\"artist.property.name\"],\"aggregate_values\":[\"likeCount\"]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq19",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-popular-tracks-by-followed",
+            "display_name": "Person Query: Popular Tracks Among Followed Artists",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {min_likes: (required) minimum number of likes a track must have, integer}. Auth: Bearer token required (Person subject); the token 'sub' identifies the caller Person (auto-filled, do not pass). Returns: popular tracks by artists the caller follows: track title, popularity, artist name, plus the aggregate likeCount.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"track.property.title\",\"track.property.popularity\",\"artist.property.name\"],\"aggregate_values\":[\"likeCount\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "min_likes": 1
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 20,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-liked-tracks-avg-energy",
+        "display_name": "Person: Average Energy of Liked Tracks",
+        "description": "Person can see average energy and danceability across all tracks they like",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person) WHERE subject.external_id = $token.sub MATCH (subject)-[:LIKES]->(track:Track) WITH subject, AVG(track.property.energy) AS avgEnergy, AVG(track.property.danceability) AS avgDanceability, COUNT(track) AS likedCount\",\"filter\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"}]},\"allowed_reads\":{\"nodes\":[\"subject.property.firstname\"],\"aggregate_values\":[\"avgEnergy\",\"avgDanceability\",\"likedCount\"]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq20",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-liked-tracks-avg-energy",
+            "display_name": "Person Query: Liked Tracks Energy Stats",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {} (no input parameters required). Auth: Bearer token required (Person subject); the token 'sub' identifies the caller Person (auto-filled, do not pass). Returns: the caller's firstname plus aggregate stats over their liked tracks: avgEnergy, avgDanceability, likedCount.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"subject.property.firstname\"],\"aggregate_values\":[\"avgEnergy\",\"avgDanceability\",\"likedCount\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {},
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 21,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-app-venue-attendance-stats",
+        "display_name": "App: Venue Attendance and Playlist Stats",
+        "description": "Application can read attendee count and optional approved-playlist count for a venue",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"_Application\"},\"condition\":{\"cypher\":\"MATCH (subject:_Application) MATCH (venue:Venue) OPTIONAL MATCH (venue)<-[:WILL_ATTEND]-(attendee:Person) WITH subject, venue, COUNT(attendee) AS attendeeCount OPTIONAL MATCH (playlist:Playlist)-[:APPROVED_FOR]->(venue) WITH subject, venue, attendeeCount, COUNT(playlist) AS playlistCount\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$_appId\"},{\"operator\":\"=\",\"attribute\":\"venue.property.name\",\"value\":\"$venue_name\"}]}]},\"allowed_reads\":{\"nodes\":[\"venue.property.name\",\"venue.property.description\"],\"aggregate_values\":[\"attendeeCount\",\"playlistCount\"]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq21",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-app-venue-attendance-stats",
+            "display_name": "App Query: Venue Attendance & Playlist Stats",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {venue_name: (required) name of the Venue}. Auth: X-IK-ClientKey only (_Application subject), no Bearer token; $_appId is auto-filled. Returns: venue name and description, plus aggregate counts attendeeCount and playlistCount.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"venue.property.name\",\"venue.property.description\"],\"aggregate_values\":[\"attendeeCount\",\"playlistCount\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "venue_name": "Shower-Concert-Hall"
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 22,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-people-in-venue-list",
+        "display_name": "Person: Find Attendees Across Venue Whitelist",
+        "description": "Person can find people attending any venue in a given external_id list",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person) MATCH (other:Person)-[:WILL_ATTEND]->(venue:Venue) WHERE other <> subject\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"attribute\":\"subject.external_id\",\"operator\":\"=\",\"value\":\"$token.sub\"},{\"attribute\":\"venue.external_id\",\"operator\":\"IN\",\"value\":\"$venue_ids\"}]}]},\"allowed_reads\":{\"nodes\":[\"other.property.firstname\",\"other.property.city\",\"venue.property.name\"]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq22",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-people-in-venue-list",
+            "display_name": "Person Query: Attendees Across Venue Whitelist",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {venue_ids: (required) array of Venue external_id strings to filter by}. Auth: Bearer token required (Person subject); the token 'sub' identifies the caller Person (auto-filled, do not pass). Returns: people attending any of the listed venues: firstname, city, and venue name.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"other.property.firstname\",\"other.property.city\",\"venue.property.name\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "venue_ids": [
+                "venue-1",
+                "venue-2"
+              ]
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 23,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-eligible-venues-broad",
+        "display_name": "Person: Eligible Venues by Confidence OR Skill",
+        "description": "Person can read venues where their karaoke_confidence OR dance_skill clears the venue's bar (and venue is open-attendance)",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person) MATCH (venue:Venue)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"},{\"operator\":\"<=\",\"attribute\":\"venue.property.min_danceability\",\"value\":\"$dance_skill\"}]}]},\"allowed_reads\":{\"nodes\":[\"venue.property.name\",\"venue.property.min_danceability\",\"venue.external_id\"]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq23",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-eligible-venues-broad",
+            "display_name": "Person Query: Eligible Venues by Confidence OR Skill",
+            "description": "Call tool 'ciq_execute' with input_params: {dance_skill: (required) the caller's own dance_skill (pass it explicitly - the engine cannot read the subject's property for comparison)}. Auth: Bearer token (Person subject); 'sub' auto-filled. Returns venues whose min_danceability <= dance_skill: name, min_danceability, external_id.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"venue.property.name\",\"venue.property.min_danceability\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {
+              "dance_skill": 0.9
+            },
+            "page_token": 1
+          }
+        }
+      ]
+    },
+    {
+      "slot": 24,
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-person-own-playlist-engagement",
+        "display_name": "Person: Engagement Metrics for Own Playlists",
+        "description": "Person can see subscriber count and venue-approval count per playlist they created",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person) WHERE subject.external_id = $token.sub MATCH (subject)-[:CREATED]->(playlist:Playlist) OPTIONAL MATCH (playlist)<-[:SUBSCRIBED_TO]-(sub:Person) WITH subject, playlist, COUNT(sub) AS subscriberCount OPTIONAL MATCH (playlist)-[:APPROVED_FOR]->(venue:Venue) WITH subject, playlist, subscriberCount, COUNT(venue) AS approvedVenueCount\",\"filter\":[{\"operator\":\"=\",\"attribute\":\"subject.external_id\",\"value\":\"$token.sub\"}]},\"allowed_reads\":{\"nodes\":[\"playlist.property.name\",\"playlist.property.mood\"],\"aggregate_values\":[\"subscriberCount\",\"approvedVenueCount\"]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
+        {
+          "name": "kq24",
+          "kq": {
+            "project_id": "{{project_gid}}",
+            "name": "kq-person-own-playlist-engagement",
+            "display_name": "Person Query: Own Playlist Engagement",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {} (no input parameters required). Auth: Bearer token required (Person subject); the token 'sub' identifies the caller Person (auto-filled, do not pass). Returns: each owned playlist's name and mood, plus aggregate counts subscriberCount and approvedVenueCount.",
+            "policy_id": "{{policy_gid}}",
+            "query": "{\"nodes\":[\"playlist.property.name\",\"playlist.property.mood\"],\"aggregate_values\":[\"subscriberCount\",\"approvedVenueCount\"]}",
+            "status": "ACTIVE"
+          },
+          "exec": {
+            "id": "{{query_gid}}",
+            "input_params": {},
+            "page_token": 1
+          }
+        }
+      ]
+    }
+  ]
+}

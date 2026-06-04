@@ -43,8 +43,11 @@ def update_env_variable(key, value):
         else:
             updated_lines.append(line)
 
-    # If key wasn't found, add it
+    # If key wasn't found, add it (ensuring the previous last line ends with a newline
+    # so the new variable starts on its own line)
     if not key_found:
+        if updated_lines and not updated_lines[-1].endswith("\n"):
+            updated_lines[-1] += "\n"
         updated_lines.append(f"{key}={value}\n")
 
     # Write back to .env file
@@ -128,7 +131,7 @@ def show_create_form():
         "description": "",
         "display_name": "",
         "name": "",
-        "organization_id": "",
+        "organization_id": os.getenv("ORGANIZATION_ID", ""),
         "region": "europe-west1",
     }
     return render_template("project/create_form.html", default_data=default_data)

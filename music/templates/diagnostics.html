@@ -1,0 +1,52 @@
+{% extends "layouts/base.html" %}
+{% block title %}Diagnostics{% endblock %}
+
+{% block content %}
+<main class="content py-4">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <h1 class="mb-2" style="font-size: 1.8rem;">Diagnostics</h1>
+            <p class="text-muted small">.env file: <code>{{ env_file }}</code></p>
+
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0">Stored IDs</h5></div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">These are the IDs <code>.env</code> currently exposes. KBAC policies are created against <code>PROJECT_ID</code> using <code>SA_TOKEN</code>. Capture and AuthZen evaluate using <code>APP_TOKEN</code>. If <code>PROJECT_ID</code> and the project encoded inside <code>APP_TOKEN</code> (see below) don't match, your policies and your data are in different projects and every evaluation will return <code>false</code>.</p>
+                    <table class="table table-sm">
+                        <tbody>
+                        {% for k, v in env_summary.items() %}
+                            <tr>
+                                <th class="w-25"><code>{{ k }}</code></th>
+                                <td>{% if v %}<code>{{ v }}</code>{% else %}<span class="text-warning">(not set)</span>{% endif %}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header"><h5 class="mb-0">Token claims (signature NOT verified)</h5></div>
+                <div class="card-body">
+                    {% for t in tokens %}
+                        <h6 class="mt-3"><code>{{ t.name }}</code>{% if not t.present %} <span class="text-warning small">— not set</span>{% endif %}</h6>
+                        {% if t.present %}
+                            <div class="text-muted small mb-2">length: {{ t.length }} chars</div>
+                            {% if t.claims %}
+                                <pre class="small mb-0">{{ t.claims | tojson(indent=2) }}</pre>
+                            {% else %}
+                                <div class="text-muted small">No recognised IndyKite claims found (token may be opaque, not a JWT).</div>
+                            {% endif %}
+                            {% if t.claims and t.claims.error %}
+                                <div class="text-danger small">Could not decode: {{ t.claims.error }}</div>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Home</a>
+        </div>
+    </div>
+</main>
+{% endblock %}

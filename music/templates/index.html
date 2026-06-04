@@ -1,0 +1,262 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Music{% endblock %}
+
+{% block content %}
+<style>
+    .btn-primary:hover {
+        color: #212529 !important;
+    }
+    .btn-success {
+        color: #ffffff !important;
+    }
+    .btn-success:hover {
+        color: #212529 !important;
+    }
+</style>
+<main class="content py-4">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <!-- Header -->
+            <div class="mb-4">
+                <h1 class="mb-2" style="font-size: 2rem;">IndyKite Music</h1>
+                <p class="text-muted mb-0">Use Knowledge-Based Access Control (KBAC) and ContX IQ (CIQ) to retrieve or upsert music data according to context. CIQ provides fine-grained, context-aware data access across the music graph: people, artists, tracks, albums, venues, playlists, subscriptions and the relationships between them.</p>
+            </div>
+
+            <!-- How It Works Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">How ContX IQ Works</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="p-3 rounded" style="background-color: var(--ik-bg-tertiary);">
+                                <h6 class="text-white mb-2">1. Policy</h6>
+                                <p class="text-muted small mb-0">Defines <strong>what data can be accessed</strong> and <strong>who can access it</strong>. Uses Cypher patterns to match graph structures and filters to bind parameters. Specifies allowed reads, upserts, and deletes.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="p-3 rounded" style="background-color: var(--ik-bg-tertiary);">
+                                <h6 class="text-white mb-2">2. Knowledge Query</h6>
+                                <p class="text-muted small mb-0">Defines <strong>what data to return</strong> from the matched graph. Specifies which node properties and relationships to include in results.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="p-3 rounded" style="background-color: var(--ik-bg-tertiary);">
+                                <h6 class="text-white mb-2">3. Execute</h6>
+                                <p class="text-muted small mb-0"><strong>Runs the query</strong> with input parameters. The policy validates access, the query retrieves data, and results are returned. Uses the application's credentials for authorization.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Getting Started Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Getting Started</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Set up your IndyKite environment. Each element is saved to <code>.env</code> and visible in the <a href="https://eu.hub.indykite.com" target="_blank">IndyKite Hub</a>.</p>
+
+                    <div class="row">
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <a href="/api_project/create" class="card h-100 text-decoration-none">
+                                <div class="card-body text-center py-4">
+                                    <div class="mb-3" style="font-size: 2rem;">1</div>
+                                    <h6>Create Project</h6>
+                                    <p class="text-muted small mb-0">Container for apps and policies</p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <a href="/api_application/create" class="card h-100 text-decoration-none">
+                                <div class="card-body text-center py-4">
+                                    <div class="mb-3" style="font-size: 2rem;">2</div>
+                                    <h6>Create Application</h6>
+                                    <p class="text-muted small mb-0">Represents your music app</p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <a href="/api_app_agent/create" class="card h-100 text-decoration-none">
+                                <div class="card-body text-center py-4">
+                                    <div class="mb-3" style="font-size: 2rem;">3</div>
+                                    <h6>Create App Agent</h6>
+                                    <p class="text-muted small mb-0">Credentials for API access</p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <a href="/api_token_introspect/create" class="card h-100 text-decoration-none">
+                                <div class="card-body text-center py-4">
+                                    <div class="mb-3" style="font-size: 2rem;">4</div>
+                                    <h6>Token Introspect</h6>
+                                    <p class="text-muted small mb-0">Configure token validation</p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 col-lg-3 mb-3">
+                            <a href="/api_mcp_server/create" class="card h-100 text-decoration-none">
+                                <div class="card-body text-center py-4">
+                                    <div class="mb-3" style="font-size: 2rem;">5</div>
+                                    <h6>MCP Server</h6>
+                                    <p class="text-muted small mb-0">Bind App Agent + Token Introspect for inbound MCP traffic</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Capture Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Data Capture</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Import the music dataset (<code>data/nodes/nodes_music.json</code> and <code>data/relationships/relationships_music.json</code>) into the IndyKite Knowledge Graph (IKG). Brings in artists, tracks, albums, people, venues and the relationships between them.</p>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="/api_capture/create" class="card h-100 text-decoration-none">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Capture Nodes</h6>
+                                    <p class="text-muted small mb-0">Import entities: <code>Artist</code>, <code>Track</code>, <code>Album</code>, <code>Person</code>, <code>Venue</code>, <code>Playlist</code>, <code>StreamingService</code></p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <a href="/api_relationships/create" class="card h-100 text-decoration-none">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Capture Relationships</h6>
+                                    <p class="text-muted small mb-0">Import connections: <code>CREATED</code>, <code>PART_OF</code>, <code>PLAYED_AT</code>, <code>WILL_ATTEND</code>, <code>FOLLOWS</code>, <code>LIKES</code>, <code>SUBSCRIBES_TO</code></p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Authorization Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">KBAC Authorization Policies</h5>
+                    <span class="badge bg-primary">Knowledge-Based Access Control</span>
+                </div>
+                <div class="card-body p-0">
+                    {% for kbac in kbacs %}
+                        {% set slot = (loop.index | string) %}
+                        <div class="p-4 border-bottom">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <span class="badge bg-secondary me-2">{{ slot }}</span>
+                                    <strong>{{ kbac.display_name }}</strong>
+                                </div>
+                                <div>
+                                    <a href="/api_authorization_policy/create{{ slot_suffix(slot) }}" class="btn btn-sm btn-primary">Policy</a>
+                                </div>
+                            </div>
+                            <p class="text-muted small mb-1">{{ kbac.description }}</p>
+                            <div class="small text-muted"><code>{{ kbac.name }}</code></div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- AuthZEN evaluations Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">AuthZEN Evaluations</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% for ev in evaluations %}
+                        {% set slot = (loop.index | string) %}
+                        <div class="p-4 border-bottom">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <span class="badge bg-secondary me-2">{{ slot }}</span>
+                                    <strong>{{ ev.name }}</strong>
+                                </div>
+                                <div>
+                                    <a href="/api_authzen/evaluate{{ slot_suffix(slot) }}" class="btn btn-sm btn-success">Evaluate</a>
+                                </div>
+                            </div>
+                            <div class="small text-muted">
+                            {% if ev.body.evaluations %}
+                                Bulk evaluation: {{ ev.body.evaluations | length }} requests for
+                                <code>{{ ev.body.subject.type }}:{{ ev.body.subject.id }}</code>
+                            {% elif ev.body.subject %}
+                                <code>{{ ev.body.subject.type }}:{{ ev.body.subject.id }}</code> →
+                                <code>{{ ev.body.action.name }}</code> →
+                                <code>{{ ev.body.resource.type }}:{{ ev.body.resource.id }}</code>
+                            {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- ContX IQ Use Cases Card -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">ContX IQ Use Cases</h5>
+                </div>
+                <div class="card-body p-0">
+                {% for uc in ciq_use_cases %}
+                    {% set pol_slot = uc.policy.slot %}
+                    <div class="p-4 border-bottom">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge bg-secondary me-2">{{ pol_slot }}</span>
+                                <strong>{{ uc.policy.display_name }}</strong>
+                            </div>
+                            <div>
+                                <a href="/api_ciq_policy/create{{ slot_suffix(pol_slot) }}" class="btn btn-sm btn-primary">Policy</a>
+                            </div>
+                        </div>
+                        <p class="text-muted small mb-2">{{ uc.policy.description }}</p>
+                        <div class="small">
+                            <strong>Name:</strong> <code>{{ uc.policy.name }}</code><br>
+                            <strong>Subject:</strong> <code>{{ uc.policy.policy.subject.type }}</code>
+                        </div>
+                        {% if uc.queries %}
+                        <div class="mt-3">
+                            <div class="text-muted small mb-2"><strong>Knowledge Queries &amp; Execution:</strong></div>
+                            {% for q in uc.queries %}
+                            <div class="d-flex justify-content-between align-items-center py-1 border-top">
+                                <div class="small">
+                                    <code>{{ q.name }}</code>
+                                </div>
+                                <div>
+                                    <a href="/api_ciq_knowledge_query/create{{ slot_suffix(q.slot) }}" class="btn btn-sm btn-secondary me-1">Query</a>
+                                    <a href="/api_ciq_execute/execute{{ slot_suffix(q.slot) }}" class="btn btn-sm btn-success">Execute</a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                </div>
+            </div>
+
+            <!-- Danger Zone Card -->
+            <div class="card border-danger">
+                <div class="card-header" style="background-color: rgba(239, 68, 68, 0.1);">
+                    <h5 class="mb-0 text-danger">Danger Zone</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-3">Permanently delete the project and all associated resources. This action cannot be undone.</p>
+                    <a href="/api_project/delete" class="btn btn-danger">
+                        <svg class="icon icon-xs me-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        Delete Project
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
