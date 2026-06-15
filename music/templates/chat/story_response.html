@@ -1,0 +1,173 @@
+<!-- Narrative context -->
+{% if narrative %}
+<div class="message message-assistant">
+    <div class="message-bubble narrative-bubble">
+        <div class="narrative-text">{{ narrative }}</div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Response -->
+<div class="message message-assistant">
+    <div class="message-bubble">
+        {% if error %}
+        <div class="d-flex align-items-start">
+            <svg class="me-2 flex-shrink-0" style="width: 20px; height: 20px; color: #ef4444;" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+            </svg>
+            <div>
+                <strong class="text-danger">Error</strong>
+                <p class="mb-0 mt-1">{{ error }}</p>
+            </div>
+        </div>
+        {% elif response %}
+            {% if response.type == 'error' %}
+            <div class="d-flex align-items-start">
+                <svg class="me-2 flex-shrink-0" style="width: 20px; height: 20px; color: #ef4444;" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                </svg>
+                <div>
+                    <strong class="text-danger">Error</strong>
+                    <p class="mb-0 mt-1">{{ response.message }}</p>
+                </div>
+            </div>
+            {% elif response.type == 'info' %}
+            <div class="d-flex align-items-start">
+                <svg class="me-2 flex-shrink-0" style="width: 20px; height: 20px; color: #3b82f6;" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                </svg>
+                <div>
+                    <strong>{{ response.message }}</strong>
+                </div>
+            </div>
+            {% else %}
+            <div>
+                <div class="d-flex align-items-center mb-2">
+                    <svg class="me-2" style="width: 20px; height: 20px; color: #22c55e;" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <strong class="text-success">{{ response.message }}</strong>
+                </div>
+
+                {% set result_items = response.get('items', []) %}
+                {% if result_items %}
+                <div class="result-card">
+                    {% if result_items|length == 1 %}
+                    <!-- Single result - show as key-value pairs -->
+                    <div class="result-item">
+                        {% for key, value in result_items[0].items() %}
+                        <div class="row mb-1">
+                            <div class="col-5 text-muted small">{{ key|replace('_', ' ')|title }}</div>
+                            <div class="col-7">
+                                {% if value is none %}
+                                <span class="text-muted">-</span>
+                                {% elif value is string and value.startswith('gid:') %}
+                                <code class="small">{{ value }}</code>
+                                {% else %}
+                                {{ value }}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <!-- Multiple results - show as table -->
+                    <div class="table-responsive">
+                        <table class="table table-sm data-table mb-0">
+                            <thead>
+                                <tr>
+                                    {% set first_item = result_items[0] %}
+                                    {% for key in first_item.keys() %}
+                                    <th>{{ key|replace('_', ' ') }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in result_items %}
+                                <tr>
+                                    {% for key, value in item.items() %}
+                                    <td>
+                                        {% if value is none %}
+                                        <span class="text-muted">-</span>
+                                        {% elif value is string and value.startswith('gid:') %}
+                                        <code class="small">{{ value[:20] }}...</code>
+                                        {% else %}
+                                        {{ value }}
+                                        {% endif %}
+                                    </td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% endif %}
+
+        {% if query_label %}
+        <div class="step-query-ref">
+            {{ query_label }} · slot {{ slot }} · <code>{{ input_params | tojson }}</code>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Insight callout -->
+{% if insight %}
+<div class="message message-assistant">
+    <div class="message-bubble insight-bubble">
+        <div class="d-flex align-items-start">
+            <svg class="me-2 flex-shrink-0" style="width: 20px; height: 20px; color: #f59e0b;" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"></path>
+            </svg>
+            <div>
+                <strong class="text-warning">Key Insight</strong>
+                <p class="mb-0 mt-1">{{ insight }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Conclusion -->
+{% if conclusion %}
+<div class="message message-assistant">
+    <div class="message-bubble conclusion-bubble">
+        <div class="conclusion-text">{{ conclusion }}</div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Next step button -->
+{% if next_step %}
+<div class="message message-assistant">
+    <div class="message-bubble next-step-bubble">
+        <button type="button" class="btn btn-primary next-step-btn"
+                onclick="typeAndExecuteStep('{{ scene_id }}', '{{ next_step.id }}', this)">
+            Continue: {{ next_step.action }}
+            <svg class="ms-2" style="width: 16px; height: 16px;" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+            </svg>
+        </button>
+    </div>
+</div>
+{% elif is_last_step %}
+<div class="message message-assistant">
+    <div class="message-bubble">
+        <div class="text-center">
+            <div class="mb-3">
+                <svg style="width: 48px; height: 48px; color: #22c55e;" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                </svg>
+            </div>
+            <strong>Scene Complete!</strong>
+            <p class="mb-2 mt-1 small text-muted">Choose another scene from the panel to continue the story.</p>
+            <button class="btn btn-outline-secondary btn-sm" onclick="clearChat()">Start Over</button>
+        </div>
+    </div>
+</div>
+{% endif %}

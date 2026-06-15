@@ -1,0 +1,48 @@
+---
+info:
+  name: Update Get Stock Trade Threshold Query
+  type: http
+  seq: 5
+
+http:
+  method: PUT
+  url: "{{ik_api_url_prefix}}/configs/v1/knowledge-queries/"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "get-stock-trade-threshold",
+          "display_name": "Get Stock Trade Threshold",
+          "description": "get-stock-trade-threshold retrieves the user, their account and tier. It is only applicable for users in the trading deparmtent. The only information required is the currently authenticated user's bearer token and the customer's external_id. Use this function when traders ask about customer's trading threshold: 'What is the trading limit for Bill?' Returns: An object containing the user, customer, account and threshold. Call tool 'ciq_execute' with the user's bearer token as the authorization header. Use the following arguments: \"id\": \"get-stock-trade-threshold\" and \"customer_external_id\". Example: { \"id\": \"get-stock-trade-threshold\", \"input_params\": { \"customer_external_id\": \"bob\" } }.",
+          "project_id": "{{project_id}}",
+          "policy_id": "{{get_stock_trade_threshold_policy}}",
+          "query": "{ \"nodes\": [ \"subject.external_id\", \"subject.property.name\", \"subject.property.title\", \"customer.property.name\", \"tier.property.name\", \"tier.property.threshold_amount\" ], \"relationships\": [  ], \"aggregate_values\": [ ] }",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: get_agent_workflows_policy
+      value: gid:AAAAFn8x970x80CPrzeCXVe_eYU
+    - name: get_regulatory_agreements_policy
+      value: gid:AAAAFjQRXtVGWk-4twKxr1bEGXw
+    - name: get_customer_facing_documents
+      value: gid:AAAAFhed-YC5t0zTs3XtRez0WhI
+    - name: get_self_policy
+      value: gid:AAAAFpytRclEdkbbi8YwKxgqlN4
+    - name: get_self_query
+      value: gid:AAAAIxEuNZEkVknkp8qVTKqItrU
+    - name: get_stock_quote_query
+      value: gid:AAAAI0xxgURZQk9Gr8iIdht9NNg
+    - name: get_stock_trade_threshold_query
+      value: gid:AAAAI2aelN84zU2roEYahol1_4s
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

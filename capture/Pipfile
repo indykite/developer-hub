@@ -17,6 +17,7 @@ flask-openapi3 = "*"
 rq = "*"
 redis = "*"
 dotenv = "*"
+ijson = "*"
 
 [dev-packages]
 

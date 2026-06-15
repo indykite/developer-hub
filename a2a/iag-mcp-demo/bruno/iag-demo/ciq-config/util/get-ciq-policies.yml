@@ -1,0 +1,24 @@
+---
+info:
+  name: Get CIQ Policies
+  type: http
+  seq: 1
+
+http:
+  method: GET
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies?project_id={{project_id}}"
+  headers:
+    - name: Accept
+      value: "*/*"
+      disabled: true
+  params:
+    - name: project_id
+      value: "{{project_id}}"
+      type: query
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

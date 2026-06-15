@@ -1,0 +1,577 @@
+{
+  "_comment": "Story script for the /chat/ frontend. Each step references a CIQ execute slot (env CIQ_QUERY_ID_<slot>) and runs them in dependency-safe order: creates before reads, deletes last, profile update after the city-pinned similar-taste query. Covers every execute slot in music_manifest.json; slot 1 (read) is re-run after the venue write/delete steps to show the rotation state. Params mirror the manifest exec defaults exactly. Optional per-step 'empty_message' is shown as the success message when a write returns no rows.",
+  "title": "Music Graph Story",
+  "subtitle": "Follow the story to execute every ContX IQ knowledge query in the proper order - app-subject queries first, then person-subject queries that create, read, update and delete graph relationships.",
+  "welcome": {
+    "heading": "Welcome to the Music Graph Story",
+    "lead": "An interactive walk through all 44 ContX IQ knowledge queries of the music dataset, told as a story.",
+    "cast": [
+      {
+        "name": "Millicent Contextsworth",
+        "detail": "You (default dataset login) - Director of Awkward Seating Arrangements, karaoke confidence 0.89"
+      },
+      {
+        "name": "Tokenina (11)",
+        "detail": "Your daughter - Certified Screen Time Maximizer"
+      },
+      {
+        "name": "38 Special",
+        "detail": "The band you are about to follow (artist-1)"
+      },
+      {
+        "name": "Shower-Concert-Hall",
+        "detail": "Perform only if you sing confidently in the shower (venue-1)"
+      },
+      {
+        "name": "Acoustic Sadness Essentials",
+        "detail": "The playlist you will subscribe to (playlist-1)"
+      },
+      {
+        "name": "The dataset",
+        "detail": "14,418 tracks \u00b7 1,247 albums \u00b7 94 artists \u00b7 86 people \u00b7 24 venues \u00b7 21 playlists"
+      }
+    ],
+    "footnote": "App scenes run with APP_TOKEN only. Person scenes additionally send your USER_TOKEN - results depend on who is signed in (the defaults assume Millicent)."
+  },
+  "scenes": [
+    {
+      "id": "venue_ops",
+      "title": "Venue Operations",
+      "icon": "building",
+      "subject": "Application",
+      "description": "Run the Shower-Concert-Hall booking system: playable tracks, the karaoke-ready crowd, and tonight's stats.",
+      "intro": "You operate the booking system of the Shower-Concert-Hall - a venue where you may only perform if you sing confidently in the shower (max loudness -30, min confidence 0.7).\n\nThese queries run as the application itself: no user is signed in, the policy subject is the _Application.",
+      "steps": [
+        {
+          "id": "venue_ops_step1",
+          "slot": "1",
+          "question": "Which tracks are currently playable at the Shower-Concert-Hall?",
+          "action": "Read the venue's playable tracks",
+          "params": {
+            "venue_name": "Shower-Concert-Hall"
+          },
+          "insight": "The PLAYED_AT relationships scope what the app may read - the policy exposes only tracks wired to this venue, not the whole 14,418-track catalog."
+        },
+        {
+          "id": "venue_ops_step2",
+          "slot": "1b",
+          "question": "Refresh the venue's playable rotation - re-register the tracks for the Shower-Concert-Hall.",
+          "action": "Add tracks to the venue",
+          "params": {
+            "venue_name": "Shower-Concert-Hall"
+          },
+          "empty_message": "Rotation updated - the venue's PLAYED_AT relationships were re-upserted.",
+          "insight": "The add query shares the venue policy: it upserts a PLAYED_AT relationship for each track currently matched at the venue. The response echoes the track and venue external_ids that were written."
+        },
+        {
+          "id": "venue_ops_step3",
+          "slot": "1",
+          "question": "Pull up the venue's playable tracks again to confirm the rotation.",
+          "action": "Re-read the venue's playable tracks",
+          "params": {
+            "venue_name": "Shower-Concert-Hall"
+          },
+          "insight": "Read-after-write against the same policy - the rotation reflects the upsert immediately, with no separate sync step."
+        },
+        {
+          "id": "venue_ops_step4",
+          "slot": "1c",
+          "question": "Clear the venue's rotation - remove its playable tracks.",
+          "action": "Remove tracks from the venue",
+          "params": {
+            "venue_name": "Shower-Concert-Hall"
+          },
+          "empty_message": "Rotation cleared - the venue's matched PLAYED_AT relationships were deleted.",
+          "insight": "The remove query deletes every PLAYED_AT relationship matched for this venue - scope is set by the policy's cypher, which binds all tracks played at the venue, so this clears the whole rotation."
+        },
+        {
+          "id": "venue_ops_step5",
+          "slot": "1",
+          "question": "And check the list one more time - the rotation should be empty now.",
+          "action": "Confirm the rotation is cleared",
+          "params": {
+            "venue_name": "Shower-Concert-Hall"
+          },
+          "insight": "The delete is reflected everywhere instantly: the rotation list, the venue app, and any other consumer of the graph all see the same state."
+        },
+        {
+          "id": "venue_ops_step6",
+          "slot": "3",
+          "question": "Who in the building is actually karaoke-ready tonight?",
+          "action": "Query karaoke-ready people at the venue",
+          "params": {
+            "min_confidence": 0.7,
+            "venue_name": "Shower-Concert-Hall"
+          },
+          "insight": "One graph query joins WILL_ATTEND relationships with person attributes (karaoke_confidence \u2265 0.7) - no separate CRM lookup needed."
+        },
+        {
+          "id": "venue_ops_step7",
+          "slot": "21",
+          "question": "Give me tonight's numbers: attendance and approved playlist stats for the venue.",
+          "action": "Venue attendance & playlist stats",
+          "params": {
+            "venue_name": "Shower-Concert-Hall"
+          },
+          "insight": "Aggregations (counts over attendees and approved playlists) run inside the knowledge query - the app receives the numbers, never the raw personal data."
+        }
+      ],
+      "conclusion": "**Outcome**: The venue app read, extended and trimmed its own rotation, and pulled crowd insights - all through CIQ policies whose subject is the _Application, with no user token involved."
+    },
+    {
+      "id": "catalog",
+      "title": "Catalog Manager",
+      "icon": "disc",
+      "subject": "Application",
+      "description": "Manage ABBA's catalog as the label's backend: read it, add a demo track and album, then clean up.",
+      "intro": "You are the label's backend service managing artist catalogs. Today: ABBA.\n\nStill no user token - the application itself is the policy subject, and the artist name is just an input parameter.",
+      "steps": [
+        {
+          "id": "catalog_step1",
+          "slot": "2",
+          "question": "Show me ABBA's full catalog - albums and tracks.",
+          "action": "Read the artist's full catalog",
+          "params": {
+            "artist_name": "ABBA"
+          },
+          "insight": "The query traverses Artist \u2192 RELEASED \u2192 Album and Artist \u2192 CREATED \u2192 Track in one pass - the full discography from a single parameterized query."
+        },
+        {
+          "id": "catalog_step2",
+          "slot": "2b",
+          "question": "We just got the masters for a new single. Add 'Demo Track' to ABBA's catalog.",
+          "action": "Add a track to the catalog",
+          "params": {
+            "artist_name": "ABBA",
+            "track_external_id": "track-demo-1",
+            "track_title": "Demo Track",
+            "track_duration": "3:30",
+            "track_popularity": 50
+          },
+          "insight": "upsert_nodes + upsert_relationships create the Track node and its CREATED edge atomically - the track can never exist disconnected from its artist."
+        },
+        {
+          "id": "catalog_step3",
+          "slot": "2c",
+          "question": "And register the upcoming 'Demo Album' (2024) under ABBA as well.",
+          "action": "Add an album to the catalog",
+          "params": {
+            "artist_name": "ABBA",
+            "album_external_id": "album-demo-1",
+            "album_title": "Demo Album",
+            "album_year": 2024
+          },
+          "insight": "Same pattern for albums: new node plus RELEASED relationship in one CIQ execute, pinned to the artist matched by name."
+        },
+        {
+          "id": "catalog_step4",
+          "slot": "2d",
+          "question": "Legal says the single isn't cleared yet - remove the demo track from the catalog.",
+          "action": "Remove a track from the catalog",
+          "params": {
+            "artist_name": "ABBA"
+          },
+          "insight": "The delete policy only binds tracks already CREATED by the matched artist - the app cannot delete tracks belonging to anyone else."
+        }
+      ],
+      "conclusion": "**Outcome**: Full catalog lifecycle - read, create track, create album, delete - through one policy family, with the blast radius limited to the matched artist's own subgraph."
+    },
+    {
+      "id": "fan",
+      "title": "The Music Fan",
+      "icon": "heart",
+      "subject": "Person",
+      "description": "Sign in as Millicent: like a track, follow a band, discover people and music through your own graph, then tidy up and reinvent yourself.",
+      "intro": "You are Millicent Contextsworth from Bandwidth Borough, Tennessee - Director of Awkward Seating Arrangements, karaoke confidence 0.89.\n\nFrom here on every query runs as YOU: the policies pin their cypher to the Person behind the USER_TOKEN, so you can only ever touch your own corner of the graph.",
+      "steps": [
+        {
+          "id": "fan_step1",
+          "slot": "4",
+          "question": "Show me my profile, please.",
+          "action": "Read own profile",
+          "params": {},
+          "insight": "No input parameters at all - the policy resolves the subject from your token. You see yourself; nobody else's profile is reachable through this query."
+        },
+        {
+          "id": "fan_step2",
+          "slot": "5c",
+          "question": "I just heard 'Play A Simple Song' - I love it. Like it for me.",
+          "action": "Like a track",
+          "params": {
+            "track_external_id": "track-1"
+          },
+          "insight": "Create has its own policy: its cypher matches you and the track separately (no LIKES edge required yet), which is what makes the very first like possible - the bootstrap pattern."
+        },
+        {
+          "id": "fan_step3",
+          "slot": "5",
+          "question": "Did that stick? Show me my like of that track.",
+          "action": "Read own like of the track",
+          "params": {
+            "track_external_id": "track-1"
+          },
+          "insight": "The read policy is the opposite: it requires the LIKES relationship in the cypher, so it can only ever return tracks you actually like."
+        },
+        {
+          "id": "fan_step4",
+          "slot": "8c",
+          "question": "That song is by 38 Special - follow them for me.",
+          "action": "Follow the artist",
+          "params": {
+            "artist_external_id": "artist-1"
+          },
+          "insight": "Same split as likes: a dedicated create policy upserts the FOLLOWS relationship between you and the artist, pinned by external_id."
+        },
+        {
+          "id": "fan_step5",
+          "slot": "8",
+          "question": "Confirm I'm following 38 Special now.",
+          "action": "Read own followed artist",
+          "params": {
+            "artist_external_id": "artist-1"
+          },
+          "insight": "The read binds your own FOLLOWS edge - following is now part of your identity graph and feeds the discovery queries that come next."
+        },
+        {
+          "id": "fan_step6",
+          "slot": "19",
+          "question": "What's popular among the artists I follow?",
+          "action": "Popular tracks among followed artists",
+          "params": {
+            "min_likes": 1
+          },
+          "insight": "The query walks You \u2192 FOLLOWS \u2192 Artist \u2192 CREATED \u2192 Track and counts LIKES from everyone - recommendation logic expressed as a single knowledge query."
+        },
+        {
+          "id": "fan_step7",
+          "slot": "15",
+          "question": "Who else follows the same bands as me?",
+          "action": "Find fellow artist followers",
+          "params": {},
+          "insight": "Social discovery through shared FOLLOWS edges - you only learn about people via artists you both follow, never by browsing the user base directly."
+        },
+        {
+          "id": "fan_step8",
+          "slot": "14",
+          "question": "Find people with taste like mine - anyone sharing at least one track and one artist with me.",
+          "action": "Find people with similar taste",
+          "params": {
+            "min_shared_tracks": 1,
+            "min_shared_artists": 1,
+            "subject_city": "Bandwidth Borough"
+          },
+          "insight": "Overlap counting on shared LIKES and FOLLOWS. Note: subject_city pins YOUR city inline before the aggregation - it must match your current profile, which is why this runs before you move."
+        },
+        {
+          "id": "fan_step9",
+          "slot": "20",
+          "question": "Am I a high-energy listener? Give me stats on the tracks I like.",
+          "action": "Liked tracks energy stats",
+          "params": {},
+          "insight": "Aggregates (average energy, counts) computed over your own LIKES edges only - analytics without exporting your listening history anywhere."
+        },
+        {
+          "id": "fan_step10",
+          "slot": "18",
+          "question": "Of the tracks I like, which could actually be played at a venue near me?",
+          "action": "Find liked tracks playable at a venue",
+          "params": {},
+          "insight": "Joins your LIKES with venue PLAYED_AT rules - personal taste meets venue constraints in one traversal."
+        },
+        {
+          "id": "fan_step11",
+          "slot": "5b",
+          "question": "On second thought, 'Play A Simple Song' was a phase. Unlike it.",
+          "action": "Unlike the track",
+          "params": {
+            "track_external_id": "track-1"
+          },
+          "insight": "Delete shares the read policy's shape: the LIKES edge must exist and be yours. You cannot unlike on someone else's behalf."
+        },
+        {
+          "id": "fan_step12",
+          "slot": "8b",
+          "question": "And unfollow 38 Special too - it's not them, it's me.",
+          "action": "Unfollow the artist",
+          "params": {
+            "artist_external_id": "artist-1"
+          },
+          "insight": "The FOLLOWS edge is removed and every downstream query (popular tracks, fellow followers) immediately stops seeing it - no caches to invalidate."
+        },
+        {
+          "id": "fan_step13",
+          "slot": "4b",
+          "question": "Time for a fresh start. Move me to Firewall Flats, New York - new mood: Bass Drop Addict, karaoke confidence 0.93.",
+          "action": "Update own profile",
+          "params": {
+            "city": "Firewall Flats",
+            "state": "New York",
+            "music_mood": "Bass Drop Addict",
+            "karaoke_confidence": 0.93,
+            "dance_skill": 0.35,
+            "profession": "Chief Pickle Preservation Officer"
+          },
+          "insight": "Property upserts on your own node close the loop: reads, relationship writes and attribute writes all flow through subject-pinned policies. (Re-running the similar-taste query now requires the new city.)"
+        }
+      ],
+      "conclusion": "**Outcome**: You experienced the full bootstrap pattern - separate create policies made the first like and follow possible, reads and deletes stayed pinned to relationships you actually own, and discovery queries worked across the graph without ever exposing strangers' data directly."
+    },
+    {
+      "id": "curator",
+      "title": "The Playlist Curator",
+      "icon": "list",
+      "subject": "Person",
+      "description": "Create a playlist with tracks in one shot, manage subscriptions, check engagement, approve it for a venue - then delete it.",
+      "intro": "Still signed in as Millicent. Today you become a curator: you'll create a playlist of your own, wire it into the world, measure it, and finally tear it all down again.",
+      "steps": [
+        {
+          "id": "curator_step1",
+          "slot": "6d",
+          "question": "Create a playlist for me called 'My Playlist', mood Chill, with 'Play A Simple Song' and 'Four Wheels' on it.",
+          "action": "Create a playlist with tracks",
+          "params": {
+            "playlist_external_id": "playlist-100",
+            "playlist_name": "My Playlist",
+            "playlist_mood": "Chill",
+            "track_external_ids": [
+              "track-1",
+              "track-2"
+            ]
+          },
+          "insight": "The biggest write in the demo: upsert_nodes creates the Playlist, upsert_relationships adds your CREATED edge plus one PART_OF edge per track - atomically, via an IN-array parameter."
+        },
+        {
+          "id": "curator_step2",
+          "slot": "6",
+          "question": "Show me my new playlist and what's on it.",
+          "action": "Read own playlist & tracks",
+          "params": {
+            "playlist_external_id": "playlist-100"
+          },
+          "insight": "The read policy requires You \u2192 CREATED \u2192 Playlist: only the creator can read it through this query - playlist-100 exists for you alone."
+        },
+        {
+          "id": "curator_step3",
+          "slot": "6b",
+          "question": "Hmm, 'My Playlist' is a bit bland. Rename it to 'My Playlist (renamed)' and set the mood to Upbeat.",
+          "action": "Update own playlist",
+          "params": {
+            "playlist_external_id": "playlist-100",
+            "playlist_name": "My Playlist (renamed)",
+            "playlist_mood": "Upbeat"
+          },
+          "insight": "Property upserts on a node you own - the update policy re-checks the CREATED edge before letting any property change through."
+        },
+        {
+          "id": "curator_step4",
+          "slot": "7c",
+          "question": "I also want to keep up with 'Acoustic Sadness Essentials' - subscribe me to it.",
+          "action": "Subscribe to a playlist",
+          "params": {
+            "playlist_external_id": "playlist-1"
+          },
+          "insight": "Subscribing to someone else's playlist needs the bootstrap create policy again - you and the playlist matched independently, then SUBSCRIBED_TO is upserted."
+        },
+        {
+          "id": "curator_step5",
+          "slot": "7",
+          "question": "Confirm my subscription, please.",
+          "action": "Read own subscription",
+          "params": {
+            "playlist_external_id": "playlist-1"
+          },
+          "insight": "Reads bind your own SUBSCRIBED_TO edge. You see your subscription - not the playlist owner's other subscribers."
+        },
+        {
+          "id": "curator_step6",
+          "slot": "16",
+          "question": "Speaking of subscribers - who is subscribed to MY playlists?",
+          "action": "Read own playlist subscribers",
+          "params": {},
+          "insight": "Direction flipped: Person \u2192 SUBSCRIBED_TO \u2192 Playlist \u2190 CREATED \u2190 You. As the owner you may see who subscribed to your playlists - ownership grants the visibility."
+        },
+        {
+          "id": "curator_step7",
+          "slot": "24",
+          "question": "How are my playlists performing overall?",
+          "action": "Own playlist engagement metrics",
+          "params": {},
+          "insight": "Counts of subscribers and track likes aggregated per owned playlist - creator analytics straight from the graph, scoped by the CREATED edge."
+        },
+        {
+          "id": "curator_step8",
+          "slot": "13c",
+          "question": "The Shower-Concert-Hall should play my new playlist! Approve it for the venue.",
+          "action": "Approve playlist for the venue",
+          "params": {
+            "venue_external_id": "venue-1",
+            "playlist_external_id": "playlist-100"
+          },
+          "insight": "APPROVED_FOR is created between YOUR playlist and the venue - the create policy verifies you created the playlist before letting you approve it anywhere."
+        },
+        {
+          "id": "curator_step9",
+          "slot": "13",
+          "question": "Is my playlist approved at the venue now?",
+          "action": "Read the playlist approval",
+          "params": {
+            "venue_external_id": "venue-1",
+            "playlist_external_id": "playlist-100"
+          },
+          "insight": "The read traverses Playlist \u2192 APPROVED_FOR \u2192 Venue with the ownership check intact - the approval is now part of the graph the venue app queried in scene one."
+        },
+        {
+          "id": "curator_step10",
+          "slot": "13b",
+          "question": "The venue's vibe isn't right for it after all. Withdraw the approval.",
+          "action": "Unapprove the playlist at the venue",
+          "params": {
+            "venue_external_id": "venue-1",
+            "playlist_external_id": "playlist-100"
+          },
+          "insight": "Deleting APPROVED_FOR instantly removes the playlist from the venue's playable set - one relationship, consistent everywhere."
+        },
+        {
+          "id": "curator_step11",
+          "slot": "7b",
+          "question": "And unsubscribe me from 'Acoustic Sadness Essentials' - too sad.",
+          "action": "Unsubscribe from the playlist",
+          "params": {
+            "playlist_external_id": "playlist-1"
+          },
+          "insight": "Your SUBSCRIBED_TO edge is removed through the same read/delete policy that displayed it two steps ago."
+        },
+        {
+          "id": "curator_step12",
+          "slot": "6c",
+          "question": "Okay, curation experiment over. Delete my playlist entirely.",
+          "action": "Delete own playlist",
+          "params": {
+            "playlist_external_id": "playlist-100"
+          },
+          "insight": "The delete policy pins the playlist by external_id AND your CREATED edge - you can only ever delete your own playlist, and the cleanup completes the create\u2192read\u2192update\u2192delete cycle."
+        }
+      ],
+      "conclusion": "**Outcome**: A complete asset lifecycle - playlist created with its tracks in one atomic write, renamed, measured, approved for a venue, and cleanly deleted - with every single operation gated on your CREATED edge."
+    },
+    {
+      "id": "nightout",
+      "title": "A Night Out",
+      "icon": "star",
+      "subject": "Person",
+      "description": "Find venues that match your skills, commit to attending, scope out the crowd - then cancel like a true introvert.",
+      "intro": "Millicent wants to go out. Karaoke confidence 0.89 opens doors most people can't sing through - let's find out which ones, who else will be there, and keep an exit strategy ready.",
+      "steps": [
+        {
+          "id": "nightout_step1",
+          "slot": "17",
+          "question": "With karaoke confidence 0.89 - which venues would actually let me perform?",
+          "action": "Find venues matching skills",
+          "params": {
+            "karaoke_confidence": 0.89
+          },
+          "insight": "Venue requirements (min_confidence) are compared against the parameter inside the cypher - attribute-to-attribute comparisons belong in the query, not the policy filter."
+        },
+        {
+          "id": "nightout_step2",
+          "slot": "23",
+          "question": "I can also dance, sort of. Which venues take me on confidence OR dance skill 0.9?",
+          "action": "Eligible venues by confidence OR skill",
+          "params": {
+            "dance_skill": 0.9
+          },
+          "insight": "An OR across different requirement attributes in one query - eligibility logic that would be several application-side checks collapses into the graph."
+        },
+        {
+          "id": "nightout_step3",
+          "slot": "9c",
+          "question": "The Shower-Concert-Hall it is. Put me down as attending!",
+          "action": "Plan to attend the venue",
+          "params": {
+            "venue_external_id": "venue-1"
+          },
+          "insight": "WILL_ATTEND is bootstrapped by its own create policy - you and the venue matched separately, then the edge is upserted."
+        },
+        {
+          "id": "nightout_step4",
+          "slot": "9",
+          "question": "Am I on the list?",
+          "action": "Read own venue attendance",
+          "params": {
+            "venue_external_id": "venue-1"
+          },
+          "insight": "The read binds your own WILL_ATTEND edge - the same edge the venue app counted in its stats query in scene one."
+        },
+        {
+          "id": "nightout_step5",
+          "slot": "12",
+          "question": "Who else is going to the Shower-Concert-Hall?",
+          "action": "Read other venue attendees",
+          "params": {
+            "venue_name": "Shower-Concert-Hall"
+          },
+          "insight": "You may see fellow attendees because you share the venue - visibility derived from a relationship you both have, not from a global directory."
+        },
+        {
+          "id": "nightout_step6",
+          "slot": "22",
+          "question": "Check my shortlist: who's attending either the Shower-Concert-Hall or the Elevator-Of-Awkwardness?",
+          "action": "Attendees across a venue whitelist",
+          "params": {
+            "venue_ids": [
+              "venue-1",
+              "venue-2"
+            ]
+          },
+          "insight": "An IN-array parameter scans multiple venues in one execute - whitelist queries without looping on the client."
+        },
+        {
+          "id": "nightout_step7",
+          "slot": "17b",
+          "question": "Actually, sign me up for a venue that matches my skills automatically.",
+          "action": "Plan attendance at a matching venue",
+          "params": {},
+          "insight": "Query and write combined: the cypher finds a venue matching your profile attributes and upserts WILL_ATTEND in the same execute - decision and action in one round trip."
+        },
+        {
+          "id": "nightout_step8",
+          "slot": "9b",
+          "question": "You know what, my couch is also a venue. Cancel my Shower-Concert-Hall attendance.",
+          "action": "Cancel the attendance",
+          "params": {
+            "venue_external_id": "venue-1"
+          },
+          "insight": "The WILL_ATTEND edge disappears and with it your visibility to other attendees - relationship-derived access ends when the relationship does."
+        }
+      ],
+      "conclusion": "**Outcome**: Venue discovery matched your attributes against venue requirements inside the graph, attendance was a relationship you created and deleted yourself, and crowd visibility existed exactly as long as you shared the venue."
+    },
+    {
+      "id": "family",
+      "title": "The Family Circle",
+      "icon": "users",
+      "subject": "Person",
+      "description": "Use your PARENT_OF relationship: see the family's playlists and what your daughter has been listening to.",
+      "intro": "One last hat: parent. Tokenina (11, Certified Screen Time Maximizer) has her own playlists and listening habits - and your PARENT_OF relationship grants you a window into them.",
+      "steps": [
+        {
+          "id": "family_step1",
+          "slot": "10",
+          "question": "Show me the playlists in our family.",
+          "action": "Read the family's playlists",
+          "params": {},
+          "insight": "The query walks family relationships (PARENT_OF, MARRIED_TO) out from you to reach playlists created by your relatives - kinship as an access path."
+        },
+        {
+          "id": "family_step2",
+          "slot": "11",
+          "question": "And what tracks has Tokenina been liking lately?",
+          "action": "Read children's liked tracks",
+          "params": {},
+          "insight": "Parental visibility is the PARENT_OF edge, nothing more: you see your child's likes, your neighbor sees nothing, and no role or admin flag was ever configured."
+        }
+      ],
+      "conclusion": "**Outcome**: Family relationships in the graph became authorization itself - and with that, every one of the 44 knowledge queries in the music dataset has now run, in an order where every read found what an earlier step created. The story is complete!"
+    }
+  ]
+}

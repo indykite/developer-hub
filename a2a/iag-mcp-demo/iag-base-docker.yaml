@@ -1,0 +1,26 @@
+---
+version: '3.9'
+
+services:
+  iag-base:
+    # Pinned: 2.0.1 is the first agent-gateway release that supports MCP proxying
+    # (JARVIS_PROTECTED_AGENT_PROTOCOL: mcp), required by the mcp-iag service.
+    # See https://hub.docker.com/r/indykite/agent-gateway/tags for newer tags.
+    image: indykite/agent-gateway:2.0.1
+    environment:
+      JARVIS_SERVICE_LOG_LEVEL: debug
+      JARVIS_SERVICE_ENVIRONMENT: demo
+      JARVIS_IDENTITY_PROVIDER_BASE_URL: "https://idsvr.indykite.one/oauth/v2/"
+      JARVIS_IDENTITY_PROVIDER_INTROSPECT_ENDPOINT: "oauth-introspect"
+      JARVIS_IDENTITY_PROVIDER_CLIENT_CREDENTIAL_ENDPOINT: "oauth-token"
+      JARVIS_IDENTITY_PROVIDER_EXCHANGE_ENDPOINT: "oauth-token"
+      JARVIS_CONTX_IQ_BASE_URL: ${INDYKITE_BASE_URL}/contx-iq/v1
+      JARVIS_CONTX_IQ_QUERY_ID: ${CIQ_QUERY_ID}
+      JARVIS_CONTX_IQ_APP_AGENT_CREDENTIALS_TOKEN: ${APP_AGENT_CREDENTIALS_TOKEN}
+      JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${WORKFLOW_ID}
+      JARVIS_AUTHZEN_BASE_URL: ${INDYKITE_BASE_URL}/access/v1
+      JARVIS_AUTHZEN_ACTION: CAN_TRIGGER
+      JARVIS_AUTHZEN_SUBJECT_TYPES: User
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

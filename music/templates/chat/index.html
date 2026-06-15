@@ -1,0 +1,533 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ scenario.title }}{% endblock %}
+
+{% block content %}
+<style>
+    .chat-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    @media (min-width: 1200px) {
+        .chat-area {
+            flex: 0 0 66.666667%;
+            max-width: 66.666667%;
+        }
+        .scenarios-area {
+            flex: 0 0 33.333333%;
+            max-width: 33.333333%;
+        }
+    }
+
+    @media (min-width: 1400px) {
+        .chat-area {
+            flex: 0 0 70%;
+            max-width: 70%;
+        }
+        .scenarios-area {
+            flex: 0 0 30%;
+            max-width: 30%;
+        }
+    }
+
+    .chat-messages {
+        min-height: 500px;
+        max-height: 700px;
+        overflow-y: auto;
+        background-color: var(--ik-bg-tertiary);
+        border-radius: 0.5rem;
+        padding: 1rem;
+    }
+
+    .message {
+        margin-bottom: 1rem;
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message-user {
+        text-align: right;
+    }
+
+    .message-user .message-bubble {
+        background-color: var(--ik-accent-primary);
+        color: white;
+        display: inline-block;
+        padding: 0.75rem 1rem;
+        border-radius: 1rem 1rem 0 1rem;
+        max-width: 80%;
+        text-align: left;
+    }
+
+    .message-assistant .message-bubble {
+        background-color: var(--ik-bg-secondary);
+        display: inline-block;
+        padding: 0.75rem 1rem;
+        border-radius: 1rem 1rem 1rem 0;
+        max-width: 90%;
+    }
+
+    .narrative-bubble {
+        background-color: rgba(99, 102, 241, 0.1) !important;
+        border-left: 3px solid var(--ik-accent-primary);
+        font-style: italic;
+    }
+
+    .narrative-text {
+        white-space: pre-line;
+        line-height: 1.6;
+    }
+
+    .insight-bubble {
+        background-color: rgba(245, 158, 11, 0.1) !important;
+        border-left: 3px solid #f59e0b;
+    }
+
+    .conclusion-bubble {
+        background-color: rgba(34, 197, 94, 0.1) !important;
+        border-left: 3px solid #22c55e;
+    }
+
+    .conclusion-text {
+        white-space: pre-line;
+        line-height: 1.6;
+    }
+
+    .next-step-bubble {
+        background-color: transparent !important;
+        padding: 0 !important;
+    }
+
+    .next-step-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 1rem;
+        font-weight: 500;
+    }
+
+    .scenario-card {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 2px solid var(--ik-border-color);
+        margin-bottom: 1rem;
+    }
+
+    .scenario-card:hover {
+        border-color: var(--ik-accent-primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .scenario-card.active {
+        border-color: var(--ik-accent-primary);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3);
+    }
+
+    .scenario-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .scenario-icon.venue_ops { background-color: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+    .scenario-icon.catalog { background-color: rgba(20, 184, 166, 0.2); color: #14b8a6; }
+    .scenario-icon.fan { background-color: rgba(236, 72, 153, 0.2); color: #ec4899; }
+    .scenario-icon.curator { background-color: rgba(168, 85, 247, 0.2); color: #a855f7; }
+    .scenario-icon.nightout { background-color: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+    .scenario-icon.family { background-color: rgba(34, 197, 94, 0.2); color: #22c55e; }
+
+    .result-card {
+        background-color: var(--ik-bg-secondary);
+        border: 1px solid var(--ik-border-color);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-top: 0.5rem;
+    }
+
+    .result-item {
+        padding: 0.75rem;
+        background-color: var(--ik-bg-tertiary);
+        border-radius: 0.375rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .result-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .loading-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .loading-dots span {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: var(--ik-accent-primary);
+        animation: bounce 1.4s infinite ease-in-out both;
+    }
+
+    .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+    .loading-dots span:nth-child(3) { animation-delay: 0s; }
+
+    @keyframes bounce {
+        0%, 80%, 100% { transform: scale(0); }
+        40% { transform: scale(1); }
+    }
+
+    .data-table {
+        font-size: 0.875rem;
+    }
+
+    .data-table th {
+        background-color: var(--ik-bg-tertiary);
+        font-weight: 500;
+        text-transform: capitalize;
+    }
+
+    .data-table td, .data-table th {
+        padding: 0.5rem 0.75rem;
+        border-color: var(--ik-border-color);
+    }
+
+    .welcome-message {
+        text-align: center;
+        padding: 3rem 2rem;
+        color: var(--ik-text-muted);
+    }
+
+    .welcome-message svg {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 1.5rem;
+        opacity: 0.5;
+    }
+
+    .cast-diagram {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin: 1.5rem 0;
+    }
+
+    .cast-member {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: var(--ik-bg-secondary);
+        border-radius: 0.5rem;
+        margin: 0.25rem;
+        font-size: 0.875rem;
+    }
+
+    .step-query-ref {
+        font-size: 0.75rem;
+        color: var(--ik-text-muted);
+        margin-top: 0.5rem;
+    }
+
+    .typing-cursor {
+        display: inline-block;
+        animation: blink 0.6s step-end infinite;
+        font-weight: 300;
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    @keyframes blink {
+        50% { opacity: 0; }
+    }
+</style>
+
+<main class="content py-4">
+    <div class="chat-container">
+        <!-- Header -->
+        <div class="mb-4">
+            <h1 class="mb-2" style="font-size: 1.75rem;">{{ scenario.title }}</h1>
+            <p class="text-muted mb-0">{{ scenario.subtitle }}</p>
+        </div>
+
+        {% if not setup_complete %}
+        <div class="alert alert-warning mb-4">
+            <strong>Setup Required:</strong> Please complete the initial setup first.
+            <a href="/" class="alert-link">Go to setup page</a> to create a project and application agent.
+        </div>
+        {% endif %}
+
+        {% if setup_complete and not user_token_present %}
+        <div class="alert alert-info mb-4">
+            <strong>No USER_TOKEN yet:</strong> the Person scenes run as a signed-in user.
+            Introspect a user token first — the Application scenes work without it.
+        </div>
+        {% endif %}
+
+        {% if setup_complete and missing_queries %}
+        <div class="alert alert-warning mb-4">
+            <strong>{{ missing_queries | length }} knowledge queries not provisioned yet:</strong>
+            steps using them will report an error. Missing:
+            <code class="small">{{ missing_queries | join(', ') }}</code>
+        </div>
+        {% endif %}
+
+        <div class="row">
+            <!-- Chat Area -->
+            <div class="col-lg-8 mb-4 chat-area">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Story</h5>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="clearChat()">
+                            Start Over
+                        </button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="chat-messages" id="chat-messages">
+                            <div id="welcome-template-holder">{% include 'chat/welcome.html' %}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scenes Panel -->
+            <div class="col-lg-4 scenarios-area">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Choose Your Scene</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for scene in scenario.scenes %}
+                        <div class="scenario-card card" data-scenario="{{ scene.id }}" onclick="startScenario('{{ scene.id }}')">
+                            <div class="card-body">
+                                <div class="d-flex align-items-start gap-3">
+                                    <div class="scenario-icon {{ scene.id }}">
+                                        {% if scene.icon == 'building' %}
+                                        <svg fill="currentColor" viewBox="0 0 20 20" style="width: 24px; height: 24px;">
+                                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        {% elif scene.icon == 'disc' %}
+                                        <svg fill="currentColor" viewBox="0 0 20 20" style="width: 24px; height: 24px;">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm0-6a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        {% elif scene.icon == 'heart' %}
+                                        <svg fill="currentColor" viewBox="0 0 20 20" style="width: 24px; height: 24px;">
+                                            <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        {% elif scene.icon == 'list' %}
+                                        <svg fill="currentColor" viewBox="0 0 20 20" style="width: 24px; height: 24px;">
+                                            <path d="M18 3a1 1 0 00-1.196-.98l-10 2A1 1 0 006 5v9.114A4.369 4.369 0 005 14c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V7.82l8-1.6v5.894A4.37 4.37 0 0015 12c-1.657 0-3 .895-3 2s1.343 2 3 2 3-.895 3-2V3z"></path>
+                                        </svg>
+                                        {% elif scene.icon == 'star' %}
+                                        <svg fill="currentColor" viewBox="0 0 20 20" style="width: 24px; height: 24px;">
+                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                        </svg>
+                                        {% else %}
+                                        <svg fill="currentColor" viewBox="0 0 20 20" style="width: 24px; height: 24px;">
+                                            <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
+                                        </svg>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">{{ scene.title }}</h6>
+                                        <p class="mb-0 small text-muted">{{ scene.description }}</p>
+                                        <div class="mt-2">
+                                            <span class="badge bg-secondary">{{ scene.steps | length }} steps</span>
+                                            <span class="badge {{ 'bg-info' if scene.subject == 'Application' else 'bg-primary' }}">{{ scene.subject }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Story Info -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">About This Demo</h6>
+                    </div>
+                    <div class="card-body small">
+                        <p class="mb-2">Scripted by <code>data/scenario.json</code> — every CIQ execute of the manifest, in dependency-safe order:</p>
+                        <ul class="mb-0 ps-3">
+                            <li>Creates run before reads (bootstrap pattern)</li>
+                            <li>Deletes and cleanup run last per scene</li>
+                            <li>App-subject vs. person-subject auth is automatic</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    const storyScenes = {{ scenes_by_id | tojson | safe }};
+    const welcomeHTML = document.getElementById('welcome-template-holder').innerHTML;
+
+    function startScenario(sceneId) {
+        const scene = storyScenes[sceneId];
+        if (!scene) return;
+
+        const chatMessages = document.getElementById('chat-messages');
+        chatMessages.innerHTML = '';
+
+        document.querySelectorAll('.scenario-card').forEach(card => {
+            card.classList.remove('active');
+        });
+        document.querySelector(`[data-scenario="${sceneId}"]`).classList.add('active');
+
+        const introMessage = document.createElement('div');
+        introMessage.className = 'message message-assistant';
+        const narrativeDiv = document.createElement('div');
+        narrativeDiv.className = 'message-bubble narrative-bubble';
+        const textDiv = document.createElement('div');
+        textDiv.className = 'narrative-text';
+        textDiv.textContent = scene.intro;
+        narrativeDiv.appendChild(textDiv);
+        introMessage.appendChild(narrativeDiv);
+        chatMessages.appendChild(introMessage);
+
+        const firstStep = scene.steps[0];
+        addNextStepButton(sceneId, firstStep.id, firstStep.action, true);
+    }
+
+    function addNextStepButton(sceneId, stepId, actionLabel, isFirst) {
+        const chatMessages = document.getElementById('chat-messages');
+        const prefix = isFirst ? 'Begin' : 'Continue';
+        const stepBtn = document.createElement('div');
+        stepBtn.className = 'message message-assistant';
+        stepBtn.innerHTML = `
+            <div class="message-bubble next-step-bubble">
+                <button type="button" class="btn btn-primary next-step-btn"
+                        onclick="typeAndExecuteStep('${sceneId}', '${stepId}', this)">
+                    ${prefix}: ${actionLabel}
+                    <svg class="ms-2" style="width: 16px; height: 16px;" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+        `;
+        chatMessages.appendChild(stepBtn);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function typeAndExecuteStep(sceneId, stepId, btnElement) {
+        const scene = storyScenes[sceneId];
+        const step = scene.steps.find(s => s.id === stepId);
+        if (!step) return;
+
+        const btnContainer = btnElement.closest('.message');
+        if (btnContainer) btnContainer.remove();
+
+        const chatMessages = document.getElementById('chat-messages');
+        const userMsg = document.createElement('div');
+        userMsg.className = 'message message-user';
+        userMsg.innerHTML = `
+            <div class="message-bubble">
+                <span class="typing-text"></span><span class="typing-cursor">|</span>
+            </div>
+        `;
+        chatMessages.appendChild(userMsg);
+
+        const textEl = userMsg.querySelector('.typing-text');
+        const cursorEl = userMsg.querySelector('.typing-cursor');
+        const fullText = step.question;
+        let charIndex = 0;
+
+        // Human-like typing: variable speed with pauses
+        function getNextDelay(char) {
+            if ('.!?'.includes(char)) return 400 + Math.random() * 300;
+            if (',;:'.includes(char)) return 200 + Math.random() * 150;
+            if (char === '-') return 150 + Math.random() * 100;
+            if (char === ' ') return 80 + Math.random() * 80;
+            if (Math.random() < 0.05) return 200 + Math.random() * 200;
+            return 45 + Math.random() * 45;
+        }
+
+        function typeNextChar() {
+            if (charIndex < fullText.length) {
+                const char = fullText[charIndex];
+                textEl.textContent += char;
+                charIndex++;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                setTimeout(typeNextChar, getNextDelay(char));
+            } else {
+                cursorEl.remove();
+                setTimeout(() => executeStoryStep(sceneId, stepId), 600);
+            }
+        }
+
+        typeNextChar();
+    }
+
+    function executeStoryStep(sceneId, stepId) {
+        const chatMessages = document.getElementById('chat-messages');
+
+        const loading = document.createElement('div');
+        loading.className = 'message message-assistant';
+        loading.id = 'loading-message';
+        loading.innerHTML = `
+            <div class="message-bubble loading-indicator">
+                <div class="loading-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <span class="ms-2">Executing query...</span>
+            </div>
+        `;
+        chatMessages.appendChild(loading);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        const formData = new FormData();
+        formData.append('scene_id', sceneId);
+        formData.append('step_id', stepId);
+
+        fetch('/chat/story-step', { method: 'POST', body: formData })
+            .then(response => response.text())
+            .then(html => {
+                const loadingEl = document.getElementById('loading-message');
+                if (loadingEl) loadingEl.remove();
+
+                chatMessages.insertAdjacentHTML('beforeend', html);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            })
+            .catch(err => {
+                const loadingEl = document.getElementById('loading-message');
+                if (loadingEl) loadingEl.remove();
+                console.error('Story step failed:', err);
+            });
+    }
+
+    function clearChat() {
+        const chatMessages = document.getElementById('chat-messages');
+        chatMessages.innerHTML = welcomeHTML;
+
+        document.querySelectorAll('.scenario-card').forEach(card => {
+            card.classList.remove('active');
+        });
+    }
+
+    {% if not setup_complete %}
+    document.querySelectorAll('.scenario-card').forEach(card => {
+        card.style.pointerEvents = 'none';
+        card.style.opacity = '0.5';
+    });
+    {% endif %}
+</script>
+{% endblock %}

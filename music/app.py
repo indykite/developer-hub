@@ -12,6 +12,7 @@ from api.application import api_application
 from api.authorization_policy import api_authorization_policy
 from api.authzen import api_authzen
 from api.capture import api_capture
+from api.chat import api_chat
 from api.ciq_execute import api_ciq_execute
 from api.ciq_knowledge_query import api_ciq_knowledge_query
 from api.ciq_policy import api_ciq_policy
@@ -48,6 +49,7 @@ logging.getLogger("api.ciq_policy").setLevel(logging.DEBUG)
 logging.getLogger("api.ciq_knowledge_query").setLevel(logging.DEBUG)
 logging.getLogger("api.ciq_execute").setLevel(logging.DEBUG)
 logging.getLogger("api.mcp_server").setLevel(logging.DEBUG)
+logging.getLogger("api.chat").setLevel(logging.DEBUG)
 
 # Log that the app is starting
 logger.info("=" * 50)
@@ -87,6 +89,7 @@ app.register_api(api_authzen)
 app.register_api(api_ciq_policy)
 app.register_api(api_ciq_knowledge_query)
 app.register_api(api_ciq_execute)
+app.register_api(api_chat)
 
 
 def _slot_suffix(slot: str) -> str:

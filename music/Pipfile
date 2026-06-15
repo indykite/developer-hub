@@ -18,6 +18,7 @@ redis = "*"
 python-dotenv = "*"
 urllib3 = "*"
 werkzeug = "*"
+ijson = "*"
 
 [dev-packages]
 

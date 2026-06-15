@@ -22,6 +22,7 @@ ignore: |
   # breaks the collection format, so the default yamllint rules (line-length,
   # empty-values) don't apply.
   a2a/iag-demo/bruno/
+  a2a/iag-mcp-demo/bruno/
 
 rules:
   braces:

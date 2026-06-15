@@ -10,8 +10,9 @@
                     <h3 class="mb-4">Capture Nodes</h3>
                     <p class="text-muted mb-4">
                         Select a JSON file from <code>data/nodes/</code> and click "Capture" to ingest it into the
-                        Identity Knowledge Graph. The file is split into chunks of 200 (under the Capture API's
-                        250-node-per-request limit) and the chunks are sent concurrently, with a live progress bar.
+                        Identity Knowledge Graph. The file is <strong>streamed</strong> off disk in chunks of 200 (under
+                        the Capture API's 250-node-per-request limit) — it is never loaded into memory whole, so multi-GB
+                        files won't freeze the app. The chunks are sent concurrently, with a live progress bar.
                     </p>
 
                     {% if json_files %}
@@ -116,11 +117,25 @@
 
     function handleEvent(evt) {
         if (evt.type === 'start') {
-            progressDetail.textContent = `0 / ${evt.total_chunks} chunks (${evt.total_nodes} nodes total)`;
-            setBar(0);
+            // total_chunks is null when streaming the file (total unknown without a full scan).
+            if (evt.total_chunks == null) {
+                progressDetail.textContent = 'Streaming nodes from file…';
+                progressBar.style.width = '100%';
+                progressBar.setAttribute('aria-valuenow', '0');
+                progressBar.textContent = '';
+            } else {
+                progressDetail.textContent = `0 / ${evt.total_chunks} chunks (${evt.total_nodes} nodes total)`;
+                setBar(0);
+            }
         } else if (evt.type === 'chunk') {
-            setBar(Math.round((evt.completed / evt.total) * 100));
-            progressDetail.textContent = `${evt.completed} / ${evt.total} chunks`;
+            if (evt.total == null) {
+                // Indeterminate: keep the animated full-width bar, report the live count.
+                progressBar.style.width = '100%';
+                progressDetail.textContent = `${evt.completed} chunks done (${evt.completed * 200} nodes so far)`;
+            } else {
+                setBar(Math.round((evt.completed / evt.total) * 100));
+                progressDetail.textContent = `${evt.completed} / ${evt.total} chunks`;
+            }
             if (evt.error || (evt.status_code && evt.status_code >= 400)) {
                 errorCount += 1;
                 if (!firstErrorText) { firstErrorText = evt.response_text || evt.error || ''; firstErrorStatus = evt.status_code || 0; }

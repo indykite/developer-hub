@@ -1,0 +1,30 @@
+---
+info:
+  name: Create Get Regulatory Agreements Policy
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "get-regulatory-agreements",
+          "display_name": "Get Regulatory Agreements",
+          "description": "Return a list of regulatory agreements",
+          "project_id": "{{project_id}}",
+          "policy": "{ \"meta\": { \"policy_version\": \"1.0-ciq\" }, \"subject\": { \"type\": \"_Application\" }, \"condition\": { \"cypher\": \"MATCH (subject:_Application {external_id: $_appId}) WITH subject MATCH (ra:RegulatoryAgreement)\", \"filter\": [ ] }, \"allowed_reads\": { \"nodes\": [ \"ra\", \"ra.*\" ], \"relationships\": [  ], \"aggregate_values\": [ ] } }",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

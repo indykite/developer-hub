@@ -5,6 +5,7 @@ import os
 import time
 from pathlib import Path
 
+import ijson
 import requests
 from dotenv import load_dotenv
 from flask import Response, render_template, request, stream_with_context
@@ -25,6 +26,9 @@ ENV_FILE = Path(__file__).parent.parent / ".env"
 # with retries/backoff on transient failures (same approach as the music app).
 CHUNK_SIZE = 200
 MAX_WORKERS = 10
+# Cap chunks held in memory at once so a multi-GB nodes file stays flat in RAM.
+# At CHUNK_SIZE=200 this is at most MAX_IN_FLIGHT * 200 nodes resident.
+MAX_IN_FLIGHT = MAX_WORKERS * 4
 REQUEST_TIMEOUT = 120  # seconds per chunk
 RETRY_ATTEMPTS = 3  # total attempts (initial + retries) per chunk
 RETRY_BACKOFF = 2.0  # seconds, doubled each retry
@@ -67,9 +71,35 @@ def _list_node_files():
     return sorted(f.name for f in NODES_DIR.iterdir() if f.suffix == ".json")
 
 
-def _chunk_list(lst, chunk_size):
-    for i in range(0, len(lst), chunk_size):
-        yield lst[i : i + chunk_size]
+def _detect_item_prefix(file_path, key):
+    """Pick the ijson prefix: 'item' for a bare top-level array, '<key>.item' for {<key>: [...]}.
+
+    Only reads the first non-whitespace byte, so it never loads the (possibly multi-GB) file.
+    """
+    with file_path.open("rb") as f:
+        for block in iter(lambda: f.read(64), b""):
+            stripped = block.lstrip()
+            if stripped:
+                return "item" if stripped[:1] == b"[" else f"{key}.item"
+    return f"{key}.item"
+
+
+def _iter_file_node_chunks(file_path, chunk_size):
+    """Yield lists of up to chunk_size nodes streamed from file_path.
+
+    Never holds more than one chunk in memory, so the file size is irrelevant to RAM
+    usage — this is what lets a multi-GB file be captured without freezing.
+    """
+    prefix = _detect_item_prefix(file_path, "nodes")
+    with file_path.open("rb") as f:
+        chunk = []
+        for node in ijson.items(f, prefix, use_float=True):
+            chunk.append(node)
+            if len(chunk) >= chunk_size:
+                yield chunk
+                chunk = []
+        if chunk:
+            yield chunk
 
 
 def _is_retryable_status(status: int) -> bool:
@@ -143,7 +173,10 @@ def _error_response(wants_stream, msg, status):
 
 
 def _prepare_request(wants_stream):
-    """Validate the selected file and env. Return ((nodes_list, app_token, api_url), None) or (None, error_response)."""
+    """Validate the selected file and env. Return ((file_path, app_token, api_url), None) or (None, error_response).
+
+    The file is streamed (not loaded) at capture time, so only its path is returned here.
+    """
     selected_file = request.form.get("json_file", "")
     if not selected_file:
         return None, _error_response(wants_stream, "No file selected", HTTP_BAD_REQUEST)
@@ -151,13 +184,6 @@ def _prepare_request(wants_stream):
     file_path = (NODES_DIR / selected_file).resolve()
     if file_path.parent != NODES_DIR.resolve() or file_path.suffix != ".json" or not file_path.is_file():
         return None, _error_response(wants_stream, f"Invalid file: {selected_file}", HTTP_BAD_REQUEST)
-
-    try:
-        with file_path.open() as f:
-            json_data = json.load(f)
-    except (OSError, json.JSONDecodeError) as e:
-        logger.exception("Failed to read node file %s", selected_file)
-        return None, _error_response(wants_stream, f"Could not read file: {e!s}", HTTP_BAD_REQUEST)
 
     # Re-read .env in case it was updated since the server booted (e.g. APP_TOKEN was just written).
     load_dotenv(ENV_FILE, override=True)
@@ -170,37 +196,60 @@ def _prepare_request(wants_stream):
         msg = "URL_ENDPOINTS is not set in .env (e.g. https://eu.api.indykite.com)."
         return None, _error_response(wants_stream, msg, HTTP_BAD_REQUEST)
 
-    nodes_list = json_data if isinstance(json_data, list) else json_data.get("nodes", [])
-    return (nodes_list, app_token, f"{url_endpoints}/capture/v1/nodes"), None
+    return (file_path, app_token, f"{url_endpoints}/capture/v1/nodes"), None
 
 
-def _stream_response(chunks, process_chunk, total_nodes):
-    """Run the chunks concurrently and stream NDJSON progress events for the progress bar."""
-    total_chunks = len(chunks)
+def _iter_results_bounded(chunk_iter, process_chunk):
+    """Yield (index, result) per chunk as it completes, capping in-flight chunks.
+
+    Run process_chunk over a (possibly lazy) chunk iterator while keeping at most
+    MAX_IN_FLIGHT chunks in memory. Submitting every chunk up front (the old
+    `list(_chunk_list(...))` + submit-all approach) would pull the entire file into RAM via
+    the pending futures. Here we pull chunks from the iterator only as worker slots free up,
+    so memory stays flat no matter how large the source file is.
+    """
+    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        futures = {}
+        for index, chunk in enumerate(chunk_iter):
+            if len(futures) >= MAX_IN_FLIGHT:
+                done, _ = concurrent.futures.wait(futures, return_when=concurrent.futures.FIRST_COMPLETED)
+                for fut in done:
+                    yield futures.pop(fut), fut.result()
+            futures[executor.submit(process_chunk, index, chunk)] = index
+        for fut in concurrent.futures.as_completed(list(futures)):
+            yield futures.pop(fut), fut.result()
+
+
+def _stream_response(chunk_iter, process_chunk, total_nodes, total_chunks):
+    """Run the chunks concurrently and stream NDJSON progress events for the progress bar.
+
+    total_nodes / total_chunks are None for the streamed file (unknown without a full
+    scan); the client shows an indeterminate bar and a live completed-count in that case.
+    """
 
     def event_stream():
         yield json.dumps({"type": "start", "total_chunks": total_chunks, "total_nodes": total_nodes}) + "\n"
         results = []
         last_status_code = HTTP_OK
         completed = 0
-        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-            futures = {executor.submit(process_chunk, i, chunk): i for i, chunk in enumerate(chunks)}
-            for future in concurrent.futures.as_completed(futures):
-                completed += 1
-                result = future.result()
-                results.append(result["response_json"])
-                last_status_code = result["status_code"]
-                evt = {
-                    "type": "chunk",
-                    "completed": completed,
-                    "total": total_chunks,
-                    "chunk_index": futures[future],
-                    "status_code": result["status_code"],
-                }
-                if result["status_code"] >= HTTP_BAD_REQUEST:
-                    evt["response_text"] = result.get("response_text", "")
-                yield json.dumps(evt) + "\n"
-        yield json.dumps({"type": "done", "status_code": last_status_code, "results": results}) + "\n"
+        for index, result in _iter_results_bounded(chunk_iter, process_chunk):
+            completed += 1
+            results.append(result["response_json"])
+            last_status_code = result["status_code"]
+            evt = {
+                "type": "chunk",
+                "completed": completed,
+                "total": total_chunks,
+                "chunk_index": index,
+                "status_code": result["status_code"],
+            }
+            if result["status_code"] >= HTTP_BAD_REQUEST:
+                evt["response_text"] = result.get("response_text", "")
+            yield json.dumps(evt) + "\n"
+        yield (
+            json.dumps({"type": "done", "status_code": last_status_code, "results": results, "completed": completed})
+            + "\n"
+        )
 
     return Response(
         stream_with_context(event_stream()),
@@ -209,16 +258,13 @@ def _stream_response(chunks, process_chunk, total_nodes):
     )
 
 
-def _render_result(chunks, process_chunk, selected_file):
+def _render_result(chunk_iter, process_chunk, selected_file):
     """Run the chunks concurrently and render the result page on completion (no-JS fallback)."""
     results = []
     last_status_code = HTTP_OK
-    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = {executor.submit(process_chunk, i, chunk): i for i, chunk in enumerate(chunks)}
-        for future in concurrent.futures.as_completed(futures):
-            result = future.result()
-            results.append(result["response_json"])
-            last_status_code = result["status_code"]
+    for _index, result in _iter_results_bounded(chunk_iter, process_chunk):
+        results.append(result["response_json"])
+        last_status_code = result["status_code"]
     return render_template(
         "capture/result.html",
         response_json=results,
@@ -237,20 +283,21 @@ def show_create_form():
 def create_capture():
     """Capture nodes from the selected data/nodes/*.json file.
 
-    Streams NDJSON progress events when the client accepts application/x-ndjson (driving the
-    progress bar); otherwise renders the result page. The file is chunked under the 250-node
-    Capture API limit and PUT concurrently.
+    The file is streamed off disk in chunks (never loaded whole), so multi-GB files can be
+    captured without exhausting memory. Streams NDJSON progress events when the client accepts
+    application/x-ndjson (driving the progress bar); otherwise renders the result page.
     """
     wants_stream = "application/x-ndjson" in request.headers.get("Accept", "")
     context, error = _prepare_request(wants_stream)
     if error is not None:
         return error
 
-    nodes_list, app_token, api_url = context
-    chunks = list(_chunk_list(nodes_list, CHUNK_SIZE))
-    logger.info("Splitting %s nodes into %s chunks of size %s", len(nodes_list), len(chunks), CHUNK_SIZE)
+    file_path, app_token, api_url = context
     process_chunk = _make_process_chunk(api_url, app_token)
+    # Lazily streamed off disk — totals are unknown without a full multi-GB scan.
+    chunk_iter = _iter_file_node_chunks(file_path, CHUNK_SIZE)
+    logger.info("Streaming %s in chunks of %s", file_path.name, CHUNK_SIZE)
 
     if wants_stream:
-        return _stream_response(chunks, process_chunk, len(nodes_list))
-    return _render_result(chunks, process_chunk, request.form.get("json_file", ""))
+        return _stream_response(chunk_iter, process_chunk, None, None)
+    return _render_result(chunk_iter, process_chunk, request.form.get("json_file", ""))

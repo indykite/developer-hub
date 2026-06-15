@@ -1,0 +1,30 @@
+---
+info:
+  name: Update Agent Get Workflows Policy
+  type: http
+  seq: 2
+
+http:
+  method: PUT
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies/{{get_agent_workflows_2_policy}}"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "get-agent-workflows-2",
+          "display_name": "Get Agent Workflows 2",
+          "description": "Given an agent get the workflow and all of the possible relationships v2",
+          "project_id": "{{project_id}}",
+          "policy": "{ \"meta\": { \"policy_version\": \"1.0-ciq\" }, \"subject\": { \"type\": \"_Application\" }, \"condition\": { \"cypher\": \"MATCH (subject:_Application) MATCH (wf:Workflow)-[rels:INVOKES*]->(a:Agent {external_id: $agent_id}) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) WITH subject, wf.external_id AS workflow, [r IN rels | endNode(r).external_id] AS agent_list\", \"filter\": [ ] }, \"allowed_reads\": { \"nodes\": [ ], \"relationships\": [  ], \"aggregate_values\": [ \"workflow\", \"agent_list\" ] } }",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
