@@ -1,0 +1,40 @@
+---
+info:
+  name: Update Get Regulatory Agreements Query
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: "{{ik_api_url_prefix}}/configs/v1/knowledge-queries/{{get_regulatory_agreements_query}}"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "get-regulatory-agreements",
+          "display_name": "Get Regulatory Agreements",
+          "description": "Call tool 'ciq_execute' with argument: \"id\": \"get-regulatory-requirements\" and no \"input_params\". Example: { \"id\": \"get-regulatory-agreements\", \"input_params\": { } }. Returns a list of regulatory agreements that includes the external_id, name, and description.",
+          "project_id": "{{project_id}}",
+          "policy_id": "{{get_regulatory_agreements_policy}}",
+          "query": "{ \"nodes\": [ \"ra.external_id\", \"ra.property.name\", \"ra.property.description\" ], \"relationships\": [  ], \"aggregate_values\": [ ] }",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: get_agent_workflows_policy
+      value: gid:AAAAFn8x970x80CPrzeCXVe_eYU
+    - name: get_regulatory_agreements_policy
+      value: gid:AAAAFjQRXtVGWk-4twKxr1bEGXw
+    - name: get_regulatory_agreements_query
+      value: gid:AAAAI9x3WgL6RUqFgHfupHiCtk8
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

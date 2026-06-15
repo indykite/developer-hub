@@ -8,9 +8,9 @@
             <div class="card border-0 shadow mb-4">
                 <div class="card-body">
                     <h3 class="mb-4">Capture Music Nodes</h3>
-                    <p class="text-muted mb-2">The default dataset contains <strong>{{ nodes_count }}</strong> nodes from
-                        <code>{{ nodes_file }}</code>. The full file is loaded server-side when you click "Capture" — it is
-                        not embedded in this page.</p>
+                    <p class="text-muted mb-2">The default dataset lives in <code>{{ nodes_file }}</code>. The file is
+                        <strong>streamed</strong> server-side when you click "Capture" — it is read in small chunks and never
+                        loaded into memory whole, so multi-GB files won't freeze the app or your browser.</p>
                     <p class="text-muted mb-4">Below is a preview of the first {{ preview_count }} entries. Untick
                         "Use defaults from file" to paste a custom JSON payload instead.</p>
 
@@ -19,7 +19,7 @@
                             <input type="checkbox" class="form-check-input" id="use_defaults" name="use_defaults" value="true" checked
                                 onchange="document.getElementById('nodes').disabled = this.checked;">
                             <label class="form-check-label" for="use_defaults">
-                                Use defaults from file (<code>{{ nodes_file }}</code>, {{ nodes_count }} nodes)
+                                Use defaults from file (<code>{{ nodes_file }}</code>, streamed)
                             </label>
                         </div>
 
@@ -126,18 +126,19 @@
 
     function handleEvent(evt) {
         if (evt.type === 'start') {
-            progressDetail.textContent =
-                `0 / ${evt.total_chunks} chunks (${evt.total_nodes} nodes total)`;
-            progressBar.style.width = '0%';
-            progressBar.setAttribute('aria-valuenow', '0');
-            progressBar.textContent = '0%';
+            setBar(0);
+            // total_chunks is null when streaming the file (item count unknown), but the bar is
+            // still a real percentage — driven by bytes read (see the 'percent' field below).
+            progressDetail.textContent = evt.total_chunks == null
+                ? 'Streaming nodes from file…'
+                : `0 / ${evt.total_chunks} chunks (${evt.total_nodes} nodes total)`;
         } else if (evt.type === 'chunk') {
-            const pct = Math.round((evt.completed / evt.total) * 100);
-            progressBar.style.width = pct + '%';
-            progressBar.setAttribute('aria-valuenow', String(pct));
-            progressBar.textContent = pct + '%';
-            progressDetail.textContent =
-                `${evt.completed} / ${evt.total} chunks`;
+            // Server sends a computed percent (bytes for the file, chunk count for pasted JSON).
+            const pct = evt.percent != null ? evt.percent : Math.round((evt.completed / evt.total) * 100);
+            setBar(pct);
+            progressDetail.textContent = evt.total == null
+                ? `${evt.completed} chunks captured — ${pct}%`
+                : `${evt.completed} / ${evt.total} chunks (${pct}%)`;
             if (evt.error || (evt.status_code && evt.status_code >= 400)) {
                 errorCount += 1;
                 if (!firstErrorText) {
@@ -149,6 +150,7 @@
             }
         } else if (evt.type === 'done') {
             progressBar.classList.remove('progress-bar-animated');
+            setBar(100);
             if (evt.error && !firstErrorText) firstErrorText = evt.error;
             if (evt.status_code && !firstErrorStatus) firstErrorStatus = evt.status_code;
             const displayStatus = errorCount > 0 ? (worstStatus || evt.status_code) : evt.status_code;
@@ -172,6 +174,12 @@
             submitBtn.disabled = false;
             submitBtn.textContent = 'Capture Nodes';
         }
+    }
+
+    function setBar(pct) {
+        progressBar.style.width = pct + '%';
+        progressBar.setAttribute('aria-valuenow', String(pct));
+        progressBar.textContent = pct + '%';
     }
 
     function escapeHtml(s) {

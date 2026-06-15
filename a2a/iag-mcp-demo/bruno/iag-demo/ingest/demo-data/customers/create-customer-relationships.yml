@@ -1,0 +1,84 @@
+---
+info:
+  name: Create Customer Relationships
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/capture/v1/relationships"
+  body:
+    type: json
+    data: |-
+      {
+        "relationships": [
+          /* LINK CUSTOMERS TO THE SYSTEM */
+          { "source": { "type": "System", "external_id": "sys_canbank_core" }, "target": { "type": "Customer", "external_id": "alison" }, "type": "CONTAINS" },
+          { "source": { "type": "System", "external_id": "sys_canbank_core" }, "target": { "type": "Customer", "external_id": "bob" }, "type": "CONTAINS" },
+          { "source": { "type": "System", "external_id": "sys_canbank_core" }, "target": { "type": "Customer", "external_id": "charlie" }, "type": "CONTAINS" },
+          { "source": { "type": "System", "external_id": "sys_canbank_core" }, "target": { "type": "Customer", "external_id": "rebecca" }, "type": "CONTAINS" },
+          { "source": { "type": "System", "external_id": "sys_canbank_core" }, "target": { "type": "Customer", "external_id": "ted" }, "type": "CONTAINS" },
+          { "source": { "type": "System", "external_id": "sys_canbank_core" }, "target": { "type": "Customer", "external_id": "keely" }, "type": "CONTAINS" },
+          { "source": { "type": "System", "external_id": "sys_canbank_core" }, "target": { "type": "Customer", "external_id": "jamie" }, "type": "CONTAINS" },
+      /*    { "source": { "type": "System", "external_id": "sys_canbank_core" }, "target": { "type": "Customer", "external_id": "willis" }, "type": "CONTAINS" },*/
+
+          /* ALISON'S HOLDINGS */
+          { "source": { "type": "Customer", "external_id": "alison" }, "target": { "type": "Account", "external_id": "acc_alison_chequing" }, "type": "OWNS" },
+          { "source": { "type": "Customer", "external_id": "alison" }, "target": { "type": "Account", "external_id": "acc_alison_mortgage" }, "type": "OWNS" },
+
+          /* BOB'S HOLDINGS */
+          { "source": { "type": "Customer", "external_id": "bob" }, "target": { "type": "Account", "external_id": "acc_bob_401k" }, "type": "OWNS" },
+
+          /* CHARLIE'S HOLDINGS */
+          { "source": { "type": "Customer", "external_id": "charlie" }, "target": { "type": "Account", "external_id": "acc_charlie-loan" }, "type": "OWNS" },
+
+          /* REBECCA'S HOLDINGS */
+          { "source": { "type": "Customer", "external_id": "rebecca" }, "target": { "type": "Account", "external_id": "acc_rebecca_chequing" }, "type": "OWNS" },
+          { "source": { "type": "Customer", "external_id": "rebecca" }, "target": { "type": "Account", "external_id": "acc_rebecca_investing" }, "type": "OWNS" },
+          { "source": { "type": "Customer", "external_id": "rebecca" }, "target": { "type": "Account", "external_id": "acc_rebecca_cc" }, "type": "OWNS" },
+
+          /* TED'S HOLDINGS */
+          { "source": { "type": "Customer", "external_id": "ted" }, "target": { "type": "Account", "external_id": "acc_ted_chequing" }, "type": "OWNS" },
+          { "source": { "type": "Customer", "external_id": "ted" }, "target": { "type": "Account", "external_id": "acc_ted_investing" }, "type": "OWNS" },
+          { "source": { "type": "Customer", "external_id": "ted" }, "target": { "type": "Account", "external_id": "acc_ted_cc" }, "type": "OWNS" },
+
+          /* KEELY'S HOLDINGS */
+          { "source": { "type": "Customer", "external_id": "keely" }, "target": { "type": "Account", "external_id": "acc_keely_cc" }, "type": "OWNS" },
+
+          /* JAMIE'S HOLDINGS */
+          { "source": { "type": "Customer", "external_id": "jamie" }, "target": { "type": "Account", "external_id": "acc_jamie_cc" }, "type": "OWNS" },
+
+          /* WILLIS'S HOLDINGS */
+      /*    { "source": { "type": "Customer", "external_id": "willis" }, "target": { "type": "Account", "external_id": "acc_willis_cc" }, "type": "OWNS" },*/
+
+          /* Connects account to the "InvestmentCategory" */
+          { "source": { "type": "Account", "external_id": "acc_charlie_loan" }, "target": { "type": "InvestmentCategory", "external_id": "cat_lending" }, "type": "IS_TYPE" },
+          { "source": { "type": "Account", "external_id": "acc_bob_401k" }, "target": { "type": "InvestmentCategory", "external_id": "cat_mutual_fund" }, "type": "IS_TYPE" },
+          { "source": { "type": "Account", "external_id": "acc_rebecca_investing" }, "target": { "type": "InvestmentCategory", "external_id": "cat_stocks" }, "type": "IS_TYPE" },
+          { "source": { "type": "Account", "external_id": "acc_ted_investing" }, "target": { "type": "InvestmentCategory", "external_id": "cat_stocks" }, "type": "IS_TYPE" },
+
+          /* Link accounts to account tiers */
+          { "source": { "type": "Account", "external_id": "acc_charlie_loan" }, "target": { "type": "AccountTier", "external_id": "tier_1" }, "type": "IS_TIER" },
+          { "source": { "type": "Account", "external_id": "acc_bob_401k" }, "target": { "type": "AccountTier", "external_id": "tier_1" }, "type": "IS_TIER" },
+          { "source": { "type": "Account", "external_id": "acc_rebecca_investing" }, "target": { "type": "AccountTier", "external_id": "tier_3" }, "type": "IS_TIER" },
+          { "source": { "type": "Account", "external_id": "acc_ted_investing" }, "target": { "type": "AccountTier", "external_id": "tier_3" }, "type": "IS_TIER" },
+          { "source": { "type": "Account", "external_id": "acc_rebecca_cc" }, "target": { "type": "AccountTier", "external_id": "tier_3" }, "type": "IS_TIER" },
+          { "source": { "type": "Account", "external_id": "acc_ted_cc" }, "target": { "type": "AccountTier", "external_id": "tier_3" }, "type": "IS_TIER" },
+          { "source": { "type": "Account", "external_id": "acc_keely_cc" }, "target": { "type": "AccountTier", "external_id": "tier_2" }, "type": "IS_TIER" },
+          { "source": { "type": "Account", "external_id": "acc_jamie_cc" }, "target": { "type": "AccountTier", "external_id": "tier_2" }, "type": "IS_TIER" },
+          { "source": { "type": "Account", "external_id": "acc_jamie_cc" }, "target": { "type": "AccountTier", "external_id": "tier_4" }, "type": "IS_TIER" }
+
+        ]
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: ik_api_host
+      value: https://api.rc.indykite.xyz
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

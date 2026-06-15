@@ -5,6 +5,7 @@ import os
 import time
 from pathlib import Path
 
+import ijson
 import requests
 from dotenv import load_dotenv
 from flask import Response, render_template, request, stream_with_context
@@ -36,6 +37,9 @@ NODES_FILE = Path(__file__).parent.parent / "data" / "nodes" / "nodes_music.json
 ENV_FILE = Path(__file__).parent.parent / ".env"
 CHUNK_SIZE = 200
 MAX_WORKERS = 10
+# Cap chunks held in memory at once so a multi-GB nodes file stays flat in RAM.
+# At CHUNK_SIZE=200 this is at most MAX_IN_FLIGHT * 200 nodes resident.
+MAX_IN_FLIGHT = MAX_WORKERS * 4
 REQUEST_TIMEOUT = 120  # seconds per chunk
 RETRY_ATTEMPTS = 3  # total attempts (initial + retries) per chunk
 RETRY_BACKOFF = 2.0  # seconds, doubled each retry
@@ -58,33 +62,68 @@ _APP_AGENT_HELP = (
 _NO_URL_MSG = "URL_ENDPOINTS is not set in .env (e.g. https://eu.api.indykite.com)."
 
 
-def _load_default_nodes():
+def _preview_file_nodes(n):
+    """Return the first n nodes from NODES_FILE without loading the whole file.
+
+    The bundled file can be several GB / millions of nodes, so json.load would
+    balloon to tens of GB of Python objects and freeze the machine. ijson reads
+    incrementally and we stop after n items, touching only the start of the file.
+    """
+    out = []
     try:
-        with NODES_FILE.open() as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        logger.warning("Could not load nodes_music.json: %s", e)
-        return {"nodes": []}
+        with NODES_FILE.open("rb") as f:
+            for node in ijson.items(f, "nodes.item", use_float=True):
+                out.append(node)
+                if len(out) >= n:
+                    break
+    except (FileNotFoundError, ijson.JSONError) as e:
+        logger.warning("Could not preview nodes_music.json: %s", e)
+    return out
+
+
+def _iter_file_node_chunks(chunk_size):
+    """Yield (chunk, fraction) pairs of up to chunk_size nodes streamed from NODES_FILE.
+
+    Never holds more than one chunk in memory, so the file size is irrelevant to
+    RAM usage — this is what lets a multi-GB file be captured without freezing.
+
+    fraction is the share (0..1) of the file read when this chunk was produced; reporting it
+    when the chunk completes lets the progress bar show a real percentage from this single
+    pass — the file is never read a second time just to count it.
+    """
+    file_size = NODES_FILE.stat().st_size or 1
+    with NODES_FILE.open("rb") as f:
+        chunk = []
+        for node in ijson.items(f, "nodes.item", use_float=True):
+            chunk.append(node)
+            if len(chunk) >= chunk_size:
+                yield chunk, f.tell() / file_size
+                chunk = []
+        if chunk:
+            yield chunk, f.tell() / file_size
 
 
 @api_capture.get("/create", tags=[tag])
 def show_create_form():
     """Display the capture form with a preview of the music node defaults."""
-    default_data = _load_default_nodes()
-    nodes_list = default_data if isinstance(default_data, list) else default_data.get("nodes", [])
-    preview = {"nodes": nodes_list[:_PREVIEW_NODE_COUNT]}
+    preview_nodes = _preview_file_nodes(_PREVIEW_NODE_COUNT)
+    preview = {"nodes": preview_nodes}
     return render_template(
         "capture/create_form.html",
-        nodes_count=len(nodes_list),
-        preview_count=min(_PREVIEW_NODE_COUNT, len(nodes_list)),
+        # Exact count would require a full multi-GB scan on every page load; the
+        # file is streamed at capture time, so the total is reported as it runs.
+        nodes_count=None,
+        preview_count=len(preview_nodes),
         preview_json=json.dumps(preview, indent=2),
         nodes_file=str(NODES_FILE.relative_to(NODES_FILE.parent.parent.parent)),
     )
 
 
 def _chunk_list(lst, chunk_size):
+    total = len(lst) or 1
     for i in range(0, len(lst), chunk_size):
-        yield lst[i : i + chunk_size]
+        chunk = lst[i : i + chunk_size]
+        yield chunk, min(1.0, (i + len(chunk)) / total)
 
 
 def _is_retryable_status(status: int) -> bool:
@@ -148,14 +187,20 @@ def _make_process_chunk(api_url: str, app_token: str):
 
 
 def _load_payload_from_form():
-    """Return (json_data, error_html_response | None) from the form (bundled file or pasted JSON)."""
+    """Return (descriptor, error_html_response | None) describing what to capture.
+
+    descriptor is {"source": "file"} for the bundled multi-GB file (streamed off
+    disk so it never lands in memory) or {"source": "pasted", "nodes": [...]} for a
+    small JSON payload typed into the form.
+    """
     use_defaults = request.form.get("use_defaults") == "true"
     if use_defaults:
-        logger.info("Loading nodes from disk: %s", NODES_FILE)
-        return _load_default_nodes(), None
+        logger.info("Streaming nodes from disk: %s", NODES_FILE)
+        return {"source": "file"}, None
     try:
         nodes_json = request.form.get("nodes", "{}")
-        return json.loads(nodes_json), None
+        data = json.loads(nodes_json)
+        nodes_list = data if isinstance(data, list) else data.get("nodes", [])
     except json.JSONDecodeError as e:
         logger.exception("Failed to parse nodes JSON")
         error = render_template(
@@ -164,6 +209,8 @@ def _load_payload_from_form():
             status_code=HTTP_BAD_REQUEST,
         )
         return None, error
+    else:
+        return {"source": "pasted", "nodes": nodes_list}, None
 
 
 def _error_response(wants_stream, msg, status):
@@ -189,33 +236,64 @@ def _resolve_env(wants_stream):
     return (url_endpoints, app_token), None
 
 
-def _stream_response(chunks, process_chunk, total_nodes):
-    """Run the chunks concurrently and stream NDJSON progress events for the progress bar."""
-    total_chunks = len(chunks)
+def _iter_results_bounded(chunk_iter, process_chunk):
+    """Yield (index, result) per chunk as it completes, capping in-flight chunks.
+
+    Run process_chunk over a (possibly lazy) chunk iterator while keeping at most
+    MAX_IN_FLIGHT chunks in memory. Submitting every chunk up front (the old
+    `list(_chunk_list(...))` + submit-all approach) would pull the entire file into RAM via
+    the pending futures. Here we pull chunks from the iterator only as worker slots free up,
+    so memory stays flat no matter how large the source file is.
+    """
+    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+        futures = {}
+        for index, (chunk, frac) in enumerate(chunk_iter):
+            if len(futures) >= MAX_IN_FLIGHT:
+                done, _ = concurrent.futures.wait(futures, return_when=concurrent.futures.FIRST_COMPLETED)
+                for fut in done:
+                    yield futures.pop(fut), fut.result()
+            futures[executor.submit(process_chunk, index, chunk)] = (index, frac)
+        for fut in concurrent.futures.as_completed(list(futures)):
+            yield futures.pop(fut), fut.result()
+
+
+def _stream_response(chunk_iter, process_chunk, total_nodes, total_chunks):
+    """Run the chunks concurrently and stream NDJSON progress events for the progress bar.
+
+    Each chunk event carries a server-computed `percent` (0..100) so the bar is always
+    determinate: for pasted JSON it comes from the chunk count, and for the streamed file it
+    comes from the bytes read so far — no separate counting pass. total_nodes / total_chunks are
+    None for the streamed file (its item count is unknown without a full scan) and only label the
+    start event.
+    """
 
     def event_stream():
         yield json.dumps({"type": "start", "total_chunks": total_chunks, "total_nodes": total_nodes}) + "\n"
         results = []
         last_status_code = HTTP_OK
         completed = 0
-        with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-            futures = {executor.submit(process_chunk, i, chunk): i for i, chunk in enumerate(chunks)}
-            for future in concurrent.futures.as_completed(futures):
-                completed += 1
-                result = future.result()
-                results.append(result["response_json"])
-                last_status_code = result["status_code"]
-                evt = {
-                    "type": "chunk",
-                    "completed": completed,
-                    "total": total_chunks,
-                    "chunk_index": futures[future],
-                    "status_code": result["status_code"],
-                }
-                if result["status_code"] >= HTTP_BAD_REQUEST:
-                    evt["response_text"] = result.get("response_text", "")
-                yield json.dumps(evt) + "\n"
-        yield json.dumps({"type": "done", "status_code": last_status_code, "results": results}) + "\n"
+        percent = 0
+        for (index, frac), result in _iter_results_bounded(chunk_iter, process_chunk):
+            completed += 1
+            # max() keeps the bar monotonic even if chunks complete slightly out of order.
+            percent = max(percent, round(frac * 100))
+            results.append(result["response_json"])
+            last_status_code = result["status_code"]
+            evt = {
+                "type": "chunk",
+                "completed": completed,
+                "total": total_chunks,
+                "percent": percent,
+                "chunk_index": index,
+                "status_code": result["status_code"],
+            }
+            if result["status_code"] >= HTTP_BAD_REQUEST:
+                evt["response_text"] = result.get("response_text", "")
+            yield json.dumps(evt) + "\n"
+        yield (
+            json.dumps({"type": "done", "status_code": last_status_code, "results": results, "completed": completed})
+            + "\n"
+        )
 
     return Response(
         stream_with_context(event_stream()),
@@ -224,16 +302,13 @@ def _stream_response(chunks, process_chunk, total_nodes):
     )
 
 
-def _render_result(chunks, process_chunk):
+def _render_result(chunk_iter, process_chunk):
     """Run the chunks concurrently and render the result page on completion (no-JS fallback)."""
     results = []
     last_status_code = HTTP_OK
-    with concurrent.futures.ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        futures = {executor.submit(process_chunk, i, chunk): i for i, chunk in enumerate(chunks)}
-        for future in concurrent.futures.as_completed(futures):
-            result = future.result()
-            results.append(result["response_json"])
-            last_status_code = result["status_code"]
+    for (_index, _frac), result in _iter_results_bounded(chunk_iter, process_chunk):
+        results.append(result["response_json"])
+        last_status_code = result["status_code"]
     return render_template("capture/result.html", response_json=results, status_code=last_status_code)
 
 
@@ -244,7 +319,7 @@ def create_capture():
     Streams NDJSON progress events when the client accepts application/x-ndjson (driving the
     progress bar); otherwise renders the result page (kept for non-JS submissions).
     """
-    json_data, error_html = _load_payload_from_form()
+    descriptor, error_html = _load_payload_from_form()
     if error_html is not None:
         return error_html
 
@@ -253,12 +328,20 @@ def create_capture():
     if error is not None:
         return error
     url_endpoints, app_token = env
-
-    nodes_list = json_data if isinstance(json_data, list) else json_data.get("nodes", [])
-    chunks = list(_chunk_list(nodes_list, CHUNK_SIZE))
-    logger.info("Splitting %s nodes into %s chunks of size %s", len(nodes_list), len(chunks), CHUNK_SIZE)
     process_chunk = _make_process_chunk(f"{url_endpoints}/capture/v1/nodes", app_token)
 
+    if descriptor["source"] == "file":
+        # Lazily streamed off disk — totals are unknown without a full multi-GB scan.
+        chunk_iter = _iter_file_node_chunks(CHUNK_SIZE)
+        total_nodes = total_chunks = None
+        logger.info("Streaming bundled file in chunks of %s", CHUNK_SIZE)
+    else:
+        nodes_list = descriptor["nodes"]
+        total_nodes = len(nodes_list)
+        total_chunks = (total_nodes + CHUNK_SIZE - 1) // CHUNK_SIZE
+        chunk_iter = _chunk_list(nodes_list, CHUNK_SIZE)
+        logger.info("Splitting %s nodes into %s chunks of size %s", total_nodes, total_chunks, CHUNK_SIZE)
+
     if wants_stream:
-        return _stream_response(chunks, process_chunk, len(nodes_list))
-    return _render_result(chunks, process_chunk)
+        return _stream_response(chunk_iter, process_chunk, total_nodes, total_chunks)
+    return _render_result(chunk_iter, process_chunk)

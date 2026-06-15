@@ -44,6 +44,9 @@ create .env file with the variables:
    (`/api_ciq_knowledge_query/create` … `/create24`; variants use `b`/`c`/`d` suffixes,
    e.g. `/create2b`, `/create6d`).
 6. Execute (`/api_ciq_execute/execute` … `/execute24` and variants).
+7. Or walk the story at `/chat/` — an interactive frontend that runs every CIQ
+   execute in dependency-safe order (creates before reads, deletes last),
+   scripted by `data/scenario.json`.
 
 ## Dataset source
 

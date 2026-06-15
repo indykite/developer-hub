@@ -1,0 +1,96 @@
+---
+info:
+  name: Create CanBank Relationships
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/capture/v1/relationships"
+  body:
+    type: json
+    data: |-
+      {
+        "relationships": [
+          {
+            "source": {
+              "type": "Entity",
+              "external_id": "canbank"
+            },
+            "target": {
+              "type": "Container",
+              "external_id": "canbank-depts"
+            },
+            "properties": [
+            ],
+            "type": "CONTAINS"
+          },
+          { "source": { "type": "Container", "external_id": "canbank-depts" }, "target": { "type": "Department", "external_id": "exec" }, "type": "CONTAINS" },
+          { "source": { "type": "Department", "external_id": "exec" }, "target": { "type": "Department", "external_id": "lob" }, "type": "CONTAINS" },
+          { "source": { "type": "Department", "external_id": "exec" }, "target": { "type": "Department", "external_id": "governace" }, "type": "CONTAINS" },
+          { "source": { "type": "Department", "external_id": "exec" }, "target": { "type": "Department", "external_id": "shared" }, "type": "CONTAINS" },
+          { "source": { "type": "Department", "external_id": "crm" }, "target": { "type": "Department", "external_id": "support" }, "type": "CONTAINS" },
+          { "source": { "type": "Department", "external_id": "crm" }, "target": { "type": "Department", "external_id": "consumer" }, "type": "CONTAINS" },
+          { "source": { "type": "Department", "external_id": "crm" }, "target": { "type": "Department", "external_id": "commercial" }, "type": "CONTAINS" },
+          { "source": { "type": "Department", "external_id": "crm" }, "target": { "type": "Department", "external_id": "corporate" }, "type": "CONTAINS" },
+          { "source": { "type": "Department", "external_id": "crm" }, "target": { "type": "Department", "external_id": "private" }, "type": "CONTAINS" },
+          { "source": { "type": "Department", "external_id": "crm" }, "target": { "type": "Department", "external_id": "trading" }, "type": "CONTAINS" },
+          { "source": { "type": "Department", "external_id": "governace" }, "target": { "type": "Department", "external_id": "risk" }, "type": "CONTAINS" },
+          { "source": { "type": "Department", "external_id": "governace" }, "target": { "type": "Department", "external_id": "crimes" }, "type": "CONTAINS" },
+          { "source": { "type": "Department", "external_id": "governace" }, "target": { "type": "Department", "external_id": "regulatory" }, "type": "CONTAINS" },
+          { "source": { "type": "Department", "external_id": "governace" }, "target": { "type": "Department", "external_id": "treasury" }, "type": "CONTAINS" },
+          { "source": { "type": "Department", "external_id": "shared" }, "target": { "type": "Department", "external_id": "tech" }, "type": "CONTAINS" },
+          { "source": { "type": "Department", "external_id": "shared" }, "target": { "type": "Department", "external_id": "ops" }, "type": "CONTAINS" },
+          { "source": { "type": "Department", "external_id": "shared" }, "target": { "type": "Department", "external_id": "strategy" }, "type": "CONTAINS" },
+          { "source": { "type": "Department", "external_id": "shared" }, "target": { "type": "Department", "external_id": "procurement" }, "type": "CONTAINS" },
+
+          /* Allow Customer Support and Trading to invoke wf1 */
+          { "source": { "type": "Department", "external_id": "support" }, "target": { "type": "Workflow", "external_id": "wf1" }, "type": "INVOKES" },
+          { "source": { "type": "Department", "external_id": "trading" }, "target": { "type": "Workflow", "external_id": "wf1" }, "type": "INVOKES" },
+
+          /* Add users to departments */
+          { "source": { "type": "User", "external_id": "leslie" }, "target": { "type": "Department", "external_id": "support" }, "type": "WORKS_IN" },
+          { "source": { "type": "User", "external_id": "flo" }, "target": { "type": "Department", "external_id": "support" }, "type": "WORKS_IN" },
+          { "source": { "type": "User", "external_id": "roy" }, "target": { "type": "Department", "external_id": "trading" }, "type": "WORKS_IN" },
+
+          /* Employee hierarchy */
+          { "source": { "type": "User", "external_id": "leslie" }, "target": { "type": "User", "external_id": "flo" }, "type": "REPORTS_TO" },
+
+          /* Quote attached to trading */
+          { "source": { "type": "Department", "external_id": "trading" }, "target": { "type": "Quote", "external_id": "stock_quote" }, "type": "CAN_RETRIEVE" },
+
+          /* Customer System for investments */
+          { "source": { "type": "Department", "external_id": "trading" }, "target": { "type": "System", "external_id": "sys_canbank_core" }, "type": "CAN_ACCESS" },
+
+          /* CS Policy Docs */
+          { "source": { "type": "Department", "external_id": "support" }, "target": { "type": "Folder", "external_id": "cs_policy" }, "type": "CAN_ACCESS" },
+          { "source": { "type": "Folder", "external_id": "cs_policy" }, "target": { "type": "Document", "external_id": "refund_policy" }, "type": "CONTAINS" },
+          { "source": { "type": "Folder", "external_id": "cs_policy" }, "target": { "type": "Document", "external_id": "discount_policy" }, "type": "CONTAINS" },
+          { "source": { "type": "Folder", "external_id": "cs_policy" }, "target": { "type": "Document", "external_id": "kyc_policy" }, "type": "CONTAINS" },
+          { "source": { "type": "Document", "external_id": "refund_policy" }, "target": { "type": "Taxonomy", "external_id": "policy" }, "type": "IS_TYPE" },
+          { "source": { "type": "Document", "external_id": "discount_policy" }, "target": { "type": "Taxonomy", "external_id": "policy" }, "type": "IS_TYPE" },
+          { "source": { "type": "Document", "external_id": "kyc_policy" }, "target": { "type": "Taxonomy", "external_id": "policy" }, "type": "IS_TYPE" },
+
+          /* Tickets */
+          { "source": { "type": "Ticket", "external_id": "ticket_001" }, "target": { "type": "Customer", "external_id": "ted" }, "type": "CREATED_BY" },
+          { "source": { "type": "Ticket", "external_id": "ticket_002" }, "target": { "type": "Customer", "external_id": "rebecca" }, "type": "CREATED_BY" },
+          { "source": { "type": "Ticket", "external_id": "ticket_001" }, "target": { "type": "Account", "external_id": "acc_ted_cc" }, "type": "REGARDING" },
+          { "source": { "type": "Ticket", "external_id": "ticket_002" }, "target": { "type": "Account", "external_id": "acc_rebecca_cc" }, "type": "REGARDING" },
+          { "source": { "type": "Ticket", "external_id": "ticket_001" }, "target": { "type": "Decision", "external_id": "decision_001" }, "type": "CLOSED_BY" },
+         { "source": { "type": "Decision", "external_id": "decision_001" }, "target": { "type": "Document", "external_id": "refund_policy" }, "type": "EXCEPTION_TO" },
+         { "source": { "type": "User", "external_id": "flo" }, "target": { "type": "Decision", "external_id": "decision_001" }, "type": "MADE" }
+
+        ]
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: ik_api_host
+      value: https://api.rc.indykite.xyz
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,43 @@
+---
+name: iag-demo-prd
+variables:
+  - secret: true
+    name: service_token
+  - secret: true
+    name: agent_token
+  - name: project_id
+    value: gid:AAAAApo7TvCs_0TQt-WFbP5KxMM
+  - name: get_agent_workflows_policy
+    value: gid:AAAAFn8x970x80CPrzeCXVe_eYU
+  - name: get_agent_workflows_query
+    value: gid:AAAAIxmTzCTpNkWCpRqOTO8cy3U
+  - name: get_self_policy
+    value: gid:AAAAFpytRclEdkbbi8YwKxgqlN4
+  - secret: true
+    name: user_token
+  - name: get_stock_quote_policy
+    value: gid:AAAAFtg8IPA_J0AXgYw9VlmTWsM
+  - name: get_stock_trade_threshold_policy
+    value: gid:AAAAFkMaOdddRk5Qr2KT5YGgTxc
+  - name: get_self_query
+    value: gid:AAAAIxEuNZEkVknkp8qVTKqItrU
+  - name: get_stock_quote_query
+    value: gid:AAAAI0xxgURZQk9Gr8iIdht9NNg
+  - name: get_stock_trade_threshold_query
+    value: gid:AAAAI2aelN84zU2roEYahol1_4s
+  - name: get_internal_documents_policy
+    value: gid:AAAAFmJJ9Udem0Ytr_Na7uKnm8Y
+  - name: get_internal_documents_query
+    value: gid:AAAAIzd37BJVH0tzlXO-1rKbVsY
+  - name: get_decision_policy
+    value: gid:AAAAFsI51su010tLpfJINbTb5uE
+  - name: get_decision_query
+    value: gid:AAAAI-3WK_LIQ0sCmoiUKyZwVF4
+  - name: subject_external_id
+    value: joe
+  - name: resource_external_id
+    value: wf1
+  - name: get_agent_workflows_2_policy
+    value: gid:AAAAFv29S2CI90cVnkC8blFzRjA
+  - name: get_agent_workflows_2_query
+    value: gid:AAAAIyGRFbxqTEXYiePTYTiHSl0
