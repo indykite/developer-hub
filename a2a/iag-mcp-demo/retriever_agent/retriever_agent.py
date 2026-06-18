@@ -155,7 +155,6 @@ GEMINI_ENABLED = os.getenv("GEMINI_ENABLED", os.getenv("GEMENI_ENABLED", "")).lo
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "").strip()
-MCP_AUTH_HEADER = os.getenv("IK_APP_AGENT_KEY", "").strip()
 INDYKITE_BASE_URL = os.getenv("INDYKITE_BASE_URL", "").strip()
 CIQ_QUERY_STOCK_PRICE = os.getenv("CIQ_QUERY_STOCK_PRICE", "").strip() or "get-stock-quote"
 CIQ_QUERY_PURCHASE_LIMIT = os.getenv("CIQ_QUERY_PURCHASE_LIMIT", "").strip() or "get-stock-trade-threshold"
@@ -846,9 +845,10 @@ async def _mcp_session(access_token: str = ""):
         yield []
         return
 
+    # The MCP server resolves the AppAgent identity server-side from the project's
+    # MCP server configuration (app_agent_id); the caller sends only the user's
+    # Bearer token. X-IK-ClientKey is no longer used.
     headers: dict[str, str] = {}
-    if MCP_AUTH_HEADER:
-        headers["X-IK-ClientKey"] = MCP_AUTH_HEADER
     if access_token:
         headers["Authorization"] = f"Bearer {access_token}"
     if INDYKITE_BASE_URL:

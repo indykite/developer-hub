@@ -71,7 +71,13 @@ together via Docker Compose. See
     - a ContX IQ knowledge query + policy — pick any pair from
     [`bruno/iag-demo/ciq-context`](bruno/iag-demo/ciq-context),
     - an App Agent with a credentials token,
-    - a Token Introspect config pointing at the Curity issuer.
+    - a Token Introspect config pointing at the Curity issuer,
+    - the project's **MCP server configuration** `enabled` and bound to that App
+    Agent (`app_agent_id`) and Token Introspect (`token_introspect_id`). This
+    config is created together with the project (it can't be created from the
+    demo); enable and configure it in the IndyKite console. The MCP server
+    resolves the App Agent server-side from it, so MCP callers no longer send an
+    App Agent token.
 - **Provider clients** for `console` (chatbot login), `indykiteagent`
   (orchestrator), `indykiteagent-2` (retriever), and `indykiteagent-3`
   (weather) — each with its secret.
@@ -97,7 +103,7 @@ Fill in, at a minimum:
 | `INDYKITE_BASE_URL` | `https://api.eu.indykite.com` or `https://api.us.indykite.com` |
 | `CIQ_QUERY_ID` | Knowledge query ID or name from your project |
 | `WORKFLOW_ID` | The `external_id` of the single `Workflow` node to whitelist (sets `JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID` in [`iag-base-docker.yaml`](iag-base-docker.yaml)). If unset/removed, all workflows defined in the IKG are considered when authorizing requests. |
-| `APP_AGENT_CREDENTIALS_TOKEN` / `IK_APP_AGENT_KEY` | App Agent credentials token |
+| `APP_AGENT_CREDENTIALS_TOKEN` | App Agent credentials token used by the gateway for its ContX IQ calls (`JARVIS_CONTX_IQ_APP_AGENT_CREDENTIALS_TOKEN`) |
 | `MCP_SERVER_ORIGIN` | Scheme + host of the MCP server, e.g. `https://us.mcp.indykite.com` / `https://eu.mcp.indykite.com`. Used as the downstream target of `mcp-iag`. |
 | `MCP_SERVER_PATH` | MCP endpoint path, e.g. `/mcp/v1/<PROJECT_GID_URL_ENCODED>`. The compose file appends this to the `mcp-iag` host that the agents call. |
 | `MCP_SERVER_URL` | Direct URL to the MCP server (`<MCP_SERVER_ORIGIN><MCP_SERVER_PATH>`). Kept for reference / bypassing `mcp-iag`; by default the agents are routed through the gateway instead. |
@@ -215,13 +221,14 @@ How it is wired:
 <!-- -->
 
 > [!NOTE]
-> The MCP agents authenticate with `IK_APP_AGENT_KEY` (an App Agent token), not
-> the chatbot user token used by the A2A flows. For `mcp-iag` to accept those
-> calls, that token must be introspectable and pass the AuthZEN check inherited
-> from `iag-base` (`JARVIS_AUTHZEN_ACTION: CAN_TRIGGER`, `JARVIS_AUTHZEN_SUBJECT_TYPES: User`).
-> If your App Agent isn't modeled as a `User` subject, override
-> `JARVIS_AUTHZEN_ACTION` / `JARVIS_AUTHZEN_SUBJECT_TYPES` on the `mcp-iag`
-> service to match your graph.
+> MCP calls now carry **only** the user's Bearer token — the same chatbot user
+> token used by the A2A flows — so `mcp-iag` runs the same AuthZEN check inherited
+> from `iag-base` (`JARVIS_AUTHZEN_ACTION: CAN_TRIGGER`, `JARVIS_AUTHZEN_SUBJECT_TYPES: User`),
+> with the Bearer token's `sub` as the subject. The downstream IndyKite MCP server
+> resolves the App Agent it uses to call IndyKite APIs **server-side**, from the
+> project's MCP server configuration (`app_agent_id`) — callers no longer send an
+> App Agent token (`IK_APP_AGENT_KEY` / `X-IK-ClientKey`), which the MCP server has
+> removed.
 
 **To bypass the gateway** (talk to the MCP server directly, the original
 behaviour), set `MCP_SERVER_URL` back to `${MCP_SERVER_URL}` in the `retriever`
@@ -251,13 +258,16 @@ Quick prompts once you're logged in as **Leslie**:
   isn't returning rows. Verify with
   [`bruno/iag-demo/authzen/subject-can-trigger-workflow.yml`](bruno/iag-demo/authzen/subject-can-trigger-workflow.yml)
   and the matching CIQ query in `bruno/iag-demo/ciq-context`.
-- **`401` / `403` on MCP calls (retriever/weather data lookups)** — the App
-  Agent token (`IK_APP_AGENT_KEY`) isn't being accepted by `mcp-iag`. Confirm
-  it's introspectable and that the AuthZEN action/subject on `mcp-iag` match how
-  your App Agent is modeled (see the note in
-  [Protecting MCP traffic](#protecting-mcp-traffic-mcp-iag)). To isolate whether
-  the gateway is the cause, temporarily bypass it (set `MCP_SERVER_URL` back to
-  the direct URL).
+- **`401` / `403` on MCP calls (retriever/weather data lookups)** — the user's
+  Bearer token isn't being accepted. Confirm it's introspectable and bound to the
+  project's Token Introspect issuer/audience, that it passes the `mcp-iag` AuthZEN
+  check (`CAN_TRIGGER` / `User`), and that the project has an **enabled MCP server
+  configuration** with a valid `app_agent_id` (the App Agent is resolved
+  server-side; a missing/disabled config rejects all MCP requests). A `401` that
+  returns `.well-known/oauth-protected-resource` metadata means the Bearer token
+  is missing/expired/wrongly-bound — not a missing App Agent key. To isolate
+  whether the gateway is the cause, temporarily bypass it (set `MCP_SERVER_URL`
+  back to the direct URL).
 - **Tail gateway logs** to see the introspect / exchange / CIQ / AuthZen
   decisions:
 
