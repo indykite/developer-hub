@@ -62,6 +62,8 @@ When using the Indykite MCP server (`us.mcp.indykite.com`), the agent applies tw
 
 **Access token**: The MCP `Authorization: Bearer <token>` header is taken from the incoming A2A request's `Authorization` header. Callers (e.g. the orchestrator) must forward the user's token when invoking the retriever.
 
+This Bearer token is the only auth header sent to the MCP server — the App Agent identity is resolved server-side from the project's MCP server configuration (`app_agent_id`), so no `X-IK-ClientKey` App Agent token is sent.
+
 **Base URL** (`INDYKITE_BASE_URL`): When set, sent as `X-IndyKite-Base-URL` on all MCP requests. Use this to target a specific Indykite API region (e.g. `https://us.api.indykite.com`).
 
 ## Customization

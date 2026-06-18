@@ -129,7 +129,6 @@ services:
       # Route MCP calls through the MCP-protecting IAG instead of the MCP server
       # directly. To bypass the IAG, set this back to ${MCP_SERVER_URL}.
       MCP_SERVER_URL: http://${IAG_MCP_HOST}:${IAG_MCP_PORT}${MCP_SERVER_PATH}
-      IK_APP_AGENT_KEY: ${IK_APP_AGENT_KEY}
       GEMINI_ENABLED: ${GEMINI_ENABLED}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GEMINI_MODEL: ${GEMINI_MODEL}
@@ -205,7 +204,6 @@ services:
       # Route MCP calls through the MCP-protecting IAG instead of the MCP server
       # directly. To bypass the IAG, set this back to ${MCP_SERVER_URL}.
       MCP_SERVER_URL: http://${IAG_MCP_HOST}:${IAG_MCP_PORT}${MCP_SERVER_PATH}
-      IK_APP_AGENT_KEY: ${IK_APP_AGENT_KEY}
       INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
       CIQ_QUERY_HQ_WEATHER: ${CIQ_QUERY_HQ_WEATHER:-get-hq-weather}
       LOG_LEVEL: ${LOG_LEVEL}

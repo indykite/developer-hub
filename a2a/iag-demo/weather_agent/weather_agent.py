@@ -104,7 +104,6 @@ WEATHER_AGENT_NAME = os.getenv("WEATHER_AGENT_NAME", "weather_agent")
 DEFAULT_CITY = os.getenv("WEATHER_DEFAULT_CITY", "London").strip()
 WEATHER_TIMEOUT = float(os.getenv("WEATHER_TIMEOUT", "15"))
 MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "").strip()
-MCP_AUTH_HEADER = os.getenv("IK_APP_AGENT_KEY", "").strip()
 INDYKITE_BASE_URL = os.getenv("INDYKITE_BASE_URL", "").strip()
 CIQ_QUERY_HQ_WEATHER = os.getenv("CIQ_QUERY_HQ_WEATHER", "").strip() or "get-hq-weather"
 _HQ_KEYWORDS = ("hq", "headquarters", "head office", "head-office", "canbank office", "the office")
@@ -278,9 +277,10 @@ async def _mcp_session(access_token: str):
         msg = "MCP_SERVER_URL not configured"
         raise RuntimeError(msg)
 
+    # The MCP server resolves the AppAgent identity server-side from the project's
+    # MCP server configuration (app_agent_id); the caller sends only the user's
+    # Bearer token. X-IK-ClientKey is no longer used.
     headers: dict[str, str] = {}
-    if MCP_AUTH_HEADER:
-        headers["X-IK-ClientKey"] = MCP_AUTH_HEADER
     if access_token:
         headers["Authorization"] = f"Bearer {access_token}"
     if INDYKITE_BASE_URL:

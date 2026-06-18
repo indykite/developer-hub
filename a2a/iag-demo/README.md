@@ -95,7 +95,7 @@ Fill in, at a minimum:
 | `INDYKITE_BASE_URL` | `https://api.eu.indykite.com` or `https://api.us.indykite.com` |
 | `CIQ_QUERY_ID` | Knowledge query ID or name from your project |
 | `WORKFLOW_ID` | The `external_id` of the single `Workflow` node to whitelist (sets `JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID` in [`iag-base-docker.yaml`](iag-base-docker.yaml)). If unset/removed, all workflows defined in the IKG are considered when authorizing requests. |
-| `APP_AGENT_CREDENTIALS_TOKEN` / `IK_APP_AGENT_KEY` | App Agent credentials token |
+| `APP_AGENT_CREDENTIALS_TOKEN` | App Agent credentials token used by the gateway for its ContX IQ calls (`JARVIS_CONTX_IQ_APP_AGENT_CREDENTIALS_TOKEN`) |
 | `MCP_SERVER_URL` | `https://us.mcp.indykite.com/mcp/v1/<PROJECT_GID_URL_ENCODED>`  `https://eu.mcp.indykite.com/mcp/v1/<PROJECT_GID_URL_ENCODED>` |
 | `CHATBOT_IDP_CLIENT_ID` / `_SECRET` | IdP Provider `console` client |
 | `ORCHESTRATOR_IDP_CLIENT_ID` / `_SECRET` | IdP Provider `indykiteagent` client |
