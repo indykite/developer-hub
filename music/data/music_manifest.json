@@ -58,14 +58,12 @@
       "issuer": "https://1st.eu.auth0.com/",
       "audience": "N6VibJHjxIpKEvkBKSWU1xLxh6xnca55"
     },
+    "offline_validation": {},
     "ikg_node_type": "Person",
     "claims_mapping": {
       "email": {
         "selector": "email"
       }
-    },
-    "online_validation": {
-      "cache_ttl": 600
     },
     "perform_upsert": true
   },
@@ -378,10 +376,10 @@
       "slot": 1,
       "policy": {
         "project_id": "{{project_gid}}",
-        "name": "ciq-app-venue-playable-tracks",
-        "display_name": "App: Query Venue's Playable Tracks",
-        "description": "Application can read and manage tracks that can be played at a venue",
-        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"_Application\"},\"condition\":{\"cypher\":\"MATCH (subject:_Application) MATCH (track:Track)-[r:PLAYED_AT]->(venue:Venue)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"attribute\":\"venue.property.name\",\"operator\":\"=\",\"value\":\"$venue_name\"},{\"attribute\":\"subject.external_id\",\"operator\":\"=\",\"value\":\"$_appId\"}]}]},\"allowed_reads\":{\"nodes\":[\"track.property.title\",\"track.property.loudness\",\"track.property.energy\",\"track.property.danceability\",\"track.property.duration\",\"track.external_id\",\"venue.external_id\"],\"relationships\":[\"r\"]},\"allowed_upserts\":{\"relationships\":{\"relationship_types\":[{\"type\":\"PLAYED_AT\",\"source_node_label\":\"Track\",\"target_node_label\":\"Venue\"}]}},\"allowed_deletes\":{\"relationships\":[\"r\"]}}",
+        "name": "ciq-app-venue-playable-tracks-read",
+        "display_name": "App: Read Venue's Playable Tracks",
+        "description": "Application can read the tracks that can be played at a venue",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"_Application\"},\"condition\":{\"cypher\":\"MATCH (subject:_Application) MATCH (track:Track)-[r:PLAYED_AT]->(venue:Venue)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"attribute\":\"venue.property.name\",\"operator\":\"=\",\"value\":\"$venue_name\"},{\"attribute\":\"subject.external_id\",\"operator\":\"=\",\"value\":\"$_appId\"}]}]},\"allowed_reads\":{\"nodes\":[\"track.property.title\",\"track.property.loudness\",\"track.property.energy\",\"track.property.danceability\",\"track.property.duration\",\"track.external_id\",\"venue.external_id\"],\"relationships\":[\"r\"]}}",
         "status": "ACTIVE",
         "tags": []
       },
@@ -404,14 +402,28 @@
             },
             "page_token": 1
           }
-        },
+        }
+      ]
+    },
+    {
+      "slot": "1b",
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-app-venue-playable-tracks-create",
+        "display_name": "App: Add Track to Venue",
+        "description": "Application can add a track to a venue's playable rotation (create a PLAYED_AT link)",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"_Application\"},\"condition\":{\"cypher\":\"MATCH (subject:_Application) MATCH (track:Track) MATCH (venue:Venue)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"attribute\":\"track.external_id\",\"operator\":\"=\",\"value\":\"$track_external_id\"},{\"attribute\":\"venue.property.name\",\"operator\":\"=\",\"value\":\"$venue_name\"},{\"attribute\":\"subject.external_id\",\"operator\":\"=\",\"value\":\"$_appId\"}]}]},\"allowed_reads\":{\"nodes\":[\"track.external_id\",\"venue.external_id\"]},\"allowed_upserts\":{\"relationships\":{\"relationship_types\":[{\"type\":\"PLAYED_AT\",\"source_node_label\":\"Track\",\"target_node_label\":\"Venue\"}]}}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
         {
           "name": "kqb",
           "kq": {
             "project_id": "{{project_gid}}",
             "name": "kq-app-venue-playable-tracks-write",
             "display_name": "App Query: Add Track to Venue",
-            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {venue_name: (required) name of the Venue whose matched PLAYED_AT links are re-upserted}. Auth: X-IK-ClientKey only (_Application subject), no Bearer token; $_appId is auto-filled. Returns: track.external_id, venue.external_id, and the upserted PLAYED_AT relationship.",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {venue_name: (required) name of the Venue (matches venue.property.name), track_external_id: (required) external_id of the Track to add (matches track.external_id)}. Auth: X-IK-ClientKey only (_Application subject), no Bearer token; $_appId is auto-filled. Creates a PLAYED_AT link from the track to the venue. Returns: track.external_id, venue.external_id, and the upserted PLAYED_AT relationship.",
             "policy_id": "{{policy_gid}}",
             "query": "{\"upsert_relationships\":[{\"name\":\"newPlayedAt\",\"source\":\"track\",\"target\":\"venue\",\"type\":\"PLAYED_AT\"}],\"nodes\":[\"track.external_id\",\"venue.external_id\"],\"relationships\":[\"newPlayedAt\"]}",
             "status": "ACTIVE"
@@ -419,18 +431,33 @@
           "exec": {
             "id": "{{query_gid}}",
             "input_params": {
-              "venue_name": "Shower-Concert-Hall"
+              "venue_name": "Shower-Concert-Hall",
+              "track_external_id": "track-1"
             },
             "page_token": 1
           }
-        },
+        }
+      ]
+    },
+    {
+      "slot": "1c",
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-app-venue-playable-tracks-delete",
+        "display_name": "App: Remove Track from Venue",
+        "description": "Application can remove a track from a venue's playable rotation (delete a PLAYED_AT link)",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"_Application\"},\"condition\":{\"cypher\":\"MATCH (subject:_Application) MATCH (track:Track)-[r:PLAYED_AT]->(venue:Venue)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"attribute\":\"track.external_id\",\"operator\":\"=\",\"value\":\"$track_external_id\"},{\"attribute\":\"venue.property.name\",\"operator\":\"=\",\"value\":\"$venue_name\"},{\"attribute\":\"subject.external_id\",\"operator\":\"=\",\"value\":\"$_appId\"}]}]},\"allowed_reads\":{\"nodes\":[\"track.external_id\"]},\"allowed_deletes\":{\"relationships\":[\"r\"]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
         {
           "name": "kqc",
           "kq": {
             "project_id": "{{project_gid}}",
             "name": "kq-app-venue-playable-tracks-delete",
             "display_name": "App Query: Remove Track from Venue",
-            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {venue_name: (required) name of the Venue}. Auth: X-IK-ClientKey only (_Application subject), no Bearer token; $_appId is auto-filled. Returns: track.external_id for each Track whose PLAYED_AT link to the venue was deleted.",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {venue_name: (required) name of the Venue (matches venue.property.name), track_external_id: (required) external_id of the Track whose PLAYED_AT link to remove (matches track.external_id)}. Auth: X-IK-ClientKey only (_Application subject), no Bearer token; $_appId is auto-filled. Returns: track.external_id for the deleted PLAYED_AT link.",
             "policy_id": "{{policy_gid}}",
             "query": "{\"delete_relationships\":[\"r\"],\"nodes\":[\"track.external_id\"]}",
             "status": "ACTIVE"
@@ -438,7 +465,8 @@
           "exec": {
             "id": "{{query_gid}}",
             "input_params": {
-              "venue_name": "Shower-Concert-Hall"
+              "venue_name": "Shower-Concert-Hall",
+              "track_external_id": "track-1"
             },
             "page_token": 1
           }
@@ -449,9 +477,9 @@
       "slot": 2,
       "policy": {
         "project_id": "{{project_gid}}",
-        "name": "ciq-app-artist-catalog",
-        "display_name": "App: Query Artist's Full Catalog",
-        "description": "Application can read and manage all tracks and albums by an artist",
+        "name": "ciq-app-artist-catalog-read",
+        "display_name": "App: Read Artist Catalog",
+        "description": "Application can read an artist's tracks and albums",
         "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"_Application\"},\"condition\":{\"cypher\":\"MATCH (subject:_Application) MATCH (artist:Artist)-[r1:CREATED]->(track:Track)-[r2:PART_OF]->(album:Album)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"attribute\":\"artist.property.name\",\"operator\":\"=\",\"value\":\"$artist_name\"},{\"attribute\":\"subject.external_id\",\"operator\":\"=\",\"value\":\"$_appId\"}]}]},\"allowed_reads\":{\"nodes\":[\"track.property.title\",\"track.property.duration\",\"track.property.popularity\",\"album.property.title\",\"album.property.year\"],\"relationships\":[\"r1\",\"r2\"]},\"allowed_upserts\":{\"nodes\":{\"node_types\":[\"Track\",\"Album\"]},\"relationships\":{\"relationship_types\":[{\"type\":\"CREATED\",\"source_node_label\":\"Artist\",\"target_node_label\":\"Track\"},{\"type\":\"PART_OF\",\"source_node_label\":\"Track\",\"target_node_label\":\"Album\"}]}},\"allowed_deletes\":{\"nodes\":[\"track\"],\"relationships\":[\"r1\",\"r2\"]}}",
         "status": "ACTIVE",
         "tags": []
@@ -475,22 +503,37 @@
             },
             "page_token": 1
           }
-        },
+        }
+      ]
+    },
+    {
+      "slot": "2b",
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-app-artist-catalog-write-track",
+        "display_name": "App: Add Track to Catalog",
+        "description": "Application can add a track to an artist's catalog",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"_Application\"},\"condition\":{\"cypher\":\"MATCH (subject:_Application) MATCH (artist:Artist) MATCH (album:Album)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"attribute\":\"artist.property.name\",\"operator\":\"=\",\"value\":\"$artist_name\"},{\"attribute\":\"album.external_id\",\"operator\":\"=\",\"value\":\"$album_external_id\"},{\"attribute\":\"subject.external_id\",\"operator\":\"=\",\"value\":\"$_appId\"}]}]},\"allowed_reads\":{\"nodes\":[\"album.external_id\"]},\"allowed_upserts\":{\"nodes\":{\"node_types\":[\"Track\"]},\"relationships\":{\"relationship_types\":[{\"type\":\"CREATED\",\"source_node_label\":\"Artist\",\"target_node_label\":\"Track\"},{\"type\":\"PART_OF\",\"source_node_label\":\"Track\",\"target_node_label\":\"Album\"}]}}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
         {
           "name": "kq2b",
           "kq": {
             "project_id": "{{project_gid}}",
             "name": "kq-app-artist-catalog-write-track",
             "display_name": "App Query: Add Track to Artist Catalog",
-            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {artist_name: (required) name of the existing Artist to attach the track to, track_external_id: (required) external_id for the new Track, track_title: (required) track title, track_duration: (required) duration as a \"M:SS\" string, e.g. \"3:13\", track_popularity: (required) popularity number}. Auth: X-IK-ClientKey only (_Application subject), no Bearer token; $_appId is auto-filled. Returns: the new Track external_id and title, plus the CREATED and PART_OF relationships.",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {artist_name: (required) Artist name, album_external_id: (required) external_id of the Album to add the track to, track_external_id: (required) external_id for the new Track, track_title, track_duration, track_popularity}. Auth: X-IK-ClientKey only (_Application subject), no Bearer token; $_appId is auto-filled. Creates the Track, links it to the artist (CREATED) and to the named album (PART_OF). Returns: newTrack.external_id, album.external_id, and the CREATED/PART_OF relationships.",
             "policy_id": "{{policy_gid}}",
-            "query": "{\"upsert_nodes\":[{\"name\":\"newTrack\",\"type\":\"Track\",\"external_id\":\"$track_external_id\",\"properties\":[{\"type\":\"title\",\"value\":\"$track_title\"},{\"type\":\"duration\",\"value\":\"$track_duration\"},{\"type\":\"popularity\",\"value\":\"$track_popularity\"}]}],\"upsert_relationships\":[{\"name\":\"createdRel\",\"source\":\"artist\",\"target\":\"newTrack\",\"type\":\"CREATED\"},{\"name\":\"partOfRel\",\"source\":\"newTrack\",\"target\":\"album\",\"type\":\"PART_OF\"}],\"nodes\":[\"newTrack.external_id\",\"newTrack.property.title\"],\"relationships\":[\"createdRel\",\"partOfRel\"]}",
+            "query": "{\"upsert_nodes\":[{\"name\":\"newTrack\",\"type\":\"Track\",\"external_id\":\"$track_external_id\",\"properties\":[{\"type\":\"title\",\"value\":\"$track_title\"},{\"type\":\"duration\",\"value\":\"$track_duration\"},{\"type\":\"popularity\",\"value\":\"$track_popularity\"}]}],\"upsert_relationships\":[{\"name\":\"createdRel\",\"source\":\"artist\",\"target\":\"newTrack\",\"type\":\"CREATED\"},{\"name\":\"partOfRel\",\"source\":\"newTrack\",\"target\":\"album\",\"type\":\"PART_OF\"}],\"nodes\":[\"newTrack.external_id\",\"album.external_id\"],\"relationships\":[\"createdRel\",\"partOfRel\"]}",
             "status": "ACTIVE"
           },
           "exec": {
             "id": "{{query_gid}}",
             "input_params": {
               "artist_name": "ABBA",
+              "album_external_id": "album-87",
               "track_external_id": "track-demo-1",
               "track_title": "Demo Track",
               "track_duration": "3:30",
@@ -498,16 +541,30 @@
             },
             "page_token": 1
           }
-        },
+        }
+      ]
+    },
+    {
+      "slot": "2c",
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-app-artist-catalog-write-album",
+        "display_name": "App: Add Album to Catalog",
+        "description": "Application can add a standalone album for an artist (matched once, no duplication)",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"_Application\"},\"condition\":{\"cypher\":\"MATCH (subject:_Application) MATCH (artist:Artist)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"attribute\":\"artist.property.name\",\"operator\":\"=\",\"value\":\"$artist_name\"},{\"attribute\":\"subject.external_id\",\"operator\":\"=\",\"value\":\"$_appId\"}]}]},\"allowed_reads\":{\"nodes\":[\"artist.external_id\"]},\"allowed_upserts\":{\"nodes\":{\"node_types\":[\"Album\"]}}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
         {
           "name": "kq2c",
           "kq": {
             "project_id": "{{project_gid}}",
             "name": "kq-app-artist-catalog-write-album",
             "display_name": "App Query: Add Album to Artist Catalog",
-            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {artist_name: (required) name of the Artist, album_external_id: (required) external_id for the new Album, album_title: (required) album title, album_year: (required) release year as an integer}. Auth: X-IK-ClientKey only (_Application subject), no Bearer token; $_appId is auto-filled. Returns: the new Album external_id and title.",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {artist_name: (required) name of the Artist, album_external_id: (required) external_id for the new Album, album_title: (required) album title, album_year: (required) release year as an integer}. Auth: X-IK-ClientKey only (_Application subject), no Bearer token; $_appId is auto-filled. Returns: the new Album external_id and the Artist external_id.",
             "policy_id": "{{policy_gid}}",
-            "query": "{\"upsert_nodes\":[{\"name\":\"newAlbum\",\"type\":\"Album\",\"external_id\":\"$album_external_id\",\"properties\":[{\"type\":\"title\",\"value\":\"$album_title\"},{\"type\":\"year\",\"value\":\"$album_year\"}]}],\"nodes\":[\"newAlbum.external_id\",\"newAlbum.property.title\"]}",
+            "query": "{\"upsert_nodes\":[{\"name\":\"newAlbum\",\"type\":\"Album\",\"external_id\":\"$album_external_id\",\"properties\":[{\"type\":\"title\",\"value\":\"$album_title\"},{\"type\":\"year\",\"value\":\"$album_year\"}]}],\"nodes\":[\"newAlbum.external_id\",\"artist.external_id\"]}",
             "status": "ACTIVE"
           },
           "exec": {
@@ -520,14 +577,28 @@
             },
             "page_token": 1
           }
-        },
+        }
+      ]
+    },
+    {
+      "slot": "2d",
+      "policy": {
+        "project_id": "{{project_gid}}",
+        "name": "ciq-app-artist-catalog-delete",
+        "display_name": "App: Remove from Catalog",
+        "description": "Application can delete tracks and their links from an artist's catalog",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"_Application\"},\"condition\":{\"cypher\":\"MATCH (subject:_Application) MATCH (artist:Artist)-[r1:CREATED]->(track:Track)-[r2:PART_OF]->(album:Album)\",\"filter\":[{\"operator\":\"AND\",\"operands\":[{\"attribute\":\"artist.property.name\",\"operator\":\"=\",\"value\":\"$artist_name\"},{\"attribute\":\"track.external_id\",\"operator\":\"=\",\"value\":\"$track_external_id\"},{\"attribute\":\"subject.external_id\",\"operator\":\"=\",\"value\":\"$_appId\"}]}]},\"allowed_reads\":{\"nodes\":[\"track.external_id\"]},\"allowed_deletes\":{\"nodes\":[\"track\"],\"relationships\":[\"r1\",\"r2\"]}}",
+        "status": "ACTIVE",
+        "tags": []
+      },
+      "queries": [
         {
           "name": "kq2d",
           "kq": {
             "project_id": "{{project_gid}}",
             "name": "kq-app-artist-catalog-delete",
             "display_name": "App Query: Remove Track from Catalog",
-            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {artist_name: (required) name of the Artist whose catalog tracks and CREATED/PART_OF links are deleted}. Auth: X-IK-ClientKey only (_Application subject), no Bearer token; $_appId is auto-filled. Returns: empty result on success.",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {artist_name: (required) Artist name, track_external_id: (required) external_id of the Track to remove}. Auth: X-IK-ClientKey only (_Application subject), no Bearer token; $_appId is auto-filled. Deletes that Track and its CREATED/PART_OF relationships.",
             "policy_id": "{{policy_gid}}",
             "query": "{\"delete_nodes\":[\"track\"],\"delete_relationships\":[\"r1\",\"r2\"]}",
             "status": "ACTIVE"
@@ -535,7 +606,8 @@
           "exec": {
             "id": "{{query_gid}}",
             "input_params": {
-              "artist_name": "ABBA"
+              "artist_name": "ABBA",
+              "track_external_id": "track-demo-1"
             },
             "page_token": 1
           }
@@ -1428,14 +1500,16 @@
             "project_id": "{{project_gid}}",
             "name": "kq-person-matching-venues-write",
             "display_name": "Person Query: Plan Attendance at Matching Venue",
-            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {} (no input parameters required). Auth: Bearer token required (Person subject); the token 'sub' identifies the caller Person (auto-filled, do not pass). Returns: venue external_id, name, and the WILL_ATTEND relationship (re-upserts the caller's matched attendances to matching venues).",
+            "description": "Call tool 'ciq_execute' with arguments: id: \"<this query's id>\", input_params: {karaoke_confidence: (required) the caller's karaoke confidence (number); venues whose min_confidence <= this are matched}. Auth: Bearer token required (Person subject); the token 'sub' identifies the caller Person (auto-filled, do not pass). Returns: venue external_id, name, and the WILL_ATTEND relationship (upserts the caller's attendance to the matching venues).",
             "policy_id": "{{policy_gid}}",
             "query": "{\"upsert_relationships\":[{\"name\":\"newAttend\",\"source\":\"subject\",\"target\":\"venue\",\"type\":\"WILL_ATTEND\"}],\"nodes\":[\"venue.external_id\",\"venue.property.name\"],\"relationships\":[\"newAttend\"]}",
             "status": "ACTIVE"
           },
           "exec": {
             "id": "{{query_gid}}",
-            "input_params": {},
+            "input_params": {
+              "karaoke_confidence": 0.89
+            },
             "page_token": 1
           }
         }

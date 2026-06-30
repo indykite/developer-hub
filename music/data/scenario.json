@@ -55,12 +55,13 @@
         {
           "id": "venue_ops_step2",
           "slot": "1b",
-          "question": "Refresh the venue's playable rotation - re-register the tracks for the Shower-Concert-Hall.",
-          "action": "Add tracks to the venue",
+          "question": "Add a track to the venue's playable rotation - register track-1 for the Shower-Concert-Hall.",
+          "action": "Add a track to the venue",
           "params": {
-            "venue_name": "Shower-Concert-Hall"
+            "venue_name": "Shower-Concert-Hall",
+            "track_external_id": "track-1"
           },
-          "empty_message": "Rotation updated - the venue's PLAYED_AT relationships were re-upserted.",
+          "empty_message": "Track added - a PLAYED_AT relationship from track-1 to the venue was created.",
           "insight": "The add query shares the venue policy: it upserts a PLAYED_AT relationship for each track currently matched at the venue. The response echoes the track and venue external_ids that were written."
         },
         {
@@ -76,12 +77,13 @@
         {
           "id": "venue_ops_step4",
           "slot": "1c",
-          "question": "Clear the venue's rotation - remove its playable tracks.",
-          "action": "Remove tracks from the venue",
+          "question": "Remove the track from the venue's rotation - unregister track-1 from the Shower-Concert-Hall.",
+          "action": "Remove the track from the venue",
           "params": {
-            "venue_name": "Shower-Concert-Hall"
+            "venue_name": "Shower-Concert-Hall",
+            "track_external_id": "track-1"
           },
-          "empty_message": "Rotation cleared - the venue's matched PLAYED_AT relationships were deleted.",
+          "empty_message": "Track removed - the PLAYED_AT relationship from track-1 to the venue was deleted.",
           "insight": "The remove query deletes every PLAYED_AT relationship matched for this venue - scope is set by the policy's cypher, which binds all tracks played at the venue, so this clears the whole rotation."
         },
         {
@@ -139,16 +141,17 @@
         {
           "id": "catalog_step2",
           "slot": "2b",
-          "question": "We just got the masters for a new single. Add 'Demo Track' to ABBA's catalog.",
-          "action": "Add a track to the catalog",
+          "question": "We just got the masters for a new single. Add 'Demo Track' to ABBA's catalog on the 'Arrival' album.",
+          "action": "Add a track to an album",
           "params": {
             "artist_name": "ABBA",
+            "album_external_id": "album-87",
             "track_external_id": "track-demo-1",
             "track_title": "Demo Track",
             "track_duration": "3:30",
             "track_popularity": 50
           },
-          "insight": "upsert_nodes + upsert_relationships create the Track node and its CREATED edge atomically - the track can never exist disconnected from its artist."
+          "insight": "The policy pins the artist and the target album, so upsert_nodes + upsert_relationships create the Track and its CREATED (to the artist) and PART_OF (to the named album) edges atomically - one matched row, no cross-product."
         },
         {
           "id": "catalog_step3",
@@ -161,17 +164,18 @@
             "album_title": "Demo Album",
             "album_year": 2024
           },
-          "insight": "Same pattern for albums: new node plus RELEASED relationship in one CIQ execute, pinned to the artist matched by name."
+          "insight": "The policy matches the artist alone (one row), so upsert_nodes creates the Album exactly once - no duplication from the catalog cross-product. Tracks are then attached to it via 'Add a track to an album'."
         },
         {
           "id": "catalog_step4",
           "slot": "2d",
-          "question": "Legal says the single isn't cleared yet - remove the demo track from the catalog.",
+          "question": "Legal says the single isn't cleared yet - remove the demo track ('track-demo-1') from the catalog.",
           "action": "Remove a track from the catalog",
           "params": {
-            "artist_name": "ABBA"
+            "artist_name": "ABBA",
+            "track_external_id": "track-demo-1"
           },
-          "insight": "The delete policy only binds tracks already CREATED by the matched artist - the app cannot delete tracks belonging to anyone else."
+          "insight": "The delete policy pins the named track under the matched artist, so only that track and its CREATED/PART_OF edges are removed - it cannot touch other tracks."
         }
       ],
       "conclusion": "**Outcome**: Full catalog lifecycle - read, create track, create album, delete - through one policy family, with the blast radius limited to the matched artist's own subgraph."
@@ -528,10 +532,12 @@
         {
           "id": "nightout_step7",
           "slot": "17b",
-          "question": "Actually, sign me up for a venue that matches my skills automatically.",
-          "action": "Plan attendance at a matching venue",
-          "params": {},
-          "insight": "Query and write combined: the cypher finds a venue matching your profile attributes and upserts WILL_ATTEND in the same execute - decision and action in one round trip."
+          "question": "Actually, sign me up for the venues that match my skills automatically.",
+          "action": "Plan attendance at matching venues",
+          "params": {
+            "karaoke_confidence": 0.89
+          },
+          "insight": "Query and write combined: the cypher finds the venues matching your karaoke confidence and upserts WILL_ATTEND in the same execute - decision and action in one round trip."
         },
         {
           "id": "nightout_step8",

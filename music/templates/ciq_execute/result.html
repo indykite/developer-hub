@@ -41,7 +41,9 @@
                     </div>
 
                     <div class="mt-4">
-                        <a href="{{ url_for('api_ciq_execute.show_execute_form') }}" class="btn btn-primary">Execute Another</a>
+                        {% set _slot = slot if slot is defined and slot else '1' %}
+                        {% set _endpoint = 'api_ciq_execute.show_execute_form' if _slot == '1' else 'api_ciq_execute.show_execute_form_' ~ _slot %}
+                        <a href="{{ url_for(_endpoint, input_params=input_params) if input_params is defined and input_params else url_for(_endpoint) }}" class="btn btn-primary">Execute Another</a>
                         <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Home</a>
                     </div>
                 </div>
