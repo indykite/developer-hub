@@ -104,9 +104,9 @@ import mcp.client.streamable_http as _mcp_streamable_http  # noqa: E402
 
 async def _patched_handle_post_request(self, ctx):
     """Patched _handle_post_request that extracts session ID from 202 responses."""
-    headers = self._prepare_headers()
+    headers = self._prepare_headers()  # skipcq: PYL-W0212
     message = ctx.session_message.message
-    is_initialization = self._is_initialization_request(message)
+    is_initialization = self._is_initialization_request(message)  # skipcq: PYL-W0212
 
     async with ctx.client.stream(
         "POST",
@@ -117,12 +117,12 @@ async def _patched_handle_post_request(self, ctx):
         if response.status_code == 202:  # noqa: PLR2004
             _mcp_streamable_http.logger.debug("Received 202 Accepted")
             if is_initialization:
-                self._maybe_extract_session_id_from_response(response)
+                self._maybe_extract_session_id_from_response(response)  # skipcq: PYL-W0212
             return
 
         if response.status_code == 404:  # noqa: PLR2004
             if isinstance(message.root, _mcp_streamable_http.JSONRPCRequest):
-                await self._send_session_terminated_error(
+                await self._send_session_terminated_error(  # skipcq: PYL-W0212
                     ctx.read_stream_writer,
                     message.root.id,
                 )
@@ -130,16 +130,20 @@ async def _patched_handle_post_request(self, ctx):
 
         response.raise_for_status()
         if is_initialization:
-            self._maybe_extract_session_id_from_response(response)
+            self._maybe_extract_session_id_from_response(response)  # skipcq: PYL-W0212
 
         if isinstance(message.root, _mcp_streamable_http.JSONRPCRequest):
             content_type = response.headers.get(_mcp_streamable_http.CONTENT_TYPE, "").lower()
             if content_type.startswith(_mcp_streamable_http.JSON):
-                await self._handle_json_response(response, ctx.read_stream_writer, is_initialization)
+                await self._handle_json_response(  # skipcq: PYL-W0212
+                    response,
+                    ctx.read_stream_writer,
+                    is_initialization,
+                )
             elif content_type.startswith(_mcp_streamable_http.SSE):
-                await self._handle_sse_response(response, ctx, is_initialization)
+                await self._handle_sse_response(response, ctx, is_initialization)  # skipcq: PYL-W0212
             else:
-                await self._handle_unexpected_content_type(content_type, ctx.read_stream_writer)
+                await self._handle_unexpected_content_type(content_type, ctx.read_stream_writer)  # skipcq: PYL-W0212
 
 
 StreamableHTTPTransport._handle_post_request = _patched_handle_post_request  # noqa: SLF001

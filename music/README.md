@@ -36,6 +36,14 @@ create .env file with the variables:
 
 ## Provisioning order
 
+> **Token Introspect uses offline validation.** The config is created with
+> `offline_validation: {}` (not `online_validation`). The Auth0 user tokens in this
+> demo are **ID tokens** (`aud` = the client ID), and Auth0's `/userinfo` endpoint —
+> which `online_validation` calls, rejects ID tokens with `401 "Invalid token type"`,
+> so person-subject CIQ executes fail with `Invalid token in Authorization header`.
+> Offline validation verifies the token's signature against the
+> issuer's JWKS instead, so the ID token is accepted.
+
 1. Create Project, Application, App Agent, Token Introspect, MCP Server.
 2. Capture nodes (`/api_capture/create`) and relationships (`/api_relationships/create`).
 3. Create KBAC authorization policies (`/api_authorization_policy/create` … `/create10`).

@@ -9,6 +9,7 @@ in .env, and the auth headers are derived from the slot's policy subject
 import json
 import logging
 import os
+import time
 from pathlib import Path
 
 import requests
@@ -22,6 +23,14 @@ tag = Tag(name="api_chat", description="Story-Driven Music Demo")
 security = [{"ApiKeyAuth": []}]
 
 HTTP_BAD_REQUEST = 400
+HTTP_UNAUTHORIZED = 401
+# Person-subject executes introspect the user's Bearer token against the project's
+# Token Introspect config, which caches the issuer's JWKS.
+# Right after an Auth0 signing-key rotation an instance may serve a stale keyset and
+# reject an otherwise-valid token with 401; a retry usually lands on a refreshed cache.
+# So we retry 401 a couple of times, but only for person-subject (Bearer) executes.
+USER_TOKEN_RETRY_ATTEMPTS = 2
+USER_TOKEN_RETRY_BACKOFF_SECONDS = 1.5
 # `data[].nodes` keys look like "node.property.name"; keep at least node + prop.
 MIN_KEY_PARTS = 2
 
@@ -92,11 +101,12 @@ def execute_ciq_slot(slot: str, input_params: dict) -> dict:
             f"Please create the CIQ policy and knowledge query for slot {slot} first.",
         }
 
+    needs_user = _needs_user_token(slot)
     headers = {
         "Content-Type": "application/json",
         "X-IK-ClientKey": app_token,
     }
-    if _needs_user_token(slot):
+    if needs_user:
         user_token = os.getenv("USER_TOKEN", "")
         if not user_token:
             return {
@@ -115,14 +125,29 @@ def execute_ciq_slot(slot: str, input_params: dict) -> dict:
     logger.info("Executing story step: slot=%s query=%s", slot, knowledge_query_id)
     logger.debug("Input params: %s", json.dumps(input_params, indent=2))
 
-    try:
-        response = requests.post(api_url, headers=headers, json=json_data, timeout=120)
-    except requests.RequestException as e:
-        logger.exception("Request failed")
-        return {
-            "error": True,
-            "message": f"Request failed: {e!s}",
-        }
+    # Retry transient 401s on person-subject executes (stale-JWKS-cache window after an
+    # IdP signing-key rotation); app-subject 401s aren't transient, so don't retry them.
+    max_attempts = USER_TOKEN_RETRY_ATTEMPTS + 1 if needs_user else 1
+    for attempt in range(1, max_attempts + 1):
+        try:
+            response = requests.post(api_url, headers=headers, json=json_data, timeout=120)
+        except requests.RequestException as e:
+            logger.exception("Request failed")
+            return {
+                "error": True,
+                "message": f"Request failed: {e!s}",
+            }
+
+        if response.status_code == HTTP_UNAUTHORIZED and attempt < max_attempts:
+            logger.warning(
+                "Slot %s execute got 401 on attempt %s/%s (likely a stale token-introspect JWKS cache); retrying",
+                slot,
+                attempt,
+                max_attempts,
+            )
+            time.sleep(USER_TOKEN_RETRY_BACKOFF_SECONDS * attempt)
+            continue
+        break
 
     logger.info("Response status: %s", response.status_code)
 
