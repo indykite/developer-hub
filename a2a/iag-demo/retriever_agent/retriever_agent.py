@@ -52,9 +52,9 @@ from a2a.types import (  # noqa: E402
     TaskStatusUpdateEvent,
 )
 from a2a.helpers import (  # noqa: E402
-    new_text_message,
-    new_text_artifact,
     new_task_from_user_message,
+    new_text_artifact,
+    new_text_message,
 )
 from a2a.utils.constants import DEFAULT_RPC_URL  # noqa: E402
 from dotenv import load_dotenv  # noqa: E402
