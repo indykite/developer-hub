@@ -14,7 +14,7 @@ import httpx
 import uvicorn
 import yaml
 from a2a.client import A2ACardResolver, ClientConfig, ClientFactory
-from a2a.helpers import new_task_from_user_message, new_text_artifact, new_text_message 
+from a2a.helpers import new_task_from_user_message, new_text_artifact, new_text_message
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
 from a2a.server.request_handlers import DefaultRequestHandler
