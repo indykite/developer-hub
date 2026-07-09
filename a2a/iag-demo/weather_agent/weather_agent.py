@@ -32,7 +32,7 @@ from a2a.types import (
     TaskStatus,
     TaskStatusUpdateEvent,
 )
-from a2a.helpers import new_task_from_user_message, new_text_artifact, new_text_message 
+from a2a.helpers import new_task_from_user_message, new_text_artifact, new_text_message
 from a2a.utils.constants import DEFAULT_RPC_URL
 from dotenv import load_dotenv
 from mcp import ClientSession
