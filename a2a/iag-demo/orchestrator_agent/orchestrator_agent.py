@@ -14,6 +14,7 @@ import httpx
 import uvicorn
 import yaml
 from a2a.client import A2ACardResolver, ClientConfig, ClientFactory
+from a2a.helpers import new_task_from_user_message, new_text_artifact, new_text_message
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
 from a2a.server.request_handlers import DefaultRequestHandler
@@ -34,7 +35,6 @@ from a2a.types import (
     TaskStatus,
     TaskStatusUpdateEvent,
 )
-from a2a.utils import new_agent_text_message, new_task, new_text_artifact
 from a2a.utils.constants import DEFAULT_RPC_URL
 from dotenv import load_dotenv
 from langchain_community.tools import DuckDuckGoSearchRun
@@ -690,7 +690,7 @@ class OrchestratorExecutor(AgentExecutor):
         prompt = raw_text or "(empty)"
 
         # Establish task lifecycle via direct event enqueuing (SDK 1.0 pattern)
-        task = context.current_task or new_task(context.message)
+        task = context.current_task or new_task_from_user_message(context.message)
         await event_queue.enqueue_event(task)
 
         await event_queue.enqueue_event(
@@ -699,7 +699,7 @@ class OrchestratorExecutor(AgentExecutor):
                 context_id=context.context_id,
                 status=TaskStatus(
                     state=TaskState.TASK_STATE_WORKING,
-                    message=new_agent_text_message("Processing request..."),
+                    message=new_text_message("Processing request..."),
                 ),
             ),
         )

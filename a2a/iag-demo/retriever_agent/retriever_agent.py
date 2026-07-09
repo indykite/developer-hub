@@ -26,6 +26,11 @@ from typing import Any  # noqa: E402
 import httpx  # noqa: E402
 import uvicorn  # noqa: E402
 import yaml  # noqa: E402
+from a2a.helpers import (  # noqa: E402
+    new_task_from_user_message,
+    new_text_artifact,
+    new_text_message,
+)
 
 # SDK 1.0 imports
 from a2a.server.agent_execution import (  # noqa: E402
@@ -50,11 +55,6 @@ from a2a.types import (  # noqa: E402
     TaskState,
     TaskStatus,
     TaskStatusUpdateEvent,
-)
-from a2a.utils import (  # noqa: E402
-    new_agent_text_message,
-    new_task,
-    new_text_artifact,
 )
 from a2a.utils.constants import DEFAULT_RPC_URL  # noqa: E402
 from dotenv import load_dotenv  # noqa: E402
@@ -983,7 +983,7 @@ async def _run_llm_loop(llm: Any, tools: list[StructuredTool], prompt: str) -> s
 
 async def _emit_working(context: RequestContext, event_queue: EventQueue) -> None:
     """Emit the initial task + working status events for a new request."""
-    task = context.current_task or new_task(context.message)
+    task = context.current_task or new_task_from_user_message(context.message)
     await event_queue.enqueue_event(task)
     await event_queue.enqueue_event(
         TaskStatusUpdateEvent(
@@ -991,7 +991,7 @@ async def _emit_working(context: RequestContext, event_queue: EventQueue) -> Non
             context_id=context.context_id,
             status=TaskStatus(
                 state=TaskState.TASK_STATE_WORKING,
-                message=new_agent_text_message("Retrieving data..."),
+                message=new_text_message("Retrieving data..."),
             ),
         ),
     )
