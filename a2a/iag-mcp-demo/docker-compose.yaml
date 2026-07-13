@@ -159,6 +159,57 @@ services:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]
 
+  #  Protects Analyst
+  analyst-iag:
+    extends:
+      service: iag-base
+      file: iag-base-docker.yaml
+    ports:
+      - "${IAG_ANALYST_PORT}:${IAG_ANALYST_PORT}"
+    networks:
+      - analyst-iag-network
+    environment:
+      K_SERVICE: analyst-iag
+      JARVIS_SERVICE_NAME: analyst-iag
+      JARVIS_SERVICE_PORT: ${IAG_ANALYST_PORT}
+      JARVIS_PROTECTED_AGENT_BASE_URL: http://${ANALYST_HOST}:${ANALYST_PORT}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${ANALYST_IDP_CLIENT_ID}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${ANALYST_IDP_CLIENT_SECRET}
+      # The analyst runs its own workflow (wf3: alice -> analyst -> mcp), not the
+      # base ${WORKFLOW_ID} (wf1). allowed_workflow_id is a single value per gateway.
+      JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${ANALYST_WORKFLOW_ID}
+    volumes:
+      - ./audit-config.yaml:/app/.configs/audit-config.yaml
+    command: ["--config=/app/.configs/audit-config.yaml"]
+
+  analyst:
+    image: analyst-agent:latest
+    #    platform: linux/amd64
+    #    build:
+    #      context: .
+    #      dockerfile: ./analyst_agent/Dockerfile
+    ports:
+      - "${ANALYST_PORT}:${ANALYST_PORT}"
+    networks:
+      - analyst-iag-network
+      - mcp-iag-network
+    environment:
+      ADVERTISED_HOST: ${ANALYST_HOST}
+      ANALYST_PORT: ${ANALYST_PORT}
+      ANALYST_AGENT_NAME: analyst_agent
+      # Route MCP calls through the MCP-protecting IAG instead of the MCP server
+      # directly. To bypass the IAG, set this back to ${MCP_SERVER_URL}.
+      MCP_SERVER_URL: http://${IAG_MCP_HOST}:${IAG_MCP_PORT}${MCP_SERVER_PATH}
+      GEMINI_ENABLED: ${GEMINI_ENABLED}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL}
+      LLM_MODEL: ${LOCAL_LLM_MODEL}
+      INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
+      LOG_LEVEL: ${LOG_LEVEL}
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   #  Protects the MCP server (MCP-protocol proxy mode)
   #  Single shared gateway that the retriever and weather agents call instead of
   #  hitting the MCP server directly, so MCP traffic is subject to the same
@@ -182,6 +233,10 @@ services:
       JARVIS_PROTECTED_AGENT_BASE_URL: ${MCP_SERVER_ORIGIN}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${MCP_IDP_CLIENT_ID}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${MCP_IDP_CLIENT_SECRET}
+      # Three workflows converge on the MCP agent (wf1 retriever, wf2 weather,
+      # wf3 analyst) but allowed_workflow_id accepts a single value, so leave it
+      # empty here: the gateway then allows any workflow resolved from the graph.
+      JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ""
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]
@@ -218,6 +273,8 @@ networks:
   retriever-iag-network:
     driver: bridge
   weather-iag-network:
+    driver: bridge
+  analyst-iag-network:
     driver: bridge
   mcp-iag-network:
     driver: bridge

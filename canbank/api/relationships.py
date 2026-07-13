@@ -125,17 +125,20 @@ def create_relationships():
         futures = {executor.submit(process_chunk, i, chunk): i for i, chunk in enumerate(chunks)}
 
         results = []
-        last_status_code = 200
+        # Futures complete in arbitrary order, so keep the numerically highest
+        # status (4xx/5xx > 2xx): one failed chunk must not be masked by a
+        # later-finishing successful one.
+        worst_status_code = 200
 
         for future in concurrent.futures.as_completed(futures):
             index = futures[future]
             try:
                 result = future.result()
                 results.append(result["response_json"])
-                last_status_code = result["status_code"]
+                worst_status_code = max(worst_status_code, result["status_code"])
             except Exception as e:
                 logger.exception("Chunk %s failed", index)
                 results.append({"message": str(e), "chunk_index": index})
-                last_status_code = 500
+                worst_status_code = max(worst_status_code, 500)
 
-        return render_template("relationships/result.html", response_json=results, status_code=last_status_code)
+        return render_template("relationships/result.html", response_json=results, status_code=worst_status_code)

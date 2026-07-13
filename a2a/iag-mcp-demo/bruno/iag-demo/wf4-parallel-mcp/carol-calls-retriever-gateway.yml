@@ -1,0 +1,60 @@
+---
+info:
+  name: Carol calls retriever gateway
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{iag_retriever_url}}/"
+  headers:
+    - name: Accept
+      value: application/json, text/event-stream
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "message/send",
+        "params": {
+          "message": {
+            "kind": "message",
+            "messageId": "wf4-carol-retriever",
+            "role": "user",
+            "parts": [
+              {
+                "kind": "text",
+                "text": "hello from carol to retriever (WF4)"
+              }
+            ]
+          }
+        }
+      }
+  auth:
+    type: bearer
+    token: "{{user_token_carol}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200 (user authorized through the gateway)", function () {
+          expect(res.status).to.equal(200);
+        });
+
+        test("Response is a JSON-RPC result", function () {
+          var jsonData = res.body;
+          if (typeof jsonData === "string") {
+            jsonData = JSON.parse(jsonData);
+          }
+          expect(jsonData).to.have.property("result");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

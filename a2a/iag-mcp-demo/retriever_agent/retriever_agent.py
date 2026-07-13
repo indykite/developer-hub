@@ -146,7 +146,7 @@ async def _patched_handle_post_request(self, ctx):
                 await self._handle_unexpected_content_type(content_type, ctx.read_stream_writer)  # skipcq: PYL-W0212
 
 
-StreamableHTTPTransport._handle_post_request = _patched_handle_post_request  # noqa: SLF001
+StreamableHTTPTransport._handle_post_request = _patched_handle_post_request  # noqa: SLF001  # skipcq: PYL-W0212
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -199,8 +199,21 @@ _TOOL_CALL_MAX_ITERATIONS = 5
 _SKILLS_DIR = Path(__file__).resolve().parent / "skills"
 
 
-def _parse_skill_file(location: Path) -> dict[str, Any] | None:  # noqa: C901,PLR0911,PLR0912
-    """Parse a SKILL.md file: extract YAML frontmatter and body. Returns skill record or None."""
+# A frontmatter split yields at least: leading text, YAML block, body.
+_FRONTMATTER_PARTS = 3
+
+
+def _str_list(value: Any, sep: str) -> list[str]:  # noqa: ANN401
+    """Coerce a frontmatter list-or-string value into a list of strings."""
+    if isinstance(value, list):
+        return [str(v) for v in value]
+    if isinstance(value, str):
+        return [s.strip() for s in value.split(sep) if s.strip()]
+    return []
+
+
+def _load_frontmatter(location: Path) -> tuple[dict, str] | None:
+    """Read a SKILL.md file and split it into (frontmatter dict, body)."""
     try:
         raw = location.read_text(encoding="utf-8")
     except OSError as e:
@@ -209,7 +222,7 @@ def _parse_skill_file(location: Path) -> dict[str, Any] | None:  # noqa: C901,PL
     if not raw.strip():
         return None
     parts = re.split(r"^---\s*$", raw.strip(), maxsplit=2, flags=re.MULTILINE)
-    if len(parts) < 3:  # noqa: PLR2004
+    if len(parts) < _FRONTMATTER_PARTS:
         _logger.warning("Skill file %s has no valid frontmatter (--- ... ---)", location)
         return None
     try:
@@ -219,37 +232,27 @@ def _parse_skill_file(location: Path) -> dict[str, Any] | None:  # noqa: C901,PL
         return None
     if not isinstance(meta, dict):
         return None
+    return meta, parts[2].strip()
+
+
+def _parse_skill_file(location: Path) -> dict[str, Any] | None:
+    """Parse a SKILL.md file: extract YAML frontmatter and body. Returns skill record or None."""
+    loaded = _load_frontmatter(location)
+    if loaded is None:
+        return None
+    meta, body = loaded
     name = meta.get("name") or meta.get("title")
-    description = meta.get("description")
+    description = str(meta.get("description") or "").strip()
     if not name or not description:
         _logger.warning("Skill file %s missing name or description", location)
         return None
-    name = str(name).strip()
-    description = str(description).strip() if description else ""
-    if not description:
-        return None
-    body = parts[2].strip()
-    tags = meta.get("tags")
-    if isinstance(tags, list):
-        tags = [str(t) for t in tags]
-    elif isinstance(tags, str):
-        tags = [s.strip() for s in tags.split(",") if s.strip()]
-    else:
-        tags = []
-    examples = meta.get("examples")
-    if isinstance(examples, list):
-        examples = [str(ex) for ex in examples]
-    elif isinstance(examples, str):
-        examples = [s.strip() for s in examples.split("\n") if s.strip()]
-    else:
-        examples = []
     return {
-        "name": name,
+        "name": str(name).strip(),
         "description": description,
         "location": str(location),
         "body": body,
-        "tags": tags,
-        "examples": examples,
+        "tags": _str_list(meta.get("tags"), ","),
+        "examples": _str_list(meta.get("examples"), "\n"),
     }
 
 
@@ -341,11 +344,22 @@ _BASE_SYSTEM_PROMPT = (
     "You are a helpful data retriever assistant that uses the Indykite MCP server to retrieve data. "
     "The backend exposes both MCP Resources and MCP Tools; both should be listed and considered at runtime.\n"
     "Upon receiving a request, you must:\n"
-    "1. Consider the combination of (a) your skills (authzen, ciq-execute, max-purchase-amount, retriever) and (b) available MCP resources and MCP tools. Use list_resources to discover MCP resources (URIs, names, descriptions). Your bound tools already include the MCP server's tools (e.g. list_resources, read_resource, ciq_execute, plus any AuthZEN or other tools from the server).\n"  # noqa: E501
-    "2. Select from this combined list which to run: either call an MCP tool (list_resources, read_resource, ciq_execute, or an AuthZEN tool), or use max_purchase_amount, or activate a skill (activate_skill) and then run the matching tool, or reply without a tool (retriever).\n"  # noqa: E501
-    "3. Run the selected tool or skill. Skills authzen and ciq-execute match MCP resources or tools exposed by the server—use list_resources and the tool list to see what is available and choose the right resource or tool for the request.\n"  # noqa: E501
-    'Use ciq_execute with at least {"id": "<query-id>"} and optional "input_params" (e.g. ticker, customer_external_id, user_external_id).\n'  # noqa: E501
-    'AuthZEN (evaluation, evaluations, resource_search, subject_search, action_search): example {"subject":{"type":"user","id":"alice"},"action":{"name":"view"},"resource":{"type":"record","id":"109"}}; response {"decision":true} or {"decision":false}. Return data only when evaluation is successful; otherwise say \'Authorization evaluation failed.\'\n'  # noqa: E501
+    "1. Consider the combination of (a) your skills (authzen, ciq-execute, max-purchase-amount, "
+    "retriever) and (b) available MCP resources and MCP tools. Use list_resources to discover MCP "
+    "resources (URIs, names, descriptions). Your bound tools already include the MCP server's tools "
+    "(e.g. list_resources, read_resource, ciq_execute, plus any AuthZEN or other tools from the server).\n"
+    "2. Select from this combined list which to run: either call an MCP tool (list_resources, "
+    "read_resource, ciq_execute, or an AuthZEN tool), or use max_purchase_amount, or activate a "
+    "skill (activate_skill) and then run the matching tool, or reply without a tool (retriever).\n"
+    "3. Run the selected tool or skill. Skills authzen and ciq-execute match MCP resources or tools "
+    "exposed by the server—use list_resources and the tool list to see what is available and choose "
+    "the right resource or tool for the request.\n"
+    'Use ciq_execute with at least {"id": "<query-id>"} and optional "input_params" '
+    "(e.g. ticker, customer_external_id, user_external_id).\n"
+    "AuthZEN (evaluation, evaluations, resource_search, subject_search, action_search): example "
+    '{"subject":{"type":"user","id":"alice"},"action":{"name":"view"},"resource":{"type":"record","id":"109"}}; '
+    'response {"decision":true} or {"decision":false}. Return data only when evaluation is '
+    "successful; otherwise say 'Authorization evaluation failed.'\n"
     "If no tool or resource is found, say 'No tool or resource found'. If no data is found, say 'No data found'."
 )
 _SKILL_CATALOG_APPENDIX = _build_skill_catalog_prompt()
@@ -501,41 +515,36 @@ def _format_read_resource_result(result: Any) -> str:  # noqa: ANN401
     return "\n".join(parts) if parts else "(empty)"
 
 
-def _json_schema_to_args_model(tool_name: str, input_schema: dict) -> type[BaseModel]:  # noqa: C901
+_JSON_TO_PY_TYPE: dict[str, type] = {
+    "string": str,
+    "integer": int,
+    "number": float,
+    "boolean": bool,
+    "array": list,
+    "object": dict,
+}
+
+
+def _field_definition(name: str, prop: dict, required: set[str]) -> tuple[Any, Any]:
+    """Build one (type, Field) pair for create_model from a JSON-schema property."""
+    py_type = _JSON_TO_PY_TYPE.get(prop.get("type"), Any)
+    desc = prop.get("description") or ""
+    if name in required:
+        return (py_type, Field(description=desc) if desc else ...)
+    opt_type = (py_type | None) if py_type is not Any else Any
+    return (opt_type, Field(default=None, description=desc) if desc else None)
+
+
+def _json_schema_to_args_model(tool_name: str, input_schema: dict) -> type[BaseModel]:
     """Build a Pydantic model from MCP inputSchema so the LLM gets explicit parameter names."""
     properties = input_schema.get("properties") or {}
     required = set(input_schema.get("required") or [])
     if not properties:
         return create_model(f"{tool_name}_args", __config__=ConfigDict(extra="allow"))
 
-    def _py_type(prop: dict) -> type:  # noqa: PLR0911
-        t = prop.get("type")
-        if t == "string":
-            return str
-        if t == "integer":
-            return int
-        if t == "number":
-            return float
-        if t == "boolean":
-            return bool
-        if t == "array":
-            return list
-        if t == "object":
-            return dict
-        return Any
-
-    fields: dict[str, Any] = {}
-    for name, prop in properties.items():
-        if not isinstance(prop, dict):
-            continue
-        py_type = _py_type(prop)
-        is_req = name in required
-        desc = prop.get("description") or ""
-        if is_req:
-            fields[name] = (py_type, Field(description=desc) if desc else ...)
-        else:
-            opt_type = (py_type | None) if py_type is not Any else Any
-            fields[name] = (opt_type, Field(default=None, description=desc) if desc else None)
+    fields: dict[str, Any] = {
+        name: _field_definition(name, prop, required) for name, prop in properties.items() if isinstance(prop, dict)
+    }
     return create_model(
         f"{tool_name}_args",
         __config__=ConfigDict(extra="allow"),
@@ -1045,6 +1054,7 @@ async def _process_retriever_request(
 class RetrieverExecutor(AgentExecutor):
     """AgentExecutor that uses MCP server tools via an LLM with tool-calling."""
 
+    # skipcq: PYL-R0201 - AgentExecutor interface override; must stay an instance method
     async def execute(  # noqa: D102
         self,
         context: RequestContext,
@@ -1055,6 +1065,7 @@ class RetrieverExecutor(AgentExecutor):
             raise HTTPException(status_code=401, detail="Authorization required")
         await _process_retriever_request(context, event_queue, access_token)
 
+    # skipcq: PYL-R0201 - AgentExecutor interface override; must stay an instance method
     async def cancel(  # noqa: D102
         self,
         context: RequestContext,

@@ -39,17 +39,29 @@ other cities still go through the direct Open-Meteo path. See
 [`canbank/README.md`](../../canbank/README.md#external-data-resolvers) for the resolver
 setup.
 
+## `analyst_agent`
+
+An A2A agent modeled on the `retriever_agent` (MCP client to the IndyKite MCP
+Server via `mcp-iag`) but **not** called by the orchestrator: users call its
+gateway directly. It exists to demonstrate the parallel multi-agent MCP flow —
+two agents (retriever + analyst) and two users (alice + carol) holding
+concurrent, isolated MCP sessions through the same `mcp-iag` gateway, with
+per-user authorization bound to each Bearer token. See
+[Parallel multi-agent MCP (WF4)](#parallel-multi-agent-mcp-wf4).
+
 ## `bruno`
 
-Bruno collection of sample data, ciq queries and kbac queries.
+Bruno collection of sample data, ciq queries and kbac queries, plus the
+[`wf4-parallel-mcp`](bruno/iag-demo/wf4-parallel-mcp) suite mirroring the
+jarvis-proto "WF4 - Parallel Multi-Agent MCP" e2e tests.
 
 ## Running the demo
 
-The stack boots four Agent Gateway instances — three protecting the
-orchestrator, retriever, and weather agents (A2A), plus one (`mcp-iag`)
-protecting the IndyKite MCP server (MCP) — alongside four in-repo services
-(`chatbot`, `orchestrator_agent`, `retriever_agent`, `weather_agent`) wired
-together via Docker Compose. See
+The stack boots five Agent Gateway instances — four protecting the
+orchestrator, retriever, weather, and analyst agents (A2A), plus one
+(`mcp-iag`) protecting the IndyKite MCP server (MCP) — alongside five in-repo
+services (`chatbot`, `orchestrator_agent`, `retriever_agent`, `weather_agent`,
+`analyst_agent`) wired together via Docker Compose. See
 [Protecting MCP traffic](#protecting-mcp-traffic-mcp-iag) for the MCP gateway.
 
 ### 1. Prerequisites
@@ -65,8 +77,15 @@ together via Docker Compose. See
 - **An IndyKite project** with:
     - the canbank graph ingested (run the Bruno collection
     [`bruno/iag-demo/ingest/{canbank,customers,customer-docs}`](bruno/iag-demo/ingest)),
-    - a `Workflow` node with `external_id=wf1` and a `CAN_TRIGGER` edge from the
-    calling `User` (see
+    - the agent-workflow graph ingested (run
+    [`bruno/iag-demo/ingest/agent-worfklow`](bruno/iag-demo/ingest/agent-worfklow)):
+    `User`s, `Workflow`s `wf1`/`wf2`/`wf3` and the `Agent` chains. The
+    `INVOKES` edges between workflows and agents carry a `workflow_name`
+    property (and `discriminating_property: workflow_name` on edges into the
+    shared `indykiteagent-mcp` node) — the gateways' `get_agent_workflows`
+    ContX IQ query (v2) filters on it at every hop, so ingest without these
+    properties resolves **no** workflows,
+    - a `CAN_TRIGGER` edge from the calling `User` to the workflow (see
     [`bruno/iag-demo/authzen/subject-can-trigger-workflow.yml`](bruno/iag-demo/authzen/subject-can-trigger-workflow.yml)),
     - a ContX IQ knowledge query + policy — pick any pair from
     [`bruno/iag-demo/ciq-context`](bruno/iag-demo/ciq-context),
@@ -79,8 +98,8 @@ together via Docker Compose. See
     resolves the App Agent server-side from it, so MCP callers no longer send an
     App Agent token.
 - **Provider clients** for `console` (chatbot login), `indykiteagent`
-  (orchestrator), `indykiteagent-2` (retriever), and `indykiteagent-3`
-  (weather) — each with its secret.
+  (orchestrator), `indykiteagent-2` (retriever), `indykiteagent-3`
+  (weather), and `indykiteagent-4` (analyst) — each with its secret.
 - **(Optional) Gemini API key**, otherwise an **Ollama** instance reachable
   from Docker (default `http://host.docker.internal:11434`).
 
@@ -112,6 +131,8 @@ Fill in, at a minimum:
 | `ORCHESTRATOR_IDP_CLIENT_ID` / `_SECRET` | IdP Provider `indykiteagent` client |
 | `RETRIEVER_IDP_CLIENT_ID` / `_SECRET` | IdP Provider `indykiteagent-2` client |
 | `WEATHER_IDP_CLIENT_ID` / `_SECRET` | IdP Provider `indykiteagent-3` client (weather agent) |
+| `ANALYST_IDP_CLIENT_ID` / `_SECRET` | IdP Provider `indykiteagent-4` client (analyst agent) |
+| `ANALYST_WORKFLOW_ID` | Workflow the analyst gateway allows (default `wf3`). Overrides `WORKFLOW_ID` for `analyst-iag` only — `JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID` takes a single value per gateway. |
 | `CIQ_QUERY_HQ_WEATHER` | Optional. Name/GID of the `get-hq-weather` knowledge query used by the weather agent for HQ prompts (default: `get-hq-weather`). Create it in `canbank` (slot 9 + the `weather` / `weather-units` EDRs). Without it, all weather prompts go to Open-Meteo. |
 | `FLASK_SECRET_KEY` | Generate a fresh one: `python -c "import secrets; print(secrets.token_hex(32))"` |
 
@@ -126,12 +147,13 @@ LLM selection:
 The three in-repo services are built locally. There's a makefile for this:
 
 ```bash
-make                 # build chatbot, orchestrator-agent, retriever-agent, weather-agent
+make                 # build chatbot, orchestrator-agent, retriever-agent, weather-agent, analyst-agent
 # or individually:
 make new-chatbot
 make new-orchestrator
 make new-retriever
 make new-weather
+make new-analyst
 ```
 
 ### 4. Pin the Agent Gateway image tag
@@ -185,6 +207,8 @@ This brings up:
 | `retriever` | `6002` | Retriever agent (MCP client, via `mcp-iag`) |
 | `weather-iag` | `8884` | Agent Gateway protecting the weather agent |
 | `weather` | `6004` | Weather agent (Open-Meteo client + MCP client, via `mcp-iag`) |
+| `analyst-iag` | `8885` | Agent Gateway protecting the analyst agent (workflow `wf3`) |
+| `analyst` | `6005` | Analyst agent (MCP client, via `mcp-iag`; called directly, not via the orchestrator) |
 | `mcp-iag` | `8886` | Agent Gateway protecting the IndyKite MCP server (MCP proxy mode) |
 
 Open `http://localhost:3000` in a browser and log in as one of the demo users
@@ -231,8 +255,42 @@ How it is wired:
 > removed.
 
 **To bypass the gateway** (talk to the MCP server directly, the original
-behaviour), set `MCP_SERVER_URL` back to `${MCP_SERVER_URL}` in the `retriever`
-and `weather` service definitions in [`docker-compose.yaml`](docker-compose.yaml).
+behaviour), set `MCP_SERVER_URL` back to `${MCP_SERVER_URL}` in the `retriever`,
+`weather`, and `analyst` service definitions in
+[`docker-compose.yaml`](docker-compose.yaml).
+
+### Parallel multi-agent MCP (WF4)
+
+Mirrors the jarvis-proto e2e suite *"12 IAG Tests / 06 WF4 - Parallel
+Multi-Agent MCP"* (ENG-8855): several users and agents hold **concurrent MCP
+sessions through the same `mcp-iag` gateway**, and authorization follows each
+user's Bearer token — not the payload, and not the shared agent.
+
+The graph models this with three workflows converging on the MCP agent node
+(`indykiteagent-mcp`):
+
+- `wf1`: `alice`/`carol`/… → orchestrator (`indykiteagent`) → retriever
+  (`indykiteagent-2`) → MCP
+- `wf2`: `jane` → weather (`indykiteagent-3`) → MCP
+- `wf3`: `alice` (only) → analyst (`indykiteagent-4`) → MCP
+
+Two ways to see it:
+
+- **Bruno**: run
+  [`bruno/iag-demo/wf4-parallel-mcp`](bruno/iag-demo/wf4-parallel-mcp) in
+  order. It opens three MCP sessions against `mcp-iag` (alice via retriever,
+  carol via retriever, alice via analyst), interleaves them round-robin
+  (initialize A/B/C, list-tools A/B/C, tool-calls A/B/C), asserts the three
+  `Mcp-Session-Id`s are distinct, and shows the per-user decisions: the same
+  `authzen_evaluate` call on `wf3` returns `decision: true` for alice and
+  `decision: false` for carol, because the MCP subject is bound to the bearer
+  token. Fill the `user_token_alice` / `user_token_carol` secrets in the
+  Bruno environment first (see the folder docs).
+- **Chatbot**: log in as two different users in two browsers (or a private
+  window) and prompt both at the same time. Both ride the shared retriever
+  into `mcp-iag`; the audit webhook stream in the chatbot UI (see
+  [`audit-config.yaml`](audit-config.yaml)) shows the separate sessions and
+  each user's own allow/deny decisions.
 
 ### 6. Try the demo prompts
 

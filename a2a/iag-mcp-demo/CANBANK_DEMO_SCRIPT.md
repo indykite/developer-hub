@@ -46,6 +46,20 @@ server. The query reads the `hq_weather` Weather node, whose `current` and
 For comparison, *"What's the weather in London?"* takes the direct Open-Meteo
 path without going through the IKG.
 
+### Parallel multi-agent MCP (WF4)
+
+Two users, two agents, one MCP gateway — at the same time.
+
+Log in as two different users in two browsers (or run the Bruno suite
+`bruno/iag-demo/wf4-parallel-mcp`, which drives it deterministically: alice
+and carol through the shared retriever, alice through the analyst). All the
+MCP sessions flow through the same `mcp-iag` gateway concurrently, each with
+its own `Mcp-Session-Id`, and the authorization decisions follow each user's
+token: the identical `authzen_evaluate` call on workflow `wf3` is **allowed**
+for alice and **denied** for carol, even though both ride the same retriever
+agent. The audit stream in the chatbot UI shows the interleaved sessions and
+the per-user allow/deny decisions.
+
 ## Setup
 
 There are three things required for the demo:

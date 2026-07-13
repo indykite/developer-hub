@@ -78,6 +78,32 @@ http:
             ]
           },
           {
+            "external_id": "carol",
+            "type": "User",
+            "is_identity": true,
+            "tags": [
+            ],
+            "properties": [
+              {
+                "type": "name",
+                "value": "Carol Davis"
+              }
+            ]
+          },
+          {
+            "external_id": "rebecca",
+            "type": "User",
+            "is_identity": true,
+            "tags": [
+            ],
+            "properties": [
+              {
+                "type": "name",
+                "value": "Rebecca Welton"
+              }
+            ]
+          },
+          {
             "external_id": "wf1",
             "type": "Workflow",
             "is_identity": false,
@@ -86,6 +112,13 @@ http:
           },
           {
             "external_id": "wf2",
+            "type": "Workflow",
+            "is_identity": false,
+            "properties": [
+            ]
+          },
+          {
+            "external_id": "wf3",
             "type": "Workflow",
             "is_identity": false,
             "properties": [
@@ -107,6 +140,20 @@ http:
           },
           {
             "external_id": "indykiteagent-3",
+            "type": "Agent",
+            "is_identity": false,
+            "properties": [
+            ]
+          },
+          {
+            "external_id": "indykiteagent-4",
+            "type": "Agent",
+            "is_identity": false,
+            "properties": [
+            ]
+          },
+          {
+            "external_id": "indykiteagent-mcp",
             "type": "Agent",
             "is_identity": false,
             "properties": [
