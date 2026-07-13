@@ -41,3 +41,20 @@ variables:
     value: gid:AAAAFv29S2CI90cVnkC8blFzRjA
   - name: get_agent_workflows_2_query
     value: gid:AAAAIyGRFbxqTEXYiePTYTiHSl0
+  # GID of the store-decision policy (set after running ciq-context/store-decision
+  # "Create Store Decision Policy"; consumed by "Create Store Decision Query")
+  - name: store_decision_policy
+    value: ""
+  # WF4 Parallel Multi-Agent MCP: user access tokens (log in to the chatbot as
+  # each user and copy the token, or mint one from the IdP)
+  - secret: true
+    name: user_token_alice
+  - secret: true
+    name: user_token_carol
+  # WF4 Parallel Multi-Agent MCP: local compose stack endpoints
+  - name: iag_retriever_url
+    value: http://localhost:8882
+  - name: iag_analyst_url
+    value: http://localhost:8885
+  - name: iag_mcp_url
+    value: http://localhost:8886/mcp/v1/gid:AAAAApo7TvCs_0TQt-WFbP5KxMM

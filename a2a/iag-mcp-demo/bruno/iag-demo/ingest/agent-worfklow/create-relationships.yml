@@ -54,7 +54,7 @@ http:
           {
             "source": {
               "type": "User",
-              "external_id": "alexb"
+              "external_id": "joe"
             },
             "target": {
               "type": "Workflow",
@@ -67,7 +67,7 @@ http:
           {
             "source": {
               "type": "User",
-              "external_id": "joe"
+              "external_id": "carol"
             },
             "target": {
               "type": "Workflow",
@@ -92,6 +92,162 @@ http:
           },
           {
             "source": {
+              "type": "User",
+              "external_id": "rebecca"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf1"
+            },
+            "properties": [
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "User",
+              "external_id": "alice"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf3"
+            },
+            "properties": [
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "User",
+              "external_id": "alice"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf1"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
+          },
+          {
+            "source": {
+              "type": "User",
+              "external_id": "alexb"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf1"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
+          },
+          {
+            "source": {
+              "type": "User",
+              "external_id": "jeff"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf1"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
+          },
+          {
+            "source": {
+              "type": "User",
+              "external_id": "joe"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf1"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
+          },
+          {
+            "source": {
+              "type": "User",
+              "external_id": "carol"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf1"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
+          },
+          {
+            "source": {
+              "type": "User",
+              "external_id": "jane"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf2"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
+          },
+          {
+            "source": {
+              "type": "User",
+              "external_id": "alice"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf3"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
+          },
+          {
+            "source": {
+              "type": "User",
+              "external_id": "rebecca"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf1"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
+          },
+          {
+            "source": {
+              "type": "Department",
+              "external_id": "support"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf1"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
+          },
+          {
+            "source": {
+              "type": "Department",
+              "external_id": "trading"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf1"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
+          },
+          {
+            "source": {
               "type": "Container",
               "external_id": "workflows"
             },
@@ -111,6 +267,19 @@ http:
             "target": {
               "type": "Workflow",
               "external_id": "wf2"
+            },
+            "properties": [
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Container",
+              "external_id": "workflows"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf3"
             },
             "properties": [
             ],
@@ -126,6 +295,52 @@ http:
               "external_id": "indykiteagent"
             },
             "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf1"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Agent",
+              "external_id": "indykiteagent"
+            },
+            "target": {
+              "type": "Agent",
+              "external_id": "indykiteagent-2"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf1"
+              },
+              {
+                "type": "discriminating_property",
+                "value": "workflow_name"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Agent",
+              "external_id": "indykiteagent-2"
+            },
+            "target": {
+              "type": "Agent",
+              "external_id": "indykiteagent-mcp"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf1"
+              },
+              {
+                "type": "discriminating_property",
+                "value": "workflow_name"
+              }
             ],
             "type": "INVOKES"
           },
@@ -139,6 +354,10 @@ http:
               "external_id": "indykiteagent-3"
             },
             "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf2"
+              }
             ],
             "type": "INVOKES"
           },
@@ -149,9 +368,55 @@ http:
             },
             "target": {
               "type": "Agent",
+              "external_id": "indykiteagent-mcp"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf2"
+              },
+              {
+                "type": "discriminating_property",
+                "value": "workflow_name"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Workflow",
+              "external_id": "wf3"
+            },
+            "target": {
+              "type": "Agent",
               "external_id": "indykiteagent-4"
             },
             "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf3"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Agent",
+              "external_id": "indykiteagent-4"
+            },
+            "target": {
+              "type": "Agent",
+              "external_id": "indykiteagent-mcp"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf3"
+              },
+              {
+                "type": "discriminating_property",
+                "value": "workflow_name"
+              }
             ],
             "type": "INVOKES"
           },
@@ -202,19 +467,6 @@ http:
             "target": {
               "type": "Tool",
               "external_id": "t2"
-            },
-            "properties": [
-            ],
-            "type": "INVOKES"
-          },
-          {
-            "source": {
-              "type": "Agent",
-              "external_id": "indykiteagent"
-            },
-            "target": {
-              "type": "Agent",
-              "external_id": "indykiteagent-2"
             },
             "properties": [
             ],

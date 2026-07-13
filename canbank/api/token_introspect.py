@@ -100,15 +100,30 @@ def show_create_form():
 @api_token_introspect.post("/create", tags=[tag])
 def create_token_introspect():
     """Create a new token introspect with the provided form data."""
-    # Get form data
+    # Get form data; the JSON-valued fields come from free-text form inputs, so
+    # parse them guarded and report the offending field instead of a raw 500.
+    parsed_fields = {}
+    for field in ("claims_mapping", "jwt_matcher", "online_validation"):
+        try:
+            parsed_fields[field] = json.loads(request.form.get(field, "{}"))
+        except json.JSONDecodeError as e:
+            logger.exception("Invalid JSON in form field %s", field)
+            return render_template(
+                "token_introspect/result.html",
+                response_json={"message": f"Invalid JSON in field {field!r}: {e!s}"},
+                status_code=400,
+                token_introspect_id=None,
+                token_introspect_id_saved=False,
+            )
+
     json_data = {
-        "claims_mapping": json.loads(request.form.get("claims_mapping", "{}")),
+        "claims_mapping": parsed_fields["claims_mapping"],
         "description": request.form.get("description", ""),
         "display_name": request.form.get("display_name", ""),
         "ikg_node_type": request.form.get("ikg_node_type", "Person"),
-        "jwt_matcher": json.loads(request.form.get("jwt_matcher", "{}")),
+        "jwt_matcher": parsed_fields["jwt_matcher"],
         "name": request.form.get("name", ""),
-        "online_validation": json.loads(request.form.get("online_validation", "{}")),
+        "online_validation": parsed_fields["online_validation"],
         "perform_upsert": request.form.get("perform_upsert") == "true",
         "project_id": request.form.get("project_id", ""),
     }

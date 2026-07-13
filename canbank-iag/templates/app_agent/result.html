@@ -1,0 +1,74 @@
+{% extends "layouts/base.html" %}
+{% block title %}Application Agent Creation Result{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <h3 class="mb-4">Application Agent Creation Result</h3>
+
+                    {% if status_code >= 200 and status_code < 300 %}
+                        <div class="alert alert-success" role="alert">
+                            <strong>Success!</strong> Application agent created successfully (Status Code: {{ status_code }})
+                            {% if app_agent_id_saved and app_agent_id %}
+                                <hr>
+                                <p class="mb-0"><strong>Application Agent ID:</strong> <code>{{ app_agent_id }}</code></p>
+                                <p class="mb-0"><small class="text-muted">This ID has been saved to your .env file as APP_AGENT_ID</small></p>
+                            {% endif %}
+                            {% if credentials_created %}
+                                <hr>
+                                <p class="mb-0"><strong>Credentials Created:</strong> <span class="badge bg-success">Yes</span></p>
+                                <p class="mb-0"><small class="text-muted">Credentials have been automatically created for this agent (expires in 6 months)</small></p>
+                                <p class="mb-0"><small class="text-muted"><strong>APP_TOKEN</strong> has been saved to your .env file</small></p>
+                            {% elif credentials_response %}
+                                <hr>
+                                <p class="mb-0"><strong>Credentials Status:</strong> <span class="badge bg-warning">Failed</span></p>
+                                <p class="mb-0"><small class="text-muted">See credentials response below for details</small></p>
+                            {% endif %}
+                        </div>
+                    {% elif status_code >= 400 and status_code < 500 %}
+                        <div class="alert alert-warning" role="alert">
+                            <strong>Client Error</strong> - Status Code: {{ status_code }}
+                        </div>
+                    {% elif status_code >= 500 %}
+                        <div class="alert alert-danger" role="alert">
+                            <strong>Server Error</strong> - Status Code: {{ status_code }}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info" role="alert">
+                            Status Code: {{ status_code }}
+                        </div>
+                    {% endif %}
+
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <strong>Application Agent API Response</strong>
+                        </div>
+                        <div class="card-body">
+                            <pre style="max-height: 600px; overflow-y: auto;">{{ response_json | tojson(indent=4) }}</pre>
+                        </div>
+                    </div>
+
+                    {% if credentials_response %}
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <strong>Credentials API Response</strong>
+                        </div>
+                        <div class="card-body">
+                            <pre style="max-height: 600px; overflow-y: auto;">{{ credentials_response | tojson(indent=4) }}</pre>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="mt-4">
+                        <a href="{{ url_for('api_app_agent.show_create_form') }}" class="btn btn-primary">Create Another Application Agent</a>
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

@@ -100,7 +100,7 @@ async def _patched_handle_post_request(self, ctx):
                 await self._handle_unexpected_content_type(content_type, ctx.read_stream_writer)  # skipcq: PYL-W0212
 
 
-StreamableHTTPTransport._handle_post_request = _patched_handle_post_request  # noqa: SLF001
+StreamableHTTPTransport._handle_post_request = _patched_handle_post_request  # noqa: SLF001  # skipcq: PYL-W0212
 
 WEATHER_PORT = int(os.getenv("WEATHER_PORT", "6004"))
 ADVERTISED_HOST = os.getenv("ADVERTISED_HOST", "weather")
