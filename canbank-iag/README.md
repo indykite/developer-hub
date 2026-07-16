@@ -11,14 +11,14 @@ Differences from `canbank`:
 - **Data** (`data/nodes/nodes_iag.json`, `data/relationships/relationships_iag.json`)
   is the union of the Bruno `ingest` folders (`agent-worfklow` +
   `demo-data/{canbank,customers,customer-docs}`): the CanBank organization
-  plus the agent-workflow graph — users (`alice`, `carol`, `joe`, …),
+  plus the agent-workflow graph — users (`millicent`, `carol`, `joe`, …),
   workflows `wf1`–`wf3` and the `indykiteagent*` agent chains ending at
   `indykiteagent-mcp`. The workflow→agent `INVOKES` edges carry
   `workflow_name` (and `discriminating_property: workflow_name` on edges into
   the shared MCP agent), which the Agent Gateway's `get-agent-workflows`
   ContX IQ query (slot 8) filters on at every hop. Wired workflows:
   `wf1` = orchestrator → retriever → MCP, `wf2` = weather → MCP,
-  `wf3` = analyst → MCP (alice only — carol is denied, which the WF4
+  `wf3` = analyst → MCP (millicent only — carol is denied, which the WF4
   parallel-MCP tests exercise). The `hq_weather` node is kept from `canbank`
   so the weather EDRs and CIQ slot 9 still work.
 - **CIQ policies and knowledge queries** (slots 1–8) are byte-identical to

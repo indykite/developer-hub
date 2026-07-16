@@ -13,15 +13,39 @@ http:
       {
         "nodes": [
           {
-            "external_id": "alice",
+            "external_id": "millicent",
             "type": "User",
             "is_identity": true,
-            "tags": [
+            "labels": [
+              "Employee"
             ],
             "properties": [
               {
                 "type": "name",
-                "value": "Alice Smith"
+                "value": "Millicent Contextsworth",
+                "metadata": {
+                  "source": "Workday",
+                  "verified_time": "2026-02-26T00:57:13Z",
+                  "assurance_level": 3
+                }
+              },
+              {
+                "type": "title",
+                "value": "CSR 2",
+                "metadata": {
+                  "source": "Workday",
+                  "verified_time": "2026-02-26T00:57:13Z",
+                  "assurance_level": 3
+                }
+              },
+              {
+                "type": "email",
+                "value": "millicent@canbank.com",
+                "metadata": {
+                  "source": "Exchange",
+                  "verified_time": "2026-02-20T00:57:13Z",
+                  "assurance_level": 3
+                }
               }
             ]
           },
@@ -125,6 +149,13 @@ http:
             ]
           },
           {
+            "external_id": "wf-drive",
+            "type": "Workflow",
+            "is_identity": false,
+            "properties": [
+            ]
+          },
+          {
             "external_id": "indykiteagent",
             "type": "Agent",
             "is_identity": false,
@@ -154,6 +185,13 @@ http:
           },
           {
             "external_id": "indykiteagent-mcp",
+            "type": "Agent",
+            "is_identity": false,
+            "properties": [
+            ]
+          },
+          {
+            "external_id": "indykiteagent-drive",
             "type": "Agent",
             "is_identity": false,
             "properties": [

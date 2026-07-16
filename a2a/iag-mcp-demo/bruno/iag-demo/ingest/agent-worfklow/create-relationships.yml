@@ -15,7 +15,7 @@ http:
           {
             "source": {
               "type": "User",
-              "external_id": "alice"
+              "external_id": "millicent"
             },
             "target": {
               "type": "Workflow",
@@ -24,6 +24,19 @@ http:
             "properties": [
             ],
             "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "User",
+              "external_id": "millicent"
+            },
+            "target": {
+              "type": "Department",
+              "external_id": "support"
+            },
+            "properties": [
+            ],
+            "type": "WORKS_IN"
           },
           {
             "source": {
@@ -106,7 +119,7 @@ http:
           {
             "source": {
               "type": "User",
-              "external_id": "alice"
+              "external_id": "millicent"
             },
             "target": {
               "type": "Workflow",
@@ -119,7 +132,20 @@ http:
           {
             "source": {
               "type": "User",
-              "external_id": "alice"
+              "external_id": "millicent"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf-drive"
+            },
+            "properties": [
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "User",
+              "external_id": "millicent"
             },
             "target": {
               "type": "Workflow",
@@ -197,11 +223,24 @@ http:
           {
             "source": {
               "type": "User",
-              "external_id": "alice"
+              "external_id": "millicent"
             },
             "target": {
               "type": "Workflow",
               "external_id": "wf3"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
+          },
+          {
+            "source": {
+              "type": "User",
+              "external_id": "millicent"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf-drive"
             },
             "properties": [
             ],
@@ -395,6 +434,23 @@ http:
               {
                 "type": "workflow_name",
                 "value": "wf3"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Workflow",
+              "external_id": "wf-drive"
+            },
+            "target": {
+              "type": "Agent",
+              "external_id": "indykiteagent-drive"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf-drive"
               }
             ],
             "type": "INVOKES"

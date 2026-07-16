@@ -1,6 +1,6 @@
 ---
 info:
-  name: Alice (analyst) MCP Initialize
+  name: Millicent (analyst) MCP Initialize
   type: http
   seq: 6
 
@@ -23,14 +23,14 @@ http:
           "protocolVersion": "2025-03-26",
           "capabilities": {},
           "clientInfo": {
-            "name": "bruno-iag-wf4-alice-analyst",
+            "name": "bruno-iag-wf4-millicent-analyst",
             "version": "1.0"
           }
         }
       }
   auth:
     type: bearer
-    token: "{{user_token_alice}}"
+    token: "{{user_token_millicent}}"
 
 runtime:
   scripts:
@@ -66,7 +66,7 @@ runtime:
         });
 
         test("All three MCP session ids are distinct (session isolation)", function () {
-          var ids = [bru.getVar("wf4_alice_retriever_session_id"), bru.getVar("wf4_carol_retriever_session_id"), sessionId];
+          var ids = [bru.getVar("wf4_millicent_retriever_session_id"), bru.getVar("wf4_carol_retriever_session_id"), sessionId];
           var unique = ids.filter(function (v, i) {
             return ids.indexOf(v) === i;
           });
@@ -74,7 +74,7 @@ runtime:
         });
 
         if (sessionId) {
-          bru.setVar("wf4_alice_analyst_session_id", sessionId);
+          bru.setVar("wf4_millicent_analyst_session_id", sessionId);
         }
 
 settings:

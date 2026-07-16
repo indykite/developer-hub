@@ -44,7 +44,7 @@ setup.
 An A2A agent modeled on the `retriever_agent` (MCP client to the IndyKite MCP
 Server via `mcp-iag`) but **not** called by the orchestrator: users call its
 gateway directly. It exists to demonstrate the parallel multi-agent MCP flow —
-two agents (retriever + analyst) and two users (alice + carol) holding
+two agents (retriever + analyst) and two users (millicent + carol) holding
 concurrent, isolated MCP sessions through the same `mcp-iag` gateway, with
 per-user authorization bound to each Bearer token. See
 [Parallel multi-agent MCP (WF4)](#parallel-multi-agent-mcp-wf4).
@@ -74,10 +74,21 @@ services (`chatbot`, `orchestrator_agent`, `retriever_agent`, `weather_agent`,
   (`uv`, `poetry`, `venv` + `pip`) works if you prefer. You only need this
   locally if you plan to run or debug the services outside Docker; the
   `docker compose up` path installs everything inside the images.
-- **An IndyKite project** with:
-    - the canbank graph ingested (run the Bruno collection
-    [`bruno/iag-demo/ingest/{canbank,customers,customer-docs}`](bruno/iag-demo/ingest)),
-    - the agent-workflow graph ingested (run
+- **An IndyKite project** provisioned with the data, policies and queries
+  below. Two equivalent ways to do it:
+    - **the [`canbank-iag`](../../canbank-iag) Flask app** — pre-filled forms
+    for everything (capture nodes/relationships, CIQ policies + knowledge
+    queries incl. `get-agent-workflows`, KBAC policy, App Agent, Token
+    Introspect, MCP server config, external data resolvers); its data files
+    are kept byte-identical to this Bruno collection, or
+    - **the Bruno collection** (`bruno/iag-demo`), request by request, as
+    linked below.
+
+  Required in either case:
+    - the canbank graph ingested (Bruno:
+    [`bruno/iag-demo/ingest/{canbank,customers,customer-docs}`](bruno/iag-demo/ingest),
+    or canbank-iag's Capture forms),
+    - the agent-workflow graph ingested (Bruno:
     [`bruno/iag-demo/ingest/agent-worfklow`](bruno/iag-demo/ingest/agent-worfklow)):
     `User`s, `Workflow`s `wf1`/`wf2`/`wf3` and the `Agent` chains. The
     `INVOKES` edges between workflows and agents carry a `workflow_name`
@@ -100,6 +111,7 @@ services (`chatbot`, `orchestrator_agent`, `retriever_agent`, `weather_agent`,
 - **Provider clients** for `console` (chatbot login), `indykiteagent`
   (orchestrator), `indykiteagent-2` (retriever), `indykiteagent-3`
   (weather), and `indykiteagent-4` (analyst) — each with its secret.
+  The optional Drive MCP PoC additionally needs `indykiteagent-drive`.
 - **(Optional) Gemini API key**, otherwise an **Ollama** instance reachable
   from Docker (default `http://host.docker.internal:11434`).
 
@@ -210,6 +222,8 @@ This brings up:
 | `analyst-iag` | `8885` | Agent Gateway protecting the analyst agent (workflow `wf3`) |
 | `analyst` | `6005` | Analyst agent (MCP client, via `mcp-iag`; called directly, not via the orchestrator) |
 | `mcp-iag` | `8886` | Agent Gateway protecting the IndyKite MCP server (MCP proxy mode) |
+| `drive-mcp-iag` | `8887` | *(profile `drive`)* Agent Gateway protecting the Google Drive MCP server (workflow `wf-drive`) |
+| `drive-mcp` | `8000` | *(profile `drive`)* Google Drive MCP server (stdio, wrapped by supergateway into Streamable HTTP) |
 
 Open `http://localhost:3000` in a browser and log in as one of the demo users
 (e.g. `leslie`, `roy`, …). Make sure you use the same hostname as
@@ -259,6 +273,36 @@ behaviour), set `MCP_SERVER_URL` back to `${MCP_SERVER_URL}` in the `retriever`,
 `weather`, and `analyst` service definitions in
 [`docker-compose.yaml`](docker-compose.yaml).
 
+### Proxying a non-IndyKite MCP server: Google Drive (profile `drive`)
+
+The gateway's MCP proxy mode is downstream-agnostic — it forwards any
+Streamable HTTP MCP server (any method/path, SSE streaming, `Mcp-Session-Id`
+passthrough). The `drive` compose profile proves it with a Google Drive MCP
+server: the reference stdio server wrapped by
+[supergateway](https://github.com/supercorp-ai/supergateway), protected by
+`drive-mcp-iag` on its own workflow (`millicent -CAN_TRIGGER-> wf-drive
+-INVOKES-> indykiteagent-drive`).
+
+The toggle lives in `.env` — no compose-file or CLI changes needed:
+
+```bash
+make new-drive-mcp                  # build the image once
+# in .env: COMPOSE_PROFILES=drive  (leave empty to run the base demo)
+docker compose up
+# equivalent one-off alternative: docker compose --profile drive up
+```
+
+The graph data (Bruno ingest and the `canbank-iag` app) always includes the
+`wf-drive` workflow and `indykiteagent-drive` agent — they are inert while
+the profile is off, so the same provisioning works for both modes.
+
+Then run the [`bruno/iag-demo/drive-mcp`](bruno/iag-demo/drive-mcp) folder as
+millicent. See [`drive_mcp/README.md`](drive_mcp/README.md) for the Google OAuth
+bootstrap and the auth-model constraint: the gateway **replaces** the
+caller's `Authorization` with its IdP delegation token, so the downstream
+must hold its own Google credentials — Google's hosted MCP endpoints (which
+expect a Google OAuth token from the caller) cannot sit behind the gateway.
+
 ### Parallel multi-agent MCP (WF4)
 
 Mirrors the jarvis-proto e2e suite *"12 IAG Tests / 06 WF4 - Parallel
@@ -269,22 +313,22 @@ user's Bearer token — not the payload, and not the shared agent.
 The graph models this with three workflows converging on the MCP agent node
 (`indykiteagent-mcp`):
 
-- `wf1`: `alice`/`carol`/… → orchestrator (`indykiteagent`) → retriever
+- `wf1`: `millicent`/`carol`/… → orchestrator (`indykiteagent`) → retriever
   (`indykiteagent-2`) → MCP
 - `wf2`: `jane` → weather (`indykiteagent-3`) → MCP
-- `wf3`: `alice` (only) → analyst (`indykiteagent-4`) → MCP
+- `wf3`: `millicent` (only) → analyst (`indykiteagent-4`) → MCP
 
 Two ways to see it:
 
 - **Bruno**: run
   [`bruno/iag-demo/wf4-parallel-mcp`](bruno/iag-demo/wf4-parallel-mcp) in
-  order. It opens three MCP sessions against `mcp-iag` (alice via retriever,
-  carol via retriever, alice via analyst), interleaves them round-robin
+  order. It opens three MCP sessions against `mcp-iag` (millicent via retriever,
+  carol via retriever, millicent via analyst), interleaves them round-robin
   (initialize A/B/C, list-tools A/B/C, tool-calls A/B/C), asserts the three
   `Mcp-Session-Id`s are distinct, and shows the per-user decisions: the same
-  `authzen_evaluate` call on `wf3` returns `decision: true` for alice and
+  `authzen_evaluate` call on `wf3` returns `decision: true` for millicent and
   `decision: false` for carol, because the MCP subject is bound to the bearer
-  token. Fill the `user_token_alice` / `user_token_carol` secrets in the
+  token. Fill the `user_token_millicent` / `user_token_carol` secrets in the
   Bruno environment first (see the folder docs).
 - **Chatbot**: log in as two different users in two browsers (or a private
   window) and prompt both at the same time. Both ride the shared retriever

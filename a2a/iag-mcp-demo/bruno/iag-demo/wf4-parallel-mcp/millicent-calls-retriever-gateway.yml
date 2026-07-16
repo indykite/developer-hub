@@ -1,6 +1,6 @@
 ---
 info:
-  name: Alice calls retriever gateway
+  name: Millicent calls retriever gateway
   type: http
   seq: 1
 
@@ -21,13 +21,11 @@ http:
         "method": "message/send",
         "params": {
           "message": {
-            "kind": "message",
-            "messageId": "wf4-alice-retriever",
-            "role": "user",
+            "messageId": "wf4-millicent-retriever",
+            "role": "ROLE_USER",
             "parts": [
               {
-                "kind": "text",
-                "text": "hello from alice to retriever (WF4)"
+                "text": "hello from millicent to retriever (WF4)"
               }
             ]
           }
@@ -35,7 +33,7 @@ http:
       }
   auth:
     type: bearer
-    token: "{{user_token_alice}}"
+    token: "{{user_token_millicent}}"
 
 runtime:
   scripts:

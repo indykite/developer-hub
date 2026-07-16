@@ -10,7 +10,7 @@ services:
     environment:
       JARVIS_SERVICE_LOG_LEVEL: debug
       JARVIS_SERVICE_ENVIRONMENT: demo
-      JARVIS_IDENTITY_PROVIDER_BASE_URL: "https://idsvr.indykite.one/oauth/v2/"
+      JARVIS_IDENTITY_PROVIDER_BASE_URL: "${IDP_BASE_URL:-https://idsvr.indykite.one/oauth/v2/}"
       JARVIS_IDENTITY_PROVIDER_INTROSPECT_ENDPOINT: "oauth-introspect"
       JARVIS_IDENTITY_PROVIDER_CLIENT_CREDENTIAL_ENDPOINT: "oauth-token"
       JARVIS_IDENTITY_PROVIDER_EXCHANGE_ENDPOINT: "oauth-token"

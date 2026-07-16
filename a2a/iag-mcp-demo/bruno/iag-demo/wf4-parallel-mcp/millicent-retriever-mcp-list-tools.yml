@@ -1,8 +1,8 @@
 ---
 info:
-  name: Alice (retriever) MCP Tool CIQ Execute
+  name: Millicent (retriever) MCP List Tools
   type: http
-  seq: 16
+  seq: 10
 
 http:
   method: POST
@@ -13,27 +13,19 @@ http:
     - name: Content-Type
       value: application/json
     - name: Mcp-Session-Id
-      value: "{{wf4_alice_retriever_session_id}}"
+      value: "{{wf4_millicent_retriever_session_id}}"
   body:
     type: json
     data: |-
       {
         "jsonrpc": "2.0",
-        "id": 4,
-        "method": "tools/call",
-        "params": {
-          "name": "ciq_execute",
-          "arguments": {
-            "id": "{{get_stock_quote_query}}",
-            "input_params": {
-              "ticker": "NVDA"
-            }
-          }
-        }
+        "id": 2,
+        "method": "tools/list",
+        "params": {}
       }
   auth:
     type: bearer
-    token: "{{user_token_alice}}"
+    token: "{{user_token_millicent}}"
 
 runtime:
   scripts:
@@ -56,20 +48,13 @@ runtime:
           expect(res.status).to.equal(200);
         });
 
-        test("Response has a result with content", function () {
+        test("Response has a tools array with authzen_evaluate and ciq_execute", function () {
           expect(jsonData).to.not.be.null;
-          expect(jsonData).to.have.property("result");
-          expect(jsonData.result).to.have.property("content");
-          expect(jsonData.result.content).to.be.an("array");
-          expect(jsonData.result.content.length).to.be.greaterThan(0);
-        });
-
-        test("CIQ execution returns data", function () {
-          var toolResult = jsonData.result.content[0].text;
-          var parsed = JSON.parse(toolResult);
-          expect(parsed).to.have.property("data");
-          expect(parsed.data).to.be.an("array");
-          expect(parsed.data.length).to.be.greaterThan(0);
+          expect(jsonData.result).to.have.property("tools");
+          expect(jsonData.result.tools).to.be.an("array");
+          var names = jsonData.result.tools.map(function (t) { return t.name; });
+          expect(names).to.include("authzen_evaluate");
+          expect(names).to.include("ciq_execute");
         });
 
 settings:

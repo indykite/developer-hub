@@ -283,18 +283,18 @@ _QUERY_DEFS = [
         "name": "get-decisions",
         "display_name": "Get Decisions",
         "description": (
-            "get-decision retrieves past decisions that have been made based on a document, "
+            "get-decisions retrieves past decisions that have been made based on a document, "
             "probably a policy of some kind. The results include: the actor, the decision, "
             "the document applied in the decision, a relationship document_applied.type that "
-            "describes the relationship between the decision and the documnet, the support "
+            "describes the relationship between the decision and the document, the support "
             "ticket, and account. The only information required is the currently authenticated "
             "user's bearer token. Use this function when we need to find past decisions such as: "
             '"What decisions incorporated the refund policy document?"'
-            "Returns: An object containing the decision, the document, a relationship that "
+            " Returns: An object containing the decision, the document, a relationship that "
             "explains how the document was applied, the actor, the support ticket and the affected "
             "account. Call tool 'ciq_execute' with the user's bearer token as the authorization "
-            'header. Use the following arguments: "id": "get-decision". Example: { "id": '
-            '"get-decision", "input_params": { "document_external_id": "refund_policy" } }.'
+            'header. Use the following arguments: "id": "get-decisions". Example: { "id": '
+            '"get-decisions", "input_params": { "document_external_id": "refund_policy" } }.'
         ),
         "query": QUERY_7,
     },

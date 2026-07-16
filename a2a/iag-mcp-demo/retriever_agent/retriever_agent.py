@@ -1,4 +1,4 @@
-"""Retriever agent - A2A-compliant agent (a2a-sdk>=1.0.0a0) that uses a remote MCP server via the official MCP SDK."""
+"""Retriever agent - A2A-compliant agent (a2a-sdk>=1.1.0) that uses a remote MCP server via the official MCP SDK."""
 # Reason: warnings.filterwarnings() must run before LangChain imports to suppress
 # the Pydantic V1 deprecation warning on Python 3.14+, so all other imports
 # necessarily follow a small block of setup code - each carries a per-line
@@ -26,6 +26,11 @@ from typing import Any  # noqa: E402
 import httpx  # noqa: E402
 import uvicorn  # noqa: E402
 import yaml  # noqa: E402
+from a2a.helpers.proto_helpers import (  # noqa: E402
+    new_task_from_user_message,
+    new_text_artifact,
+    new_text_message,
+)
 
 # SDK 1.0 imports
 from a2a.server.agent_execution import (  # noqa: E402
@@ -50,11 +55,6 @@ from a2a.types import (  # noqa: E402
     TaskState,
     TaskStatus,
     TaskStatusUpdateEvent,
-)
-from a2a.utils import (  # noqa: E402
-    new_agent_text_message,
-    new_task,
-    new_text_artifact,
 )
 from a2a.utils.constants import DEFAULT_RPC_URL  # noqa: E402
 from dotenv import load_dotenv  # noqa: E402
@@ -191,7 +191,7 @@ else:
     )
 _logger.info("LLM initialization time: %.2fs", time.time() - _t0)
 
-_TOOL_CALL_MAX_ITERATIONS = 5
+_TOOL_CALL_MAX_ITERATIONS = 8
 
 # ---------------------------------------------------------------------------
 # Agent Skills (agentskills.io) - discovery
@@ -354,8 +354,17 @@ _BASE_SYSTEM_PROMPT = (
     "3. Run the selected tool or skill. Skills authzen and ciq-execute match MCP resources or tools "
     "exposed by the server—use list_resources and the tool list to see what is available and choose "
     "the right resource or tool for the request.\n"
-    'Use ciq_execute with at least {"id": "<query-id>"} and optional "input_params" '
-    "(e.g. ticker, customer_external_id, user_external_id).\n"
+    'Use ciq_execute with a concrete {"id": "<query-id>"} and its "input_params" — '
+    "NEVER call ciq_execute with empty arguments. Known query ids (call with these exact shapes):\n"
+    '  {"id": "get-stock-quote", "input_params": {"ticker": "NVDA"}}\n'
+    '  {"id": "get-stock-trade-threshold", "input_params": {"customer_external_id": "rebecca"}}\n'
+    '  {"id": "get-self", "input_params": {}}\n'
+    '  {"id": "get-internal-documents", "input_params": {"taxonomy_external_id": "policy"}}\n'
+    '  {"id": "get-decisions", "input_params": {"document_external_id": "refund_policy"}}\n'
+    '  {"id": "get-customer-facing-documents", "input_params": {}}\n'
+    '  {"id": "get-regulatory-agreements", "input_params": {}}\n'
+    "Substitute the real ticker / customer / document / taxonomy from the user question; "
+    "if unsure which id fits, call list_resources first.\n"
     "AuthZEN (evaluation, evaluations, resource_search, subject_search, action_search): example "
     '{"subject":{"type":"user","id":"alice"},"action":{"name":"view"},"resource":{"type":"record","id":"109"}}; '
     'response {"decision":true} or {"decision":false}. Return data only when evaluation is '
@@ -527,7 +536,12 @@ _JSON_TO_PY_TYPE: dict[str, type] = {
 
 def _field_definition(name: str, prop: dict, required: set[str]) -> tuple[Any, Any]:
     """Build one (type, Field) pair for create_model from a JSON-schema property."""
-    py_type = _JSON_TO_PY_TYPE.get(prop.get("type"), Any)
+    prop_type = prop.get("type")
+    # JSON-schema nullable fields use a list, e.g. ["null", "integer"] — pick the
+    # concrete type. A bare list is unhashable and would break the dict lookup.
+    if isinstance(prop_type, list):
+        prop_type = next((t for t in prop_type if t != "null"), None)
+    py_type = _JSON_TO_PY_TYPE.get(prop_type, Any)
     desc = prop.get("description") or ""
     if name in required:
         return (py_type, Field(description=desc) if desc else ...)
@@ -822,6 +836,15 @@ def _make_langchain_tool(session: ClientSession, mcp_tool: Any) -> StructuredToo
 
     async def _invoke(**kwargs: Any) -> str:  # noqa: ANN401
         args = {k: v for k, v in kwargs.items() if v is not None}
+        # Guard: ciq_execute needs a query id. Reject id-less calls with actionable
+        # feedback instead of forwarding empty args (which the server rejects and
+        # the LLM would otherwise retry in a loop).
+        if tool_name == "ciq_execute" and not args.get("id"):
+            return (
+                'ciq_execute requires a query "id" (e.g. get-self, get-stock-quote, '
+                "get-internal-documents, get-decisions) and its input_params. "
+                "Retry with a concrete id, or call list_resources to discover valid ids."
+            )
         _logger.info(
             "MCP RPC request: %s",
             json.dumps(
@@ -996,7 +1019,7 @@ async def _run_llm_loop(llm: Any, tools: list[StructuredTool], prompt: str) -> s
 
 async def _emit_working(context: RequestContext, event_queue: EventQueue) -> None:
     """Emit the initial task + working status events for a new request."""
-    task = context.current_task or new_task(context.message)
+    task = context.current_task or new_task_from_user_message(context.message)
     await event_queue.enqueue_event(task)
     await event_queue.enqueue_event(
         TaskStatusUpdateEvent(
@@ -1004,7 +1027,7 @@ async def _emit_working(context: RequestContext, event_queue: EventQueue) -> Non
             context_id=context.context_id,
             status=TaskStatus(
                 state=TaskState.TASK_STATE_WORKING,
-                message=new_agent_text_message("Retrieving data..."),
+                message=new_text_message("Retrieving data..."),
             ),
         ),
     )

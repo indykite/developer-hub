@@ -16,7 +16,7 @@ http:
     type: json
     data: |-
       {
-          "id": "get-decision",
+          "id": "get-decisions",
           "input_params": {
              "document_external_id": "refund_policy"
           }

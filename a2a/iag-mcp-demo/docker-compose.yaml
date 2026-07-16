@@ -29,7 +29,7 @@ services:
       CHATBOT_PORT: ${CHATBOT_PORT}
       ORCHESTRATOR_HOST: ${IAG_ORCHESTRATOR_HOST}
       ORCHESTRATOR_PORT: ${IAG_ORCHESTRATOR_PORT}
-      ID_SERVER_BASE_URL: https://idsvr.indykite.one/oauth/v2/
+      ID_SERVER_BASE_URL: ${IDP_BASE_URL:-https://idsvr.indykite.one/oauth/v2/}
       ID_SERVER_TOKEN_ENDPOINT: oauth-token
       ID_SERVER_AUTHORIZE_ENDPOINT: oauth-authorize
       ID_SERVER_CLIENT_ID: ${CHATBOT_IDP_CLIENT_ID}
@@ -175,7 +175,7 @@ services:
       JARVIS_PROTECTED_AGENT_BASE_URL: http://${ANALYST_HOST}:${ANALYST_PORT}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${ANALYST_IDP_CLIENT_ID}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${ANALYST_IDP_CLIENT_SECRET}
-      # The analyst runs its own workflow (wf3: alice -> analyst -> mcp), not the
+      # The analyst runs its own workflow (wf3: millicent -> analyst -> mcp), not the
       # base ${WORKFLOW_ID} (wf1). allowed_workflow_id is a single value per gateway.
       JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${ANALYST_WORKFLOW_ID}
     volumes:
@@ -218,6 +218,10 @@ services:
     extends:
       service: iag-base
       file: iag-base-docker.yaml
+    # MCP proxy mode requires a newer gateway than the base 2.0.1 image: the
+    # published 2.0.1 ignores JARVIS_PROTECTED_AGENT_PROTOCOL and serves A2A
+    # JSON-RPC, 404-ing every MCP method after the auth pipeline passes.
+    image: indykite/agent-gateway:2.21.1
     ports:
       - "${IAG_MCP_PORT}:${IAG_MCP_PORT}"
     networks:
@@ -265,6 +269,60 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+  #  Google Drive MCP proof-of-concept (compose profile "drive"):
+  #  the reference stdio Drive MCP server wrapped by supergateway into
+  #  Streamable HTTP, protected by its own IAG in MCP proxy mode.
+  #  The Drive server holds its OWN Google credentials (mounted below); the
+  #  gateway strips the caller's Authorization and injects its IdP delegation
+  #  token, which this downstream ignores. Start with:
+  #    docker compose --profile drive up
+  drive-mcp-iag:
+    extends:
+      service: iag-base
+      file: iag-base-docker.yaml
+    # MCP proxy mode needs >= 2.21.x (see mcp-iag note).
+    image: indykite/agent-gateway:2.21.1
+    profiles: ["drive"]
+    # Defaults on every ${DRIVE_*} var keep `docker compose up` working with a
+    # .env predating this PoC - compose validates these specs even when the
+    # profile is disabled.
+    ports:
+      - "${IAG_DRIVE_MCP_PORT:-8887}:${IAG_DRIVE_MCP_PORT:-8887}"
+    networks:
+      - drive-mcp-iag-network
+    environment:
+      K_SERVICE: drive-mcp-iag
+      JARVIS_SERVICE_NAME: drive-mcp-iag
+      JARVIS_SERVICE_PORT: ${IAG_DRIVE_MCP_PORT:-8887}
+      # MCP proxy mode, same as mcp-iag.
+      JARVIS_PROTECTED_AGENT_PROTOCOL: mcp
+      JARVIS_PROTECTED_AGENT_BASE_URL: http://${DRIVE_MCP_HOST:-drive-mcp}:${DRIVE_MCP_PORT:-8000}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${DRIVE_MCP_IDP_CLIENT_ID:-indykiteagent-drive}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${DRIVE_MCP_IDP_CLIENT_SECRET:-}
+      # The drive workflow (millicent -> drive) is separate from the base wf1.
+      JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${DRIVE_WORKFLOW_ID:-wf-drive}
+    volumes:
+      - ./audit-config.yaml:/app/.configs/audit-config.yaml
+    command: ["--config=/app/.configs/audit-config.yaml"]
+
+  drive-mcp:
+    image: drive-mcp:latest
+    #    build:
+    #      context: .
+    #      dockerfile: ./drive_mcp/Dockerfile
+    profiles: ["drive"]
+    ports:
+      - "${DRIVE_MCP_PORT:-8000}:8000"
+    networks:
+      - drive-mcp-iag-network
+    environment:
+      # Paths to the mounted Google OAuth material (values are paths, not secrets).
+      GDRIVE_OAUTH_PATH: /gdrive/gcp-oauth.keys.json
+      GDRIVE_CREDENTIALS_PATH: /gdrive/.gdrive-server-credentials.json
+    volumes:
+      # Google OAuth material - see drive_mcp/README.md for the auth bootstrap.
+      - ./drive_mcp/.gdrive:/gdrive:ro
+
 networks:
   console-network:
     driver: bridge
@@ -277,6 +335,8 @@ networks:
   analyst-iag-network:
     driver: bridge
   mcp-iag-network:
+    driver: bridge
+  drive-mcp-iag-network:
     driver: bridge
 
 volumes:

@@ -1,4 +1,4 @@
-"""Orchestrator agent - A2A-compliant agent (a2a-sdk>=1.0.0a0) that receives and relays messages to the retriever."""
+"""Orchestrator agent - A2A-compliant agent (a2a-sdk>=1.1.0) that receives and relays messages to the retriever."""
 
 import asyncio
 import logging
@@ -14,6 +14,7 @@ import httpx
 import uvicorn
 import yaml
 from a2a.client import A2ACardResolver, ClientConfig, ClientFactory
+from a2a.helpers.proto_helpers import new_task_from_user_message, new_text_artifact, new_text_message
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
 from a2a.server.request_handlers import DefaultRequestHandler
@@ -24,17 +25,16 @@ from a2a.types import (
     AgentCard,
     AgentInterface,
     AgentSkill,
+    GetTaskRequest,
     Message,
     Part,
     Role,
     SendMessageRequest,
-    Task,
     TaskArtifactUpdateEvent,
     TaskState,
     TaskStatus,
     TaskStatusUpdateEvent,
 )
-from a2a.utils import new_agent_text_message, new_task, new_text_artifact
 from a2a.utils.constants import DEFAULT_RPC_URL
 from dotenv import load_dotenv
 from langchain_community.tools import DuckDuckGoSearchRun
@@ -294,7 +294,7 @@ async def _call_weather(text: str) -> str:
     return await _call_agent(WEATHER_URL, text, _current_access_token.get())
 
 
-async def _call_agent_a2a(base_url: str, text: str, token: str) -> str:  # noqa: C901,PLR0912,PLR0915
+async def _call_agent_a2a(base_url: str, text: str, token: str) -> str:  # noqa: C901, PLR0912
     """Send *text* to a downstream A2A agent using card resolution and the SDK client."""
     headers: dict[str, str] = {}
     if token:
@@ -323,65 +323,42 @@ async def _call_agent_a2a(base_url: str, text: str, token: str) -> str:  # noqa:
         request = SendMessageRequest(message=message)
 
         task_id: str | None = None
+        artifact_text = ""
         event_count = 0
 
+        # a2a-sdk 1.1.0: send_message yields proto StreamResponse objects, each a
+        # oneof payload of {task, message, status_update, artifact_update}. A
+        # direct `message` reply is returned immediately; otherwise we track the
+        # task id and accumulate any artifact text, then fetch the final task.
         async for event in client.send_message(request):
-            _logger.debug("send_message event type: %s", type(event).__name__)
+            event_count += 1
+            which = event.WhichOneof("payload")
+            _logger.debug("send_message event payload: %s", which)
 
-            # SDK yields (Task, Task) tuples
-            if isinstance(event, tuple):
-                # event[0] is a wrapper with a .task field; event[1] is the Task directly
-                task_obj = getattr(event[0], "task", None) or event[1]
-                if task_id is None:
-                    task_id = task_obj.id
-                    _logger.info("A2A agent task submitted: %s", task_id)
-                state = task_obj.status.state if task_obj.status else None
-                if state in (
-                    TaskState.TASK_STATE_COMPLETED,
-                    TaskState.TASK_STATE_FAILED,
-                    TaskState.TASK_STATE_REJECTED,
-                    TaskState.TASK_STATE_CANCELED,
-                ):
-                    extracted = _extract_text_from_task(task_obj)
-                    if extracted:
-                        return extracted
-                    break
-
-            elif hasattr(event, "result"):
-                inner = event.result
-                if isinstance(inner, Message):
-                    return _extract_text_from_task(inner)
-                task_obj = inner if isinstance(inner, Task) else getattr(inner, "task", None)
-                if task_obj is None:
-                    continue
-                if task_id is None:
-                    task_id = task_obj.id
-                state = task_obj.status.state if task_obj.status else None
-                if state in (
-                    TaskState.TASK_STATE_COMPLETED,
-                    TaskState.TASK_STATE_FAILED,
-                    TaskState.TASK_STATE_REJECTED,
-                    TaskState.TASK_STATE_CANCELED,
-                ):
-                    break
-
-            elif isinstance(event, Task):
-                if task_id is None:
-                    task_id = event.id
-                state = event.status.state if event.status else None
-                if state in (
-                    TaskState.TASK_STATE_COMPLETED,
-                    TaskState.TASK_STATE_FAILED,
-                    TaskState.TASK_STATE_REJECTED,
-                    TaskState.TASK_STATE_CANCELED,
-                ):
-                    break
+            if which == "message":
+                extracted = _extract_text_from_task(event.message)
+                if extracted:
+                    return extracted
+            elif which == "task":
+                task_id = event.task.id or task_id
+                extracted = _extract_text_from_task(event.task)
+                if extracted:
+                    artifact_text = extracted
+            elif which == "artifact_update":
+                for part in event.artifact_update.artifact.parts:
+                    if part.text:
+                        artifact_text += part.text
+            elif which == "status_update":
+                task_id = event.status_update.task_id or task_id
 
         _logger.info("Event loop done. event_count=%d task_id=%s", event_count, task_id)
 
+        if artifact_text:
+            return artifact_text
+
         if task_id:
             try:
-                task = await client.get_task(task_id)
+                task = await client.get_task(GetTaskRequest(id=task_id))
                 _logger.info("Fetched task %s — artifacts: %r", task_id, getattr(task, "artifacts", None))
                 extracted = _extract_text_from_task(task)
                 _logger.info("Extracted text (len=%d): %s", len(extracted), extracted[:200])
@@ -690,7 +667,7 @@ class OrchestratorExecutor(AgentExecutor):
         prompt = raw_text or "(empty)"
 
         # Establish task lifecycle via direct event enqueuing (SDK 1.0 pattern)
-        task = context.current_task or new_task(context.message)
+        task = context.current_task or new_task_from_user_message(context.message)
         await event_queue.enqueue_event(task)
 
         await event_queue.enqueue_event(
@@ -699,7 +676,7 @@ class OrchestratorExecutor(AgentExecutor):
                 context_id=context.context_id,
                 status=TaskStatus(
                     state=TaskState.TASK_STATE_WORKING,
-                    message=new_agent_text_message("Processing request..."),
+                    message=new_text_message("Processing request..."),
                 ),
             ),
         )
