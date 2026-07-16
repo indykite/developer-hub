@@ -12,19 +12,19 @@ docs: |-
   Multi-Agent MCP" (ENG-8855), adapted to this demo stack.
 
   Three users/agents reach the same MCP gateway (mcp-iag) concurrently:
-  alice + carol both via the shared retriever agent (two users, one agent)
-  and alice via the analyst agent. The MCP requests are interleaved
+  millicent + carol both via the shared retriever agent (two users, one agent)
+  and millicent via the analyst agent. The MCP requests are interleaved
   round-robin (init A/B/C, initialized A/B/C, list A/B/C, ...) so all three
   sessions stay live at once and the gateway juggles them together - a
   stronger isolation check than draining one session before the next. All
   three session ids must be distinct. The MCP subject is bound to the bearer
   token, so authorization reflects each user even on the shared retriever:
-  alice CAN_TRIGGER wf3 (allow), carol cannot (deny).
+  millicent CAN_TRIGGER wf3 (allow), carol cannot (deny).
 
   Differences from the e2e original:
   - Tokens come from the real IdP (idsvr.indykite.one), not the
     super-octo-waffle mock: log in to the chatbot (http://localhost:3000) as
-    each user and copy the access token into the user_token_alice /
+    each user and copy the access token into the user_token_millicent /
     user_token_carol secret environment variables.
   - The demo agents are real A2A agents without a test inbox, so there is no
     delegated-token capture step; the gateway calls (seq 1-3) exercise the

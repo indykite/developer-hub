@@ -1,8 +1,8 @@
 ---
 info:
-  name: Alice (retriever) MCP List Tools
+  name: Millicent (retriever) MCP Initialize
   type: http
-  seq: 10
+  seq: 4
 
 http:
   method: POST
@@ -12,20 +12,25 @@ http:
       value: application/json, text/event-stream
     - name: Content-Type
       value: application/json
-    - name: Mcp-Session-Id
-      value: "{{wf4_alice_retriever_session_id}}"
   body:
     type: json
     data: |-
       {
         "jsonrpc": "2.0",
-        "id": 2,
-        "method": "tools/list",
-        "params": {}
+        "id": 1,
+        "method": "initialize",
+        "params": {
+          "protocolVersion": "2025-03-26",
+          "capabilities": {},
+          "clientInfo": {
+            "name": "bruno-iag-wf4-millicent-retriever",
+            "version": "1.0"
+          }
+        }
       }
   auth:
     type: bearer
-    token: "{{user_token_alice}}"
+    token: "{{user_token_millicent}}"
 
 runtime:
   scripts:
@@ -48,14 +53,21 @@ runtime:
           expect(res.status).to.equal(200);
         });
 
-        test("Response has a tools array with authzen_evaluate and ciq_execute", function () {
+        test("Response contains server info", function () {
           expect(jsonData).to.not.be.null;
-          expect(jsonData.result).to.have.property("tools");
-          expect(jsonData.result.tools).to.be.an("array");
-          var names = jsonData.result.tools.map(function (t) { return t.name; });
-          expect(names).to.include("authzen_evaluate");
-          expect(names).to.include("ciq_execute");
+          expect(jsonData.result).to.have.property("serverInfo");
         });
+
+        var sessionId = res.headers["mcp-session-id"];
+
+        test("Session ID header is present", function () {
+          expect(sessionId).to.be.a("string");
+          expect(sessionId).to.not.be.empty;
+        });
+
+        if (sessionId) {
+          bru.setVar("wf4_millicent_retriever_session_id", sessionId);
+        }
 
 settings:
   encodeUrl: true

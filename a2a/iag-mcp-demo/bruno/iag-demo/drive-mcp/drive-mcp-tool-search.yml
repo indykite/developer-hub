@@ -1,19 +1,19 @@
 ---
 info:
-  name: Alice (analyst) MCP Tool AuthZEN Evaluate
+  name: Drive MCP Tool Search
   type: http
-  seq: 15
+  seq: 4
 
 http:
   method: POST
-  url: "{{iag_mcp_url}}"
+  url: "{{iag_drive_mcp_url}}"
   headers:
     - name: Accept
       value: application/json, text/event-stream
     - name: Content-Type
       value: application/json
     - name: Mcp-Session-Id
-      value: "{{wf4_alice_analyst_session_id}}"
+      value: "{{drive_mcp_session_id}}"
   body:
     type: json
     data: |-
@@ -22,27 +22,21 @@ http:
         "id": 3,
         "method": "tools/call",
         "params": {
-          "name": "authzen_evaluate",
+          "name": "search",
           "arguments": {
-            "subject_type": "User",
-            "subject_id": "alice",
-            "resource_type": "Workflow",
-            "resource_id": "wf1",
-            "action_name": "CAN_TRIGGER"
+            "query": "canbank"
           }
         }
       }
   auth:
     type: bearer
-    token: "{{user_token_alice}}"
+    token: "{{user_token_millicent}}"
 
 runtime:
   scripts:
     - type: after-response
       code: |
         var rawBody = res.body;
-
-        // SSE stream - parse the JSON from the event data
         var jsonData;
         if (typeof rawBody === "string" && rawBody.includes("event:")) {
           var dataMatch = rawBody.match(/data:\s*({.*})/s);
@@ -57,19 +51,11 @@ runtime:
           expect(res.status).to.equal(200);
         });
 
-        test("Response has a result with content", function () {
+        test("Drive search returns a result with content", function () {
           expect(jsonData).to.not.be.null;
           expect(jsonData).to.have.property("result");
           expect(jsonData.result).to.have.property("content");
           expect(jsonData.result.content).to.be.an("array");
-          expect(jsonData.result.content.length).to.be.greaterThan(0);
-        });
-
-        // Subject is bound to the bearer token, not the payload subject_id.
-        test("AuthZEN evaluation returns decision=true (alice CAN_TRIGGER wf1)", function () {
-          var toolResult = jsonData.result.content[0].text;
-          var parsed = JSON.parse(toolResult);
-          expect(parsed.decision).to.be.true;
         });
 
 settings:

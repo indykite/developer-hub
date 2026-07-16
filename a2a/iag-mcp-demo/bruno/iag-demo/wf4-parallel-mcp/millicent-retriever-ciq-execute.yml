@@ -1,8 +1,8 @@
 ---
 info:
-  name: Alice (retriever) MCP Tool AuthZEN Evaluate
+  name: Millicent (retriever) MCP Tool CIQ Execute
   type: http
-  seq: 13
+  seq: 16
 
 http:
   method: POST
@@ -13,28 +13,27 @@ http:
     - name: Content-Type
       value: application/json
     - name: Mcp-Session-Id
-      value: "{{wf4_alice_retriever_session_id}}"
+      value: "{{wf4_millicent_retriever_session_id}}"
   body:
     type: json
     data: |-
       {
         "jsonrpc": "2.0",
-        "id": 3,
+        "id": 4,
         "method": "tools/call",
         "params": {
-          "name": "authzen_evaluate",
+          "name": "ciq_execute",
           "arguments": {
-            "subject_type": "User",
-            "subject_id": "alice",
-            "resource_type": "Workflow",
-            "resource_id": "wf3",
-            "action_name": "CAN_TRIGGER"
+            "id": "{{get_stock_quote_query}}",
+            "input_params": {
+              "ticker": "NVDA"
+            }
           }
         }
       }
   auth:
     type: bearer
-    token: "{{user_token_alice}}"
+    token: "{{user_token_millicent}}"
 
 runtime:
   scripts:
@@ -65,11 +64,12 @@ runtime:
           expect(jsonData.result.content.length).to.be.greaterThan(0);
         });
 
-        // Subject is bound to the bearer token, not the payload subject_id.
-        test("AuthZEN evaluation returns decision=true (alice CAN_TRIGGER wf3)", function () {
+        test("CIQ execution returns data", function () {
           var toolResult = jsonData.result.content[0].text;
           var parsed = JSON.parse(toolResult);
-          expect(parsed.decision).to.be.true;
+          expect(parsed).to.have.property("data");
+          expect(parsed.data).to.be.an("array");
+          expect(parsed.data.length).to.be.greaterThan(0);
         });
 
 settings:

@@ -4,9 +4,9 @@ An A2A-compliant analyst agent modeled on the retriever agent: it receives
 incoming messages, drives an LLM tool-calling loop, and uses the IndyKite MCP
 server (through the MCP-protecting IAG) for data retrieval and analysis.
 Unlike the retriever, it is not called by the orchestrator — users (e.g.
-alice) call its gateway directly, which is what the WF4 "parallel multi-agent
+millicent) call its gateway directly, which is what the WF4 "parallel multi-agent
 MCP" flow demonstrates: two agents (retriever + analyst) and two users
-(alice + carol) holding concurrent MCP sessions through the same MCP gateway.
+(millicent + carol) holding concurrent MCP sessions through the same MCP gateway.
 
 ## Configuration
 
@@ -24,7 +24,7 @@ The agent extracts the Bearer token forwarded by its protecting gateway (`analys
 ## Graph model
 
 In the IndyKite Knowledge Graph the analyst is the `indykiteagent-4` Agent node, invoked by workflow `wf3`:
-`alice -CAN_TRIGGER-> wf3 -INVOKES-> indykiteagent-4 -INVOKES-> indykiteagent-mcp` (edges carry `workflow_name: wf3`; the shared edge into the MCP agent also carries `discriminating_property: workflow_name`).
+`millicent -CAN_TRIGGER-> wf3 -INVOKES-> indykiteagent-4 -INVOKES-> indykiteagent-mcp` (edges carry `workflow_name: wf3`; the shared edge into the MCP agent also carries `discriminating_property: workflow_name`).
 
 ## Run
 

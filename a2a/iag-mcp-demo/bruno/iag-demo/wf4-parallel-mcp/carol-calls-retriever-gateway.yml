@@ -21,12 +21,10 @@ http:
         "method": "message/send",
         "params": {
           "message": {
-            "kind": "message",
             "messageId": "wf4-carol-retriever",
-            "role": "user",
+            "role": "ROLE_USER",
             "parts": [
               {
-                "kind": "text",
                 "text": "hello from carol to retriever (WF4)"
               }
             ]

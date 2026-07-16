@@ -1,44 +1,37 @@
 ---
 info:
-  name: Alice (retriever) MCP Initialize
+  name: Drive MCP List Tools
   type: http
-  seq: 4
+  seq: 3
 
 http:
   method: POST
-  url: "{{iag_mcp_url}}"
+  url: "{{iag_drive_mcp_url}}"
   headers:
     - name: Accept
       value: application/json, text/event-stream
     - name: Content-Type
       value: application/json
+    - name: Mcp-Session-Id
+      value: "{{drive_mcp_session_id}}"
   body:
     type: json
     data: |-
       {
         "jsonrpc": "2.0",
-        "id": 1,
-        "method": "initialize",
-        "params": {
-          "protocolVersion": "2025-03-26",
-          "capabilities": {},
-          "clientInfo": {
-            "name": "bruno-iag-wf4-alice-retriever",
-            "version": "1.0"
-          }
-        }
+        "id": 2,
+        "method": "tools/list",
+        "params": {}
       }
   auth:
     type: bearer
-    token: "{{user_token_alice}}"
+    token: "{{user_token_millicent}}"
 
 runtime:
   scripts:
     - type: after-response
       code: |
         var rawBody = res.body;
-
-        // SSE stream - parse the JSON from the event data
         var jsonData;
         if (typeof rawBody === "string" && rawBody.includes("event:")) {
           var dataMatch = rawBody.match(/data:\s*({.*})/s);
@@ -53,21 +46,13 @@ runtime:
           expect(res.status).to.equal(200);
         });
 
-        test("Response contains server info", function () {
+        test("Response lists the Drive server's tools (search)", function () {
           expect(jsonData).to.not.be.null;
-          expect(jsonData.result).to.have.property("serverInfo");
+          expect(jsonData.result).to.have.property("tools");
+          expect(jsonData.result.tools).to.be.an("array");
+          var names = jsonData.result.tools.map(function (t) { return t.name; });
+          expect(names).to.include("search");
         });
-
-        var sessionId = res.headers["mcp-session-id"];
-
-        test("Session ID header is present", function () {
-          expect(sessionId).to.be.a("string");
-          expect(sessionId).to.not.be.empty;
-        });
-
-        if (sessionId) {
-          bru.setVar("wf4_alice_retriever_session_id", sessionId);
-        }
 
 settings:
   encodeUrl: true

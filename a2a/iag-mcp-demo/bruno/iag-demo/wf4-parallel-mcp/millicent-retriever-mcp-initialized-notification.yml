@@ -1,8 +1,8 @@
 ---
 info:
-  name: Alice (analyst) MCP Initialized Notification
+  name: Millicent (retriever) MCP Initialized Notification
   type: http
-  seq: 9
+  seq: 7
 
 http:
   method: POST
@@ -13,7 +13,7 @@ http:
     - name: Content-Type
       value: application/json
     - name: Mcp-Session-Id
-      value: "{{wf4_alice_analyst_session_id}}"
+      value: "{{wf4_millicent_retriever_session_id}}"
   body:
     type: json
     data: |-
@@ -24,7 +24,7 @@ http:
       }
   auth:
     type: bearer
-    token: "{{user_token_alice}}"
+    token: "{{user_token_millicent}}"
 
 runtime:
   scripts:

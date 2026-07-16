@@ -31,3 +31,8 @@ new-weather:
 new-analyst:
 	-@docker rmi analyst-agent
 	@docker build -t analyst-agent ./analyst_agent
+
+# Google Drive MCP PoC (compose profile "drive"); not part of the default build.
+new-drive-mcp:
+	-@docker rmi drive-mcp
+	@docker build -t drive-mcp ./drive_mcp

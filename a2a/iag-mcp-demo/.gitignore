@@ -61,3 +61,8 @@ htmlcov/
 
 # Jupyter
 .ipynb_checkpoints/
+
+# Google Drive MCP PoC - OAuth client keys and saved user credentials
+# (keep the directory itself so the compose bind mount works on fresh clones)
+drive_mcp/.gdrive/*
+!drive_mcp/.gdrive/.gitkeep

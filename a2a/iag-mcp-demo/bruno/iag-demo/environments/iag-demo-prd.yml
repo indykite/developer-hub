@@ -48,7 +48,7 @@ variables:
   # WF4 Parallel Multi-Agent MCP: user access tokens (log in to the chatbot as
   # each user and copy the token, or mint one from the IdP)
   - secret: true
-    name: user_token_alice
+    name: user_token_millicent
   - secret: true
     name: user_token_carol
   # WF4 Parallel Multi-Agent MCP: local compose stack endpoints
@@ -58,3 +58,6 @@ variables:
     value: http://localhost:8885
   - name: iag_mcp_url
     value: http://localhost:8886/mcp/v1/gid:AAAAApo7TvCs_0TQt-WFbP5KxMM
+  # Drive MCP PoC: the IAG forwards the /mcp path to the wrapped Drive server
+  - name: iag_drive_mcp_url
+    value: http://localhost:8887/mcp
