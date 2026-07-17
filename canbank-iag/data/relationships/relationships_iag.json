@@ -243,6 +243,18 @@
     {
       "source": {
         "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf2"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
         "external_id": "trading"
       },
       "target": {
@@ -354,12 +366,33 @@
       },
       "target": {
         "type": "Agent",
+        "external_id": "indykiteagent"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf2"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "indykiteagent"
+      },
+      "target": {
+        "type": "Agent",
         "external_id": "indykiteagent-3"
       },
       "properties": [
         {
           "type": "workflow_name",
           "value": "wf2"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
         }
       ],
       "type": "INVOKES"

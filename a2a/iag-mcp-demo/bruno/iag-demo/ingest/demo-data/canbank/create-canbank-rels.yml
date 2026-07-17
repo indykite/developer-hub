@@ -48,6 +48,9 @@ http:
           { "source": { "type": "Department", "external_id": "support" }, "target": { "type": "Workflow", "external_id": "wf1" }, "type": "INVOKES" },
           { "source": { "type": "Department", "external_id": "trading" }, "target": { "type": "Workflow", "external_id": "wf1" }, "type": "INVOKES" },
 
+          /* Allow Customer Support to invoke wf2 (weather via the orchestrator) */
+          { "source": { "type": "Department", "external_id": "support" }, "target": { "type": "Workflow", "external_id": "wf2" }, "type": "INVOKES" },
+
           /* Add users to departments */
           { "source": { "type": "User", "external_id": "leslie" }, "target": { "type": "Department", "external_id": "support" }, "type": "WORKS_IN" },
           { "source": { "type": "User", "external_id": "flo" }, "target": { "type": "Department", "external_id": "support" }, "type": "WORKS_IN" },

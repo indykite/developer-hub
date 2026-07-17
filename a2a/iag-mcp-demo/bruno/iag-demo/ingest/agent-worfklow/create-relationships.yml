@@ -365,6 +365,27 @@ http:
           {
             "source": {
               "type": "Agent",
+              "external_id": "indykiteagent"
+            },
+            "target": {
+              "type": "Agent",
+              "external_id": "indykiteagent-3"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf1"
+              },
+              {
+                "type": "discriminating_property",
+                "value": "workflow_name"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Agent",
               "external_id": "indykiteagent-2"
             },
             "target": {
@@ -390,12 +411,33 @@ http:
             },
             "target": {
               "type": "Agent",
+              "external_id": "indykiteagent"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf2"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Agent",
+              "external_id": "indykiteagent"
+            },
+            "target": {
+              "type": "Agent",
               "external_id": "indykiteagent-3"
             },
             "properties": [
               {
                 "type": "workflow_name",
                 "value": "wf2"
+              },
+              {
+                "type": "discriminating_property",
+                "value": "workflow_name"
               }
             ],
             "type": "INVOKES"
