@@ -3,10 +3,11 @@ version: '3.9'
 
 services:
   iag-base:
-    # Pinned: 2.0.1 is the first agent-gateway release that supports MCP proxying
-    # (JARVIS_PROTECTED_AGENT_PROTOCOL: mcp), required by the mcp-iag service.
-    # See https://hub.docker.com/r/indykite/agent-gateway/tags for newer tags.
-    image: indykite/agent-gateway:2.0.1
+    # Pinned: 2.21.1 implements MCP proxying (JARVIS_PROTECTED_AGENT_PROTOCOL: mcp),
+    # required by the mcp-iag and drive-mcp-iag services. (The published 2.0.x
+    # tags ignore the protocol and 404 every MCP method.) All gateways share
+    # this tag. See https://hub.docker.com/r/indykite/agent-gateway/tags.
+    image: indykite/agent-gateway:2.21.1
     environment:
       JARVIS_SERVICE_LOG_LEVEL: debug
       JARVIS_SERVICE_ENVIRONMENT: demo

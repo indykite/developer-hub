@@ -19,7 +19,7 @@ import os  # noqa: E402
 import re  # noqa: E402
 import time  # noqa: E402
 import uuid  # noqa: E402
-from contextlib import asynccontextmanager  # noqa: E402
+from contextlib import asynccontextmanager, suppress  # noqa: E402
 from pathlib import Path  # noqa: E402
 from typing import Any  # noqa: E402
 
@@ -128,6 +128,10 @@ async def _patched_handle_post_request(self, ctx):
                 )
             return
 
+        if response.status_code >= 400:  # noqa: PLR2004
+            # best-effort: buffer error body so it survives stream close
+            with suppress(Exception):
+                await response.aread()
         response.raise_for_status()
         if is_initialization:
             self._maybe_extract_session_id_from_response(response)  # skipcq: PYL-W0212
@@ -450,7 +454,9 @@ def _format_mcp_error(exc: BaseException) -> str:
         response, request = _extract_httpx_error(exc)
         if request and hasattr(request, "headers") and request.headers:
             try:
-                req_hdr = "; ".join(f"{k}: {v}" for k, v in request.headers.items())
+                req_hdr = "; ".join(
+                    f"{k}: {'<redacted>' if k.lower() == 'authorization' else v}" for k, v in request.headers.items()
+                )
                 parts.append(f"Request headers: {req_hdr}")
             except Exception:  # nosec B110 - optional debug info, never fatal  # noqa: S110
                 pass
@@ -463,8 +469,12 @@ def _format_mcp_error(exc: BaseException) -> str:
                     parts.append(f"Response headers: {hdr_str}")
                 except Exception:  # nosec B110 - optional debug info, never fatal  # noqa: S110
                     pass
-            if hasattr(response, "text") and response.text:
-                parts.append(f"Response: {response.text[:500]}")
+            try:
+                body = getattr(response, "text", "")
+            except Exception:  # nosec B110 - streaming body not read; status+headers still useful
+                body = ""
+            if body:
+                parts.append(f"Response: {body[:500]}")
         return " ".join(parts)
     except Exception:
         return f"MCP error: {exc!s}"

@@ -155,6 +155,9 @@ services:
       JARVIS_PROTECTED_AGENT_BASE_URL: http://${WEATHER_HOST}:${WEATHER_PORT}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${WEATHER_IDP_CLIENT_ID}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${WEATHER_IDP_CLIENT_SECRET}
+      # The weather agent runs wf2 (weather -> mcp), not the base ${WORKFLOW_ID}
+      # (wf1). allowed_workflow_id is a single value per gateway.
+      JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${WEATHER_WORKFLOW_ID}
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]
@@ -218,10 +221,6 @@ services:
     extends:
       service: iag-base
       file: iag-base-docker.yaml
-    # MCP proxy mode requires a newer gateway than the base 2.0.1 image: the
-    # published 2.0.1 ignores JARVIS_PROTECTED_AGENT_PROTOCOL and serves A2A
-    # JSON-RPC, 404-ing every MCP method after the auth pipeline passes.
-    image: indykite/agent-gateway:2.21.1
     ports:
       - "${IAG_MCP_PORT}:${IAG_MCP_PORT}"
     networks:
@@ -280,8 +279,6 @@ services:
     extends:
       service: iag-base
       file: iag-base-docker.yaml
-    # MCP proxy mode needs >= 2.21.x (see mcp-iag note).
-    image: indykite/agent-gateway:2.21.1
     profiles: ["drive"]
     # Defaults on every ${DRIVE_*} var keep `docker compose up` working with a
     # .env predating this PoC - compose validates these specs even when the
