@@ -89,7 +89,7 @@ services (`chatbot`, `orchestrator_agent`, `retriever_agent`, `weather_agent`,
     [`bruno/iag-demo/ingest/{canbank,customers,customer-docs}`](bruno/iag-demo/ingest),
     or canbank-iag's Capture forms),
     - the agent-workflow graph ingested (Bruno:
-    [`bruno/iag-demo/ingest/agent-worfklow`](bruno/iag-demo/ingest/agent-worfklow)):
+    [`bruno/iag-demo/ingest/agent-workflow`](bruno/iag-demo/ingest/agent-workflow)):
     `User`s, `Workflow`s `wf1`/`wf2`/`wf3` and the `Agent` chains. The
     `INVOKES` edges between workflows and agents carry a `workflow_name`
     property (and `discriminating_property: workflow_name` on edges into the

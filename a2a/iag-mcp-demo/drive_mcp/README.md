@@ -59,7 +59,7 @@ not per-tool.
 3. Create an `indykiteagent-drive` IdP client and set
    `DRIVE_MCP_IDP_CLIENT_ID` / `_SECRET` in `.env`.
 4. Re-run the agent-workflow ingest
-   (`bruno/iag-demo/ingest/agent-worfklow`): it adds the `wf-drive` Workflow,
+   (`bruno/iag-demo/ingest/agent-workflow`): it adds the `wf-drive` Workflow,
    the `indykiteagent-drive` Agent, the
    `wf-drive -INVOKES-> indykiteagent-drive` edge (`workflow_name: wf-drive`)
    and `millicent -CAN_TRIGGER-> wf-drive`. Only millicent is granted — other users

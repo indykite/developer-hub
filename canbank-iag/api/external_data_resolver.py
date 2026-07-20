@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 
 import requests
+from api import _dataset
 from flask import render_template, request
 from flask_openapi3 import APIBlueprint, Tag
 from pydantic import BaseModel, Field
@@ -67,92 +68,14 @@ api_external_data_resolver = APIBlueprint(
 )
 
 
-# Resolver 1: Weather — fetches the current weather block from open-meteo for the
-# latitude/longitude passed via the knowledge query's input_params, defaulting to
-# CanBank's London headquarters when no input_params are provided. Returns the whole
-# `.current` object so consumers can read temperature_2m, apparent_temperature,
-# wind_speed_10m, weather_code and time in one call.
-# Same public endpoint as the iag-demo weather_agent.
-#
-# Substitution syntax {$var || default} is enforced by pkg/extdataref/payload/url.go;
-# variables come from input_params only — sibling node properties are not consulted.
-RESOLVER_WEATHER = {
-    "slot": "1",
-    "name": "weather",
-    "display_name": "Current Weather",
-    "description": (
-        "Fetches the current weather block (temperature, apparent temperature, wind "
-        "speed and weather code) for the latitude/longitude passed via input_params. "
-        "Defaults to CanBank's London HQ (51.5072, -0.1276) when input_params are "
-        "absent. Use this as the `external_value` on a Weather node property. Pair "
-        "with the `weather-units` resolver to also retrieve the unit labels."
-    ),
-    "url": (
-        "https://api.open-meteo.com/v1/forecast"
-        "?latitude={$latitude || 51.5072}&longitude={$longitude || -0.1276}"
-        "&current=temperature_2m,apparent_temperature,wind_speed_10m,weather_code"
-        "&timezone=auto"
-    ),
-    "method": "GET",
-    "headers": {},
-    "request_payload": "",
-    "request_content_type": "JSON",
-    "response_content_type": "JSON",
-    "response_selector": ".current",
-}
-
-
-# Resolver 2: Weather Units — returns the unit labels for the same weather call.
-RESOLVER_WEATHER_UNITS = {
-    "slot": "2",
-    "name": "weather-units",
-    "display_name": "Current Weather Units",
-    "description": (
-        "Fetches the unit labels (e.g. °C, km/h) for the current weather block at the "
-        "latitude/longitude passed via input_params (defaults to London HQ)."
-    ),
-    "url": (
-        "https://api.open-meteo.com/v1/forecast"
-        "?latitude={$latitude || 51.5072}&longitude={$longitude || -0.1276}"
-        "&current=temperature_2m,apparent_temperature,wind_speed_10m,weather_code"
-        "&timezone=auto"
-    ),
-    "method": "GET",
-    "headers": {},
-    "request_payload": "",
-    "request_content_type": "JSON",
-    "response_content_type": "JSON",
-    "response_selector": ".current_units",
-}
-
-
-# Resolver 3: Stock Quote — fetches the current price for a ticker symbol from Yahoo
-# Finance's public chart endpoint. The ticker is supplied via the query's input_params
-# (`{"id": "get-stock-quote", "input_params": {"ticker": "NVDA"}}`) and substituted
-# into the URL. Bound to the `price` property on the `stock_quote` Quote node, which
-# is what the iag-demo retriever_agent reads through CIQ_QUERY_STOCK_PRICE.
-RESOLVER_STOCK_QUOTE = {
-    "slot": "3",
-    "name": "stock-quote",
-    "display_name": "Stock Quote",
-    "description": (
-        "Returns the current market price for the ticker symbol passed via the "
-        "knowledge query's `ticker` input parameter. Bound to the price property of "
-        "the stock_quote Quote node and consumed by the iag-demo retriever_agent's "
-        "max-purchase-amount tool. Backed by Yahoo Finance's public chart endpoint; "
-        "no API key required."
-    ),
-    "url": "https://query1.finance.yahoo.com/v8/finance/chart/{$ticker}?interval=1d",
-    "method": "GET",
-    "headers": {},
-    "request_payload": "",
-    "request_content_type": "JSON",
-    "response_content_type": "JSON",
-    "response_selector": ".chart.result[0].meta.regularMarketPrice",
-}
-
-
-_RESOLVER_DEFS = [RESOLVER_WEATHER, RESOLVER_WEATHER_UNITS, RESOLVER_STOCK_QUOTE]
+# The external data resolver definitions (weather, weather-units, stock-quote)
+# now live in the dataset manifest: data/<DATASET>/manifest.json, loaded via
+# api/_dataset.py. They were migrated out of this module during the
+# config-as-data scaffold. provision.py still imports _RESOLVER_DEFS from here,
+# so the name and shape are preserved (a list of resolver dicts with slot, name,
+# display_name, description, url, method, headers{dict}, request_payload,
+# request_content_type, response_content_type, response_selector).
+_RESOLVER_DEFS = _dataset.RESOLVERS
 
 
 def _build_default(spec: dict) -> dict:

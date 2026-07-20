@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 
 import requests
+from api import _dataset
 from flask import render_template, request
 from flask_openapi3 import APIBlueprint, Tag
 from pydantic import BaseModel, Field
@@ -124,13 +125,16 @@ api_project = APIBlueprint(
 @api_project.get("/create", tags=[tag])
 def show_create_form():
     """Display the project creation form with default values."""
+    # Project form defaults now live in the dataset manifest (api/_dataset.py);
+    # organization_id is filled from env. db_connection is copied so the rendered
+    # form never shares the manifest's dict.
     default_data = {
-        "db_connection": {"name": "", "password": "", "url": "", "username": ""},  # nosec B105
-        "description": "Banking demo project for IndyKite KBAC and ContX IQ",
-        "display_name": "Banking Demo",
-        "name": "banking-demo",
+        "db_connection": dict(_dataset.PROJECT.get("db_connection", {})),
+        "description": _dataset.PROJECT.get("description", ""),
+        "display_name": _dataset.PROJECT.get("display_name", ""),
+        "name": _dataset.PROJECT.get("name", ""),
         "organization_id": os.getenv("ORGANIZATION_ID", ""),
-        "region": "europe-west1",
+        "region": _dataset.PROJECT.get("region", "europe-west1"),
     }
     return render_template("project/create_form.html", default_data=default_data)
 

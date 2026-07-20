@@ -8,8 +8,8 @@ one app provisions everything the
 
 Differences from `canbank`:
 
-- **Data** (`data/nodes/nodes_iag.json`, `data/relationships/relationships_iag.json`)
-  is the union of the Bruno `ingest` folders (`agent-worfklow` +
+- **Data** (`data/iag/nodes.json`, `data/iag/relationships.json`)
+  is the union of the Bruno `ingest` folders (`agent-workflow` +
   `demo-data/{canbank,customers,customer-docs}`): the CanBank organization
   plus the agent-workflow graph — users (`millicent`, `carol`, `joe`, …),
   workflows `wf1`–`wf3` and the `indykiteagent*` agent chains ending at
@@ -59,6 +59,28 @@ create .env file with the variables:
     SA_TOKEN: SA credentials token obtained on https://eu.hub.indykite.com/service-accounts (or https://us.hub.indykite.com/service-accounts)
     URL_ENDPOINTS: https://eu.api.indykite.com (or https://us.api.indykite.com)
     ORGANIZATION_ID: ID attribute available in Organization > Settings
+    DATASET: which data/<DATASET>/ folder to provision from (optional; defaults to "iag")
+
+## Datasets
+
+All of this app's configuration and graph data live under `data/<dataset>/`, one
+self-contained folder per dataset:
+
+    data/
+      iag/                  # the default dataset (DATASET=iag)
+        manifest.json       # all Config-API elements: project, application,
+                            # app_agent, mcp_server, token_introspect, kbac,
+                            # resolvers, ciq_policies, ciq_queries
+        nodes.json          # graph nodes
+        relationships.json  # graph relationships
+
+The `api/*.py` modules read their form defaults from the active dataset's
+`manifest.json` via `api/_dataset.py` (they hold no hardcoded config). Select the
+dataset with the `DATASET` env var — in `.env` or as a real env var — defaulting
+to `iag` when unset. To add another dataset, drop in a new `data/<name>/` folder
+with the same three files and set `DATASET=<name>`; no code change is needed
+(`api/_dataset.py:available_datasets()` auto-discovers any folder containing a
+`manifest.json`).
 
 ## Install and run
 

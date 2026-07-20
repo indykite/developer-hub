@@ -2,9 +2,9 @@ import concurrent.futures
 import json
 import logging
 import os
-from pathlib import Path
 
 import requests
+from api import _dataset
 from flask import render_template, request
 from flask_openapi3 import APIBlueprint, Tag
 from pydantic import BaseModel, Field
@@ -30,7 +30,8 @@ api_capture = APIBlueprint(
     doc_ui=True,
 )
 
-NODES_FILE = Path(__file__).parent.parent / "data" / "nodes" / "nodes_iag.json"
+# Graph node data for the active dataset (data/<DATASET>/nodes.json).
+NODES_FILE = _dataset.NODES_PATH
 
 
 def _load_default_nodes():
@@ -38,7 +39,7 @@ def _load_default_nodes():
         with NODES_FILE.open() as f:
             return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError) as e:
-        logger.warning("Could not load nodes_iag.json: %s", e)
+        logger.warning("Could not load %s: %s", NODES_FILE, e)
         return {"nodes": []}
 
 

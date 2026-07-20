@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 
 import requests
+from api import _dataset
 from flask import render_template, request
 from flask_openapi3 import APIBlueprint, Tag
 from pydantic import BaseModel, Field
@@ -81,10 +82,12 @@ def show_create_form():
     # Get PROJECT_ID from environment to pre-fill the form
     project_id = os.getenv("PROJECT_ID", "")
 
+    # Application form defaults now live in the dataset manifest (api/_dataset.py);
+    # project_id is filled from env.
     default_data = {
-        "description": "Banking application that consumes the IndyKite Knowledge Graph",
-        "name": "banking-app",
-        "display_name": "Banking App",
+        "description": _dataset.APPLICATION.get("description", ""),
+        "name": _dataset.APPLICATION.get("name", ""),
+        "display_name": _dataset.APPLICATION.get("display_name", ""),
         "project_id": project_id,
     }
     return render_template("application/create_form.html", default_data=default_data)

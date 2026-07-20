@@ -2,9 +2,9 @@ import concurrent.futures
 import json
 import logging
 import os
-from pathlib import Path
 
 import requests
+from api import _dataset
 from flask import render_template, request
 from flask_openapi3 import APIBlueprint, Tag
 from pydantic import BaseModel, Field
@@ -31,7 +31,8 @@ api_relationships = APIBlueprint(
 )
 
 
-RELATIONSHIPS_FILE = Path(__file__).parent.parent / "data" / "relationships" / "relationships_iag.json"
+# Graph relationship data for the active dataset (data/<DATASET>/relationships.json).
+RELATIONSHIPS_FILE = _dataset.RELATIONSHIPS_PATH
 
 
 def _load_default_relationships():
@@ -39,7 +40,7 @@ def _load_default_relationships():
         with RELATIONSHIPS_FILE.open() as f:
             return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError) as e:
-        logger.warning("Could not load relationships_iag.json: %s", e)
+        logger.warning("Could not load %s: %s", RELATIONSHIPS_FILE, e)
         return {"relationships": []}
 
 
