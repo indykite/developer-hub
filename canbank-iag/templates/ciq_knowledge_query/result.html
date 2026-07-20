@@ -42,7 +42,9 @@
                     </div>
 
                     <div class="mt-4">
-                        <a href="{{ url_for('api_ciq_knowledge_query.show_create_form') }}" class="btn btn-primary">Create Another</a>
+                        {% if execute_path and status_code >= 200 and status_code < 300 %}
+                            <a href="{{ execute_path }}" class="btn btn-success">Execute this Query</a>
+                        {% endif %}
                         <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Home</a>
                     </div>
                 </div>

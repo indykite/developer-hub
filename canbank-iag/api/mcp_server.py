@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 
 import requests
+from api import _dataset
 from flask import render_template, request
 from flask_openapi3 import APIBlueprint, Tag
 from pydantic import BaseModel, Field
@@ -72,16 +73,13 @@ def show_create_form():
     """Display the MCP Server creation form with default values."""
     default_data = {
         "project_id": os.getenv("PROJECT_ID", ""),
-        "name": "canbank-mcp-server",
-        "display_name": "CanBank MCP Server",
-        "description": (
-            "MCP Server configuration for CanBank — binds the App Agent and Token "
-            "Introspect used to authenticate inbound MCP traffic."
-        ),
-        "enabled": True,
+        "name": _dataset.MCP_SERVER.get("name", ""),
+        "display_name": _dataset.MCP_SERVER.get("display_name", ""),
+        "description": _dataset.MCP_SERVER.get("description", ""),
+        "enabled": _dataset.MCP_SERVER.get("enabled", True),
         "app_agent_id": os.getenv("APP_AGENT_ID", ""),
         "token_introspect_id": os.getenv("TOKEN_INTROSPECT_ID", ""),
-        "scopes_supported": ["name", "email"],
+        "scopes_supported": list(_dataset.MCP_SERVER.get("scopes_supported", [])),
     }
     return render_template("mcp_server/create_form.html", default_data=default_data)
 

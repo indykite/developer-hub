@@ -13,6 +13,7 @@ from api.ciq_policy import api_ciq_policy
 from api.external_data_resolver import api_external_data_resolver
 from api.mcp_server import api_mcp_server
 from api.project import api_project
+from api.provision import api_provision
 from api.relationships import api_relationships
 from api.token_introspect import api_token_introspect
 from dotenv import load_dotenv
@@ -45,6 +46,7 @@ logging.getLogger("api.ciq_knowledge_query").setLevel(logging.DEBUG)
 logging.getLogger("api.ciq_execute").setLevel(logging.DEBUG)
 logging.getLogger("api.external_data_resolver").setLevel(logging.DEBUG)
 logging.getLogger("api.mcp_server").setLevel(logging.DEBUG)
+logging.getLogger("api.provision").setLevel(logging.DEBUG)
 
 # Log that the app is starting
 logger.info("=" * 50)
@@ -81,6 +83,7 @@ app.register_api(api_ciq_policy)
 app.register_api(api_ciq_knowledge_query)
 app.register_api(api_ciq_execute)
 app.register_api(api_external_data_resolver)
+app.register_api(api_provision)
 
 
 @app.get("/")

@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 
 import requests
+from api import _dataset
 from flask import render_template, request
 from flask_openapi3 import APIBlueprint, Tag
 from pydantic import BaseModel, Field
@@ -77,27 +78,10 @@ api_authorization_policy = APIBlueprint(
 @api_authorization_policy.get("/create", tags=[tag])
 def show_create_form():
     """Display the authorization policy creation form with default values."""
-    # Get PROJECT_ID from environment to pre-fill the form
-    project_id = os.getenv("PROJECT_ID", "")
-
-    default_policy = (
-        '{"meta":{"policy_version":"1.0-indykite"},'
-        '"subject":{"type":"User"},'
-        '"actions":["CAN_TRIGGER"],'
-        '"resource":{"type":"Workflow"},'
-        '"condition":{"cypher":"MATCH (subject:User)-[:WORKS_IN|CAN_TRIGGER*..3]->(resource:Workflow)"}}'
-    )
-    default_data = {
-        "project_id": project_id,
-        "description": (
-            "Allow a user to trigger an agentic workflow when their department can trigger it OR"
-            "they have been assigned to it directly."
-        ),
-        "display_name": "User can trigger workflow",
-        "name": "user-can-trigger-workflow",
-        "policy": default_policy,
-        "status": "ACTIVE",
-    }
+    # The KBAC policy defaults now live in the dataset manifest:
+    # data/<DATASET>/manifest.json, loaded via api/_dataset.py (shared with
+    # provision.py's _kbac_payload). project_id is filled from env.
+    default_data = _dataset.kbac_form_default(os.getenv("PROJECT_ID", ""))
     return render_template("authorization_policy/create_form.html", default_data=default_data)
 
 

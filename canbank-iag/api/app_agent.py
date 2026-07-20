@@ -6,6 +6,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import requests
+from api import _dataset
 from flask import render_template, request
 from flask_openapi3 import APIBlueprint, Tag
 from pydantic import BaseModel, Field
@@ -75,6 +76,13 @@ api_app_agent = APIBlueprint(
 )
 
 
+# App-agent defaults (api_permissions, name, display_name, description, credential
+# expiry) now live in the dataset manifest: data/<DATASET>/manifest.json, loaded
+# via api/_dataset.py. Kept as a module-level name because provision.py imports
+# DEFAULT_API_PERMISSIONS from here.
+DEFAULT_API_PERMISSIONS = _dataset.DEFAULT_API_PERMISSIONS
+
+
 @api_app_agent.get("/create", tags=[tag])
 def show_create_form():
     """Display the application agent creation form with default values."""
@@ -82,11 +90,11 @@ def show_create_form():
     application_id = os.getenv("APPLICATION_ID", "")
 
     default_data = {
-        "api_permissions": ["Authorization", "Capture", "ContXIQ", "IKGRead", "EntityMatching", "ReadDataSchema"],
+        "api_permissions": DEFAULT_API_PERMISSIONS,
         "application_id": application_id,
-        "description": "App agent for the banking demo",
-        "display_name": "Banking Agent",
-        "name": "banking-agent",
+        "description": _dataset.APP_AGENT.get("description", ""),
+        "display_name": _dataset.APP_AGENT.get("display_name", ""),
+        "name": _dataset.APP_AGENT.get("name", ""),
     }
     return render_template("app_agent/create_form.html", default_data=default_data)
 
@@ -123,7 +131,11 @@ def _create_agent_credentials(
 ) -> tuple[dict | None, bool]:
     """Create credentials for a newly created app agent and save APP_TOKEN. Return (response, created)."""
     logger.info("Creating credentials for the application agent...")
-    expire_time = (datetime.now(UTC) + timedelta(days=180)).isoformat().replace("+00:00", "Z")
+    expire_time = (
+        (datetime.now(UTC) + timedelta(days=_dataset.APP_AGENT_CREDENTIALS_EXPIRE_DAYS))
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
     credentials_data = {
         "application_agent_id": app_agent_id,
         "display_name": f"Credentials for {agent_name}",

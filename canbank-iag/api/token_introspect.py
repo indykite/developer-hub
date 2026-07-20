@@ -5,6 +5,7 @@ import re
 from pathlib import Path
 
 import requests
+from api import _dataset
 from flask import render_template, request
 from flask_openapi3 import APIBlueprint, Tag
 from pydantic import BaseModel, Field
@@ -80,21 +81,22 @@ def show_create_form():
     # Get PROJECT_ID from environment to pre-fill the form
     project_id = os.getenv("PROJECT_ID", "")
 
+    # Token-introspect form defaults (jwt_matcher, claims_mapping, name, ...) now
+    # live in the dataset manifest: data/<DATASET>/manifest.json, loaded via
+    # api/_dataset.py. offline_validation ({}) is kept there rather than
+    # online_validation: it verifies the token signature against the issuer's
+    # JWKS; online_validation would call the IdP's /userinfo, which rejects ID
+    # tokens (401 "Invalid token in Authorization header").
+    ti = _dataset.TOKEN_INTROSPECT
     default_data = {
-        "claims_mapping": {"email": {"selector": "email"}},
-        "description": "Token introspect for CanBank users authenticated via their IdP",
-        "display_name": "CanBank Token Introspect",
-        "ikg_node_type": "User",
-        "jwt_matcher": {
-            "issuer": "https://your-idp.example.com/",
-            "audience": "your-api-audience-identifier",
-        },
-        "name": "canbank-token-introspect",
-        # Offline validation verifies the token signature against the issuer's
-        # JWKS; online_validation would call the IdP's /userinfo, which rejects
-        # ID tokens (401 "Invalid token in Authorization header").
-        "offline_validation": {},
-        "perform_upsert": True,
+        "claims_mapping": ti.get("claims_mapping", {}),
+        "description": ti.get("description", ""),
+        "display_name": ti.get("display_name", ""),
+        "ikg_node_type": ti.get("ikg_node_type", "User"),
+        "jwt_matcher": ti.get("jwt_matcher", {}),
+        "name": ti.get("name", ""),
+        "offline_validation": ti.get("offline_validation", {}),
+        "perform_upsert": ti.get("perform_upsert", True),
         "project_id": project_id,
     }
     return render_template("token_introspect/create_form.html", default_data=default_data)

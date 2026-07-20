@@ -447,28 +447,34 @@ def _extract_httpx_error(exc: BaseException) -> tuple[Any, Any]:
     return (None, None)
 
 
+def _headers_str(headers: Any, *, redact_authorization: bool = False) -> str:  # noqa: ANN401
+    """Join headers into "k: v; ..." form, redacting Authorization when asked. Never raises."""
+    try:
+        return "; ".join(
+            f"{k}: {'<redacted>' if redact_authorization and k.lower() == 'authorization' else v}"
+            for k, v in headers.items()
+        )
+    except Exception:
+        return ""
+
+
 def _format_mcp_error(exc: BaseException) -> str:
     """Extract request/response and headers from any MCP/HTTP exception. No stack trace."""
     try:
         parts: list[str] = ["MCP error."]
+        detail = str(exc).strip()
+        if detail:
+            parts.append(f"Detail: {detail[:500]}")
         response, request = _extract_httpx_error(exc)
-        if request and hasattr(request, "headers") and request.headers:
-            try:
-                req_hdr = "; ".join(
-                    f"{k}: {'<redacted>' if k.lower() == 'authorization' else v}" for k, v in request.headers.items()
-                )
-                parts.append(f"Request headers: {req_hdr}")
-            except Exception:  # nosec B110 - optional debug info, never fatal  # noqa: S110
-                pass
+        req_hdr = _headers_str(getattr(request, "headers", None) or {}, redact_authorization=True)
+        if req_hdr:
+            parts.append(f"Request headers: {req_hdr}")
         if response:
             if hasattr(response, "status_code"):
                 parts.append(f"Status: {response.status_code}")
-            if hasattr(response, "headers") and response.headers:
-                try:
-                    hdr_str = "; ".join(f"{k}: {v}" for k, v in response.headers.items())
-                    parts.append(f"Response headers: {hdr_str}")
-                except Exception:  # nosec B110 - optional debug info, never fatal  # noqa: S110
-                    pass
+            resp_hdr = _headers_str(getattr(response, "headers", None) or {})
+            if resp_hdr:
+                parts.append(f"Response headers: {resp_hdr}")
             try:
                 body = getattr(response, "text", "")
             except Exception:  # nosec B110 - streaming body not read; status+headers still useful
@@ -552,6 +558,13 @@ def _field_definition(name: str, prop: dict, required: set[str]) -> tuple[Any, A
     if isinstance(prop_type, list):
         prop_type = next((t for t in prop_type if t != "null"), None)
     py_type = _JSON_TO_PY_TYPE.get(prop_type, Any)
+    if prop_type == "array":
+        # Gemini 3.x rejects array declarations without an items type; make the
+        # element type explicit instead of relying on the SDK to fill it in.
+        item_type = (prop.get("items") or {}).get("type")
+        if isinstance(item_type, list):
+            item_type = next((t for t in item_type if t != "null"), None)
+        py_type = list[_JSON_TO_PY_TYPE.get(item_type, dict)]  # type: ignore[misc]
     desc = prop.get("description") or ""
     if name in required:
         return (py_type, Field(description=desc) if desc else ...)
@@ -1005,7 +1018,11 @@ async def _run_llm_loop(llm: Any, tools: list[StructuredTool], prompt: str) -> s
         HumanMessage(content=prompt),
     ]
     for iteration in range(_TOOL_CALL_MAX_ITERATIONS):
-        response = await llm.ainvoke(messages)
+        try:
+            response = await llm.ainvoke(messages)
+        except Exception as e:
+            _logger.warning("LLM call failed (%s): %s", type(e).__name__, e)
+            return f"LLM error ({type(e).__name__}): {e}"
         tool_calls = getattr(response, "tool_calls", None) or []
         if not tool_calls:
             final_text = _response_final_text(response)
