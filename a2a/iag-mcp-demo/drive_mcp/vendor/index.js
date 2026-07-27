@@ -130,7 +130,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             fields: "files(id, name, mimeType, modifiedTime, size)",
         });
         const fileList = res.data.files
-            ?.map((file) => `${file.name} (${file.mimeType})`)
+            ?.map((file) => `${file.id} ${file.name} (${file.mimeType})`)
             .join("\n");
         return {
             content: [
