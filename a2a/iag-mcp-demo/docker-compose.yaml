@@ -23,6 +23,9 @@ services:
       - orchestrator-iag-network
       - retriever-iag-network
       - weather-iag-network
+      - mcp-iag-network
+      - analyst-iag-network
+      - drive-mcp-iag-network
     volumes:
       - flask_session_data:/tmp/flask_session
     environment:
