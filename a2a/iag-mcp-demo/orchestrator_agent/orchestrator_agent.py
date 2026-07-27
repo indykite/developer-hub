@@ -65,6 +65,12 @@ RETRIEVER_URL = (os.getenv("RETRIEVER_URL", "").strip() or f"http://{RETRIEVER_H
 WEATHER_HOST = os.getenv("WEATHER_HOST", "weather")
 WEATHER_PORT = int(os.getenv("WEATHER_PORT", "6004"))
 WEATHER_URL = (os.getenv("WEATHER_URL", "").strip() or f"http://{WEATHER_HOST}:{WEATHER_PORT}").rstrip("/")
+# The analyst gateway relays Google Drive prompts (analyst -> drive-mcp-iag).
+# Empty ANALYST_HOST disables the query_drive tool (base demo without Drive).
+ANALYST_HOST = os.getenv("ANALYST_HOST", "").strip()
+ANALYST_PORT = int(os.getenv("ANALYST_PORT", "8885"))
+_ANALYST_DEFAULT_URL = f"http://{ANALYST_HOST}:{ANALYST_PORT}" if ANALYST_HOST else ""
+ANALYST_URL = (os.getenv("ANALYST_URL", "").strip() or _ANALYST_DEFAULT_URL).rstrip("/")
 ORCHESTRATOR_TIMEOUT = float(os.getenv("ORCHESTRATOR_TIMEOUT", "300"))
 _LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
@@ -294,6 +300,11 @@ async def _call_weather(text: str) -> str:
     return await _call_agent(WEATHER_URL, text, _current_access_token.get())
 
 
+async def _call_analyst(text: str) -> str:
+    """Send *text* to the analyst agent (Google Drive access)."""
+    return await _call_agent(ANALYST_URL, text, _current_access_token.get())
+
+
 async def _call_agent_a2a(base_url: str, text: str, token: str) -> str:  # noqa: C901, PLR0912
     """Send *text* to a downstream A2A agent using card resolution and the SDK client."""
     headers: dict[str, str] = {}
@@ -401,6 +412,27 @@ async def query_weather(query: str) -> str:
     Use this for: weather, temperature, forecast, rain, wind, city conditions.
     """
     return await _call_weather(query)
+
+
+# ---------------------------------------------------------------------------
+# LangChain tool: query_drive
+# ---------------------------------------------------------------------------
+
+
+@tool
+async def query_drive(query: str) -> str:
+    """Forward the user's question to the analyst agent for Google Drive.
+
+    Use this for: Google Drive, Drive files or folders, searching Drive,
+    reading or summarizing a document stored in Google Drive.
+    """
+    # The downstream analyst routes by tool prefix; make the Drive intent
+    # explicit so a rephrased query ("search for files named X") cannot be
+    # routed to the knowledge-graph tools instead.
+    return await _call_analyst(
+        f"Google Drive request - answer ONLY with the drive_* tools (e.g. drive_search), "
+        f"never with knowledge-graph or CIQ tools: {query}",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -577,7 +609,8 @@ def _build_skill_catalog_prompt() -> str:
         return ""
     lines = [
         "The following skills provide specialized instructions for specific tasks.",
-        "When a task matches a skill's description, call the activate_skill tool with the skill's name to load its full instructions.",  # noqa: E501
+        "When a task matches a skill's description, call the activate_skill tool "
+        "with the skill's name to load its full instructions.",
         "",
         "<available_skills>",
     ]
@@ -589,12 +622,22 @@ def _build_skill_catalog_prompt() -> str:
     return "\n".join(lines)
 
 
+# Only steer the LLM towards query_drive when the tool is actually registered
+# (ANALYST_URL set) - otherwise it would call a non-existent tool.
+_DRIVE_PROMPT = (
+    "For Google Drive - searching Drive, Drive files or folders, reading a document stored in Google "
+    "Drive - use query_drive. Do not use query_retriever for Google Drive. "
+    if ANALYST_URL
+    else ""
+)
 _BASE_SYSTEM_PROMPT = (
     "You are an orchestrator. Your primary job is to relay prompts to downstream agents. "
     "Look at your available skills and choose the right one for each request. "
     "For weather/forecast/current conditions, use query_weather. "
     "Do not use query_retriever for weather. "
-    "ALWAYS use the query_retriever tool for: MCP, MCP tools or resources, data retrieval, documents, real-time stock prices, "  # noqa: E501
+    + _DRIVE_PROMPT
+    + "ALWAYS use the query_retriever tool for: MCP, MCP tools or resources, data retrieval, "
+    "internal documents, real-time stock prices, "
     "questions about employees, enterprise data, authorization (AuthZEN), knowledge queries, or any "
     "internal/knowledge-graph data. Forward the user's question to the retriever and return its response. "
     "Use your other skills from the skill catalog for other requests. "
@@ -609,6 +652,8 @@ _orchestrator_tools = ([_activate_skill_tool] if _activate_skill_tool is not Non
     query_retriever,
     query_weather,
 ]
+if ANALYST_URL:
+    _orchestrator_tools.append(query_drive)
 _llm_with_tools = _llm.bind_tools(_orchestrator_tools)
 
 orchestrator_card = AgentCard(
@@ -777,6 +822,10 @@ if __name__ == "__main__":
     )
     _logger.info("Retriever URL: %s", RETRIEVER_URL)
     _logger.info("Weather URL: %s", WEATHER_URL)
+    if ANALYST_URL:
+        _logger.info("Analyst URL (query_drive): %s", ANALYST_URL)
+    else:
+        _logger.info("ANALYST_HOST not set - query_drive tool disabled")
     # uvicorn must bind to 0.0.0.0 inside Docker; safe because the container
     # network exposes only the intended port via compose.
     uvicorn.run(
