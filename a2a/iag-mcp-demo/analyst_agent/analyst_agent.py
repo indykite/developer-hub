@@ -1,4 +1,4 @@
-"""Analyst agent - A2A-compliant agent (a2a-sdk>=1.1.0) that uses a remote MCP server via the official MCP SDK."""
+"""Analyst agent - A2A-compliant agent (a2a-sdk>=1.1.0) that uses remote MCP servers via the official MCP SDK."""
 # Reason: warnings.filterwarnings() must run before LangChain imports to suppress
 # the Pydantic V1 deprecation warning on Python 3.14+, so all other imports
 # necessarily follow a small block of setup code - each carries a per-line
@@ -13,13 +13,14 @@ warnings.filterwarnings(
     category=UserWarning,
 )
 
+import asyncio  # noqa: E402
 import json  # noqa: E402
 import logging  # noqa: E402
 import os  # noqa: E402
 import re  # noqa: E402
 import time  # noqa: E402
 import uuid  # noqa: E402
-from contextlib import asynccontextmanager, suppress  # noqa: E402
+from contextlib import AsyncExitStack, asynccontextmanager, suppress  # noqa: E402
 from pathlib import Path  # noqa: E402
 from typing import Any  # noqa: E402
 
@@ -163,7 +164,44 @@ GEMINI_ENABLED = os.getenv("GEMINI_ENABLED", os.getenv("GEMENI_ENABLED", "")).lo
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.0-flash")
 MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "").strip()
+MCP_SERVER_URLS = os.getenv("MCP_SERVER_URLS", "").strip()
 INDYKITE_BASE_URL = os.getenv("INDYKITE_BASE_URL", "").strip()
+
+
+def _parse_mcp_servers(multi: str, single: str) -> list[tuple[str, str]]:
+    """Parse MCP server config into (alias, url) pairs.
+
+    ``multi`` (MCP_SERVER_URLS) is a comma-separated list of ``alias=url`` or
+    bare ``url`` entries and takes precedence; ``single`` (MCP_SERVER_URL) is
+    the legacy one-server fallback, kept as an unaliased entry so existing
+    deployments keep their unprefixed tool names.
+    """
+    servers: list[tuple[str, str]] = []
+    for raw in multi.split(","):
+        entry = raw.strip()
+        if not entry:
+            continue
+        alias, sep, url = entry.partition("=")
+        alias = alias.strip()
+        url = url.strip()
+        # An "=" only counts as an alias separator when the left side is not
+        # itself the start of a URL (guards against query-string equals signs).
+        if sep and alias and not alias.startswith(("http:", "https:")):
+            if not url:
+                msg = f"Empty MCP server URL for alias {alias!r} in MCP_SERVER_URLS"
+                raise ValueError(msg)
+            servers.append((alias, url))
+        else:
+            servers.append(("", entry))
+    if not servers and single:
+        servers.append(("", single))
+    return servers
+
+
+_MCP_SERVERS = _parse_mcp_servers(MCP_SERVER_URLS, MCP_SERVER_URL)
+# Per-server session-setup deadline (initialize + tools/list). A downstream
+# whose stdio child died can leave initialize waiting forever otherwise.
+MCP_SETUP_TIMEOUT = float(os.getenv("MCP_SETUP_TIMEOUT", "20"))
 CIQ_QUERY_STOCK_PRICE = os.getenv("CIQ_QUERY_STOCK_PRICE", "").strip() or "get-stock-quote"
 CIQ_QUERY_PURCHASE_LIMIT = os.getenv("CIQ_QUERY_PURCHASE_LIMIT", "").strip() or "get-stock-trade-threshold"
 CIQ_QUERY_STORE_DECISION = os.getenv("CIQ_QUERY_STORE_DECISION", "").strip() or "store-decision"
@@ -332,7 +370,8 @@ def _build_skill_catalog_prompt() -> str:
         return ""
     lines = [
         "The following skills provide specialized instructions for specific tasks.",
-        "When a task matches a skill's description, call the activate_skill tool with the skill's name to load its full instructions.",  # noqa: E501
+        "When a task matches a skill's description, call the activate_skill tool "
+        "with the skill's name to load its full instructions.",
         "",
         "<available_skills>",
     ]
@@ -345,8 +384,12 @@ def _build_skill_catalog_prompt() -> str:
 
 
 _BASE_SYSTEM_PROMPT = (
-    "You are a helpful data analyst assistant that uses the Indykite MCP server to retrieve and analyse data. "
-    "The backend exposes both MCP Resources and MCP Tools; both should be listed and considered at runtime.\n"
+    "You are a helpful data analyst assistant that uses one or more remote MCP servers to retrieve and analyse data. "
+    "Each backend exposes both MCP Resources and MCP Tools; both should be listed and considered at runtime.\n"
+    "When several backends are configured, every tool name is prefixed with its backend alias "
+    "(e.g. indykite_ciq_execute, indykite_list_resources, drive_search) - pick the tool whose backend matches "
+    "the request: indykite_* for knowledge-graph data, CIQ queries and AuthZEN authorization; drive_* for "
+    "Google Drive documents and files. With a single unaliased backend the names below appear without a prefix.\n"
     "Upon receiving a request, you must:\n"
     "1. Consider the combination of (a) your skills (authzen, ciq-execute) and (b) available MCP "
     "resources and MCP tools. Use list_resources to discover MCP resources (URIs, names, "
@@ -384,8 +427,9 @@ _SYSTEM_PROMPT = _BASE_SYSTEM_PROMPT + ("\n\n" + _SKILL_CATALOG_APPENDIX if _SKI
 analyst_card = AgentCard(
     name=ANALYST_AGENT_NAME,
     description=(
-        "Analyst agent that uses a remote MCP server as its main capability. "
-        "Connects to the server at MCP_SERVER_URL and exposes its tools for data analysis."
+        "Analyst agent that uses remote MCP servers as its main capability. "
+        "Connects to the servers configured via MCP_SERVER_URLS (or the legacy "
+        "single MCP_SERVER_URL) and exposes their tools for data analysis."
     ),
     version="1.0.0",
     capabilities=AgentCapabilities(
@@ -526,18 +570,30 @@ async def _list_all_mcp_resources(session: ClientSession) -> list[Any]:
     return all_resources
 
 
+# Cap what a resource read hands to the LLM - a binary blob or a huge document
+# would otherwise blow up the prompt (a .doc read returns ~600KB of base64).
+_READ_RESOURCE_MAX_CHARS = 8000
+
+
 def _format_read_resource_result(result: Any) -> str:  # noqa: ANN401
-    """Convert MCP ReadResourceResult to a string."""
+    """Convert MCP ReadResourceResult to a string (text; blobs are described, not dumped)."""
     contents = getattr(result, "contents", None) or getattr(result, "content", None) or []
     parts: list[str] = []
     for block in contents:
-        if isinstance(block, TextContent):
-            parts.append(block.text)
-        elif hasattr(block, "text"):
-            parts.append(getattr(block, "text", ""))
-        elif isinstance(block, dict) and block.get("type") == "text":
-            parts.append(block.get("text", ""))
-    return "\n".join(parts) if parts else "(empty)"
+        text = getattr(block, "text", None) if not isinstance(block, dict) else block.get("text")
+        blob = getattr(block, "blob", None) if not isinstance(block, dict) else block.get("blob")
+        if isinstance(block, TextContent) or text is not None:
+            parts.append(text or "")
+        elif blob:
+            mime = (getattr(block, "mimeType", None) if not isinstance(block, dict) else block.get("mimeType")) or "?"
+            parts.append(
+                f"(binary content, mimeType {mime}, ~{len(blob) * 3 // 4} bytes - cannot be displayed as text; "
+                "native Google Docs/Sheets/Slides export as text, uploaded binary files do not)",
+            )
+    joined = "\n".join(parts) if parts else "(empty)"
+    if len(joined) > _READ_RESOURCE_MAX_CHARS:
+        joined = joined[:_READ_RESOURCE_MAX_CHARS] + f"\n... (truncated, {len(joined)} chars total)"
+    return joined
 
 
 _JSON_TO_PY_TYPE: dict[str, type] = {
@@ -697,6 +753,16 @@ def _parse_number_from_ciq_result(result_str: str) -> float | None:
 # ---------------------------------------------------------------------------
 
 
+def _prefixed(alias: str, name: str) -> str:
+    """Namespace a tool name with its backend alias (no-op for unaliased servers)."""
+    return f"{alias}_{name}" if alias else name
+
+
+def _backend_note(alias: str) -> str:
+    """Human-readable backend marker prepended to tool descriptions."""
+    return f"[backend: {alias}] " if alias else ""
+
+
 def _make_max_purchase_amount_tool(session: ClientSession) -> StructuredTool:
     """Create a LangChain tool: max purchase amount = floor(purchase_limit / stock_price)."""
 
@@ -775,7 +841,7 @@ def _make_activate_skill_tool(registry: dict[str, dict[str, Any]]) -> Structured
     )
 
 
-def _make_list_resources_tool(session: ClientSession) -> StructuredTool:
+def _make_list_resources_tool(session: ClientSession, alias: str = "") -> StructuredTool:
     """Create a LangChain tool that lists MCP resources (resources/list)."""
 
     async def _invoke(**_kwargs: Any) -> str:  # noqa: ANN401
@@ -800,23 +866,31 @@ def _make_list_resources_tool(session: ClientSession) -> StructuredTool:
             return _format_mcp_error(e)
 
     return StructuredTool(
-        name="list_resources",
+        name=_prefixed(alias, "list_resources"),
         description=(
-            "List all available resources from the MCP server (resources/list). "
-            "Use this to discover resources (URIs, names, descriptions) before reading them with read_resource."
+            f"{_backend_note(alias)}List all available resources from the MCP server (resources/list). "
+            "Use this to discover resources (URIs, names, descriptions) before reading them with "
+            f"{_prefixed(alias, 'read_resource')}."
         ),
         args_schema=_EmptyArgs,
         coroutine=_invoke,
     )
 
 
-def _make_read_resource_tool(session: ClientSession) -> StructuredTool:
+def _make_read_resource_tool(session: ClientSession, alias: str = "") -> StructuredTool:
     """Create a LangChain tool that reads an MCP resource by URI (resources/read)."""
 
     async def _invoke(uri: str) -> str:
         try:
-            result = await session.read_resource(uri)
+            # Bounded: a large binary read can stall the SSE stream mid-blob.
+            async with asyncio.timeout(MCP_SETUP_TIMEOUT * 3):
+                result = await session.read_resource(uri)
             return _format_read_resource_result(result)
+        except TimeoutError:
+            return (
+                f"Reading resource {uri!r} timed out - the file is probably a large binary "
+                "(only native Google Docs/Sheets/Slides can be read as text)."
+            )
         except BaseException as e:
             return _format_mcp_error(e)
 
@@ -824,18 +898,22 @@ def _make_read_resource_tool(session: ClientSession) -> StructuredTool:
         return await _invoke(kwargs["uri"])
 
     return StructuredTool(
-        name="read_resource",
+        name=_prefixed(alias, "read_resource"),
         description=(
-            "Read the content of an MCP resource by its URI (resources/read). "
-            "First use list_resources to get available resource URIs."
+            f"{_backend_note(alias)}Read the content of an MCP resource by its URI (resources/read). "
+            f"First use {_prefixed(alias, 'list_resources')} to get available resource URIs."
         ),
         args_schema=_ReadResourceArgs,
         coroutine=_call,
     )
 
 
-def _make_langchain_tool(session: ClientSession, mcp_tool: Any) -> StructuredTool:  # noqa: ANN401
-    """Convert an MCP tool to a LangChain StructuredTool."""
+def _make_langchain_tool(session: ClientSession, mcp_tool: Any, alias: str = "") -> StructuredTool:  # noqa: ANN401
+    """Convert an MCP tool to a LangChain StructuredTool.
+
+    The LangChain-facing name is prefixed with the backend alias so tools from
+    different MCP servers cannot collide; the MCP call uses the original name.
+    """
     tool_name = mcp_tool.name
     tool_desc = mcp_tool.description or ""
     input_schema = mcp_tool.inputSchema or {}
@@ -855,7 +933,7 @@ def _make_langchain_tool(session: ClientSession, mcp_tool: Any) -> StructuredToo
             desc = (v.get("description") or "")[:80]
             hint_parts.append(f"  - {k}: {v.get('type', 'any')}" + (f" ({desc})" if desc else ""))
         schema_hint = "\n\n" + "\n".join(hint_parts)
-    full_description = (tool_desc + schema_hint).strip() or "MCP tool (no description)"
+    full_description = _backend_note(alias) + ((tool_desc + schema_hint).strip() or "MCP tool (no description)")
 
     async def _invoke(**kwargs: Any) -> str:  # noqa: ANN401
         args = {k: v for k, v in kwargs.items() if v is not None}
@@ -879,7 +957,7 @@ def _make_langchain_tool(session: ClientSession, mcp_tool: Any) -> StructuredToo
         return _format_call_tool_result(result)
 
     return StructuredTool(
-        name=tool_name,
+        name=_prefixed(alias, tool_name),
         description=full_description,
         args_schema=args_schema,
         coroutine=_invoke,
@@ -897,10 +975,63 @@ def _get_access_token_from_context(context: RequestContext | None) -> str:
     return auth.strip() if auth else ""
 
 
+async def _connect_mcp_server(stack: AsyncExitStack, alias: str, url: str, headers: dict[str, str]):
+    """Open one MCP session on *stack* and return (session, tools, resources).
+
+    Returns None when the server is unreachable or rejects the session, so the
+    caller can degrade to the remaining backends. Transport failures (e.g. a
+    gateway 403 during initialize) surface from anyio task groups as
+    BaseExceptionGroup, which `except Exception` misses - hence BaseException.
+    """
+    try:
+        client = await stack.enter_async_context(create_mcp_http_client(headers=headers))
+        read, write, _ = await stack.enter_async_context(
+            streamable_http_client(
+                url,
+                http_client=client,
+                terminate_on_close=False,  # Indykite returns 403 on DELETE
+            ),
+        )
+        session = await stack.enter_async_context(ClientSession(read, write))
+        async with asyncio.timeout(MCP_SETUP_TIMEOUT):
+            await session.initialize()
+            mcp_tools = await _list_all_mcp_tools(session)
+    except BaseException as e:
+        if isinstance(e, (KeyboardInterrupt, SystemExit)):
+            raise
+        _logger.warning(
+            "MCP server %s (%s) unavailable, skipping: %s",
+            alias or "default",
+            url,
+            _format_mcp_error(e),
+        )
+        return None
+    try:
+        async with asyncio.timeout(MCP_SETUP_TIMEOUT):
+            mcp_resources = await _list_all_mcp_resources(session)
+    except BaseException as e:
+        if isinstance(e, (KeyboardInterrupt, SystemExit)):
+            raise
+        # Resources are optional; some servers (e.g. the Drive reference
+        # server) reject resources/list in SDK sessions.
+        _logger.warning(
+            "MCP server %s: resources/list failed (%s) - continuing with tools only",
+            alias or "default",
+            _format_mcp_error(e)[:120],
+        )
+        mcp_resources = []
+    return session, mcp_tools, mcp_resources
+
+
 @asynccontextmanager
-async def _mcp_session(access_token: str = ""):
-    """Create an MCP session and yield LangChain tools. Keeps session alive for the block."""
-    if not MCP_SERVER_URL:
+async def _mcp_sessions(access_token: str = ""):
+    """Connect to every configured MCP server and yield the combined LangChain tools.
+
+    All sessions stay alive for the duration of the block (one AsyncExitStack).
+    A server that fails to connect is skipped with a warning so the remaining
+    backends keep serving tools.
+    """
+    if not _MCP_SERVERS:
         yield []
         return
 
@@ -913,33 +1044,35 @@ async def _mcp_session(access_token: str = ""):
     if INDYKITE_BASE_URL:
         headers["X-IndyKite-Base-URL"] = INDYKITE_BASE_URL
 
-    async with (  # noqa: SIM117
-        create_mcp_http_client(headers=headers) as client,
-        streamable_http_client(
-            MCP_SERVER_URL,
-            http_client=client,
-            terminate_on_close=False,  # Indykite returns 403 on DELETE
-        ) as (read, write, _),
-    ):
-        async with ClientSession(read, write) as session:
-            await session.initialize()
-            mcp_tools = await _list_all_mcp_tools(session)
-            mcp_resources = await _list_all_mcp_resources(session)
-            lc_tools: list[StructuredTool] = [
-                _make_list_resources_tool(session),
-                _make_read_resource_tool(session),
-                _make_max_purchase_amount_tool(session),
-            ] + [_make_langchain_tool(session, t) for t in mcp_tools]
-            activate_skill_tool = _make_activate_skill_tool(_SKILL_REGISTRY)
-            if activate_skill_tool is not None:
-                lc_tools = [activate_skill_tool, *lc_tools]
+    lc_tools: list[StructuredTool] = []
+    async with AsyncExitStack() as stack:
+        for alias, url in _MCP_SERVERS:
+            connected = await _connect_mcp_server(stack, alias, url, headers)
+            if connected is None:
+                continue
+            session, mcp_tools, mcp_resources = connected
+            lc_tools += [
+                _make_list_resources_tool(session, alias),
+                _make_read_resource_tool(session, alias),
+            ]
+            # max_purchase_amount composes two CIQ queries; only enable it when
+            # the connected backend actually exposes the ciq_execute tool (and
+            # only once, should several backends expose it).
+            tool_names = {getattr(t, "name", "") for t in mcp_tools}
+            if "ciq_execute" in tool_names and not any(t.name == "max_purchase_amount" for t in lc_tools):
+                lc_tools.append(_make_max_purchase_amount_tool(session))
+            lc_tools += [_make_langchain_tool(session, t, alias) for t in mcp_tools]
             _logger.info(
-                "MCP from %s: %d tools, %d resources",
-                MCP_SERVER_URL,
+                "MCP from %s (%s): %d tools, %d resources",
+                alias or "default",
+                url,
                 len(mcp_tools),
                 len(mcp_resources),
             )
-            yield lc_tools
+        activate_skill_tool = _make_activate_skill_tool(_SKILL_REGISTRY)
+        if activate_skill_tool is not None:
+            lc_tools = [activate_skill_tool, *lc_tools]
+        yield lc_tools
 
 
 # ---------------------------------------------------------------------------
@@ -1089,7 +1222,7 @@ async def _process_analyst_request(
     await _emit_working(context, event_queue)
 
     try:
-        async with _mcp_session(access_token=access_token) as tools:
+        async with _mcp_sessions(access_token=access_token) as tools:
             llm = _llm.bind_tools(tools) if tools else _llm
             final_text = await _run_llm_loop(llm, tools, prompt)
     except BaseException as e:
@@ -1149,10 +1282,11 @@ if __name__ == "__main__":
 
     llm_info = f"Gemini {GEMINI_MODEL}" if (GEMINI_ENABLED and GEMINI_API_KEY) else LLM_MODEL
     _logger.info("Starting %s on port %d (LLM: %s)", ANALYST_AGENT_NAME, ANALYST_PORT, llm_info)
-    if MCP_SERVER_URL:
-        _logger.info("MCP server: %s", MCP_SERVER_URL)
+    if _MCP_SERVERS:
+        for _alias, _url in _MCP_SERVERS:
+            _logger.info("MCP server '%s': %s", _alias or "default", _url)
     else:
-        _logger.warning("MCP_SERVER_URL not set - agent will run without MCP tools")
+        _logger.warning("MCP_SERVER_URLS / MCP_SERVER_URL not set - agent will run without MCP tools")
     # uvicorn must bind to 0.0.0.0 inside Docker; safe because the container
     # network exposes only the intended port via compose.
     uvicorn.run(

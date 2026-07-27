@@ -134,6 +134,24 @@
       "properties": []
     },
     {
+      "external_id": "wf-drive-analyst",
+      "type": "Workflow",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "wf-drive-console",
+      "type": "Workflow",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "wf3-console",
+      "type": "Workflow",
+      "is_identity": false,
+      "properties": []
+    },
+    {
       "external_id": "indykiteagent",
       "type": "Agent",
       "is_identity": false,

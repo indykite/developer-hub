@@ -77,6 +77,7 @@ services:
       - orchestrator-iag-network
       - retriever-iag-network
       - weather-iag-network
+      - analyst-iag-network
     environment:
       ADVERTISED_HOST: ${ORCHESTRATOR_HOST}
       ORCHESTRATOR_PORT: ${ORCHESTRATOR_PORT}
@@ -85,6 +86,10 @@ services:
       RETRIEVER_PORT: ${IAG_RETRIEVER_PORT}
       WEATHER_HOST: ${IAG_WEATHER_HOST}
       WEATHER_PORT: ${IAG_WEATHER_PORT}
+      # Routes query_drive (console -> orchestrator -> analyst -> drive-mcp-iag)
+      # through the analyst gateway; leave empty to disable the Drive tool.
+      ANALYST_HOST: ${IAG_ANALYST_HOST}
+      ANALYST_PORT: ${IAG_ANALYST_PORT}
       GEMINI_ENABLED: ${GEMINI_ENABLED}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GEMINI_MODEL: ${GEMINI_MODEL}
@@ -199,6 +204,10 @@ services:
     networks:
       - analyst-iag-network
       - mcp-iag-network
+      # Membership in the drive gateway network is harmless while the "drive"
+      # profile is off; it only matters when ANALYST_MCP_SERVER_URLS adds the
+      # drive backend.
+      - drive-mcp-iag-network
     environment:
       ADVERTISED_HOST: ${ANALYST_HOST}
       ANALYST_PORT: ${ANALYST_PORT}
@@ -206,6 +215,10 @@ services:
       # Route MCP calls through the MCP-protecting IAG instead of the MCP server
       # directly. To bypass the IAG, set this back to ${MCP_SERVER_URL}.
       MCP_SERVER_URL: http://${IAG_MCP_HOST}:${IAG_MCP_PORT}${MCP_SERVER_PATH}
+      # Multi-backend mode: comma-separated alias=url pairs (see .example.env).
+      # When set, this overrides MCP_SERVER_URL and tool names get the alias as
+      # prefix (indykite_ciq_execute, drive_search, ...).
+      MCP_SERVER_URLS: ${ANALYST_MCP_SERVER_URLS:-}
       GEMINI_ENABLED: ${GEMINI_ENABLED}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GEMINI_MODEL: ${GEMINI_MODEL}
@@ -299,8 +312,11 @@ services:
       JARVIS_PROTECTED_AGENT_BASE_URL: http://${DRIVE_MCP_HOST:-drive-mcp}:${DRIVE_MCP_PORT:-8000}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${DRIVE_MCP_IDP_CLIENT_ID:-indykiteagent-drive}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${DRIVE_MCP_IDP_CLIENT_SECRET:-}
-      # The drive workflow (millicent -> drive) is separate from the base wf1.
-      JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${DRIVE_WORKFLOW_ID:-wf-drive}
+      # The drive gateway serves one workflow per call shape (wf-drive direct,
+      # wf-drive-analyst via the analyst, wf-drive-console via the console
+      # chain). allowed_workflow_id is single-valued, so it stays unpinned
+      # (same as mcp-iag); set DRIVE_WORKFLOW_ID to pin a single shape.
+      JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${DRIVE_WORKFLOW_ID:-}
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]

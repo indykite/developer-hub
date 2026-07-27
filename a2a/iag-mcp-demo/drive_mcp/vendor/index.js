@@ -160,7 +160,20 @@ async function loadCredentialsAndRunServer() {
         process.exit(1);
     }
     const credentials = JSON.parse(fs.readFileSync(credentialsPath, "utf-8"));
-    const auth = new google.auth.OAuth2();
+    // Build the client from the OAuth keys so expired access tokens can be
+    // auto-refreshed; a bare OAuth2() has no client_id/client_secret and every
+    // refresh attempt fails with "invalid_request" ~1h after the auth flow.
+    const keyfilePath = process.env.GDRIVE_OAUTH_PATH || path.join(path.dirname(new URL(import.meta.url).pathname), "../../../gcp-oauth.keys.json");
+    let auth;
+    try {
+        const keys = JSON.parse(fs.readFileSync(keyfilePath, "utf-8"));
+        const conf = keys.installed || keys.web || {};
+        auth = new google.auth.OAuth2(conf.client_id, conf.client_secret, (conf.redirect_uris || [])[0]);
+    }
+    catch {
+        console.error(`Could not load OAuth keys from ${keyfilePath}; token refresh will not work.`);
+        auth = new google.auth.OAuth2();
+    }
     auth.setCredentials(credentials);
     google.options({ auth });
     console.error("Credentials loaded. Starting server.");

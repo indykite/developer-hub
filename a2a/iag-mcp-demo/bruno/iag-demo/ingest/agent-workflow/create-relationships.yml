@@ -520,6 +520,240 @@ http:
           },
           {
             "source": {
+              "type": "User",
+              "external_id": "millicent"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf-drive-analyst"
+            },
+            "properties": [
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "User",
+              "external_id": "millicent"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf-drive-analyst"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
+          },
+          {
+            "source": {
+              "type": "User",
+              "external_id": "millicent"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf-drive-console"
+            },
+            "properties": [
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "User",
+              "external_id": "millicent"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf-drive-console"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
+          },
+          {
+            "source": {
+              "type": "Workflow",
+              "external_id": "wf-drive-analyst"
+            },
+            "target": {
+              "type": "Agent",
+              "external_id": "indykiteagent-4"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf-drive-analyst"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Agent",
+              "external_id": "indykiteagent-4"
+            },
+            "target": {
+              "type": "Agent",
+              "external_id": "indykiteagent-drive"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf-drive-analyst"
+              },
+              {
+                "type": "discriminating_property",
+                "value": "workflow_name"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Workflow",
+              "external_id": "wf-drive-console"
+            },
+            "target": {
+              "type": "Agent",
+              "external_id": "indykiteagent"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf-drive-console"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Agent",
+              "external_id": "indykiteagent"
+            },
+            "target": {
+              "type": "Agent",
+              "external_id": "indykiteagent-4"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf-drive-console"
+              },
+              {
+                "type": "discriminating_property",
+                "value": "workflow_name"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Agent",
+              "external_id": "indykiteagent-4"
+            },
+            "target": {
+              "type": "Agent",
+              "external_id": "indykiteagent-drive"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf-drive-console"
+              },
+              {
+                "type": "discriminating_property",
+                "value": "workflow_name"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "User",
+              "external_id": "millicent"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf3-console"
+            },
+            "properties": [
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "User",
+              "external_id": "millicent"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf3-console"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
+          },
+          {
+            "source": {
+              "type": "Workflow",
+              "external_id": "wf3-console"
+            },
+            "target": {
+              "type": "Agent",
+              "external_id": "indykiteagent"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf3-console"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Agent",
+              "external_id": "indykiteagent"
+            },
+            "target": {
+              "type": "Agent",
+              "external_id": "indykiteagent-4"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf3-console"
+              },
+              {
+                "type": "discriminating_property",
+                "value": "workflow_name"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Agent",
+              "external_id": "indykiteagent-4"
+            },
+            "target": {
+              "type": "Agent",
+              "external_id": "indykiteagent-mcp"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf3-console"
+              },
+              {
+                "type": "discriminating_property",
+                "value": "workflow_name"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
               "type": "Agent",
               "external_id": "indykiteagent"
             },
