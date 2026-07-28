@@ -11,6 +11,7 @@
                     <p class="text-muted mb-4">Configure authorization policy settings and click "Create" to submit.</p>
 
                     <form method="POST" action="{{ url_for('api_authorization_policy.create_authorization_policy') }}">
+                        <input type="hidden" name="slot" value="{{ default_data.slot }}">
                         <div class="mb-3">
                             <label for="project_id" class="form-label">Project ID *</label>
                             <input type="text" class="form-control" id="project_id" name="project_id" value="{{ default_data.project_id }}" required>
