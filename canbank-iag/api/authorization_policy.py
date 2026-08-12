@@ -130,6 +130,14 @@ def create_authorization_policy():
             "response_text": response.text[:500] if response.text else "No response body",
         }
 
+    # Which .env entry records this policy's ID. Sent by provisioning so the
+    # 2nd+ manifest policy doesn't overwrite the 1st (see _dataset.kbac_env_key);
+    # restricted to the KBAC_POLICY_ID* family so the form can't write
+    # arbitrary .env keys.
+    env_key = request.form.get("env_key", "KBAC_POLICY_ID")
+    if not re.fullmatch(r"KBAC_POLICY_ID(_\d+)?", env_key):
+        env_key = "KBAC_POLICY_ID"
+
     # Extract and save authorization policy ID if the request was successful
     authorization_policy_id_saved = False
     authorization_policy_id = None
@@ -141,11 +149,11 @@ def create_authorization_policy():
 
         if authorization_policy_id:
             try:
-                update_env_variable("KBAC_POLICY_ID", authorization_policy_id)
+                update_env_variable(env_key, authorization_policy_id)
                 authorization_policy_id_saved = True
-                logger.info("Saved KBAC_POLICY_ID: %s", authorization_policy_id)
+                logger.info("Saved %s: %s", env_key, authorization_policy_id)
             except Exception:
-                logger.exception("Failed to save KBAC_POLICY_ID")
+                logger.exception("Failed to save %s", env_key)
 
     return render_template(
         "authorization_policy/result.html",

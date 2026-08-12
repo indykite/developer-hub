@@ -81,6 +81,44 @@ logging.basicConfig(
 )
 logging.getLogger("ddgs").setLevel(logging.WARNING)
 
+# Third-party log verbosity is controlled separately from LOG_LEVEL: the A2A
+# SDK alone logs every full protobuf event at DEBUG, drowning the agent's own
+# narrative. Enforced by the handler filter below (no third-party logger is
+# reconfigured); set LIB_LOG_LEVEL=DEBUG to see the SDK logs, condensed to
+# one-line breadcrumbs.
+_LIB_LOG_LEVEL = os.getenv("LIB_LOG_LEVEL", "INFO").upper()
+_LIB_LOG_LEVELNO = getattr(logging, _LIB_LOG_LEVEL, logging.INFO)
+
+
+class _CondenseLibLogs(logging.Filter):
+    """Tame third-party log records at the handler, per LIB_LOG_LEVEL.
+
+    Records from the noisy libraries are dropped below LIB_LOG_LEVEL, and the
+    surviving multi-line payloads (the A2A SDK emits the same multi-KB
+    protobuf dump several times in a second - once per state transition, per
+    subscriber) are collapsed to their first line (task id + event type) plus
+    a note of how much was elided.
+    """
+
+    _PREFIXES = ("a2a", "mcp", "httpx", "httpcore")
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        """Drop below-threshold third-party records; condense the rest."""
+        if record.name.split(".", 1)[0] not in self._PREFIXES:
+            return True
+        if record.levelno < _LIB_LOG_LEVELNO:
+            return False
+        message = record.getMessage()
+        first_line, newline, rest = message.partition("\n")
+        if newline:
+            record.msg = f"{first_line} ...(+{len(rest)} chars elided)"
+            record.args = ()
+        return True
+
+
+for _root_handler in logging.getLogger().handlers:
+    _root_handler.addFilter(_CondenseLibLogs())
+
 _logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------

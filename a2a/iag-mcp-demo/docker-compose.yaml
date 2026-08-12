@@ -95,6 +95,8 @@ services:
       GEMINI_MODEL: ${GEMINI_MODEL}
       LLM_MODEL: ${LOCAL_LLM_MODEL}
       LOG_LEVEL: ${LOG_LEVEL}
+      # Third-party (a2a/mcp/httpx) log level; DEBUG shows SDK event breadcrumbs.
+      LIB_LOG_LEVEL: ${LIB_LOG_LEVEL:-INFO}
       OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -137,12 +139,17 @@ services:
       # Route MCP calls through the MCP-protecting IAG instead of the MCP server
       # directly. To bypass the IAG, set this back to ${MCP_SERVER_URL}.
       MCP_SERVER_URL: http://${IAG_MCP_HOST}:${IAG_MCP_PORT}${MCP_SERVER_PATH}
+      # Reuse window (seconds) for the per-user MCP session; 0 = new session
+      # per request. Keep below the access-token lifetime.
+      MCP_SESSION_TTL: ${MCP_SESSION_TTL:-300}
       GEMINI_ENABLED: ${GEMINI_ENABLED}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GEMINI_MODEL: ${GEMINI_MODEL}
       LLM_MODEL: ${LOCAL_LLM_MODEL}
       INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
       LOG_LEVEL: ${LOG_LEVEL}
+      # Third-party (a2a/mcp/httpx) log level; DEBUG shows SDK event breadcrumbs.
+      LIB_LOG_LEVEL: ${LIB_LOG_LEVEL:-INFO}
       OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -219,12 +226,17 @@ services:
       # When set, this overrides MCP_SERVER_URL and tool names get the alias as
       # prefix (indykite_ciq_execute, drive_search, ...).
       MCP_SERVER_URLS: ${ANALYST_MCP_SERVER_URLS:-}
+      # Reuse window (seconds) for per-user MCP sessions; 0 = new session per
+      # request. Keep below the access-token lifetime.
+      MCP_SESSION_TTL: ${MCP_SESSION_TTL:-300}
       GEMINI_ENABLED: ${GEMINI_ENABLED}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GEMINI_MODEL: ${GEMINI_MODEL}
       LLM_MODEL: ${LOCAL_LLM_MODEL}
       INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
       LOG_LEVEL: ${LOG_LEVEL}
+      # Third-party (a2a/mcp/httpx) log level; DEBUG shows SDK event breadcrumbs.
+      LIB_LOG_LEVEL: ${LIB_LOG_LEVEL:-INFO}
       OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -278,9 +290,14 @@ services:
       # Route MCP calls through the MCP-protecting IAG instead of the MCP server
       # directly. To bypass the IAG, set this back to ${MCP_SERVER_URL}.
       MCP_SERVER_URL: http://${IAG_MCP_HOST}:${IAG_MCP_PORT}${MCP_SERVER_PATH}
+      # Reuse window (seconds) for the per-user MCP session; 0 = new session
+      # per request. Keep below the access-token lifetime.
+      MCP_SESSION_TTL: ${MCP_SESSION_TTL:-300}
       INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
       CIQ_QUERY_HQ_WEATHER: ${CIQ_QUERY_HQ_WEATHER:-get-hq-weather}
       LOG_LEVEL: ${LOG_LEVEL}
+      # Third-party (a2a/mcp/httpx) log level; DEBUG shows SDK event breadcrumbs.
+      LIB_LOG_LEVEL: ${LIB_LOG_LEVEL:-INFO}
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
