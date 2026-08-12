@@ -442,6 +442,49 @@ Quick prompts once you're logged in as **Leslie**:
 - *"What's the weather in London?"* (routed to the `weather_agent` → direct Open-Meteo)
 - *"What's the weather at CanBank HQ?"* (routed to the `weather_agent` → CIQ `get-hq-weather` → `weather` + `weather-units` resolvers; requires `CIQ_QUERY_HQ_WEATHER` and the canbank EDR setup)
 
+Stock quotes and AuthZEN decisions (as **millicent**, who works in both
+`support` and `trading` - the `trading` department holds the
+`CAN_RETRIEVE -> stock_quote` edge):
+
+- *"What is the price of META?"* (CIQ `get-stock-quote` → Yahoo Finance
+  resolver; passes because millicent's department can retrieve the quote. An
+  occasional `429 Too Many Requests` is Yahoo rate-limiting, not an
+  authorization failure - retry after a few minutes)
+- *"Am I allowed to retrieve a stock quote? Check with authzen."* (KBAC policy
+  `user-can-retrieve-quote`: `User -WORKS_IN-> Department -CAN_RETRIEVE-> Quote`.
+  Watch the retriever log: it loads the `authzen` + `canbank-authz` skills,
+  resolves its own id via `get-self`, then sends one exact `authzen_evaluate`)
+- *"Perform an authzen test with the following payload: subject_type User,
+  subject_id millicent, resource_type Workflow, resource_id wf1, action_name
+  CAN_TRIGGER. Report the raw decision."* (forces an exact `authzen_evaluate`
+  call; decision `true` via the `user-can-trigger-workflow` policy)
+- As **leslie** or **flo** (in `support` only): *"why can't I get a stock
+  quote?"* - the negative path; the decision is `false` because their
+  department has no `CAN_RETRIEVE` edge.
+
+Note: evaluations through the chatbot carry the logged-in user's token, and
+the platform binds them to that token's subject - asking `authzen_evaluate`
+about a *different* user (e.g. subject `roy` from millicent's session) always
+returns `false` by design. Evaluate other subjects from a service context
+instead (Bruno `authzen` folder, `X-IK-ClientKey` app token).
+
+**How the agents get the AuthZEN vocabulary right.** KBAC types, actions, and
+ids are case-sensitive graph terms (`User`, `CAN_RETRIEVE`, `Quote`,
+`stock_quote`); a made-up value (`user`, `view`, `stock`) evaluates to a
+`false` that is indistinguishable from a real denial, and the MCP server does
+not (yet) expose the policy vocabulary for discovery - `list_resources` only
+returns the knowledge queries. The retriever and analyst therefore pair two
+agent skills (`<agent>/skills/`):
+
+- `authzen` - generic: the five AuthZEN operations, the never-guess-the-
+  vocabulary rules, subject resolution via `get-self`, and the token-subject
+  binding above. Dataset-independent.
+- `canbank-authz` - dataset-owned: the exact policy triples of *this* project
+  (`User -CAN_TRIGGER-> Workflow`, `User -CAN_RETRIEVE-> Quote` with known
+  ids). Keep its table in sync with the `kbac` section of
+  `canbank-iag/data/iag/manifest.json` when policies change; remove it if the
+  platform ever exposes policy vocabulary through the MCP server itself.
+
 With the `drive` profile up, log in as **millicent** and mention "Google
 Drive" (or "Drive") in the prompt - that's what routes it to the orchestrator's
 `query_drive` tool instead of the retriever:

@@ -41,6 +41,19 @@ http:
           {
             "source": {
               "type": "User",
+              "external_id": "millicent"
+            },
+            "target": {
+              "type": "Department",
+              "external_id": "trading"
+            },
+            "properties": [
+            ],
+            "type": "WORKS_IN"
+          },
+          {
+            "source": {
+              "type": "User",
               "external_id": "alexb"
             },
             "target": {

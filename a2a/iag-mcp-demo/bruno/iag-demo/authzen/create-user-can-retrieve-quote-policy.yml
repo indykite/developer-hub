@@ -1,0 +1,30 @@
+---
+info:
+  name: Create User CAN_RETRIEVE Quote Policy
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "user-can-retrieve-quote",
+          "display_name": "User can retrieve stock quote",
+          "description": "Allow a user to retrieve a stock quote when their department can retrieve it.",
+          "project_id": "{{project_id}}",
+          "policy": "{ \"meta\": { \"policy_version\": \"2.0-kbac\" }, \"subject\": { \"type\": \"User\" }, \"actions\": [ \"CAN_RETRIEVE\" ], \"resource\": { \"type\": \"Quote\" }, \"condition\": { \"cypher\": \"MATCH (subject:User)-[:WORKS_IN]->(department:Department)-[:CAN_RETRIEVE]->(resource:Quote)\" } }",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

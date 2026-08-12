@@ -7,12 +7,16 @@ server. The query reads the `hq_weather` Weather node, which carries `latitude` 
 resolvers. For any other city the agent falls back to a direct open-meteo call.
 """
 
+import asyncio
+import base64
+import hashlib
 import json
 import logging
 import os
 import re
+import time
 import uuid
-from contextlib import asynccontextmanager
+from contextlib import AsyncExitStack, asynccontextmanager, suppress
 from typing import Any
 
 import httpx
@@ -109,6 +113,13 @@ DEFAULT_CITY = os.getenv("WEATHER_DEFAULT_CITY", "London").strip()
 WEATHER_TIMEOUT = float(os.getenv("WEATHER_TIMEOUT", "15"))
 MCP_SERVER_URL = os.getenv("MCP_SERVER_URL", "").strip()
 INDYKITE_BASE_URL = os.getenv("INDYKITE_BASE_URL", "").strip()
+# Session-setup deadline (initialize); a hung downstream would otherwise
+# leave the owner task waiting forever.
+MCP_SETUP_TIMEOUT = float(os.getenv("MCP_SETUP_TIMEOUT", "20"))
+# How long (seconds) the per-user MCP session is reused across requests
+# before being rebuilt. Keep it below the access-token lifetime; 0 restores
+# the old behavior of a fresh session per request.
+MCP_SESSION_TTL = float(os.getenv("MCP_SESSION_TTL", "300"))
 CIQ_QUERY_HQ_WEATHER = os.getenv("CIQ_QUERY_HQ_WEATHER", "").strip() or "get-hq-weather"
 _HQ_KEYWORDS = ("hq", "headquarters", "head office", "head-office", "canbank office", "the office")
 _LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
@@ -118,6 +129,45 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
+
+# Third-party log verbosity is controlled separately from LOG_LEVEL: the A2A
+# SDK alone logs every full protobuf event at DEBUG, drowning the agent's own
+# narrative. Enforced by the handler filter below (no third-party logger is
+# reconfigured); set LIB_LOG_LEVEL=DEBUG to see the SDK logs, condensed to
+# one-line breadcrumbs.
+_LIB_LOG_LEVEL = os.getenv("LIB_LOG_LEVEL", "INFO").upper()
+_LIB_LOG_LEVELNO = getattr(logging, _LIB_LOG_LEVEL, logging.INFO)
+
+
+class _CondenseLibLogs(logging.Filter):
+    """Tame third-party log records at the handler, per LIB_LOG_LEVEL.
+
+    Records from the noisy libraries are dropped below LIB_LOG_LEVEL, and the
+    surviving multi-line payloads (the A2A SDK emits the same multi-KB
+    protobuf dump several times in a second - once per state transition, per
+    subscriber) are collapsed to their first line (task id + event type) plus
+    a note of how much was elided.
+    """
+
+    _PREFIXES = ("a2a", "mcp", "httpx", "httpcore")
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        """Drop below-threshold third-party records; condense the rest."""
+        if record.name.split(".", 1)[0] not in self._PREFIXES:
+            return True
+        if record.levelno < _LIB_LOG_LEVELNO:
+            return False
+        message = record.getMessage()
+        first_line, newline, rest = message.partition("\n")
+        if newline:
+            record.msg = f"{first_line} ...(+{len(rest)} chars elided)"
+            record.args = ()
+        return True
+
+
+for _root_handler in logging.getLogger().handlers:
+    _root_handler.addFilter(_CondenseLibLogs())
+
 _logger = logging.getLogger(__name__)
 
 weather_card = AgentCard(
@@ -274,9 +324,274 @@ def _format_weather_sentence(location: str, current: dict[str, Any], units: dict
     )
 
 
+# ---------------------------------------------------------------------------
+# MCP session cache
+#
+# Session setup (initialize, each message paying the gateway's introspection
+# and authz round trips) dominates the HQ-weather route's latency, so the
+# session is cached per user token for MCP_SESSION_TTL seconds and validated
+# with a ping before reuse - mirroring retriever_agent's cache.
+#
+# anyio's streamable-http transport contexts must be entered and exited in the
+# same task, so the connection is held open by a dedicated owner task rather
+# than a request-scoped context manager.
+# ---------------------------------------------------------------------------
+
+_MCP_PING_TIMEOUT = 3.0
+_MCP_MAX_ACQUIRE_ATTEMPTS = 2
+
+
+def _token_cache_identity(token: str) -> str:
+    """Stable per-user identity for the MCP session cache key.
+
+    The gateway mints a fresh delegation JWT for every request (new jti/iat),
+    so keying on the raw token would miss the cache on every request. Key on
+    the claims that determine downstream authorization instead: subject,
+    actor-delegation chain, and client. Falls back to the raw token when the
+    payload cannot be decoded (e.g. an opaque token).
+
+    The claims are read WITHOUT signature verification, which is safe only
+    because they merely select the cache slot: refresh_auth() re-points the
+    cached transport at the incoming token before reuse, so every downstream
+    message is still authenticated by the gateway against the caller's own
+    credential - a forged token cannot ride a cached session.
+    """
+    try:
+        payload = token.split(".")[1]
+        claims = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
+        actors: list[str] = []
+        act = claims.get("act")
+        while isinstance(act, dict):
+            actors.append(str(act.get("sub", "")))
+            act = act.get("act")
+        ident = {
+            "sub": claims.get("sub"),
+            "azp": claims.get("azp"),
+            "aud": claims.get("aud"),
+            "act": actors,
+        }
+        return json.dumps(ident, sort_keys=True, default=str)
+    except Exception:
+        return token
+
+
+class _McpConn:
+    """The MCP server connection held open by a dedicated owner task."""
+
+    def __init__(self) -> None:
+        """Prepare a connection; nothing happens until start()."""
+        self.ready = asyncio.Event()
+        self.result: ClientSession | None = None
+        self.client: httpx.AsyncClient | None = None
+        self.error: BaseException | None = None
+        self._close = asyncio.Event()
+        self._task: asyncio.Task | None = None
+
+    def start(self, headers: dict[str, str]) -> None:
+        """Spawn the owner task; ready is set once connected (or failed)."""
+        self._task = asyncio.get_running_loop().create_task(self._own(headers))
+
+    async def _own(self, headers: dict[str, str]) -> None:
+        """Own the transport contexts for the connection's whole lifetime.
+
+        Transport failures (e.g. a gateway 403 during initialize) surface from
+        anyio task groups as BaseExceptionGroup; they are stored on self.error
+        for the acquiring request to re-raise, since an owner task has no
+        caller to propagate to.
+        """
+        try:
+            async with AsyncExitStack() as stack:
+                self.client = await stack.enter_async_context(create_mcp_http_client(headers=headers))
+                read, write, _ = await stack.enter_async_context(
+                    streamable_http_client(
+                        MCP_SERVER_URL,
+                        http_client=self.client,
+                        terminate_on_close=False,  # Indykite returns 403 on DELETE
+                    ),
+                )
+                session = await stack.enter_async_context(ClientSession(read, write))
+                async with asyncio.timeout(MCP_SETUP_TIMEOUT):
+                    await session.initialize()
+                self.result = session
+                self.ready.set()
+                await self._close.wait()
+        except BaseException as e:
+            if isinstance(e, (KeyboardInterrupt, SystemExit)):
+                raise
+            self.error = e
+        finally:
+            self.ready.set()
+
+    async def shutdown(self) -> None:
+        """Ask the owner task to unwind its contexts and wait for it."""
+        self._close.set()
+        if self._task is not None:
+            with suppress(BaseException):
+                async with asyncio.timeout(MCP_SETUP_TIMEOUT):
+                    await self._task
+
+
+class _McpSessionEntry:
+    """A live MCP session for one user token."""
+
+    def __init__(self) -> None:
+        """Create an empty, not-yet-built entry."""
+        self.conn: _McpConn | None = None
+        self.ready = asyncio.Event()
+        self.created = time.monotonic()
+        self.refs = 0
+        self.retired = False
+        self.complete = False
+
+    @property
+    def expired(self) -> bool:
+        """Whether the entry is past its reuse window."""
+        return MCP_SESSION_TTL <= 0 or (time.monotonic() - self.created) > MCP_SESSION_TTL
+
+    async def build(self, headers: dict[str, str]) -> None:
+        """Connect the session."""
+        try:
+            self.conn = _McpConn()
+            self.conn.start(headers)
+            await self.conn.ready.wait()
+            self.complete = self.conn.result is not None
+        finally:
+            self.ready.set()
+
+    def refresh_auth(self, headers: dict[str, str]) -> None:
+        """Point the cached transport at the caller's current credentials.
+
+        The cache key only *selects* the entry - the Authorization actually
+        forwarded downstream is always the incoming request's token. A forged
+        token whose claims collide with the key therefore fails the gateway's
+        introspection on the very next message (the ping) instead of riding
+        the credential the session was built with.
+        """
+        if self.conn is not None and self.conn.client is not None:
+            self.conn.client.headers.update(headers)
+
+    async def ping(self) -> bool:
+        """Probe the cached session before reuse; False means rebuild."""
+        if self.conn is None or self.conn.result is None:
+            return False
+        try:
+            async with asyncio.timeout(_MCP_PING_TIMEOUT):
+                await self.conn.result.send_ping()
+        except BaseException as e:
+            if isinstance(e, (KeyboardInterrupt, SystemExit)):
+                raise
+            _logger.warning(
+                "Cached MCP session failed ping - rebuilding: %s",
+                _format_exception_chain(e)[:120],
+            )
+            return False
+        return True
+
+    async def shutdown(self) -> None:
+        """Close the connection (in its own owner task)."""
+        if self.conn is not None:
+            await self.conn.shutdown()
+
+
+_MCP_SESSION_CACHE: dict[str, _McpSessionEntry] = {}
+_MCP_CACHE_LOCK = asyncio.Lock()
+# Fire-and-forget shutdown tasks, referenced so they are not GC'd mid-flight.
+_MCP_BG_TASKS: set[asyncio.Task] = set()
+
+
+def _spawn_bg(coro) -> None:
+    """Run *coro* as a background task the loop keeps a reference to."""
+    task = asyncio.get_running_loop().create_task(coro)
+    _MCP_BG_TASKS.add(task)
+    task.add_done_callback(_MCP_BG_TASKS.discard)
+
+
+async def _retire_entry(key: str, entry: _McpSessionEntry, *, drop_ref: bool = False) -> None:
+    """Remove *entry* from the cache; close it once nobody is using it."""
+    async with _MCP_CACHE_LOCK:
+        entry.retired = True
+        if _MCP_SESSION_CACHE.get(key) is entry:
+            _MCP_SESSION_CACHE.pop(key)
+        if drop_ref:
+            entry.refs -= 1
+        close_now = entry.refs <= 0
+    if close_now:
+        _spawn_bg(entry.shutdown())
+
+
+def _sweep_expired_entries() -> None:
+    """Drop expired cache entries; call only while holding _MCP_CACHE_LOCK.
+
+    After a token refresh the old token's entry would otherwise linger,
+    holding its session open forever.
+    """
+    for key, entry in list(_MCP_SESSION_CACHE.items()):
+        if entry.expired:
+            _MCP_SESSION_CACHE.pop(key)
+            entry.retired = True
+            if entry.refs <= 0:
+                _spawn_bg(entry.shutdown())
+
+
+async def _acquire_session_entry(key: str, headers: dict[str, str], attempts: int = 0) -> _McpSessionEntry:
+    """Return a ready session entry for this token - cached, rebuilt, or fresh.
+
+    Raises the stored connect error when the session cannot be established,
+    matching the old per-request behavior.
+    """
+    force_fresh = attempts >= _MCP_MAX_ACQUIRE_ATTEMPTS
+    builder = False
+    async with _MCP_CACHE_LOCK:
+        _sweep_expired_entries()
+        entry = None if force_fresh else _MCP_SESSION_CACHE.get(key)
+        if entry is None:
+            entry = _McpSessionEntry()
+            builder = True
+            if MCP_SESSION_TTL > 0 and not force_fresh:
+                _MCP_SESSION_CACHE[key] = entry
+            else:
+                entry.retired = True
+        entry.refs += 1
+
+    if builder:
+        try:
+            await entry.build(headers)
+        except BaseException:
+            await _retire_entry(key, entry, drop_ref=True)
+            raise
+        if not entry.complete:
+            error = entry.conn.error if entry.conn is not None else None
+            await _retire_entry(key, entry, drop_ref=True)
+            if error is not None:
+                raise error
+            msg = f"MCP session to {MCP_SERVER_URL} could not be established"
+            raise RuntimeError(msg)
+        return entry
+
+    await entry.ready.wait()
+    entry.refresh_auth(headers)
+    if entry.complete and not entry.expired and await entry.ping():
+        return entry
+    await _retire_entry(key, entry, drop_ref=True)
+    return await _acquire_session_entry(key, headers, attempts + 1)
+
+
+async def _release_session_entry(entry: _McpSessionEntry) -> None:
+    """Drop one reference; close the entry if it is retired and unused."""
+    async with _MCP_CACHE_LOCK:
+        entry.refs -= 1
+        close_now = entry.retired and entry.refs <= 0
+    if close_now:
+        await entry.shutdown()
+
+
 @asynccontextmanager
 async def _mcp_session(access_token: str):
-    """Open an MCP session against IndyKite, mirroring retriever_agent's wiring."""
+    """Yield a per-user cached MCP session (ping-validated before reuse).
+
+    Repeat HQ-weather prompts skip the expensive session setup. A connect
+    failure raises, as before.
+    """
     if not MCP_SERVER_URL:
         msg = "MCP_SERVER_URL not configured"
         raise RuntimeError(msg)
@@ -290,17 +605,13 @@ async def _mcp_session(access_token: str):
     if INDYKITE_BASE_URL:
         headers["X-IndyKite-Base-URL"] = INDYKITE_BASE_URL
 
-    async with (  # noqa: SIM117
-        create_mcp_http_client(headers=headers) as client,
-        streamable_http_client(
-            MCP_SERVER_URL,
-            http_client=client,
-            terminate_on_close=False,  # Indykite returns 403 on DELETE
-        ) as (read, write, _),
-    ):
-        async with ClientSession(read, write) as session:
-            await session.initialize()
-            yield session
+    key_material = _token_cache_identity(access_token) + "|" + INDYKITE_BASE_URL
+    key = hashlib.sha256(key_material.encode()).hexdigest()
+    entry = await _acquire_session_entry(key, headers)
+    try:
+        yield entry.conn.result
+    finally:
+        await _release_session_entry(entry)
 
 
 def _unwrap_exception(exc: BaseException) -> list[BaseException]:

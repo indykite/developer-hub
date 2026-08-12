@@ -131,26 +131,43 @@ MCP_SERVER: dict = _MANIFEST.get("mcp_server", {})
 # of /userinfo.
 TOKEN_INTROSPECT: dict = _MANIFEST.get("token_introspect", {})
 
-# --- KBAC authorization policy (migrated from api/authorization_policy.py) ---
+# --- KBAC authorization policies (migrated from api/authorization_policy.py) ---
 # Static KBAC form defaults. Both api/authorization_policy.py and provision.py's
 # _kbac_payload build the create-form payload from here (previously duplicated
-# inline in each).
-KBAC: dict = _MANIFEST.get("kbac", {})
+# inline in each). The manifest holds a list of policies; a bare object (the
+# pre-list manifest format) is accepted and treated as a one-element list.
+_KBAC_RAW = _MANIFEST.get("kbac", [])
+KBAC_POLICIES: list = _KBAC_RAW if isinstance(_KBAC_RAW, list) else [_KBAC_RAW]
+# First policy kept under the old name for callers that predate the list.
+KBAC: dict = KBAC_POLICIES[0] if KBAC_POLICIES else {}
 
 
-def kbac_form_default(project_id: str = "") -> dict:
-    """Build the KBAC authorization-policy create-form defaults.
+def kbac_env_key(index: int) -> str:
+    """Env key the created policy's ID is recorded under.
+
+    The first policy keeps the historical KBAC_POLICY_ID name so existing
+    .env files keep their meaning; later ones get KBAC_POLICY_ID_<n>.
+    """
+    return "KBAC_POLICY_ID" if index == 0 else f"KBAC_POLICY_ID_{index + 1}"
+
+
+def kbac_form_default(project_id: str = "", index: int = 0) -> dict:
+    """Build the create-form defaults for the KBAC policy at *index*.
 
     project_id is supplied by the caller (from env). The policy body is
     serialized compactly to match the JSON string the create form expects.
+    env_key tells the create route where to record the resulting policy ID,
+    so several policies don't overwrite each other's entry.
     """
+    policy = KBAC_POLICIES[index] if index < len(KBAC_POLICIES) else {}
     return {
         "project_id": project_id,
-        "description": KBAC.get("description", ""),
-        "display_name": KBAC.get("display_name", ""),
-        "name": KBAC.get("name", ""),
-        "policy": json.dumps(KBAC.get("policy", {}), separators=(",", ":")),
-        "status": KBAC.get("status", "ACTIVE"),
+        "description": policy.get("description", ""),
+        "display_name": policy.get("display_name", ""),
+        "name": policy.get("name", ""),
+        "policy": json.dumps(policy.get("policy", {}), separators=(",", ":")),
+        "status": policy.get("status", "ACTIVE"),
+        "env_key": kbac_env_key(index),
     }
 
 

@@ -639,29 +639,54 @@
     "offline_validation": {},
     "perform_upsert": true
   },
-  "kbac": {
-    "name": "user-can-trigger-workflow",
-    "display_name": "User can trigger workflow",
-    "description": "Allow a user to trigger an agentic workflow when their department can trigger it OR they have been assigned to it directly.",
-    "status": "ACTIVE",
-    "policy": {
-      "meta": {
-        "policy_version": "1.0-indykite"
-      },
-      "subject": {
-        "type": "User"
-      },
-      "actions": [
-        "CAN_TRIGGER"
-      ],
-      "resource": {
-        "type": "Workflow"
-      },
-      "condition": {
-        "cypher": "MATCH (subject:User)-[:WORKS_IN|CAN_TRIGGER*..3]->(resource:Workflow)"
+  "kbac": [
+    {
+      "name": "user-can-trigger-workflow",
+      "display_name": "User can trigger workflow",
+      "description": "Allow a user to trigger an agentic workflow when their department can trigger it OR they have been assigned to it directly.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-indykite"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "CAN_TRIGGER"
+        ],
+        "resource": {
+          "type": "Workflow"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:WORKS_IN|CAN_TRIGGER*..3]->(resource:Workflow)"
+        }
+      }
+    },
+    {
+      "name": "user-can-retrieve-quote",
+      "display_name": "User can retrieve stock quote",
+      "description": "Allow a user to retrieve a stock quote when their department can retrieve it. Note: evaluations carrying a user bearer token (e.g. via the MCP server) are bound to the token's subject - a user can only be evaluated as themselves.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "CAN_RETRIEVE"
+        ],
+        "resource": {
+          "type": "Quote"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:WORKS_IN]->(department:Department)-[:CAN_RETRIEVE]->(resource:Quote)"
+        }
       }
     }
-  },
+  ],
   "application": {
     "name": "banking-app",
     "display_name": "Banking App",

@@ -104,10 +104,10 @@ def _capture_relationships_payload():
     return {"relationships": json.dumps(_load_default_relationships())}
 
 
-def _kbac_payload():
+def _kbac_payload(index=0):
     # Shares the KBAC form defaults with api.authorization_policy via the dataset
     # manifest (api/_dataset.py) instead of duplicating them here.
-    return _dataset.kbac_form_default(os.getenv("PROJECT_ID", ""))
+    return _dataset.kbac_form_default(os.getenv("PROJECT_ID", ""), index)
 
 
 def _resolver_payload(slot):
@@ -153,13 +153,19 @@ def build_steps():
             ["CAPTURED_RELATIONSHIPS"],
             kind="capture",
         ),
-        _step(
-            "Create KBAC policy: User can trigger workflow",
-            "/api_authorization_policy/create",
-            _kbac_payload,
-            ["KBAC_POLICY_ID"],
-        ),
     ]
+    # One step per KBAC policy in the manifest. The env key naming lives in
+    # _dataset.kbac_env_key, shared with the create route via the payload's
+    # env_key field so each policy's ID is recorded under its own entry.
+    steps.extend(
+        _step(
+            f"Create KBAC policy: {policy.get('display_name', policy.get('name', ''))}",
+            "/api_authorization_policy/create",
+            lambda i=i: _kbac_payload(i),
+            [_dataset.kbac_env_key(i)],
+        )
+        for i, policy in enumerate(_dataset.KBAC_POLICIES)
+    )
     steps.extend(
         _step(
             f"Create external data resolver {spec['slot']}: {spec['display_name']}",
