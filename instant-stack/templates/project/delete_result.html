@@ -1,0 +1,55 @@
+{% extends "layouts/base.html" %}
+{% block title %}Delete Project Result{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <h3 class="mb-4">Delete Project Result</h3>
+
+                    {% if status_code >= 200 and status_code < 300 %}
+                        <div class="alert alert-success" role="alert">
+                            <strong>Success!</strong> Project deleted successfully (Status Code: {{ status_code }})
+                            {% if project_id %}
+                                <hr>
+                                <p class="mb-0"><strong>Deleted Project ID:</strong> <code>{{ project_id }}</code></p>
+                            {% endif %}
+                            {% if env_cleaned %}
+                                <p class="mb-0"><small class="text-muted">Environment variables cleaned from .env (kept SA_TOKEN and URL_ENDPOINTS)</small></p>
+                            {% endif %}
+                        </div>
+                    {% elif status_code >= 400 and status_code < 500 %}
+                        <div class="alert alert-warning" role="alert">
+                            <strong>Client Error</strong> - Status Code: {{ status_code }}
+                        </div>
+                    {% elif status_code >= 500 %}
+                        <div class="alert alert-danger" role="alert">
+                            <strong>Server Error</strong> - Status Code: {{ status_code }}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info" role="alert">
+                            Status Code: {{ status_code }}
+                        </div>
+                    {% endif %}
+
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <strong>API Response</strong>
+                        </div>
+                        <div class="card-body">
+                            <pre style="max-height: 600px; overflow-y: auto;">{{ response_json | tojson(indent=4) }}</pre>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="{{ url_for('api_project.show_delete_form') }}" class="btn btn-danger">Delete Another Project</a>
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

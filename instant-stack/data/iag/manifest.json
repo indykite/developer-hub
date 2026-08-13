@@ -1,0 +1,707 @@
+{
+  "dataset": "iag",
+  "display_name": "CanBank IAG demo",
+  "description": "Config-as-data for the canbank-iag provisioning app (scaffold: CIQ knowledge queries).",
+  "ciq_queries": [
+    {
+      "slot": "1",
+      "name": "get-self",
+      "display_name": "Get Self",
+      "description": "Retrieve the authenticated user's profile, department and manager. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-self\", \"input_params\": { } }.",
+      "query": {
+        "nodes": [
+          "subject.external_id",
+          "subject.property.name",
+          "subject.property.email",
+          "subject.property.title",
+          "department.property.name",
+          "manager.property.name"
+        ],
+        "relationships": [],
+        "aggregate_values": [
+          "agent"
+        ]
+      }
+    },
+    {
+      "slot": "2",
+      "name": "get-stock-quote",
+      "display_name": "Get Stock Quote",
+      "description": "Get Stock Quote retrieves the user, their department and a stock quote for the requested ticker symbol.The only information required is the currently authenticated user's bearer token and a ticker symbol for the stock. Use this function when the user asks questions about stock quotes, such as: 'What is the current price of <ticker>?' Returns: An object containing the user's details, including full_name, department, and the stock price. Call tool 'ciq_execute' with the user's bearer token as the authorization header. Use the following arguments: \"id\": \"get-stock-quote\" and \"ticker\". Example: { \"id\": \"get-stock-quote\", \"input_params\": { \"ticker\": \"NVDA\"} }.\"",
+      "query": {
+        "nodes": [
+          "subject.external_id",
+          "subject.property.name",
+          "subject.property.title",
+          "department.property.name",
+          "quote.property.price"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "3",
+      "name": "get-stock-trade-threshold",
+      "display_name": "Get Stock Trade Threshold",
+      "description": "Retrieve a customer's stock account tier and threshold. Caller must be in the trading department. Example: { \"id\": \"get-stock-trade-threshold\", \"input_params\": { \"customer_external_id\": \"ted\" } }.",
+      "query": {
+        "nodes": [
+          "subject.external_id",
+          "subject.property.name",
+          "subject.property.title",
+          "customer.property.name",
+          "tier.property.name",
+          "tier.property.threshold_amount"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "4",
+      "name": "get-internal-documents",
+      "display_name": "Get Internal Documents",
+      "description": "Retrieve internal documents visible to the caller filtered by taxonomy. Example: { \"id\": \"get-internal-documents\", \"input_params\": { \"taxonomy_external_id\": \"policy\" } }.",
+      "query": {
+        "nodes": [
+          "subject.external_id",
+          "subject.property.name",
+          "subject.property.title",
+          "document.external_id",
+          "document.property.name",
+          "document.property.description",
+          "document.property.url",
+          "taxonomy.property.name"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "5",
+      "name": "get-customer-facing-documents",
+      "display_name": "Get Customer Facing Documents",
+      "description": "Retrieve customer facing documents with their regulatory agreements and investment categories. Example: { \"id\": \"get-customer-facing-documents\", \"input_params\": { } }.",
+      "query": {
+        "nodes": [
+          "doc.external_id",
+          "doc.property.name",
+          "ra.property.name",
+          "ic.property.name"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "6",
+      "name": "get-regulatory-agreements",
+      "display_name": "Get Regulatory Agreements",
+      "description": "Retrieve the full list of regulatory agreements. Example: { \"id\": \"get-regulatory-agreements\", \"input_params\": { } }.",
+      "query": {
+        "nodes": [
+          "ra.external_id",
+          "ra.property.name",
+          "ra.property.description"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "7",
+      "name": "get-decisions",
+      "display_name": "Get Decisions",
+      "description": "get-decisions retrieves past decisions that have been made based on a document, probably a policy of some kind. The results include: the actor, the decision, the document applied in the decision, a relationship document_applied.type that describes the relationship between the decision and the document, the support ticket, and account. The only information required is the currently authenticated user's bearer token. Use this function when we need to find past decisions such as: \"What decisions incorporated the refund policy document?\" Returns: An object containing the decision, the document, a relationship that explains how the document was applied, the actor, the support ticket and the affected account. Call tool 'ciq_execute' with the user's bearer token as the authorization header. Use the following arguments: \"id\": \"get-decisions\". Example: { \"id\": \"get-decisions\", \"input_params\": { \"document_external_id\": \"refund_policy\" } }.",
+      "query": {
+        "nodes": [
+          "actor.property.name",
+          "actor.property.title",
+          "document.property.name",
+          "document.property.description",
+          "document.property.url",
+          "decision.external_id",
+          "decision.property.description",
+          "decision.create_time",
+          "account.property.account_type",
+          "ticket.external_id",
+          "ticket.property.description"
+        ],
+        "relationships": [
+          "document_applied.type"
+        ],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "8",
+      "name": "get-agent-workflows",
+      "display_name": "Get Agent Workflows",
+      "description": "\n            Given an agent id return the list of workflows within which that agent participates.\n            Example: { \"id\": \"get-agent-workflows\", \"input_params\": { \"agent_id\": \"agent_id\" } }\n            ",
+      "query": {
+        "nodes": [],
+        "relationships": [],
+        "aggregate_values": [
+          "workflow",
+          "agent_list"
+        ]
+      }
+    },
+    {
+      "slot": "9",
+      "name": "get-hq-weather",
+      "display_name": "Get HQ Weather",
+      "description": "Get HQ Weather returns the current weather reading for CanBank's London headquarters: temperature, apparent temperature, wind speed and weather code, together with the unit labels. The hq_weather Weather node carries `latitude` and `longitude` properties that are substituted into the `weather` external data resolver URL. The `current` and `units` properties are populated live from open-meteo at query time. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-hq-weather\", \"input_params\": { } }.",
+      "query": {
+        "nodes": [
+          "weather.external_id",
+          "weather.property.location",
+          "weather.property.latitude",
+          "weather.property.longitude",
+          "weather.property.current",
+          "weather.property.units"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "10",
+      "name": "store-decision",
+      "display_name": "Store Decision",
+      "description": "Store Decision records a new decision in the knowledge graph: it creates a Decision node and links it to the policy document it applies (APPLIES), the support ticket it closes (CLOSED_BY) and the authenticated user who made it (MADE), all in one atomic operation. Use this function when a decision has been reached and must be persisted, such as: 'Record that I approved this refund as an exception to the refund policy.' Requires the user's bearer token. Call tool 'ciq_execute' with the following arguments: \"id\": \"store-decision\" and input_params decision_external_id, decision_description, document_external_id, ticket_external_id. Example: { \"id\": \"store-decision\", \"input_params\": { \"decision_external_id\": \"decision_002\", \"decision_description\": \"Refund approved as an exception\", \"document_external_id\": \"refund_policy\", \"ticket_external_id\": \"ticket_001\" } }.",
+      "query": {
+        "upsert_nodes": [
+          {
+            "name": "decision",
+            "type": "Decision",
+            "external_id": "$decision_external_id",
+            "properties": [
+              {
+                "type": "description",
+                "value": "$decision_description"
+              }
+            ]
+          }
+        ],
+        "upsert_relationships": [
+          {
+            "name": "r_applies",
+            "source": "decision",
+            "target": "document",
+            "type": "APPLIES"
+          },
+          {
+            "name": "r_made",
+            "source": "subject",
+            "target": "decision",
+            "type": "MADE"
+          },
+          {
+            "name": "r_closed",
+            "source": "ticket",
+            "target": "decision",
+            "type": "CLOSED_BY"
+          }
+        ],
+        "nodes": [
+          "decision.external_id",
+          "decision.property.description"
+        ],
+        "relationships": [
+          "r_applies",
+          "r_made",
+          "r_closed"
+        ]
+      }
+    }
+  ],
+  "ciq_policies": [
+    {
+      "slot": "1",
+      "name": "get-self",
+      "display_name": "Get Self",
+      "description": "Return the authenticated user, their department and their manager.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User {external_id: $token.sub}) WITH subject OPTIONAL MATCH (subject)-[:WORKS_IN]->(department:Department) WITH subject, department OPTIONAL MATCH (subject)-[:REPORTS_TO]->(manager:User) WITH subject, department, manager, $token.act.sub AS agent",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "department.*",
+            "manager.*"
+          ],
+          "relationships": [],
+          "aggregate_values": [
+            "agent"
+          ]
+        }
+      },
+      "tags": [
+        "canbank",
+        "self",
+        "profile"
+      ]
+    },
+    {
+      "slot": "2",
+      "name": "get-stock-quote",
+      "display_name": "Get Stock Quote",
+      "description": "Return a stock quote when the caller's department is allowed to retrieve it.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User {external_id: $token.sub})-[:WORKS_IN]->(department:Department)-[:CAN_RETRIEVE]->(quote:Quote)",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "department.*",
+            "quote.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "canbank",
+        "trading",
+        "quote"
+      ]
+    },
+    {
+      "slot": "3",
+      "name": "get-stock-trade-threshold",
+      "display_name": "Get Stock Trade Threshold",
+      "description": "Return a customer's stock account tier when accessed by a trading user.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User {external_id: $token.sub})-[:WORKS_IN]->(department:Department)-[:CAN_ACCESS|CONTAINS*..2]->(customer:Customer {external_id: $customer_external_id})-[:OWNS]-(account:Account)-[:IS_TIER]->(tier:AccountTier) WHERE (account)-[:IS_TYPE]->(:InvestmentCategory {external_id: 'cat_stocks'})",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "customer.*",
+            "account.*",
+            "tier.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "canbank",
+        "trading",
+        "threshold"
+      ]
+    },
+    {
+      "slot": "4",
+      "name": "get-internal-documents",
+      "display_name": "Get Internal Documents",
+      "description": "Return internal documents reachable from the caller filtered by taxonomy.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User {external_id: $token.sub})-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(document:Document)-[:IS_TYPE]->(taxonomy:Taxonomy {external_id: $taxonomy_external_id})",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "document.*",
+            "taxonomy.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "canbank",
+        "documents",
+        "taxonomy"
+      ]
+    },
+    {
+      "slot": "5",
+      "name": "get-customer-facing-documents",
+      "display_name": "Get Customer Facing Documents",
+      "description": "List customer facing documents together with their regulatory agreements and investment categories.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "_Application"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:_Application {external_id: $_appId}) WITH subject MATCH (doc:Document)-[:SUBJECT_TO]->(ra:RegulatoryAgreement), (doc)-[:CLASSIFIED_AS]->(ic:InvestmentCategory)",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "doc.*",
+            "ra.*",
+            "ic.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "canbank",
+        "documents",
+        "customer"
+      ]
+    },
+    {
+      "slot": "6",
+      "name": "get-regulatory-agreements",
+      "display_name": "Get Regulatory Agreements",
+      "description": "List all regulatory agreements known to the graph.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "_Application"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:_Application {external_id: $_appId}) WITH subject MATCH (ra:RegulatoryAgreement)",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "ra",
+            "ra.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "canbank",
+        "regulatory"
+      ]
+    },
+    {
+      "slot": "7",
+      "name": "get-decisions",
+      "display_name": "Get Decisions",
+      "description": "Given a document, return the decisions that referenced it along with the ticket, the customer and the affected account.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User {external_id: $token.sub})-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(document:Document {external_id: $document_external_id})<-[document_applied]-(decision:Decision)<--(ticket:Ticket)-[:REGARDING]->(account:Account), (ticket)-[:CREATED_BY]-(customer:Customer), (decision)<-[:MADE]-(actor:User)",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "actor.*",
+            "document.*",
+            "decision",
+            "decision.*",
+            "ticket.*",
+            "account.*",
+            "customer.*"
+          ],
+          "relationships": [
+            "document_applied.*"
+          ],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "canbank",
+        "decisions",
+        "tickets"
+      ]
+    },
+    {
+      "slot": "8",
+      "name": "get-agent-workflows",
+      "display_name": "Get Agent Workflows",
+      "description": "Given an agent get the workflow and all of the possible relationships",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "_Application"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:_Application) MATCH (wf:Workflow)-[rels:INVOKES*]->(a:Agent {external_id: $agent_id}) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) WITH subject, wf.external_id AS workflow, [r IN rels | endNode(r).external_id] AS agent_list",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [],
+          "relationships": [],
+          "aggregate_values": [
+            "workflow",
+            "agent_list"
+          ]
+        }
+      },
+      "tags": []
+    },
+    {
+      "slot": "9",
+      "name": "get-hq-weather",
+      "display_name": "Get HQ Weather",
+      "description": "Return the current weather reading for CanBank's London headquarters. The hq_weather Weather node's temperature property is populated at query time by the `weather` external data resolver, which calls open-meteo.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User {external_id: $token.sub}) WITH subject MATCH (weather:Weather {external_id: 'hq_weather'})",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "weather.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "canbank",
+        "weather"
+      ]
+    },
+    {
+      "slot": "10",
+      "name": "store-decision",
+      "display_name": "Store Decision",
+      "description": "Create a new Decision node and wire it to the document it applies (APPLIES), the ticket it closes (CLOSED_BY) and the authenticated user who made it (MADE) in one atomic CIQ upsert.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User {external_id: $token.sub}) MATCH (document:Document {external_id: $document_external_id}) MATCH (ticket:Ticket {external_id: $ticket_external_id})",
+          "filter": []
+        },
+        "allowed_upserts": {
+          "nodes": {
+            "node_types": [
+              "Decision"
+            ]
+          },
+          "relationships": {
+            "relationship_types": [
+              {
+                "type": "APPLIES",
+                "source_node_label": "Decision",
+                "target_node_label": "Document"
+              },
+              {
+                "type": "MADE",
+                "source_node_label": "User",
+                "target_node_label": "Decision"
+              },
+              {
+                "type": "CLOSED_BY",
+                "source_node_label": "Ticket",
+                "target_node_label": "Decision"
+              }
+            ]
+          }
+        }
+      },
+      "tags": [
+        "canbank",
+        "decisions",
+        "write"
+      ]
+    }
+  ],
+  "resolvers": [
+    {
+      "slot": "1",
+      "name": "weather",
+      "display_name": "Current Weather",
+      "description": "Fetches the current weather block (temperature, apparent temperature, wind speed and weather code) for the latitude/longitude passed via input_params. Defaults to CanBank's London HQ (51.5072, -0.1276) when input_params are absent. Use this as the `external_value` on a Weather node property. Pair with the `weather-units` resolver to also retrieve the unit labels.",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude={$latitude || 51.5072}&longitude={$longitude || -0.1276}&current=temperature_2m,apparent_temperature,wind_speed_10m,weather_code&timezone=auto",
+      "method": "GET",
+      "headers": {},
+      "request_payload": "",
+      "request_content_type": "JSON",
+      "response_content_type": "JSON",
+      "response_selector": ".current"
+    },
+    {
+      "slot": "2",
+      "name": "weather-units",
+      "display_name": "Current Weather Units",
+      "description": "Fetches the unit labels (e.g. \u00b0C, km/h) for the current weather block at the latitude/longitude passed via input_params (defaults to London HQ).",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude={$latitude || 51.5072}&longitude={$longitude || -0.1276}&current=temperature_2m,apparent_temperature,wind_speed_10m,weather_code&timezone=auto",
+      "method": "GET",
+      "headers": {},
+      "request_payload": "",
+      "request_content_type": "JSON",
+      "response_content_type": "JSON",
+      "response_selector": ".current_units"
+    },
+    {
+      "slot": "3",
+      "name": "stock-quote",
+      "display_name": "Stock Quote",
+      "description": "Returns the current market price for the ticker symbol passed via the knowledge query's `ticker` input parameter. Bound to the price property of the stock_quote Quote node and consumed by the iag-demo retriever_agent's max-purchase-amount tool. Backed by Yahoo Finance's public chart endpoint; no API key required.",
+      "url": "https://query1.finance.yahoo.com/v8/finance/chart/{$ticker}?interval=1d",
+      "method": "GET",
+      "headers": {},
+      "request_payload": "",
+      "request_content_type": "JSON",
+      "response_content_type": "JSON",
+      "response_selector": ".chart.result[0].meta.regularMarketPrice"
+    }
+  ],
+  "app_agent": {
+    "name": "banking-agent",
+    "display_name": "Banking Agent",
+    "description": "App agent for the banking demo",
+    "api_permissions": [
+      "Authorization",
+      "Capture",
+      "ContXIQ",
+      "IKGRead",
+      "EntityMatching",
+      "ReadDataSchema"
+    ],
+    "credentials_expire_days": 180
+  },
+  "mcp_server": {
+    "name": "canbank-mcp-server",
+    "display_name": "CanBank MCP Server",
+    "description": "MCP Server configuration for CanBank \u2014 binds the App Agent and Token Introspect used to authenticate inbound MCP traffic.",
+    "enabled": true,
+    "scopes_supported": [
+      "name",
+      "email"
+    ]
+  },
+  "token_introspect": {
+    "name": "canbank-token-introspect",
+    "display_name": "CanBank Token Introspect",
+    "description": "Token introspect for CanBank users authenticated via their IdP",
+    "ikg_node_type": "User",
+    "jwt_matcher": {
+      "issuer": "https://your-idp.example.com/",
+      "audience": "your-api-audience-identifier"
+    },
+    "claims_mapping": {
+      "email": {
+        "selector": "email"
+      }
+    },
+    "offline_validation": {},
+    "perform_upsert": true
+  },
+  "kbac": [
+    {
+      "name": "user-can-trigger-workflow",
+      "display_name": "User can trigger workflow",
+      "description": "Allow a user to trigger an agentic workflow when their department can trigger it OR they have been assigned to it directly.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-indykite"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "CAN_TRIGGER"
+        ],
+        "resource": {
+          "type": "Workflow"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:WORKS_IN|CAN_TRIGGER*..3]->(resource:Workflow)"
+        }
+      }
+    },
+    {
+      "name": "user-can-retrieve-quote",
+      "display_name": "User can retrieve stock quote",
+      "description": "Allow a user to retrieve a stock quote when their department can retrieve it. Note: evaluations carrying a user bearer token (e.g. via the MCP server) are bound to the token's subject - a user can only be evaluated as themselves.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "CAN_RETRIEVE"
+        ],
+        "resource": {
+          "type": "Quote"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:WORKS_IN]->(department:Department)-[:CAN_RETRIEVE]->(resource:Quote)"
+        }
+      }
+    }
+  ],
+  "application": {
+    "name": "banking-app",
+    "display_name": "Banking App",
+    "description": "Banking application that consumes the IndyKite Knowledge Graph"
+  },
+  "project": {
+    "name": "banking-demo",
+    "display_name": "Banking Demo",
+    "description": "Banking demo project for IndyKite KBAC and ContX IQ",
+    "region": "europe-west1",
+    "db_connection": {
+      "name": "",
+      "password": "",
+      "url": "",
+      "username": ""
+    }
+  }
+}
