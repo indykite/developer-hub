@@ -1,0 +1,74 @@
+---
+info:
+  name: Drive MCP Initialize
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{iag_drive_mcp_url}}"
+  headers:
+    - name: Accept
+      value: application/json, text/event-stream
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+          "protocolVersion": "2025-03-26",
+          "capabilities": {},
+          "clientInfo": {
+            "name": "bruno-iag-drive-poc",
+            "version": "1.0"
+          }
+        }
+      }
+  auth:
+    type: bearer
+    token: "{{user_token_millicent}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        var rawBody = res.body;
+        var jsonData;
+        if (typeof rawBody === "string" && rawBody.includes("event:")) {
+          var dataMatch = rawBody.match(/data:\s*({.*})/s);
+          if (dataMatch) {
+            jsonData = JSON.parse(dataMatch[1]);
+          }
+        } else if (typeof rawBody === "object") {
+          jsonData = rawBody;
+        }
+
+        test("Status code is 200 (millicent authorized through the drive gateway)", function () {
+          expect(res.status).to.equal(200);
+        });
+
+        test("Response contains server info", function () {
+          expect(jsonData).to.not.be.null;
+          expect(jsonData.result).to.have.property("serverInfo");
+        });
+
+        var sessionId = res.headers["mcp-session-id"];
+
+        test("Session ID header is present", function () {
+          expect(sessionId).to.be.a("string");
+          expect(sessionId).to.not.be.empty;
+        });
+
+        if (sessionId) {
+          bru.setVar("drive_mcp_session_id", sessionId);
+        }
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

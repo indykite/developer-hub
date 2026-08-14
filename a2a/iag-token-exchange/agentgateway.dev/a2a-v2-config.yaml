@@ -1,0 +1,47 @@
+---
+config:
+  logging:
+    format: json
+    fields:
+      add:
+        backend: backend
+binds:
+  - port: 3000
+    listeners:
+      - routes:
+          - hostnames: []
+            matches:
+              - path:
+                  pathPrefix: /
+            backends:
+              - host: localhost:8003
+            name: carol-route
+            policies:
+              cors:
+                allowOrigins:
+                  - '*'
+                allowHeaders:
+                  - content-type
+                  - cache-control
+              a2a: {}
+  - port: 4000
+    listeners:
+      - protocol: HTTP
+        name: to-alice
+        hostname: localhost
+        routes:
+          - hostnames: []
+            matches:
+              - path:
+                  pathPrefix: /
+            backends:
+              - host: localhost:8001
+            name: to-alice
+            policies:
+              cors:
+                allowOrigins:
+                  - '*'
+                allowHeaders:
+                  - content-type
+                  - cache-control
+              a2a: {}

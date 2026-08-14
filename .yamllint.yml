@@ -23,6 +23,7 @@ ignore: |
   # empty-values) don't apply.
   a2a/iag-demo/bruno/
   a2a/iag-mcp-demo/bruno/
+  a2a/iag-token-exchange/bruno/
 
 rules:
   braces:

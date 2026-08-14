@@ -1,0 +1,27 @@
+---
+info:
+  name: Drive MCP PoC
+  type: folder
+  seq: 6
+
+request:
+  auth: inherit
+
+docs: |-
+  Proof-of-concept: the IAG (drive-mcp-iag, port 8887) proxying a Google Drive
+  MCP server - the reference stdio server wrapped by supergateway into
+  Streamable HTTP. Demonstrates that the gateway's MCP proxy mode is
+  downstream-agnostic: introspection, AuthZEN CAN_TRIGGER and workflow
+  resolution (wf-drive -> indykiteagent-drive) run exactly as for the
+  IndyKite MCP server, while the Drive server holds its own Google
+  credentials and ignores the delegation token the gateway injects.
+
+  Prerequisites: compose started with `--profile drive`, the agent-workflow
+  ingest re-run (wf-drive / indykiteagent-drive), an `indykiteagent-drive`
+  IdP client, Google OAuth material in drive_mcp/.gdrive (see
+  drive_mcp/README.md), and user_token_millicent set (millicent CAN_TRIGGER
+  wf-drive; other users are denied).
+
+  Note: the tool assertions (`search`) match the vendored Drive server
+  (the archived reference server, vendored under drive_mcp/vendor); adjust if you swap
+  in another Drive MCP server with a different tool name.

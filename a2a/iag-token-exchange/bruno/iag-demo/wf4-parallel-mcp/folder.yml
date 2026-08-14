@@ -1,0 +1,38 @@
+---
+info:
+  name: WF4 Parallel Multi-Agent MCP
+  type: folder
+  seq: 5
+
+request:
+  auth: inherit
+
+docs: |-
+  Mirror of the jarvis-proto e2e suite "12 IAG Tests / 06 WF4 - Parallel
+  Multi-Agent MCP" (ENG-8855), adapted to this demo stack.
+
+  Three users/agents reach the same MCP gateway (mcp-iag) concurrently:
+  millicent + carol both via the shared retriever agent (two users, one agent)
+  and millicent via the analyst agent. The MCP requests are interleaved
+  round-robin (init A/B/C, initialized A/B/C, list A/B/C, ...) so all three
+  sessions stay live at once and the gateway juggles them together - a
+  stronger isolation check than draining one session before the next. All
+  three session ids must be distinct. The MCP subject is bound to the bearer
+  token, so authorization reflects each user even on the shared retriever:
+  millicent CAN_TRIGGER wf3 (allow), carol cannot (deny).
+
+  Differences from the e2e original:
+  - Tokens come from the real IdP (idsvr.indykite.one), not the
+    super-octo-waffle mock: log in to the chatbot (http://localhost:3000) as
+    each user and copy the access token into the user_token_millicent /
+    user_token_carol secret environment variables.
+  - The demo agents are real A2A agents without a test inbox, so there is no
+    delegated-token capture step; the gateway calls (seq 1-3) exercise the
+    full chain (IAG -> agent -> mcp-iag -> MCP server) server-side, and the
+    MCP session requests (seq 4+) talk to mcp-iag with the user tokens.
+  - Subject type is User (this demo's convention) instead of Person.
+
+  Prerequisites: the "Agent Workflow" ingest has been run (carol, wf3,
+  indykiteagent-4, indykiteagent-mcp and the workflow_name /
+  discriminating_property edges), the compose stack is up with the analyst
+  services, and a CAN_TRIGGER KBAC policy over Workflow resources is active.

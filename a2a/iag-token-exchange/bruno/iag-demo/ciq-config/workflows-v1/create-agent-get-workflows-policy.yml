@@ -1,0 +1,30 @@
+---
+info:
+  name: Create Agent Get Workflows Policy
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "get-agent-workflows",
+          "display_name": "Get Agent Workflows",
+          "description": "Given an agent get the workflow and all of the possible relationships",
+          "project_id": "{{project_id}}",
+          "policy": "{ \"meta\": { \"policy_version\": \"1.0-ciq\" }, \"subject\": { \"type\": \"_Application\" }, \"condition\": { \"cypher\": \"MATCH (subject:_Application {external_id: $_appId}) WITH subject MATCH (workflow:Workflow)-[wf_invokes:INVOKES*1..3]->(agent:Agent {external_id: $agent_id}) WITH subject, agent, COLLECT(workflow) AS workflow_list\", \"filter\": [ ] }, \"allowed_reads\": { \"nodes\": [ \"agent\", \"agent.*\" ], \"relationships\": [  ], \"aggregate_values\": [ \"workflow_list\" ] } }",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

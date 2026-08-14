@@ -1,0 +1,41 @@
+---
+info:
+  name: Subject CAN_TRIGGER Workflow
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/access/v1/evaluation"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "subject": {
+          "type": "User",
+          "id": "{{subject_external_id}}"
+        },
+        "resource": {
+          "type": "Workflow",
+          "id": "{{resource_external_id}}"
+        },
+        "action": {
+          "name": "CAN_TRIGGER"
+        }
+      }
+  auth:
+    type: apikey
+    key: X-IK-ClientKey
+    value: "{{agent_token}}"
+    placement: header
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

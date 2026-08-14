@@ -1,0 +1,41 @@
+---
+info:
+  name: Subject CAN_RETRIEVE Quote
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/access/v1/evaluation"
+  headers:
+    - name: Accept
+      value: application/json
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "subject": {
+          "type": "User",
+          "id": "{{subject_external_id}}"
+        },
+        "resource": {
+          "type": "Quote",
+          "id": "stock_quote"
+        },
+        "action": {
+          "name": "CAN_RETRIEVE"
+        }
+      }
+  auth:
+    type: apikey
+    key: X-IK-ClientKey
+    value: "{{agent_token}}"
+    placement: header
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

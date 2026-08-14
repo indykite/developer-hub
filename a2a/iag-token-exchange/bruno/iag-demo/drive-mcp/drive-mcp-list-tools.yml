@@ -1,0 +1,61 @@
+---
+info:
+  name: Drive MCP List Tools
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{iag_drive_mcp_url}}"
+  headers:
+    - name: Accept
+      value: application/json, text/event-stream
+    - name: Content-Type
+      value: application/json
+    - name: Mcp-Session-Id
+      value: "{{drive_mcp_session_id}}"
+  body:
+    type: json
+    data: |-
+      {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "tools/list",
+        "params": {}
+      }
+  auth:
+    type: bearer
+    token: "{{user_token_millicent}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        var rawBody = res.body;
+        var jsonData;
+        if (typeof rawBody === "string" && rawBody.includes("event:")) {
+          var dataMatch = rawBody.match(/data:\s*({.*})/s);
+          if (dataMatch) {
+            jsonData = JSON.parse(dataMatch[1]);
+          }
+        } else if (typeof rawBody === "object") {
+          jsonData = rawBody;
+        }
+
+        test("Status code is 200", function () {
+          expect(res.status).to.equal(200);
+        });
+
+        test("Response lists the Drive server's tools (search)", function () {
+          expect(jsonData).to.not.be.null;
+          expect(jsonData.result).to.have.property("tools");
+          expect(jsonData.result.tools).to.be.an("array");
+          var names = jsonData.result.tools.map(function (t) { return t.name; });
+          expect(names).to.include("search");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,36 @@
+---
+version: '3.9'
+
+services:
+  iag-base:
+    # Pinned: 2.42.0 adds the token_service block (delegation minted by the
+    # IndyKite Token Service; delegated token travels in X-IK-Token, policies
+    # read it as $ik_token). 2.21.1 was the previous pin (first with MCP
+    # proxying). All gateways share this tag.
+    # See https://hub.docker.com/r/indykite/agent-gateway/tags.
+    image: indykite/agent-gateway:2.42.0
+    environment:
+      JARVIS_SERVICE_LOG_LEVEL: debug
+      JARVIS_SERVICE_ENVIRONMENT: demo
+      JARVIS_IDENTITY_PROVIDER_BASE_URL: "${IDP_BASE_URL:-https://idsvr.indykite.one/oauth/v2/}"
+      JARVIS_IDENTITY_PROVIDER_INTROSPECT_ENDPOINT: "oauth-introspect"
+      JARVIS_IDENTITY_PROVIDER_CLIENT_CREDENTIAL_ENDPOINT: "oauth-token"
+      JARVIS_IDENTITY_PROVIDER_EXCHANGE_ENDPOINT: "oauth-token"
+      # NOTE on the Token Service (JARVIS_TOKEN_SERVICE_*): it is enabled per
+      # gateway in docker-compose.yaml, NOT here. On 2.42.0 a gateway in
+      # token-service mode keeps the user's raw token in Authorization and
+      # ignores incoming X-IK-Token when building the actors chain, so
+      # multi-hop A2A chains cannot grow. The A2A gateways therefore keep the
+      # classic IdP exchange (chain travels in Authorization), and only the
+      # MCP gateways - the last hop before the platform - mint their
+      # delegation at the Token Service.
+      JARVIS_CONTX_IQ_BASE_URL: ${INDYKITE_BASE_URL}/contx-iq/v1
+      JARVIS_CONTX_IQ_QUERY_ID: ${CIQ_QUERY_ID}
+      JARVIS_CONTX_IQ_APP_AGENT_CREDENTIALS_TOKEN: ${APP_AGENT_CREDENTIALS_TOKEN}
+      JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${WORKFLOW_ID}
+      JARVIS_AUTHZEN_BASE_URL: ${INDYKITE_BASE_URL}/access/v1
+      JARVIS_AUTHZEN_ACTION: CAN_TRIGGER
+      JARVIS_AUTHZEN_SUBJECT_TYPES: User
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

@@ -1,0 +1,30 @@
+---
+info:
+  name: Create Get Stock Quote Policy
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "get-stock-quote",
+          "display_name": "Get stock Quote",
+          "description": "Given a Bearer token and a ticker symbol return the user, their department and a stock quote",
+          "project_id": "{{project_id}}",
+          "policy": "{ \"meta\": { \"policy_version\": \"1.0-ciq\" }, \"subject\": { \"type\": \"User\" }, \"condition\": { \"cypher\": \"MATCH (subject:User {external_id: $token.sub})-[:WORKS_IN]->(department:Department)-[:CAN_RETRIEVE]->(quote:Quote)\", \"filter\": [ ] }, \"allowed_reads\": { \"nodes\": [ \"subject.*\", \"department.*\", \"quote.*\" ], \"relationships\": [  ], \"aggregate_values\": [ ] } }",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

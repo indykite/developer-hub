@@ -1,0 +1,71 @@
+---
+# Token-service configuration for the iag-token-exchange demo.
+# EXAMPLE - copy to token-service.yaml and fill in real keys/secrets.
+# Reference for every field: jarvis services/.configs/services/token-service.yaml
+
+service:
+  name: token-service
+  port: 8102
+  environment: local
+  log_level: debug
+  # Issuer: the `iss` of every token this service signs. An identifier, not
+  # necessarily reachable - relying parties are configured with it.
+  # NOTE: must be https:// - the IndyKite platform routes third-party JWT
+  # introspection only for https issuers (http issuers are treated as opaque
+  # tokens). This is an identifier, not a transport address: the gateways
+  # still call the service at http://token-service:8102 inside the compose
+  # network, and the platform validates tokens with the inline public JWK,
+  # so the URL never needs to resolve.
+  base_url: https://token-service.demo.local
+
+idp:
+  # Allow-list of what a token may be issued for (`aud` claim).
+  audiences:
+    - agent-gateway
+  # Delegation tokens are short-lived on purpose - nothing revokes them.
+  token_ttl: 5m
+  # act.type written into issued tokens; the IndyKite backend resolves the
+  # actor in the graph with it.
+  actor_type: Agent
+  # Credentials callers (the gateways) present on the token endpoint.
+  client_auth:
+    type: client_secret_basic
+    client_id: agent-gateway
+    client_secret: "" # generate a secret and mirror it as TOKEN_SERVICE_CLIENT_SECRET in .env
+  # First key signs; the rest stay published for rotation.
+  signing_keys:
+    - '{"alg":"RS256","kid":"<kid>","kty":"RSA","use":"sig","n":"<...>","e":"AQAB","d":"<PRIVATE - generate your own>"}'
+
+# Which incoming subject/actor tokens are accepted, and how they are verified.
+# Phase 1: tokens signed by the local demo IdP key (see mint.py in the session
+# scratchpad). Phase 2 adds the real IdP (idsvr) issuer with its jwks_uri.
+token_introspection:
+  configurations:
+    - name: demo-idp
+      token_types:
+        - subject_token
+        - actor_token
+      matcher:
+        type: jwt
+        issuer: https://demo-idp.local
+        audience: agent-gateway
+      validation:
+        offline:
+          keys:
+            - '{"alg":"RS256","kid":"<idp-kid>","kty":"RSA","use":"sig","n":"<...>","e":"AQAB"}'
+
+# Audit: every exchange attempt (authorized or not) is delivered to the demo's
+# audit terminal - the same webhook the gateways use - so minting a delegation
+# appears in the console stream beside the gateway authorization decisions.
+# Messages carry decision, reason, subject, actor, the delegation chain, the
+# trace id, and (on success) tokenID: the jti of the issued token.
+audit:
+  delivery: webhook
+  http:
+    url: http://chatbot:3000/api/push-update
+    method: post
+    auth:
+      type: no-auth
+  # Deliver in the background so auditing never adds latency to an exchange.
+  async:
+    buffer_size: 100
