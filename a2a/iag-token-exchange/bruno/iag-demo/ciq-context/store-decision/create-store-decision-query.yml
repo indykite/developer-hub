@@ -1,0 +1,31 @@
+---
+info:
+  name: Create Store Decision Query
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/knowledge-queries"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "store-decision",
+          "display_name": "Store Decision Query",
+          "description": "Store Decision records a new decision in the knowledge graph: it creates a Decision node and links it to the policy document it applies (APPLIES), the support ticket it closes (CLOSED_BY) and the authenticated user who made it (MADE), all in one atomic operation. Use this function when a decision has been reached and must be persisted, such as: 'Record that I approved this refund as an exception to the refund policy.' Requires the user's bearer token. Call tool 'ciq_execute' with the user's bearer token as the authorization header. Use the following arguments: \"id\": \"store-decision\" and input_params decision_external_id, decision_description, document_external_id, ticket_external_id. Example: { \"id\": \"store-decision\", \"input_params\": { \"decision_external_id\": \"decision_002\", \"decision_description\": \"Refund approved as an exception\", \"document_external_id\": \"refund_policy\", \"ticket_external_id\": \"ticket_001\" } }.",
+          "project_id": "{{project_id}}",
+          "policy_id": "{{store_decision_policy}}",
+          "query": "{\"upsert_nodes\": [{\"name\": \"decision\", \"type\": \"Decision\", \"external_id\": \"$decision_external_id\", \"properties\": [{\"type\": \"description\", \"value\": \"$decision_description\"}]}], \"upsert_relationships\": [{\"name\": \"r_applies\", \"source\": \"decision\", \"target\": \"document\", \"type\": \"APPLIES\"}, {\"name\": \"r_made\", \"source\": \"subject\", \"target\": \"decision\", \"type\": \"MADE\"}, {\"name\": \"r_closed\", \"source\": \"ticket\", \"target\": \"decision\", \"type\": \"CLOSED_BY\"}], \"nodes\": [\"decision.external_id\", \"decision.property.description\"], \"relationships\": [\"r_applies\", \"r_made\", \"r_closed\"]}",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,8 @@
+---
+info:
+  name: workflows-v0
+  type: folder
+  seq: 3
+
+request:
+  auth: inherit

@@ -1,0 +1,30 @@
+---
+info:
+  name: Create Store Decision Policy
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "store-decision",
+          "display_name": "Store Decision",
+          "description": "Allow a user to create a new Decision node and wire it to the document it applies, the ticket it closes and the user who made it in one atomic CIQ upsert.",
+          "project_id": "{{project_id}}",
+          "policy": "{\"meta\": {\"policy_version\": \"1.0-ciq\"}, \"subject\": {\"type\": \"User\"}, \"condition\": {\"cypher\": \"MATCH (subject:User {external_id: $token.sub}) MATCH (document:Document {external_id: $document_external_id}) MATCH (ticket:Ticket {external_id: $ticket_external_id})\", \"filter\": []}, \"allowed_upserts\": {\"nodes\": {\"node_types\": [\"Decision\"]}, \"relationships\": {\"relationship_types\": [{\"type\": \"APPLIES\", \"source_node_label\": \"Decision\", \"target_node_label\": \"Document\"}, {\"type\": \"MADE\", \"source_node_label\": \"User\", \"target_node_label\": \"Decision\"}, {\"type\": \"CLOSED_BY\", \"source_node_label\": \"Ticket\", \"target_node_label\": \"Decision\"}]}}}",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

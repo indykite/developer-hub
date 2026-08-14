@@ -1,0 +1,79 @@
+---
+info:
+  name: Millicent (retriever) MCP Tool CIQ Execute
+  type: http
+  seq: 16
+
+http:
+  method: POST
+  url: "{{iag_mcp_url}}"
+  headers:
+    - name: Accept
+      value: application/json, text/event-stream
+    - name: Content-Type
+      value: application/json
+    - name: Mcp-Session-Id
+      value: "{{wf4_millicent_retriever_session_id}}"
+  body:
+    type: json
+    data: |-
+      {
+        "jsonrpc": "2.0",
+        "id": 4,
+        "method": "tools/call",
+        "params": {
+          "name": "ciq_execute",
+          "arguments": {
+            "id": "{{get_stock_quote_query}}",
+            "input_params": {
+              "ticker": "NVDA"
+            }
+          }
+        }
+      }
+  auth:
+    type: bearer
+    token: "{{user_token_millicent}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        var rawBody = res.body;
+
+        // SSE stream - parse the JSON from the event data
+        var jsonData;
+        if (typeof rawBody === "string" && rawBody.includes("event:")) {
+          var dataMatch = rawBody.match(/data:\s*({.*})/s);
+          if (dataMatch) {
+            jsonData = JSON.parse(dataMatch[1]);
+          }
+        } else if (typeof rawBody === "object") {
+          jsonData = rawBody;
+        }
+
+        test("Status code is 200", function () {
+          expect(res.status).to.equal(200);
+        });
+
+        test("Response has a result with content", function () {
+          expect(jsonData).to.not.be.null;
+          expect(jsonData).to.have.property("result");
+          expect(jsonData.result).to.have.property("content");
+          expect(jsonData.result.content).to.be.an("array");
+          expect(jsonData.result.content.length).to.be.greaterThan(0);
+        });
+
+        test("CIQ execution returns data", function () {
+          var toolResult = jsonData.result.content[0].text;
+          var parsed = JSON.parse(toolResult);
+          expect(parsed).to.have.property("data");
+          expect(parsed.data).to.be.an("array");
+          expect(parsed.data.length).to.be.greaterThan(0);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,8 @@
+---
+audit:
+  delivery: webhook
+  http:
+    url: http://chatbot:3000/api/push-update
+    method: post
+    auth:
+      type: no-auth

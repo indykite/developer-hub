@@ -1,0 +1,71 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.env
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Environment variables (secrets)
+.env
+.env.local
+.env.*.local
+
+# Node
+node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.private/*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Testing / coverage
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.pytest_cache/
+.mypy_cache/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Google Drive MCP PoC - OAuth client keys and saved user credentials
+# (keep the directory itself so the compose bind mount works on fresh clones)
+drive_mcp/.gdrive/*
+!drive_mcp/.gdrive/.gitkeep
+
+# Token-service config holds a private signing key + client secret - keep local.
+token-service/token-service.yaml

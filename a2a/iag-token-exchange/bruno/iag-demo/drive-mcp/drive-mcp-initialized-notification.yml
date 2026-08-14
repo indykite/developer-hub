@@ -1,0 +1,41 @@
+---
+info:
+  name: Drive MCP Initialized Notification
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{iag_drive_mcp_url}}"
+  headers:
+    - name: Accept
+      value: application/json, text/event-stream
+    - name: Content-Type
+      value: application/json
+    - name: Mcp-Session-Id
+      value: "{{drive_mcp_session_id}}"
+  body:
+    type: json
+    data: |-
+      {
+        "jsonrpc": "2.0",
+        "method": "initialized",
+        "params": {}
+      }
+  auth:
+    type: bearer
+    token: "{{user_token_millicent}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200 (or 202 for notification)", function () {
+          expect(res.status).to.be.oneOf([200, 202, 204]);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

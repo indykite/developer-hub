@@ -1,0 +1,103 @@
+---
+info:
+  name: Create CanBank Nodes
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/capture/v1/nodes"
+  body:
+    type: json
+    data: |-
+      {
+        "nodes": [
+          {
+            "external_id": "canbank",
+            "type": "Entity",
+            "is_identity": false,
+            "tags": [
+              "Organization"
+            ],
+            "properties": [
+              {
+                "type": "name",
+                "value": "CanBank"
+              }
+            ]
+          },
+          {
+            "external_id": "canbank-depts",
+            "type": "Container",
+            "is_identity": false,
+            "tags": [
+            ],
+            "properties": [
+              {
+                "type": "name",
+                "value": "Departments"
+              }
+            ]
+          },
+
+          /* Departments */
+          { "external_id": "exec", "type": "Department", "is_identity": false, "properties": [{ "type": "name", "value": "Executive", "metadata": {"source": "Workday"}} ] },
+          { "external_id": "lob", "type": "Department", "is_identity": false, "properties": [{ "type": "name", "value": "Lines of Business", "metadata": {"source": "Workday"}}] },
+          { "external_id": "governance", "type": "Department", "is_identity": false, "properties": [{ "type": "name", "value": "Governance", "metadata": {"source": "Workday"}}] },
+          { "external_id": "shared", "type": "Department", "is_identity": false, "properties": [{ "type": "name", "value": "Shared Services", "metadata": {"source": "Workday"}}] },
+          { "external_id": "support", "type": "Department", "is_identity": false, "properties": [{ "type": "name", "value": "Customer Support", "metadata": {"source": "Workday"} }] },
+          { "external_id": "consumer", "type": "Department", "is_identity": false, "properties": [{ "type": "name", "value": "Consumer Banking", "metadata": {"source": "Workday"}}] },
+          { "external_id": "commercial", "type": "Department", "is_identity": false, "properties": [{ "type": "name", "value": "Commercial Banking", "metadata": {"source": "Workday"}}] },
+          { "external_id": "private", "type": "Department", "is_identity": false, "properties": [{ "type": "name", "value": "Private Banking", "metadata": {"source": "Workday"}}] },
+          { "external_id": "trading", "type": "Department", "is_identity": false, "properties": [{ "type": "name", "value": "Trading", "metadata": {"source": "Workday"}}] },
+          { "external_id": "risk", "type": "Department", "is_identity": false, "properties": [{ "type": "name", "value": "Risk Management", "metadata": {"source": "Workday"}}] },
+          { "external_id": "crimes", "type": "Department", "is_identity": false, "properties": [{ "type": "name", "value": "Financial Crimes Compliance", "metadata": {"source": "Workday"}}] },
+          { "external_id": "regulatory", "type": "Department", "is_identity": false, "properties": [{ "type": "name", "value": "Regulatory Affairs", "metadata": {"source": "Workday"}}] },
+          { "external_id": "treasury", "type": "Department", "is_identity": false, "properties": [{ "type": "name", "value": "Treasury & Asset-Liability Management", "metadata": {"source": "Workday"}}] },
+          { "external_id": "tech", "type": "Department", "is_identity": false, "properties": [{ "type": "name", "value": "Global Tech", "metadata": {"source": "Workday"}}] },
+          { "external_id": "ops", "type": "Department", "is_identity": false, "properties": [{ "type": "name", "value": "Business Operations", "metadata": {"source": "Workday"}}] },
+          { "external_id": "strategy", "type": "Department", "is_identity": false, "properties": [{ "type": "name", "value": "Corporate Strategy", "metadata": {"source": "Workday"}}] },
+          { "external_id": "procurement", "type": "Department", "is_identity": false, "properties": [{ "type": "name", "value": "Strategic Sourcing", "metadata": {"source": "Workday"}}] },
+
+          /* employees */
+          { "external_id": "leslie", "type": "User", "is_identity": true, "labels": ["Employee"], "properties": [{ "type": "name", "value": "Leslie Higgins", "metadata": {"source": "Workday", "verified_time": "2026-02-26T00:57:13Z", "assurance_level": 3}}, { "type": "title", "value": "CSR 2", "metadata": {"source": "Workday", "verified_time": "2026-02-26T00:57:13Z", "assurance_level": 3}}, { "type": "email", "value": "leslie@canbank.com", "metadata": {"source": "Exchange", "verified_time": "2026-02-20T00:57:13Z", "assurance_level": 3}} ]},
+          { "external_id": "flo", "type": "User", "is_identity": true, "labels": ["Employee"], "properties": [{ "type": "name", "value": "Flo Collins", "metadata": {"source": "Workday", "verified_time": "2026-02-26T00:57:13Z", "assurance_level": 3}}, { "type": "title", "value": "Customer Service Supervisor", "metadata": {"source": "Workday", "verified_time": "2026-02-26T00:57:13Z", "assurance_level": 3}}, { "type": "email", "value": "flo@canbank.com", "metadata": {"source": "Exchange", "verified_time": "2026-02-20T00:57:13Z", "assurance_level": 3}} ]},
+          { "external_id": "roy", "type": "User", "is_identity": true, "labels": ["Employee"], "properties": [{ "type": "name", "value": "Roy Kent", "metadata": {"source": "Workday", "verified_time": "2026-02-26T00:57:13Z", "assurance_level": 3}}, { "type": "title", "value": "Trader", "metadata": {"source": "Workday", "verified_time": "2026-02-26T00:57:13Z", "assurance_level": 3}}, { "type": "email", "value": "roy@canbank.com", "metadata": {"source": "Exchange", "verified_time": "2026-02-20T00:57:13Z", "assurance_level": 3}} ]},
+
+          /* Quote */
+          { "external_id": "stock_quote", "type": "Quote", "is_identity": false, "labels": [], "properties": [{ "type": "price", "external_value": "stock-quote"} ]},
+
+          /* Policy Folder */
+          { "external_id": "cs_policy", "type": "Folder", "is_identity": false, "labels": [], "properties": [{ "type": "name", "value": "Customer Service Policy", "metadata": {"source": "Sharepoint"}} ]},
+
+          /* Policy Docs */
+          { "external_id": "refund_policy", "type": "Document", "is_identity": false, "labels": [], "properties": [{ "type": "name", "value": "Customer Refund Policy", "metadata": {"source": "Sharepoint"}}, {"type": "description", "value": "Clear criteria for when a refund is authorized, who has the power to grant it, and what documentation is required. Tier 4 customers can have their credit card late payment penalties waived without consulting a supervisor."}, {"type": "url", "value": "https://sharepoint.miscrosoft.com/canbank/site/csr/refund_policy.pdf", "metadata": {"source": "Sharepoint"}} ]},
+
+          { "external_id": "discount_policy", "type": "Document", "is_identity": false, "labels": [], "properties": [{ "type": "name", "value": "Discount Policy", "metadata": {"source": "Sharepoint"}}, {"type": "description", "value": "Guidelines on what \"goodwill\" gestures an agent can offer to resolve a complaint without needing managerial approval."}, {"type": "url", "value": "https://sharepoint.miscrosoft.com/canbank/site/csr/discount_policy.pdf", "metadata": {"source": "Sharepoint"}} ]},
+
+          { "external_id": "kyc_policy", "type": "Document", "is_identity": false, "labels": [], "properties": [{ "type": "name", "value": "KYC Policy", "metadata": {"source": "Sharepoint"}}, { "type": "description", "value": "The exact steps an agent must take to verify a customer’s identity before proceeding to assist them."}, {"type": "url", "value": "https://sharepoint.miscrosoft.com/canbank/site/csr/kyc_policy.pdf", "metadata": {"source": "Sharepoint"}} ]},
+
+          /* document taxonomy */
+          { "external_id": "policy", "type": "Taxonomy", "is_identity": false, "labels": [], "properties": [{ "type": "name", "value": "Policy"}, { "type": "description", "value": "Formal governing documents that define the rules, standards, and principles of the organization. These documents mandate specific conduct to ensure legal compliance, mitigate risk, and align operations with our core mission and values."} ]},
+
+          /* ticket */
+          { "external_id": "ticket_001", "type": "Ticket", "is_identity": false, "labels": [], "properties": [{ "type": "name", "value": "Credit card late payment penalty"}, { "type": "description", "value": "I was only a few hours late with my credit card payment but I still received the fine. I would like the fine reversed."} ]},
+          { "external_id": "ticket_002", "type": "Ticket", "is_identity": false, "labels": [], "properties": [{ "type": "name", "value": "Credit card late payment penalty"}, { "type": "description", "value": "I was only a few hours late with my credit card payment but I still received the fine. I would like the fine reversed."} ]},
+
+          /* decision */
+          { "external_id": "decision_001", "type": "Decision", "is_identity": false, "labels": [], "properties": [{ "type": "name", "value": "Waive Credit Card Late Payment Charge", "metadata": {"source": "Salesforce"}}, { "type": "description", "value": "Flo Collins, CSR 2, waived the late payment change for Ted Lasso because Ted was a loyal customer and did not have any other late payment chanrges. Flo was concerned that Ted was at risk of leaving CanBank over the late credit card payment charge.", "metadata": {"source": "Salesforce"}} ]}
+
+        ]
+      }
+  auth: inherit
+
+runtime:
+  variables:
+    - name: ik_api_host
+      value: https://us.api.indykite.com
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

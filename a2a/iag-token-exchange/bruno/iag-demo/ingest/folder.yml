@@ -1,0 +1,19 @@
+---
+info:
+  name: ingest
+  type: folder
+  seq: 1
+
+request:
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json
+    - name: Cache-Control
+      value: no-cache
+  auth:
+    type: apikey
+    key: X-IK-ClientKey
+    value: "{{agent_token}}"
+    placement: header

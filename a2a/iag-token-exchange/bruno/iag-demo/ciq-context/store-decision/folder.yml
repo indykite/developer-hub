@@ -1,0 +1,8 @@
+---
+info:
+  name: store-decision
+  type: folder
+  seq: 9
+
+request:
+  auth: inherit
