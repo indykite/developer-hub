@@ -16,12 +16,13 @@ from api.chat import api_chat
 from api.ciq_execute import api_ciq_execute
 from api.ciq_knowledge_query import api_ciq_knowledge_query
 from api.ciq_policy import api_ciq_policy
+from api.graph_view import api_graph
 from api.mcp_server import api_mcp_server
 from api.project import api_project
 from api.provision import api_provision
 from api.relationships import api_relationships
 from api.token_introspect import api_token_introspect
-from dotenv import load_dotenv
+from dotenv import dotenv_values, load_dotenv
 from flask import render_template
 from flask_openapi3 import Info, OpenAPI, SecurityScheme
 
@@ -93,6 +94,35 @@ app.register_api(api_ciq_knowledge_query)
 app.register_api(api_ciq_execute)
 app.register_api(api_chat)
 app.register_api(api_provision)
+app.register_api(api_graph)
+
+
+# Memoized on the .env mtime so page renders don't re-parse the file.
+_graph_flags_cache = {"key": (), "value": False}
+
+
+@app.context_processor
+def inject_graph_availability():
+    """Expose graph_available to every template.
+
+    The Graph Explorer links stay hidden until both captures have run at least
+    once (CAPTURED_* flags written by the capture routes and by the backfill),
+    so the graph page isn't offered before there is anything in the IKG.
+
+    Read from the .env FILE, not os.environ: a project delete cleans the file,
+    but stale flags survive in the process environment until Flask restarts.
+    """
+    try:
+        key = ENV_FILE.stat().st_mtime_ns
+    except OSError:
+        key = None
+    if _graph_flags_cache["key"] != key:
+        saved = dotenv_values(ENV_FILE) or {}
+        _graph_flags_cache["value"] = (
+            saved.get("CAPTURED_NODES") == "true" and saved.get("CAPTURED_RELATIONSHIPS") == "true"
+        )
+        _graph_flags_cache["key"] = key
+    return {"graph_available": _graph_flags_cache["value"]}
 
 
 def _slot_suffix(slot: str) -> str:

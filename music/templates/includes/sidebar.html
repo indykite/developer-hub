@@ -31,6 +31,16 @@
                   <span class="sidebar-text">Music BackEnd</span>
                 </a>
               </li>
+              {% if graph_available %}
+              <li class="nav-item">
+                <a href="/graph/" class="nav-link d-flex align-items-center">
+                  <svg class="icon icon-xs me-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 4a2 2 0 11.001 3.999A2 2 0 0115 4zM5 8a2 2 0 11.001 3.999A2 2 0 015 8zm10 4a2 2 0 11.001 3.999A2 2 0 0115 12zM6.9 9.4l6.2-3.1.7 1.4-6.2 3.1-.7-1.4zm.2 1.5l6.2 3.1-.7 1.4-6.2-3.1.7-1.4z"></path>
+                  </svg>
+                  <span class="sidebar-text">Graph Explorer</span>
+                </a>
+              </li>
+              {% endif %}
               <li class="nav-item">
                 <a href="/chat/" class="nav-link d-flex align-items-center">
                   <svg class="icon icon-xs me-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">

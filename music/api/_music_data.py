@@ -2,7 +2,7 @@
 
 The postman bodies contain `{{project_gid}}`, `{{app_agent_gid}}` etc. placeholders
 that the individual api modules substitute with values from environment variables.
-This module only owns the *static* defaults — it does not touch os.environ.
+This module only owns the *static* defaults - it does not touch os.environ.
 """
 
 from __future__ import annotations

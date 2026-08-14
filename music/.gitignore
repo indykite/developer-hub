@@ -202,3 +202,8 @@ cython_debug/
 gha-creds-*.json
 
 *.log
+
+# Node (vendored JS asset pipeline — see package.json)
+node_modules/
+.env.lock
+.env.tmp

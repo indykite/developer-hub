@@ -1,10 +1,9 @@
 import json
 import logging
 import os
-import re
-from pathlib import Path
 
 import requests
+from api._env import update_env_variable
 from api._music_data import TOKEN_INTROSPECT_DEFAULTS
 from flask import render_template, request
 from flask_openapi3 import APIBlueprint, Tag
@@ -18,45 +17,6 @@ logger = logging.getLogger(__name__)
 # HTTP status code constants
 HTTP_OK = 200
 HTTP_MULTIPLE_CHOICES = 300
-
-
-def update_env_variable(key, value):
-    """Update or add an environment variable in the .env file."""
-    env_file = Path(__file__).parent.parent / ".env"
-
-    # Read existing .env file or create empty content
-    if env_file.exists():
-        with env_file.open() as f:
-            lines = f.readlines()
-    else:
-        lines = []
-
-    # Check if the key exists and update it, or add it
-    key_found = False
-    updated_lines = []
-
-    for line in lines:
-        # Match lines like KEY=value or KEY="value"
-        if re.match(f"^{re.escape(key)}=", line):
-            updated_lines.append(f"{key}={value}\n")
-            key_found = True
-        else:
-            updated_lines.append(line)
-
-    # If key wasn't found, add it (ensuring previous last line ends with a newline)
-    if not key_found:
-        if updated_lines and not updated_lines[-1].endswith("\n"):
-            updated_lines[-1] += "\n"
-        updated_lines.append(f"{key}={value}\n")
-
-    # Write back to .env file
-    with env_file.open("w") as f:
-        f.writelines(updated_lines)
-
-    # Update the environment variable in the current process
-    os.environ[key] = value
-
-    logger.info("Updated %s in .env file", key)
 
 
 class Unauthorized(BaseModel):

@@ -1,11 +1,11 @@
 import json
 import logging
 import os
-import re
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
+from urllib.parse import quote
 
 import requests
+from api._env import remove_env_variables, update_env_variable
 from api._music_data import APP_AGENT_DEFAULTS
 from flask import render_template, request
 from flask_openapi3 import APIBlueprint, Tag
@@ -19,45 +19,7 @@ logger = logging.getLogger(__name__)
 # HTTP status code constants
 HTTP_OK = 200
 HTTP_MULTIPLE_CHOICES = 300
-
-
-def update_env_variable(key, value):
-    """Update or add an environment variable in the .env file."""
-    env_file = Path(__file__).parent.parent / ".env"
-
-    # Read existing .env file or create empty content
-    if env_file.exists():
-        with env_file.open() as f:
-            lines = f.readlines()
-    else:
-        lines = []
-
-    # Check if the key exists and update it, or add it
-    key_found = False
-    updated_lines = []
-
-    for line in lines:
-        # Match lines like KEY=value or KEY="value"
-        if re.match(f"^{re.escape(key)}=", line):
-            updated_lines.append(f"{key}={value}\n")
-            key_found = True
-        else:
-            updated_lines.append(line)
-
-    # If key wasn't found, add it (ensuring previous last line ends with a newline)
-    if not key_found:
-        if updated_lines and not updated_lines[-1].endswith("\n"):
-            updated_lines[-1] += "\n"
-        updated_lines.append(f"{key}={value}\n")
-
-    # Write back to .env file
-    with env_file.open("w") as f:
-        f.writelines(updated_lines)
-
-    # Update the environment variable in the current process
-    os.environ[key] = value
-
-    logger.info("Updated %s in .env file", key)
+HTTP_CONFLICT = 409
 
 
 class Unauthorized(BaseModel):
@@ -169,6 +131,32 @@ def _create_agent_credentials(
     return credentials_response, True
 
 
+def _lookup_agent_by_name(url_endpoints: str, sa_token: str, name: str) -> str | None:
+    """Resolve an existing agent's id by its (unique) name.
+
+    Used to recover from a duplicate-name create: a previous run may have
+    created the agent but failed on the credentials step, and re-creating the
+    same fixed name would otherwise dead-end on the conflict forever.
+    """
+    try:
+        response = requests.get(
+            f"{url_endpoints}/configs/v1/application-agents/{quote(name, safe='')}",
+            params={"location": os.getenv("PROJECT_ID", "")},
+            headers={"Authorization": f"Bearer {sa_token}"},
+            timeout=30,
+        )
+    except requests.RequestException:
+        logger.exception("Agent lookup by name failed")
+        return None
+    if not HTTP_OK <= response.status_code < HTTP_MULTIPLE_CHOICES:
+        logger.warning("Agent lookup by name returned status %s", response.status_code)
+        return None
+    try:
+        return response.json().get("id")
+    except ValueError:
+        return None
+
+
 @api_app_agent.post("/create", tags=[tag])
 def create_app_agent():
     """Create a new application agent with the provided form data."""
@@ -226,15 +214,26 @@ def create_app_agent():
         app_agent_id = (
             response_json.get("id") or response_json.get("app_agent_id") or response_json.get("application_agent_id")
         )
-
+    elif response.status_code == HTTP_CONFLICT:
+        # The fixed name already exists (e.g. a previous run created the agent
+        # but its credentials step failed): reuse the existing agent and mint
+        # fresh credentials instead of dead-ending on the duplicate name.
+        app_agent_id = _lookup_agent_by_name(url_endpoints, sa_token, json_data["name"])
         if app_agent_id:
-            app_agent_id_saved = _save_app_agent_id(app_agent_id)
-            credentials_response, credentials_created = _create_agent_credentials(
-                url_endpoints,
-                sa_token,
-                app_agent_id,
-                request.form.get("name", "agent"),
-            )
+            logger.info("Agent name already exists; reusing %s and creating fresh credentials", app_agent_id)
+
+    if app_agent_id:
+        app_agent_id_saved = _save_app_agent_id(app_agent_id)
+        credentials_response, credentials_created = _create_agent_credentials(
+            url_endpoints,
+            sa_token,
+            app_agent_id,
+            request.form.get("name", "agent"),
+        )
+        if not credentials_created:
+            # Never leave a token that does not match the agent: a stale
+            # APP_TOKEN would mask this failure as success on a re-run.
+            remove_env_variables(["APP_TOKEN"])
 
     return render_template(
         "app_agent/result.html",
