@@ -1,20 +1,29 @@
-"""Provision-everything add-on: replay every create button AFTER the MCP server config.
+"""Provision-everything add-on: replay every create button in order, from the top.
 
-The five Getting Started configurations (Project, Application, App Agent,
-Token Introspect, MCP Server) are assumed to exist already — their IDs and
-tokens are read from .env. The run replays everything that follows them on the
-landing page, in click order: both captures (nodes + relationships), the ten
-KBAC policies, then each CIQ policy immediately followed by its knowledge
-queries. Each step POSTs the exact form payload the corresponding create form
-would submit, through the Flask test client, so it runs the same route
-handlers as a person clicking the buttons.
+Runs the FULL setup end to end: Project, wait for the project's IKG to become
+ACTIVE, Application, App Agent (+ credentials), Token Introspect, MCP Server, a
+short agent settle, both captures (nodes + relationships), the ten KBAC
+policies, then each CIQ policy immediately followed by its knowledge queries.
+Each step POSTs the exact form payload the corresponding create form would
+submit, through the Flask test client, so it runs the same route handlers as a
+person clicking the buttons one by one.
 
-Captures on a freshly created project/agent can hit a transient 401, "failed to
-evaluate API access" (the evaluation errored while the IKG was still stabilizing,
-the error is cached for ~1 minute, so the retry waits past that TTL). The
-captures are idempotent upserts, so the whole upload is safe to retry. A cached
-CAN_ACCESS denial ("insufficient API access level") is treated as non-retryable
-and surfaced immediately.
+Two waits gate the run (ported from demos/generic, where both were observed
+necessary live):
+ - after the Project create, the run polls the project read's ikg_status until
+   ACTIVE - a fresh IKG takes minutes to provision, and events processed while
+   it is still PENDING can be dropped without retry (hermes projects the App
+   Agent's API permissions into the IKG at agent-create time, so creating the
+   agent early can leave it permanently unauthorized);
+ - after the config steps, a short settle before the first capture, plus
+   capture retries: a cached CAN_ACCESS denial ("insufficient API access
+   level") is healed by re-saving the agent's permissions and retrying, while
+   a transient 401 "failed to evaluate API access" (or 5xx) is retried only
+   after the platform's ~1-minute error cache has expired. The captures are
+   idempotent upserts, so the whole upload is safe to retry.
+
+The run only needs URL_ENDPOINTS, SA_TOKEN, and ORGANIZATION_ID in .env; every
+other ID is created and saved as it goes.
 
 AuthZEN evaluations and CIQ executes are deliberately NOT replayed: they are
 reads/runs, not creations: use the evaluate/execute forms once provisioned.
@@ -41,6 +50,7 @@ from pathlib import Path
 from urllib.parse import quote
 
 import requests
+from api._env import remove_env_variables, update_env_variable
 from api._music_data import (
     APP_AGENT_DEFAULTS,
     APPLICATION_DEFAULTS,
@@ -48,13 +58,13 @@ from api._music_data import (
     CIQ_QUERIES,
     KBAC_SLOTS,
     MCP_SERVER_DEFAULTS,
+    PROJECT_DEFAULTS,
     TOKEN_INTROSPECT_DEFAULTS,
     kbac_for_slot,
 )
 from api.authorization_policy import _default_for_slot as _kbac_default_for_slot
 from api.ciq_knowledge_query import _default_for_slot as _query_default_for_slot
 from api.ciq_policy import _default_for_slot as _policy_default_for_slot
-from api.project import update_env_variable
 from dotenv import dotenv_values, load_dotenv
 from flask import Response, current_app, render_template, request, stream_with_context
 from flask_openapi3 import APIBlueprint, Tag
@@ -72,19 +82,29 @@ HTTP_MULTIPLE_CHOICES = 300
 HTTP_BAD_REQUEST = 400
 HTTP_SERVER_ERROR = 500
 
-# Captures retry the whole (idempotent) upload on a transient evaluation error:
-# see the module docstring.
+# A fresh project's IKG database takes minutes to provision, and any data-plane
+# call before it is ACTIVE just errors (and pollutes the platform's per-pod
+# error caches). The project read exposes ikg_status (PENDING/ACTIVE/FAILED),
+# so wait on that - cheap config-plane polling with no side effects.
+IKG_READY_DEADLINE_SECONDS = 600
+IKG_POLL_DELAY_SECONDS = 5
+# The platform assigns a fresh App Agent's API permissions in the same
+# transaction as the agent create, so a short settle after the config steps is
+# enough before the first capture; the capture retries below cover stragglers.
+AGENT_SETTLE_SECONDS = 2
+# Captures retry the whole (idempotent) upload with a strategy matched to WHY
+# chunks failed: see the module docstring.
 CAPTURE_TRIES = 4
+CAPTURE_RETRY_DELAY_SECONDS = 10
 EVAL_ERROR_RETRY_DELAY_SECONDS = 70
 _FAILED_TO_EVALUATE = "failed to evaluate API access"
+_INSUFFICIENT_ACCESS = "insufficient API access level"
 
-# Environment values the run cannot create itself (they come from the five
-# Getting Started steps), in checklist order.
+# Environment values the run cannot create itself, in checklist order.
 PREREQUISITES = [
     ("URL_ENDPOINTS", "Platform API base URL (e.g. https://eu.api.indykite.com)"),
     ("SA_TOKEN", "Service-account token"),
-    ("PROJECT_ID", "Project ID (Getting Started step 1)"),
-    ("APP_TOKEN", "App Agent token (Getting Started step 3)"),
+    ("ORGANIZATION_ID", "Organization ID"),
 ]
 OPTIONAL_KEYS = []
 
@@ -96,6 +116,13 @@ BACKFILL_PREREQUISITES = [
 ]
 REQUEST_TIMEOUT = 30  # seconds per lookup
 HTTP_NOT_FOUND = 404
+HTTP_CONFLICT = 409
+
+# Keys NOT owned by a project's lifecycle. Everything else in .env (IDs,
+# APP_TOKEN, readiness/capture flags) describes one specific project and is
+# purged when the run creates a fresh one, so values from a project deleted
+# outside this app can never skip the IKG wait or the captures.
+_BASE_ENV_KEYS = {"SA_TOKEN", "URL_ENDPOINTS", "ORGANIZATION_ID", "USER_TOKEN", "PROJECT_ID"}
 
 
 class Unauthorized(BaseModel):
@@ -120,6 +147,70 @@ api_provision = APIBlueprint(
 # vars its predecessors just saved (a knowledge query needs the
 # CIQ_POLICY_ID_<slot> its policy step just wrote).
 # --------------------------------------------------------------------------
+
+
+def _project_payload():
+    return {
+        "name": PROJECT_DEFAULTS.get("name", ""),
+        "display_name": PROJECT_DEFAULTS.get("display_name", ""),
+        "description": PROJECT_DEFAULTS.get("description", ""),
+        "organization_id": os.getenv("ORGANIZATION_ID", ""),
+        "region": PROJECT_DEFAULTS.get("region", "europe-west1"),
+        "ikg_size": PROJECT_DEFAULTS.get("ikg_size", "2GB"),
+        "db_name": "",
+        "db_url": "",
+        "db_username": "",
+        "db_password": "",  # nosec B105 - intentionally blank form field, not a credential
+    }
+
+
+def _application_payload():
+    return {
+        "name": APPLICATION_DEFAULTS.get("name", ""),
+        "display_name": APPLICATION_DEFAULTS.get("display_name", ""),
+        "description": APPLICATION_DEFAULTS.get("description", ""),
+        "project_id": os.getenv("PROJECT_ID", ""),
+    }
+
+
+def _app_agent_payload():
+    # Newline-joined, exactly like the create form's textarea; the handler
+    # accepts commas too, but a single string field is what request.form.get
+    # expects - never send the permissions as a repeated form field.
+    return {
+        "name": APP_AGENT_DEFAULTS.get("name", ""),
+        "display_name": APP_AGENT_DEFAULTS.get("display_name", ""),
+        "description": APP_AGENT_DEFAULTS.get("description", ""),
+        "application_id": os.getenv("APPLICATION_ID", ""),
+        "api_permissions": "\n".join(APP_AGENT_DEFAULTS.get("api_permissions", [])),
+    }
+
+
+def _token_introspect_payload():
+    return {
+        "name": TOKEN_INTROSPECT_DEFAULTS.get("name", ""),
+        "display_name": TOKEN_INTROSPECT_DEFAULTS.get("display_name", ""),
+        "description": TOKEN_INTROSPECT_DEFAULTS.get("description", ""),
+        "project_id": os.getenv("PROJECT_ID", ""),
+        "ikg_node_type": TOKEN_INTROSPECT_DEFAULTS.get("ikg_node_type", "Person"),
+        "perform_upsert": "true" if TOKEN_INTROSPECT_DEFAULTS.get("perform_upsert") else "false",
+        "claims_mapping": json.dumps(TOKEN_INTROSPECT_DEFAULTS.get("claims_mapping", {})),
+        "jwt_matcher": json.dumps(TOKEN_INTROSPECT_DEFAULTS.get("jwt_matcher", {})),
+        "offline_validation": json.dumps(TOKEN_INTROSPECT_DEFAULTS.get("offline_validation", {})),
+    }
+
+
+def _mcp_server_payload():
+    return {
+        "name": MCP_SERVER_DEFAULTS.get("name", ""),
+        "display_name": MCP_SERVER_DEFAULTS.get("display_name", ""),
+        "description": MCP_SERVER_DEFAULTS.get("description", ""),
+        "project_id": os.getenv("PROJECT_ID", ""),
+        "app_agent_id": os.getenv("APP_AGENT_ID", ""),
+        "token_introspect_id": os.getenv("TOKEN_INTROSPECT_ID", ""),
+        "enabled": "true" if MCP_SERVER_DEFAULTS.get("enabled", True) else "false",
+        "scopes_supported": ",".join(MCP_SERVER_DEFAULTS.get("scopes_supported", [])),
+    }
 
 
 def _capture_payload():
@@ -147,17 +238,55 @@ def _ciq_query_payload(slot):
 
 
 # --------------------------------------------------------------------------
-# Step list: the landing-page buttons after the MCP server config, in order.
+# Step list: the full landing page from the top, in click order.
 # --------------------------------------------------------------------------
 
 
 def _step(label, path, payload, env_keys, kind="create"):
-    return {"label": label, "path": path, "payload": payload, "env_keys": env_keys, "kind": kind}
+    # "required" (the rest of the run cannot proceed without this step) is
+    # stamped onto the base-setup steps in build_steps.
+    return {"label": label, "path": path, "payload": payload, "env_keys": env_keys, "kind": kind, "required": False}
 
 
 def build_steps():
-    """Return the ordered steps: captures, KBACs, then CIQ policy+query groups."""
+    """Return the ordered steps: base configs (with waits), captures, KBACs, then CIQ groups."""
+    project_step = _step("Create Project", "/api_project/create", _project_payload, ["PROJECT_ID"])
+    # A freshly created project invalidates every derived value from a previous
+    # one (see _BASE_ENV_KEYS); the run loop purges them when this step runs.
+    project_step["resets_derived"] = True
+    base_setup = [
+        project_step,
+        # The IKG wait MUST precede the App Agent: hermes projects the agent's
+        # API permissions into the IKG when the agent is created, and an event
+        # processed while the IKG is still provisioning is dropped without
+        # retry - leaving the agent permanently unauthorized (observed live).
+        _step("Wait for project IKG to become ACTIVE", None, None, ["IKG_READY"], kind="ikg"),
+        _step("Create Application", "/api_application/create", _application_payload, ["APPLICATION_ID"]),
+        _step(
+            "Create App Agent + credentials",
+            "/api_app_agent/create",
+            _app_agent_payload,
+            ["APP_AGENT_ID", "APP_TOKEN"],
+        ),
+        _step(
+            "Create Token Introspect",
+            "/api_token_introspect/create",
+            _token_introspect_payload,
+            ["TOKEN_INTROSPECT_ID"],
+        ),
+        _step("Create MCP Server", "/api_mcp_server/create", _mcp_server_payload, ["MCP_SERVER_ID"]),
+        _step(
+            "Check the App Agent credentials",
+            None,
+            None,
+            ["AGENT_READY"],
+            kind="settle",
+        ),
+    ]
+    for base in base_setup:
+        base["required"] = True
     steps = [
+        *base_setup,
         _step(
             "Capture nodes",
             "/api_capture/create",
@@ -223,70 +352,234 @@ def _extract_message(page_text):
     return match.group(1) if match else ""
 
 
-def _assess_create(step, page_text):
-    """Judge a create step: it succeeded iff its handler saved the expected IDs to .env."""
+def _assess_create(step, page_text, before):
+    """Judge a create step: success iff its handler saved a NEW value for every expected key.
+
+    Presence in .env alone is not enough: with skip-existing unchecked, a
+    failed re-create (duplicate-name 409, expired SA_TOKEN) saves nothing and
+    the previous run's values would otherwise report as success and mask the
+    failure from the required-step abort.
+    """
     saved = dotenv_values(ENV_FILE) or {}
-    if all(saved.get(key) for key in step["env_keys"]):
+    present = all(saved.get(key) for key in step["env_keys"])
+    # "changed" includes newly-set: the App Agent recovery path legitimately
+    # re-saves the same agent id while minting a fresh APP_TOKEN, and the
+    # handler removes a stale APP_TOKEN when credentials fail — so all-present
+    # plus at-least-one-new proves the handler saved something THIS run.
+    wrote_new = any(saved.get(key) and saved.get(key) != before.get(key) for key in step["env_keys"])
+    if present and wrote_new:
         return True, ", ".join(step["env_keys"]) + " saved"
     message = _extract_message(page_text)
+    if present:
+        return False, message or "no new value saved — .env still holds a previous run's value (check the flask log)"
     return False, message or "no ID returned: check the flask log or run this form manually"
 
 
-def _assess_capture_stream(raw_text):
-    """Judge a capture NDJSON stream: (ok, failure_kind, detail).
+def _purge_derived_env():
+    """Drop every project-scoped .env key after a NEW project was created."""
+    saved = dotenv_values(ENV_FILE) or {}
+    remove_env_variables([key for key in saved if key not in _BASE_ENV_KEYS])
 
-    The capture routes stream one JSON event per chunk plus a final "done"
-    event, so the worst chunk status and any pre-flight error are read straight
-    from the events. failure_kind picks the retry strategy: "transient"
-    (evaluation errors / 5xx: wait out the server-side error cache) or None
-    (not retryable, e.g. an access denial or missing APP_TOKEN).
+
+def _read_ikg_status(url_endpoints, sa_token, project_id):
+    """Read the project's ikg_status (PENDING/ACTIVE/FAILED/...). Returns (status, error_message)."""
+    try:
+        response = requests.get(
+            f"{url_endpoints}/configs/v1/projects/{project_id}",
+            headers={"Authorization": f"Bearer {sa_token}"},
+            timeout=REQUEST_TIMEOUT,
+        )
+    except requests.RequestException as e:
+        return "", str(e)[:100]
+    if response.status_code >= HTTP_BAD_REQUEST:
+        return "", f"project read failed with status {response.status_code}"
+    try:
+        body = response.json()
+    except ValueError:
+        return "", "invalid JSON from project read"
+    # Verified snake_case live on rc (2026-08-14); tolerate camelCase for safety.
+    return body.get("ikg_status") or body.get("ikgStatus") or "", ""
+
+
+def _ikg_step_iter():
+    """'Wait for project IKG' step: poll ikg_status until ACTIVE.
+
+    Yields ("progress", ...) while waiting and one final ("result", (ok, detail)).
     """
+    url_endpoints = os.getenv("URL_ENDPOINTS")
+    sa_token = os.getenv("SA_TOKEN")
+    project_id = os.getenv("PROJECT_ID")
+    if not (url_endpoints and sa_token and project_id):
+        yield "result", (False, "URL_ENDPOINTS / SA_TOKEN / PROJECT_ID missing from env")
+        return
+    start = time.monotonic()
+    while time.monotonic() - start < IKG_READY_DEADLINE_SECONDS:
+        status, err = _read_ikg_status(url_endpoints, sa_token, project_id)
+        elapsed = int(time.monotonic() - start)
+        if status == "ACTIVE":
+            update_env_variable("IKG_READY", "true")
+            yield "result", (True, f"project IKG is ACTIVE after {elapsed}s")
+            return
+        if status == "FAILED":
+            yield "result", (False, "project IKG provisioning FAILED - delete the project and provision again")
+            return
+        yield "progress", f"waiting for the project IKG to provision: {status or err} ({elapsed}s)"
+        time.sleep(IKG_POLL_DELAY_SECONDS)
+    minutes = IKG_READY_DEADLINE_SECONDS // 60
+    yield "result", (False, f"project IKG still not ACTIVE after {minutes} minutes - check the project in the Hub")
+
+
+def _settle_iter():
+    """Give the fresh App Agent a moment before the first capture, and test the credentials exist.
+
+    The platform writes the agent's API permissions into the project IKG in the
+    same transaction as the agent create, so a fixed short pause is enough; the
+    capture retries handle any straggling permission propagation.
+    """
+    if not os.getenv("APP_TOKEN"):
+        yield "result", (False, "APP_TOKEN missing from env - the App Agent credentials step did not save it")
+        return
+    time.sleep(AGENT_SETTLE_SECONDS)
+    update_env_variable("AGENT_READY", "true")
+    yield "result", (True, "APP_TOKEN present - agent credentials are ready")
+
+
+def _resave_agent_permissions(url_endpoints, sa_token, app_agent_id):
+    """Re-save the agent's CURRENT api_permissions; return True iff the update succeeded.
+
+    The update publishes a ConfigChangedEvent that purges the platform's cached
+    CAN_ACCESS denial for the agent, so the next call re-evaluates against the
+    IKG. The permissions are read back first so a backfilled agent's real
+    permission set is never silently replaced by the bundled defaults.
+    """
+    url = f"{url_endpoints}/configs/v1/application-agents/{app_agent_id}"
+    try:
+        read = requests.get(url, headers={"Authorization": f"Bearer {sa_token}"}, timeout=REQUEST_TIMEOUT)
+        # None = could not read the current permissions; a present-but-empty
+        # list is a REAL permission set and must be re-saved as-is, never
+        # silently replaced with the bundled defaults.
+        permissions = None
+        if HTTP_OK <= read.status_code < HTTP_MULTIPLE_CHOICES:
+            try:
+                body = read.json()
+            except ValueError:
+                body = None
+            if isinstance(body, dict) and isinstance(body.get("api_permissions"), list):
+                permissions = body["api_permissions"]
+        if permissions is None:
+            permissions = APP_AGENT_DEFAULTS.get("api_permissions", [])
+        response = requests.put(
+            url,
+            headers={"Content-Type": "application/json", "Authorization": f"Bearer {sa_token}"},
+            json={"api_permissions": permissions},
+            timeout=REQUEST_TIMEOUT,
+        )
+    except requests.RequestException:
+        logger.exception("Failed to re-save app agent permissions")
+        return False
+    logger.info("Re-saved app agent permissions: %s", response.status_code)
+    return HTTP_OK <= response.status_code < HTTP_MULTIPLE_CHOICES
+
+
+def _parse_json_line(line):
+    """Parse one NDJSON line; return the event dict or None for blanks/garbage."""
+    stripped = line.strip()
+    if not stripped:
+        return None
+    try:
+        return json.loads(stripped)
+    except ValueError:
+        return None
+
+
+def _iter_ndjson_events(response):
+    """Yield parsed events from a streamed NDJSON response, incrementally.
+
+    A capture emits one chunk event per uploaded batch; reading the body
+    piecewise (instead of get_data) lets the caller forward live progress to
+    the provisioning stream WHILE the upload runs — keeping the browser
+    connection busy and the user informed during multi-minute captures.
+    """
+    buffer = ""
+    for raw in response.iter_encoded():
+        buffer += raw.decode("utf-8", errors="replace")
+        while "\n" in buffer:
+            line, buffer = buffer.split("\n", 1)
+            event = _parse_json_line(line)
+            if event is not None:
+                yield event
+    event = _parse_json_line(buffer)
+    if event is not None:
+        yield event
+
+
+def _capture_once(client, step):
+    """Replay a capture once, yielding ("progress", detail) per chunk and one ("outcome", (ok, kind, detail)).
+
+    The worst chunk status and any pre-flight error are read straight from the
+    streamed events. kind picks the retry strategy: "denial" (cached CAN_ACCESS
+    denial - re-save the agent's permissions, retry shortly after), "transient"
+    (evaluation errors / 5xx: wait out the server-side error cache) or None
+    (not retryable, e.g. missing APP_TOKEN).
+    """
+    response = client.post(step["path"], data=step["payload"](), headers={"Accept": "application/x-ndjson"})
     worst = 0
     completed = 0
+    percent = None
     preflight_error = None
-    for raw_line in raw_text.splitlines():
-        line = raw_line.strip()
-        if not line:
-            continue
-        try:
-            evt = json.loads(line)
-        except ValueError:
-            continue
+    failure_sample = ""
+    for evt in _iter_ndjson_events(response):
         if evt.get("type") == "chunk":
             completed += 1
             worst = max(worst, int(evt.get("status_code") or 0))
+            percent = evt.get("percent", percent)
+            if not failure_sample and evt.get("response_text"):
+                failure_sample = evt["response_text"]
+            label = f"uploading: {completed} chunk(s) done"
+            if percent is not None:
+                label += f" ({percent}%)"
+            yield "progress", label
         elif evt.get("type") == "done":
             worst = max(worst, int(evt.get("status_code") or 0))
             preflight_error = evt.get("error")
     if preflight_error:
-        return False, None, preflight_error
-    if completed == 0:
-        return False, "transient", "no chunks were processed: check the flask log"
-    if worst < HTTP_BAD_REQUEST:
-        return True, None, f"all {completed} chunks accepted (worst status {worst})"
-    detail = f"worst chunk status {worst} across {completed} chunks"
-    if _FAILED_TO_EVALUATE in raw_text or worst >= HTTP_SERVER_ERROR:
-        return False, "transient", detail
-    return False, None, detail
+        yield "outcome", (False, None, preflight_error)
+    elif completed == 0:
+        yield "outcome", (False, "transient", "no chunks were processed: check the flask log")
+    elif worst < HTTP_BAD_REQUEST:
+        yield "outcome", (True, None, f"all {completed} chunks accepted (worst status {worst})")
+    else:
+        detail = f"worst chunk status {worst} across {completed} chunks"
+        yield "outcome", (False, _classify_capture_failure(failure_sample, worst), detail)
+
+
+def _classify_capture_failure(failure_sample, worst):
+    """Pick the retry strategy for a failed capture: "denial", "transient", or None."""
+    if _INSUFFICIENT_ACCESS in failure_sample:
+        return "denial"
+    if _FAILED_TO_EVALUATE in failure_sample or worst >= HTTP_SERVER_ERROR:
+        return "transient"
+    return None
 
 
 def _capture_iter(client, step):
     """Run a capture with retries, yielding ("progress", detail) and one final ("result", (ok, detail)).
 
     Chunks are idempotent upserts, so re-running the whole capture is safe.
-    Evaluation errors / 5xx (IKG still stabilizing after project creation) are
-    retried only after the platform's ~1-minute error cache has expired. Access
-    denials are non-retryable and surface immediately.
+    Cached denials are purged with a permissions re-save and retried shortly;
+    evaluation errors / 5xx (IKG still stabilizing after project creation) are
+    retried only after the platform's ~1-minute error cache has expired -
+    re-saving cannot heal those.
     """
     detail = "no attempt made"
     attempt = 0
     for attempt in range(1, CAPTURE_TRIES + 1):
-        response = client.post(
-            step["path"],
-            data=step["payload"](),
-            headers={"Accept": "application/x-ndjson"},
-        )
-        ok, kind, detail = _assess_capture_stream(response.get_data(as_text=True))
+        ok, kind = False, None
+        for event, payload in _capture_once(client, step):
+            if event == "progress":
+                yield "progress", payload
+            else:
+                ok, kind, detail = payload
         if ok:
             update_env_variable(step["env_keys"][0], "true")
             suffix = "" if attempt == 1 else f" (try {attempt}/{CAPTURE_TRIES})"
@@ -295,23 +588,54 @@ def _capture_iter(client, step):
         logger.warning("Capture %s try %s/%s failed: %s", step["path"], attempt, CAPTURE_TRIES, detail)
         if attempt >= CAPTURE_TRIES or kind is None:
             break
-        yield (
-            "progress",
-            f"try {attempt} hit a transient platform error: waiting {EVAL_ERROR_RETRY_DELAY_SECONDS}s",
-        )
-        time.sleep(EVAL_ERROR_RETRY_DELAY_SECONDS)
+        if kind == "denial":
+            resaved = _resave_agent_permissions(
+                os.getenv("URL_ENDPOINTS"),
+                os.getenv("SA_TOKEN"),
+                os.getenv("APP_AGENT_ID"),
+            )
+            if not resaved:
+                # The heal itself failed (stale agent id, expired SA token…):
+                # retrying would just burn tries against the same denial.
+                detail += " — permissions re-save failed, not retrying"
+                break
+            yield (
+                "progress",
+                f"try {attempt} hit a cached permission denial: re-saved the agent's permissions, "
+                f"retrying in {CAPTURE_RETRY_DELAY_SECONDS}s",
+            )
+            time.sleep(CAPTURE_RETRY_DELAY_SECONDS)
+        else:
+            yield (
+                "progress",
+                f"try {attempt} hit a transient platform error: waiting {EVAL_ERROR_RETRY_DELAY_SECONDS}s",
+            )
+            time.sleep(EVAL_ERROR_RETRY_DELAY_SECONDS)
     yield "result", (False, f"{detail} (after {attempt} tr{'y' if attempt == 1 else 'ies'})")
+
+
+def _step_iterator(client, step):
+    """Return the (progress, result)-yielding iterator for a step kind, or None for plain creates."""
+    if step["kind"] == "ikg":
+        return _ikg_step_iter()
+    if step["kind"] == "settle":
+        return _settle_iter()
+    if step["kind"] == "capture":
+        return _capture_iter(client, step)
+    return None
 
 
 def _execute_step(client, step):
     """Run one step, yielding ("substep", detail) progress and exactly one final ("result", (ok, detail))."""
     try:
-        if step["kind"] == "capture":
-            for kind, payload in _capture_iter(client, step):
+        iterator = _step_iterator(client, step)
+        if iterator is not None:
+            for kind, payload in iterator:
                 yield ("substep", payload) if kind == "progress" else ("result", payload)
             return
+        before = dotenv_values(ENV_FILE) or {}
         response = client.post(step["path"], data=step["payload"]())
-        yield "result", _assess_create(step, response.get_data(as_text=True))
+        yield "result", _assess_create(step, response.get_data(as_text=True), before)
     except Exception as exc:
         logger.exception("Provisioning step failed: %s", step["label"])
         yield "result", (False, str(exc))
@@ -342,18 +666,85 @@ def _format_event(payload):
     return json.dumps(payload) + "\n"
 
 
+def _skipped_event(step, skip_ids, event, counts):
+    """Return the formatted skipped event for a step, or None when it must run."""
+    if skip_ids is None or not all(key in skip_ids for key in step["env_keys"]):
+        return None
+    counts["skipped"] += 1
+    keys = ", ".join(step["env_keys"])
+    return _format_event({**event, "status": "skipped", "detail": f"{keys} already set"})
+
+
+def _reset_derived_state(skip_ids, event):
+    """Purge project-scoped .env keys after a fresh project create.
+
+    Values derived from the previous project (IDs, APP_TOKEN, IKG/agent/capture
+    flags) must not skip steps or unlock features for a project they don't
+    belong to. Returns the refreshed skip_ids (None disables skipping when the
+    purge failed — stale values must then not drive skip decisions) and the
+    substep event describing what happened.
+    """
+    try:
+        _purge_derived_env()
+        if skip_ids is not None:
+            skip_ids = {key for key, value in (dotenv_values(ENV_FILE) or {}).items() if value}
+        detail = "cleared project-scoped values from a previous run"
+    except Exception:
+        logger.exception("Failed to purge project-scoped .env values")
+        skip_ids = None
+        detail = "could not clear previous project values — skip-existing disabled for the rest of the run"
+    return skip_ids, _format_event({**event, "type": "substep", "detail": detail})
+
+
+def _stream_steps(client, steps, skip_ids, counts, state):
+    """Run the steps in order, yielding formatted NDJSON events and updating counts.
+
+    skip_ids is the set of .env keys already saved (skip steps whose keys are
+    all present), or None when the user unchecked skip-existing. Sets
+    state["finished"] (after sending blocked + done events) when a required
+    step fails, so the caller knows the run terminated early.
+    """
+    for index, step in enumerate(steps, 1):
+        state["label"] = step["label"]
+        event = {"type": "step", "index": index, "total": len(steps), "label": step["label"], "path": step["path"]}
+        skipped = _skipped_event(step, skip_ids, event, counts)
+        if skipped is not None:
+            yield skipped
+            continue
+        logger.info("Provisioning step %s/%s: %s", index, len(steps), step["label"])
+        ok, detail = False, "step yielded no result"
+        for kind, payload in _execute_step(client, step):
+            if kind == "substep":
+                yield _format_event({**event, "type": "substep", "detail": payload})
+            else:
+                ok, detail = payload
+        counts["ok" if ok else "failed"] += 1
+        yield _format_event({**event, "status": "ok" if ok else "failed", "detail": detail})
+        # Everything after the base setup depends on it; a failed config or
+        # wait step would only cascade into misleading downstream failures.
+        if not ok and step["required"]:
+            yield _format_event({"type": "blocked", "detail": f"Stopping: '{step['label']}' failed"})
+            state["finished"] = True
+            yield _format_event({"type": "done", "aborted": True, **counts})
+            return
+        if ok and step.get("resets_derived"):
+            skip_ids, reset_event = _reset_derived_state(skip_ids, event)
+            yield reset_event
+
+
 @api_provision.post("/run", tags=[tag])
 def run_provisioning():
     """Capture the data and create every KBAC, CIQ policy and query, streaming NDJSON progress."""
     skip_existing = request.form.get("skip_existing") == "true"
     client = current_app.test_client()
 
-    def event_stream():
+    def event_stream(state):
         load_dotenv(ENV_FILE, override=True)
         missing = missing_prerequisites()
         if missing:
             labels = ", ".join(label for _key, label in missing)
             yield _format_event({"type": "blocked", "detail": f"Missing from .env: {labels}"})
+            state["finished"] = True
             yield _format_event({"type": "done", "aborted": True, "ok": 0, "failed": 0, "skipped": 0})
             return
         # Skip decisions come from the .env FILE, not os.environ: stale ids can
@@ -362,26 +753,29 @@ def run_provisioning():
         steps = build_steps()
         yield _format_event({"type": "start", "total": len(steps)})
         counts = {"ok": 0, "failed": 0, "skipped": 0}
-        for index, step in enumerate(steps, 1):
-            event = {"type": "step", "index": index, "total": len(steps), "label": step["label"], "path": step["path"]}
-            if skip_existing and all(key in saved_ids for key in step["env_keys"]):
-                counts["skipped"] += 1
-                keys = ", ".join(step["env_keys"])
-                yield _format_event({**event, "status": "skipped", "detail": f"{keys} already set"})
-                continue
-            logger.info("Provisioning step %s/%s: %s", index, len(steps), step["label"])
-            ok, detail = False, "step yielded no result"
-            for kind, payload in _execute_step(client, step):
-                if kind == "substep":
-                    yield _format_event({**event, "type": "substep", "detail": payload})
-                else:
-                    ok, detail = payload
-            counts["ok" if ok else "failed"] += 1
-            yield _format_event({**event, "status": "ok" if ok else "failed", "detail": detail})
+        yield from _stream_steps(client, steps, saved_ids if skip_existing else None, counts, state)
+        if state["finished"]:  # a required step failed and already sent its done event
+            return
+        state["finished"] = True
         yield _format_event({"type": "done", "aborted": False, **counts})
 
+    def guarded_stream():
+        # A closed browser tab / page reload aborts the response mid-run with a
+        # silent GeneratorExit at the next yield. Nothing can keep the run going
+        # once the client is gone, but it must never be invisible in the log.
+        state = {"finished": False, "label": "before the first step"}
+        try:
+            yield from event_stream(state)
+        finally:
+            if not state["finished"]:
+                logger.warning(
+                    "Provisioning stream closed before completion (client disconnected around '%s'). "
+                    "Steps already completed are saved in .env — re-run with skip-existing to continue.",
+                    state["label"],
+                )
+
     return Response(
-        stream_with_context(event_stream()),
+        stream_with_context(guarded_stream()),
         mimetype="application/x-ndjson",
         headers={"X-Accel-Buffering": "no", "Cache-Control": "no-cache"},
     )

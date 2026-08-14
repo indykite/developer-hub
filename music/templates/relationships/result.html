@@ -38,6 +38,9 @@
 
                     <div class="mt-4">
                         <a href="{{ url_for('api_relationships.show_create_form') }}" class="btn btn-primary">Capture More Relationships</a>
+                        {% if graph_available %}
+                        <a href="{{ url_for('graph.show_graph') }}" class="btn btn-success">View Graph</a>
+                        {% endif %}
                         <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Home</a>
                     </div>
                 </div>

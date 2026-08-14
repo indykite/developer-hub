@@ -1,10 +1,9 @@
 import json
 import logging
 import os
-import re
-from pathlib import Path
 
 import requests
+from api._env import retain_env_variables, update_env_variable
 from api._music_data import PROJECT_DEFAULTS
 from flask import render_template, request
 from flask_openapi3 import APIBlueprint, Tag
@@ -21,75 +20,15 @@ HTTP_MULTIPLE_CHOICES = 300
 HTTP_BAD_REQUEST = 400
 
 
-def update_env_variable(key, value):
-    """Update or add an environment variable in the .env file."""
-    env_file = Path(__file__).parent.parent / ".env"
-
-    # Read existing .env file or create empty content
-    if env_file.exists():
-        with env_file.open() as f:
-            lines = f.readlines()
-    else:
-        lines = []
-
-    # Check if the key exists and update it, or add it
-    key_found = False
-    updated_lines = []
-
-    for line in lines:
-        # Match lines like KEY=value or KEY="value"
-        if re.match(f"^{re.escape(key)}=", line):
-            updated_lines.append(f"{key}={value}\n")
-            key_found = True
-        else:
-            updated_lines.append(line)
-
-    # If key wasn't found, add it (ensuring previous last line ends with a newline)
-    if not key_found:
-        if updated_lines and not updated_lines[-1].endswith("\n"):
-            updated_lines[-1] += "\n"
-        updated_lines.append(f"{key}={value}\n")
-
-    # Write back to .env file
-    with env_file.open("w") as f:
-        f.writelines(updated_lines)
-
-    # Update the environment variable in the current process
-    os.environ[key] = value
-
-    logger.info("Updated %s in .env file", key)
-
-
 def clean_env_file():
-    """Remove all environment variables except SA_TOKEN and URL_ENDPOINTS from .env file."""
-    env_file = Path(__file__).parent.parent / ".env"
+    """Remove all environment variables except the org-scoped base values from .env.
 
-    # Read existing .env file
-    if not env_file.exists():
-        logger.warning(".env file does not exist")
-        return
-
-    with env_file.open() as f:
-        lines = f.readlines()
-
-    # Keep SA_TOKEN, URL_ENDPOINTS, and ORGANIZATION_ID (not owned by the project lifecycle)
-    keep_vars = ["SA_TOKEN", "URL_ENDPOINTS", "ORGANIZATION_ID"]
-    updated_lines = []
-
-    for line in lines:
-        # Check if line starts with one of the variables we want to keep
-        should_keep = False
-        for var in keep_vars:
-            if re.match(f"^{re.escape(var)}=", line):
-                should_keep = True
-                break
-
-        if should_keep:
-            updated_lines.append(line)
-
-    # Write back to .env file
-    with env_file.open("w") as f:
-        f.writelines(updated_lines)
+    SA_TOKEN, URL_ENDPOINTS and ORGANIZATION_ID are not owned by the project
+    lifecycle; everything else (IDs, tokens, capture/readiness flags) belongs
+    to the deleted project and must go so stale values cannot leak into the
+    next provisioning run or keep the Graph Explorer unlocked.
+    """
+    retain_env_variables(["SA_TOKEN", "URL_ENDPOINTS", "ORGANIZATION_ID"])
 
     # Clear the environment variables from the current process
     vars_to_clear = [

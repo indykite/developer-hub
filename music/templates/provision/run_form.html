@@ -7,17 +7,19 @@
         <div class="col-12 col-xl-10">
             <div class="card border-0 shadow mb-4">
                 <div class="card-body">
-                    <h3 class="mb-2">Provision Everything (after the MCP server config)</h3>
-                    <p class="text-muted mb-2">Replays every create button that follows the five Getting Started
-                        configurations, in click order: both captures (nodes + relationships), the ten KBAC policies,
-                        then each CIQ policy immediately followed by its knowledge queries — submitting exactly what
-                        each individual form would submit and saving the same IDs to <code>.env</code>.</p>
-                    <p class="text-muted mb-4">The Project, Application, App Agent, Token Introspect and MCP Server
-                        must already exist (create them with the Getting Started cards) — their IDs and tokens are
-                        read from <code>.env</code>. Captures on a freshly created project can hit transient platform
-                        errors; the run waits those out and retries the idempotent upload. AuthZEN evaluations and
-                        CIQ executes keep their own forms. If the sandbox was instead created outside this app
-                        (e.g. a Hub console sandbox),
+                    <h3 class="mb-2">Provision Everything</h3>
+                    <p class="text-muted mb-2">Creates the full setup end to end, from the top: Project, Application,
+                        App Agent (+ credentials), Token Introspect, MCP Server, both captures (nodes + relationships),
+                        the ten KBAC policies, then each CIQ policy immediately followed by its knowledge queries -
+                        submitting exactly what each individual form would submit and saving the same IDs to
+                        <code>.env</code>.</p>
+                    <p class="text-muted mb-4">After the Project is created the run waits for its IKG status to become
+                        ACTIVE before going further (a fresh IKG takes minutes to provision), and after the App Agent
+                        and the other configs it pauses briefly and checks the agent credentials before capturing.
+                        Captures on a freshly created project can still hit transient platform errors; the run heals
+                        cached permission denials by re-saving the agent and retries the idempotent upload. AuthZEN
+                        evaluations and CIQ executes keep their own forms. If the sandbox was instead created outside
+                        this app (e.g. a Hub console sandbox),
                         <a href="{{ url_for('api_provision.show_backfill_form') }}">backfill the IDs by name</a>
                         rather than re-creating anything.</p>
 
@@ -38,8 +40,8 @@
                             {% endfor %}
                         </ul>
                         {% if not ready %}
-                        <div class="alert alert-warning mb-0">Add the missing values to <code>.env</code> first — run
-                            the Getting Started steps if you have not yet. The run is blocked until all are set.</div>
+                        <div class="alert alert-warning mb-0">Add the missing values to <code>.env</code> first - the
+                            run is blocked until all three are set. Everything else is created by the run itself.</div>
                         {% endif %}
                     </div>
 
@@ -122,7 +124,7 @@
             return;
         }
         // A non-2xx response (or a non-NDJSON body, e.g. an HTML error page) is
-        // not the progress stream — surface it instead of silently draining it.
+        // not the progress stream - surface it instead of silently draining it.
         if (!response.ok) {
             const text = await response.text().catch(() => '');
             finishWithError(`Request failed (${response.status}): ${(text || '').trim().slice(0, 200)}`);
@@ -158,7 +160,7 @@
         }
         // If the stream ended without a terminal "done" event (server crash,
         // dropped connection), the result box is still hidden and the button
-        // still disabled — surface an error rather than hang the UI.
+        // still disabled - surface an error rather than hang the UI.
         if (resultBox.classList.contains('d-none')) {
             finishWithError('Provisioning stream ended unexpectedly (no final "done" event).');
         }
@@ -201,7 +203,7 @@
             resultAlert.innerHTML = ok
                 ? `<strong>Done!</strong> ${evt.ok} step(s) succeeded, ${evt.skipped} skipped.`
                 : (evt.aborted
-                    ? '<strong>Stopped early.</strong> Fix the failed step above (or the missing .env values), then run again — completed steps are skipped.'
+                    ? '<strong>Stopped early.</strong> Fix the failed step above (or the missing .env values), then run again - completed steps are skipped.'
                     : `<strong>Finished with issues.</strong> ${evt.ok} ok, ${evt.failed} failed, ${evt.skipped} skipped. Re-run to retry the failed steps; completed ones are skipped.`);
             resultBox.classList.remove('d-none');
             submitBtn.disabled = false;

@@ -7,6 +7,7 @@ from pathlib import Path
 
 import ijson
 import requests
+from api._env import update_env_variable
 from dotenv import load_dotenv
 from flask import Response, render_template, request, stream_with_context
 from flask_openapi3 import APIBlueprint, Tag
@@ -46,6 +47,7 @@ RETRY_BACKOFF = 2.0  # seconds, doubled each retry
 
 # HTTP status constants (avoid magic numbers in comparisons).
 HTTP_OK = 200
+HTTP_MULTIPLE_CHOICES = 300
 HTTP_BAD_REQUEST = 400
 HTTP_REQUEST_TIMEOUT = 408
 HTTP_TOO_MANY_REQUESTS = 429
@@ -117,6 +119,19 @@ def show_create_form():
         preview_json=json.dumps(preview, indent=2),
         nodes_file=str(NODES_FILE.relative_to(NODES_FILE.parent.parent.parent)),
     )
+
+
+def _stamp_captured_flag(ok_chunks, bad_chunks):
+    """Record a clean nodes capture (unlocks the Graph Explorer; see graph_available in app.py).
+
+    Set iff at least one chunk was accepted and none failed — a single lucky
+    chunk among failures must not unlock the graph. Callers only invoke this
+    after the whole chunk stream was processed, so a capture interrupted by a
+    client disconnect (partial upload) never sets the flag; re-running the
+    idempotent capture is the recovery.
+    """
+    if ok_chunks and not bad_chunks:
+        update_env_variable("CAPTURED_NODES", "true")
 
 
 def _chunk_list(lst, chunk_size):
@@ -209,8 +224,7 @@ def _load_payload_from_form():
             status_code=HTTP_BAD_REQUEST,
         )
         return None, error
-    else:
-        return {"source": "pasted", "nodes": nodes_list}, None
+    return {"source": "pasted", "nodes": nodes_list}, None
 
 
 def _error_response(wants_stream, msg, status):
@@ -273,12 +287,18 @@ def _stream_response(chunk_iter, process_chunk, total_nodes, total_chunks):
         last_status_code = HTTP_OK
         completed = 0
         percent = 0
+        ok_chunks = 0
+        bad_chunks = 0
         for (index, frac), result in _iter_results_bounded(chunk_iter, process_chunk):
             completed += 1
             # max() keeps the bar monotonic even if chunks complete slightly out of order.
             percent = max(percent, round(frac * 100))
             results.append(result["response_json"])
             last_status_code = result["status_code"]
+            if HTTP_OK <= result["status_code"] < HTTP_MULTIPLE_CHOICES:
+                ok_chunks += 1
+            else:
+                bad_chunks += 1
             evt = {
                 "type": "chunk",
                 "completed": completed,
@@ -290,6 +310,10 @@ def _stream_response(chunk_iter, process_chunk, total_nodes, total_chunks):
             if result["status_code"] >= HTTP_BAD_REQUEST:
                 evt["response_text"] = result.get("response_text", "")
             yield json.dumps(evt) + "\n"
+        # Reached only when every chunk was processed: a client disconnect raises
+        # GeneratorExit at a yield inside the loop, so a partial upload (trailing
+        # chunks never submitted) can never stamp the flag.
+        _stamp_captured_flag(ok_chunks, bad_chunks)
         yield (
             json.dumps({"type": "done", "status_code": last_status_code, "results": results, "completed": completed})
             + "\n"
@@ -306,9 +330,16 @@ def _render_result(chunk_iter, process_chunk):
     """Run the chunks concurrently and render the result page on completion (no-JS fallback)."""
     results = []
     last_status_code = HTTP_OK
+    ok_chunks = 0
+    bad_chunks = 0
     for (_index, _frac), result in _iter_results_bounded(chunk_iter, process_chunk):
         results.append(result["response_json"])
         last_status_code = result["status_code"]
+        if HTTP_OK <= result["status_code"] < HTTP_MULTIPLE_CHOICES:
+            ok_chunks += 1
+        else:
+            bad_chunks += 1
+    _stamp_captured_flag(ok_chunks, bad_chunks)
     return render_template("capture/result.html", response_json=results, status_code=last_status_code)
 
 

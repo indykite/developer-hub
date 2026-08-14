@@ -52,6 +52,31 @@
                 </div>
             </div>
 
+            <!-- One-click Provisioning Card -->
+            <div class="card mb-4 border-primary">
+                <div class="card-body d-flex flex-wrap align-items-center justify-content-between">
+                    <div class="me-3">
+                        <h5 class="mb-1">One-click provisioning</h5>
+                        <p class="text-muted small mb-0">Let a virtual operator click every button for you, from the
+                            top: the five Getting Started configs (waiting for the project's IKG to become ACTIVE
+                            and checking the App Agent before moving on), both captures, the ten KBAC policies,
+                            then all CIQ policies and knowledge queries, in order. Only <code>URL_ENDPOINTS</code>,
+                            <code>SA_TOKEN</code> and <code>ORGANIZATION_ID</code> are needed in <code>.env</code>.
+                            AuthZEN evaluations and CIQ executes are not included.
+                            If you created your music sandbox outside this app (Hub console sandbox),
+                            Backfill recovers its IDs into <code>.env</code> so the app can use it -
+                            read-only, and never needed for the buttons or provisioning below. Backfill needs
+                            <code>URL_ENDPOINTS</code>, <code>SA_TOKEN</code>, the sandbox's
+                            <code>PROJECT_ID</code> and the sandbox's
+                            <code>APP_TOKEN</code> in <code>.env</code>.</p>
+                    </div>
+                    <div class="mt-2 mt-md-0 text-nowrap">
+                        <a href="/api_provision/run" class="btn btn-primary">Provision Everything</a>
+                        <a href="/api_provision/backfill" class="btn btn-outline-primary">Backfill .env</a>
+                    </div>
+                </div>
+            </div>
+
             <!-- Getting Started Card -->
             <div class="card mb-4">
                 <div class="card-header">
@@ -110,26 +135,6 @@
                 </div>
             </div>
 
-            <!-- One-click Provisioning Card -->
-            <div class="card mb-4 border-primary">
-                <div class="card-body d-flex flex-wrap align-items-center justify-content-between">
-                    <div class="me-3">
-                        <h5 class="mb-1">One-click provisioning</h5>
-                        <p class="text-muted small mb-0">Once the five Getting Started steps above exist, let a
-                            virtual operator click every remaining button below for you — both captures, the ten
-                            KBAC policies, then all CIQ policies and knowledge queries, in order. AuthZEN
-                            evaluations and CIQ executes are not included; every individual form keeps working as
-                            before. Created your music sandbox outside this app (Hub console sandbox, scripts)?
-                            Backfill recovers its IDs into <code>.env</code> so the app can use it — read-only,
-                            and never needed for the buttons or provisioning above.</p>
-                    </div>
-                    <div class="mt-2 mt-md-0 text-nowrap">
-                        <a href="/api_provision/run" class="btn btn-primary">Provision Everything</a>
-                        <a href="/api_provision/backfill" class="btn btn-outline-primary">Backfill .env</a>
-                    </div>
-                </div>
-            </div>
-
             <!-- Data Capture Card -->
             <div class="card mb-4">
                 <div class="card-header">
@@ -138,7 +143,7 @@
                 <div class="card-body">
                     <p class="text-muted mb-3">Import the music dataset (<code>data/nodes/nodes_music.json</code> and <code>data/relationships/relationships_music.json</code>) into the IndyKite Knowledge Graph (IKG). Brings in artists, tracks, albums, people, venues and the relationships between them.</p>
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <a href="/api_capture/create" class="card h-100 text-decoration-none">
                                 <div class="card-body">
                                     <h6 class="mb-2">Capture Nodes</h6>
@@ -146,7 +151,7 @@
                                 </div>
                             </a>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <a href="/api_relationships/create" class="card h-100 text-decoration-none">
                                 <div class="card-body">
                                     <h6 class="mb-2">Capture Relationships</h6>
@@ -154,6 +159,16 @@
                                 </div>
                             </a>
                         </div>
+                        {% if graph_available %}
+                        <div class="col-md-4 mb-3">
+                            <a href="/graph/" class="card h-100 text-decoration-none">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Visualize Graph</h6>
+                                    <p class="text-muted small mb-0">Explore the captured dataset as an interactive graph - nodes, directed relationships, and per-node details</p>
+                                </div>
+                            </a>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
