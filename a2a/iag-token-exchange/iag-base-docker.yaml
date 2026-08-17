@@ -3,12 +3,12 @@ version: '3.9'
 
 services:
   iag-base:
-    # Pinned: 2.42.0 adds the token_service block (delegation minted by the
+    # Pinned: 2.42.x adds the token_service block (delegation minted by the
     # IndyKite Token Service; delegated token travels in X-IK-Token, policies
     # read it as $ik_token). 2.21.1 was the previous pin (first with MCP
     # proxying). All gateways share this tag.
     # See https://hub.docker.com/r/indykite/agent-gateway/tags.
-    image: indykite/agent-gateway:2.42.0
+    image: indykite/agent-gateway:2.42.7
     environment:
       JARVIS_SERVICE_LOG_LEVEL: debug
       JARVIS_SERVICE_ENVIRONMENT: demo

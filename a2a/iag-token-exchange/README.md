@@ -243,10 +243,12 @@ make new-analyst
 ```yaml
 services:
   iag-base:
-    image: indykite/agent-gateway:2.21.1   # or any newer tag from Docker Hub
+    image: indykite/agent-gateway:2.42.7   # or any newer tag from Docker Hub
 ```
 
-All gateways inherit this tag. `2.21.1` implements MCP proxying
+All gateways inherit this tag. `2.42.x` adds the `token_service` exchange
+block (delegation minted by the IndyKite Token Service, travelling in
+`X-IK-Token`); `2.21.1` was the first tag with MCP proxying
 (`JARVIS_PROTECTED_AGENT_PROTOCOL: mcp`), which the `mcp-iag` and
 `drive-mcp-iag` services need - the published `2.0.x` tags ignore the protocol
 and 404 every MCP method after the auth pipeline passes. Avoid floating tags
@@ -257,7 +259,7 @@ If you are on Apple Silicon, add a `platform` attribute:
 ```yaml
 services:
   iag-base:
-    image: indykite/agent-gateway:2.21.1
+    image: indykite/agent-gateway:2.42.7
     platform: linux/amd64
 ```
 
@@ -294,7 +296,9 @@ gateways. Full build/config/run details live in
    `POST /configs/v1/token-introspects` (Service Account token,
    `Accept: application/json`):
    - Token Service configs, one per workflow path:
-     `jwt_matcher {issuer: http://token-service:8102, audience: indykiteagent-2|3|4}`
+     `jwt_matcher {issuer: https://token-service.demo.local, audience: indykiteagent-2|3|4}`
+     (the issuer must be `https` - the platform treats `http` issuers as
+     opaque and skips offline validation)
      with `offline_validation.public_jwks` holding the **raw public JWK
      JSON** (`kty`/`n`/`e`/`alg`/`kid`/`use` only - no private fields, no
      `key_ops`);
@@ -621,8 +625,9 @@ Each one shows the full chain in the audit terminal: `orchestrator-iag` →
   auth enforced).
 - **`manifest unknown` / `manifest for indykite/agent-gateway:<tag> not found`**:
   the pinned tag doesn't exist for your platform. Pick a valid one from
-  [Docker Hub](https://hub.docker.com/r/indykite/agent-gateway/tags) (`2.21.1`
-  or newer for MCP proxying) and, on Apple Silicon, add `platform: linux/amd64`.
+  [Docker Hub](https://hub.docker.com/r/indykite/agent-gateway/tags) (`2.42.7`
+  is the tested pin; `2.21.1`+ has MCP proxying, `2.42.0`+ the Token Service
+  block) and, on Apple Silicon, add `platform: linux/amd64`.
 - **OAuth redirect mismatch**: the Provider `console` client's redirect URL
   must exactly match `http://${CHATBOT_HOST}:${CHATBOT_PORT}/auth/callback`.
 - **`401 Unauthorized` / `403 Forbidden` on every prompt**: the user you're
