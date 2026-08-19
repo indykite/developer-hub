@@ -8,7 +8,7 @@
             <div class="card border-0 shadow mb-4">
                 <div class="card-body">
                     <h3 class="mb-4">Capture Demo Nodes</h3>
-                    <p class="text-muted mb-4">The form below is pre-populated with the IAG demo nodes from <code>data/iag/nodes.json</code>. Edit as needed and click "Capture" to submit to the Identity Knowledge Graph.</p>
+                    <p class="text-muted mb-4">The form below is pre-populated with the active dataset's nodes from <code>data/{{ dataset }}/nodes.json</code>. Edit as needed and click "Capture" to submit to the Identity Knowledge Graph.</p>
 
                     <form method="POST" action="{{ url_for('api_capture.create_capture') }}">
                         <div class="mb-3">

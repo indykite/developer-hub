@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 """Per-dataset static defaults (manifest loader) for canbank-iag.
 
 Config-API elements that don't depend on runtime values live here as *data*, in

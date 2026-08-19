@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 """A2A client that forwards messages to the Orchestrator Agent via a plain HTTP gateway.
 
 The gateway is a simple reverse proxy — it has no A2A agent card and does not implement
@@ -99,7 +100,7 @@ def _is_completed(state: str | None) -> bool:
     return state in ("TASK_STATE_COMPLETED", "completed")
 
 
-async def _send_text_async(  # noqa: C901,PLR0911,PLR0912
+async def _send_text_async(  # noqa: C901,PLR0911,PLR0912  # skipcq: PY-R1000
     gateway_url: str,
     text: str,
     access_token: str | None = None,
@@ -152,10 +153,13 @@ async def _send_text_async(  # noqa: C901,PLR0911,PLR0912
             return "I was unable to process your request, check the audit trace"
 
         logger.info("Polling task: %s", task_id)
-        max_retries = 100
+        # Poll fast: the orchestrator's answer is often ready within seconds,
+        # and a coarse interval adds straight latency to every user prompt.
+        poll_interval = 0.5
+        max_retries = int(ORCHESTRATOR_TIMEOUT / poll_interval)
 
         for _ in range(max_retries):
-            await asyncio.sleep(2)
+            await asyncio.sleep(poll_interval)
             poll_payload = _build_get_task_payload(task_id)
             try:
                 poll_resp = await client.post(gateway_url, json=poll_payload)
@@ -194,6 +198,7 @@ async def stream_to_orchestrator(
     context_id: str | None = None,
     access_token: str | None = None,
 ):
+    """Send a prompt to the orchestrator gateway and yield the result as a single 'done' event."""
     url = f"http://{host}:{port}"
     ctx_id = context_id or str(uuid.uuid4())
 

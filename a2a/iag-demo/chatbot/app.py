@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 """Chatbot web app - A2A client UI that forwards prompts to the Orchestrator Agent."""
 
 import argparse

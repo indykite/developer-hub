@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 """Shared .env persistence for the music app.
 
 Every route that saves IDs, tokens, or flags writes through here. A thread

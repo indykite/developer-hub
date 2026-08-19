@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 """Weather agent - A2A-compliant agent that returns current weather by city.
 
 For requests targeting CanBank's headquarters ("HQ", "headquarters", "office") the

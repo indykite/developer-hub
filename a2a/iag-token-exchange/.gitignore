@@ -66,6 +66,8 @@ htmlcov/
 # (keep the directory itself so the compose bind mount works on fresh clones)
 drive_mcp/.gdrive/*
 !drive_mcp/.gdrive/.gitkeep
+drive_mcp/.gdrive-server-credentials.json
+drive_mcp/gcp-oauth.keys.json
 
 # Token-service config holds a private signing key + client secret - keep local.
 token-service/token-service.yaml

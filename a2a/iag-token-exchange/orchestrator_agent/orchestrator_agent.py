@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 """Orchestrator agent - A2A-compliant agent (a2a-sdk>=1.1.0) that receives and relays messages to the retriever."""
 
 import asyncio
@@ -668,8 +669,10 @@ def _build_skill_catalog_prompt() -> str:
         return ""
     lines = [
         "The following skills provide specialized instructions for specific tasks.",
-        "When a task matches a skill's description, call the activate_skill tool "
-        "with the skill's name to load its full instructions.",
+        (
+            "When a task matches a skill's description, call the activate_skill tool "
+            "with the skill's name to load its full instructions."
+        ),
         "",
         "<available_skills>",
     ]

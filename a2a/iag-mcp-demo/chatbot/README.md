@@ -13,12 +13,12 @@ Environment variables:
 
 | Variable | Default | Description |
 | ---------- | --------- | ------------- |
-| `CHATBOT_PORT` | `6000` | Port the chatbot web app listens on. |
+| `CHATBOT_PORT` | `3000` | Port the chatbot web app listens on. |
 | `ORCHESTRATOR_HOST` | `localhost` | Host of the Orchestrator Agent. |
 | `ORCHESTRATOR_PORT` | `6001` | Port of the Orchestrator Agent. |
 | `ORCHESTRATOR_TIMEOUT` | `300` | Request timeout in seconds (LLM responses can take a while). |
 | `ID_SERVER_BASE_URL` | – | OAuth2 Identity Server base URL (e.g. `https://idsvr.indykite.one/oauth/v2`). |
-| `CHATBOT_REDIRECT_URL` | – | OAuth2 redirect URI after login (e.g. `http://127.0.0.1:5800/auth/callback`). |
+| `CHATBOT_REDIRECT_URL` | – | OAuth2 redirect URI after login (e.g. `http://127.0.0.1:3000/auth/callback`). |
 | `ID_SERVER_CLIENT_ID` | `indykiteagent` | OAuth2 client ID. |
 | `ID_SERVER_SCOPES` | `openid profile email` | OAuth2 scopes. |
 | `FLASK_SECRET_KEY` | (random) | Secret for Flask session (set in production). |
@@ -43,7 +43,7 @@ pip install -r requirements.txt
    python app.py
    ```
 
-3. Open <http://localhost:6000> (or your configured `CHATBOT_PORT`) in a browser.
+3. Open <http://localhost:3000> (or your configured `CHATBOT_PORT`) in a browser.
 
 4. Click **Login** to authenticate via OAuth2 (requires `ID_SERVER_BASE_URL` and `CHATBOT_REDIRECT_URL`).
 

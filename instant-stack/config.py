@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 class Config:
     TITLE = "Flask App"
     VERSION = "1.0.0"

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 """Analyst agent - A2A-compliant agent (a2a-sdk>=1.1.0) that uses remote MCP servers via the official MCP SDK."""
 # Reason: warnings.filterwarnings() must run before LangChain imports to suppress
 # the Pydantic V1 deprecation warning on Python 3.14+, so all other imports
@@ -416,8 +417,10 @@ def _build_skill_catalog_prompt() -> str:
         return ""
     lines = [
         "The following skills provide specialized instructions for specific tasks.",
-        "When a task matches a skill's description, call the activate_skill tool "
-        "with the skill's name to load its full instructions.",
+        (
+            "When a task matches a skill's description, call the activate_skill tool "
+            "with the skill's name to load its full instructions."
+        ),
         "",
         "<available_skills>",
     ]

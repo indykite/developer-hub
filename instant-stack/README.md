@@ -9,7 +9,7 @@ one app provisions everything the
 
 Differences from `canbank`:
 
-- **Data** (`data/iag/nodes.json`, `data/iag/relationships.json`)
+- **Data** (`data/canbank/nodes.json`, `data/canbank/relationships.json`)
   is the union of the Bruno `ingest` folders (`agent-workflow` +
   `demo-data/{canbank,customers,customer-docs}`): the CanBank organization
   plus the agent-workflow graph - users (`millicent`, `carol`, `joe`, …),
@@ -58,10 +58,10 @@ Environment created on the IndyKite platform: Service Account
 create .env file with the variables:
 
 ```text
-SA_TOKEN: SA credentials token obtained on https://eu.hub.indykite.com/service-accounts (or https://us.hub.indykite.com/service-accounts)
-URL_ENDPOINTS: https://eu.api.indykite.com (or https://us.api.indykite.com)
-ORGANIZATION_ID: ID attribute available in Organization > Settings
-DATASET: which data/<DATASET>/ folder to provision from (optional; defaults to "iag")
+SA_TOKEN=SA credentials token obtained on https://eu.hub.indykite.com/service-accounts (or https://us.hub.indykite.com/service-accounts)
+URL_ENDPOINTS=https://eu.api.indykite.com (or https://us.api.indykite.com)
+ORGANIZATION_ID=ID attribute available in Organization > Settings
+DATASET=which data/<DATASET>/ folder to provision from (optional; defaults to "canbank")
 ```
 
 ## Datasets
@@ -71,7 +71,7 @@ self-contained folder per dataset:
 
 ```text
 data/
-  iag/                  # the default dataset (DATASET=iag)
+  canbank/              # the default dataset (DATASET=canbank)
     manifest.json       # all Config-API elements: project, application,
                         # app_agent, mcp_server, token_introspect, kbac,
                         # resolvers, ciq_policies, ciq_queries
@@ -82,7 +82,7 @@ data/
 The `api/*.py` modules read their form defaults from the active dataset's
 `manifest.json` via `api/_dataset.py` (they hold no hardcoded config). Select the
 dataset with the `DATASET` env var - in `.env` or as a real env var - defaulting
-to `iag` when unset. To add another dataset, drop in a new `data/<name>/` folder
+to `canbank` when unset. To add another dataset, drop in a new `data/<name>/` folder
 with the same three files and set `DATASET=<name>`; no code change is needed
 (`api/_dataset.py:available_datasets()` auto-discovers any folder containing a
 `manifest.json`). The landing page, forms, execute pages and provisioning all

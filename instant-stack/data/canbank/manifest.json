@@ -1,5 +1,5 @@
 {
-  "dataset": "iag",
+  "dataset": "canbank",
   "display_name": "CanBank IAG demo",
   "description": "Config-as-data for the canbank-iag provisioning app (scaffold: CIQ knowledge queries).",
   "ciq_queries": [
@@ -628,8 +628,8 @@
     "description": "Token introspect for CanBank users authenticated via their IdP",
     "ikg_node_type": "User",
     "jwt_matcher": {
-      "issuer": "https://your-idp.example.com/",
-      "audience": "your-api-audience-identifier"
+      "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous/",
+      "audience": "indykiteagent-mcp"
     },
     "claims_mapping": {
       "email": {

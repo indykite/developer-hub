@@ -21,7 +21,11 @@ services:
       JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${WORKFLOW_ID}
       JARVIS_AUTHZEN_BASE_URL: ${INDYKITE_BASE_URL}/access/v1
       JARVIS_AUTHZEN_ACTION: CAN_TRIGGER
-      JARVIS_AUTHZEN_SUBJECT_TYPES: User
+      # Subject node types the gateways evaluate for CAN_TRIGGER. Default
+      # covers staff logins (User). Subjects with customer logins (e.g. the
+      # insurance demo's roy, a Person) set AUTHZEN_SUBJECT_TYPES=User Person
+      # in .env; each extra type needs a matching CAN_TRIGGER KBAC policy.
+      JARVIS_AUTHZEN_SUBJECT_TYPES: ${AUTHZEN_SUBJECT_TYPES:-User}
 
     extra_hosts:
       - "host.docker.internal:host-gateway"

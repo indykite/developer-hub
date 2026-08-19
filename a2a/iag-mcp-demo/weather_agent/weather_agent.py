@@ -1,10 +1,13 @@
+# Copyright (c) 2026 IndyKite
 """Weather agent - A2A-compliant agent that returns current weather by city.
 
-For requests targeting CanBank's headquarters ("HQ", "headquarters", "office") the
-agent calls the canbank `get-hq-weather` knowledge query through the IndyKite MCP
-server. The query reads the `hq_weather` Weather node, which carries `latitude` and
-`longitude` properties feeding the `weather` and `weather-units` external data
-resolvers. For any other city the agent falls back to a direct open-meteo call.
+For requests targeting the organization's headquarters (phrases listed in
+WEATHER_HQ_KEYWORDS, e.g. "HQ", "headquarters", "office") the agent calls the
+subject dataset's HQ-weather knowledge query (CIQ_QUERY_HQ_WEATHER) through
+the IndyKite MCP server. The query reads the `hq_weather` Weather node, which
+carries `latitude` and `longitude` properties feeding the `weather` and
+`weather-units` external data resolvers. For any other city the agent falls
+back to a direct open-meteo call.
 """
 
 import asyncio
@@ -121,7 +124,15 @@ MCP_SETUP_TIMEOUT = float(os.getenv("MCP_SETUP_TIMEOUT", "20"))
 # the old behavior of a fresh session per request.
 MCP_SESSION_TTL = float(os.getenv("MCP_SESSION_TTL", "300"))
 CIQ_QUERY_HQ_WEATHER = os.getenv("CIQ_QUERY_HQ_WEATHER", "").strip() or "get-hq-weather"
-_HQ_KEYWORDS = ("hq", "headquarters", "head office", "head-office", "canbank office", "the office")
+# Subject-specific vocabulary (see usecases/<subject>/usecase.env): phrases
+# that route to the HQ knowledge-query path, and the display name used when
+# the graph does not supply a location.
+WEATHER_HQ_NAME = os.getenv("WEATHER_HQ_NAME", "").strip() or "HQ"
+_HQ_KEYWORDS = tuple(
+    kw.strip().lower()
+    for kw in (os.getenv("WEATHER_HQ_KEYWORDS", "") or "hq,headquarters,head office,head-office,the office").split(",")
+    if kw.strip()
+)
 _LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
 logging.basicConfig(
@@ -136,7 +147,7 @@ logging.basicConfig(
 # reconfigured); set LIB_LOG_LEVEL=DEBUG to see the SDK logs, condensed to
 # one-line breadcrumbs.
 _LIB_LOG_LEVEL = os.getenv("LIB_LOG_LEVEL", "INFO").upper()
-_LIB_LOG_LEVELNO = getattr(logging, _LIB_LOG_LEVEL, logging.INFO)
+_LIB_LOG_LEVELNO = {"CRITICAL": 50, "ERROR": 40, "WARNING": 30, "INFO": 20, "DEBUG": 10}.get(_LIB_LOG_LEVEL, 20)
 
 
 class _CondenseLibLogs(logging.Filter):
@@ -194,16 +205,16 @@ weather_card = AgentCard(
             id="current-weather",
             name="Current Weather",
             description=(
-                "Get current weather conditions for a city. CanBank HQ requests "
+                f"Get current weather conditions for a city. {WEATHER_HQ_NAME} requests "
                 "(prompts mentioning HQ, headquarters or office) are resolved through "
-                "the IndyKite knowledge graph via the get-hq-weather query."
+                f"the IndyKite knowledge graph via the {CIQ_QUERY_HQ_WEATHER} query."
             ),
             tags=["weather", "forecast", "temperature", "hq", "ciq"],
             examples=[
                 "What's the weather in London?",
                 "Current weather in New York",
                 "How warm is it in Oslo right now?",
-                "What's the weather at CanBank HQ?",
+                f"What's the weather at {WEATHER_HQ_NAME}?",
                 "Current conditions at the office",
             ],
             input_modes=["text/plain"],
@@ -222,6 +233,48 @@ def _get_access_token_from_context(context: "RequestContext | None") -> str:
     if auth.lower().startswith("bearer "):
         return auth[7:].strip()
     return auth.strip() if auth else ""
+
+
+CHATBOT_UPDATES_URL = os.getenv("CHATBOT_UPDATES_URL", "http://chatbot:3000/api/push-update").strip()
+
+
+def _report_exchanged_token(token: str) -> None:
+    """Post the exchanged bearer token to the console's audit terminal (fire-and-forget).
+
+    The gateways' audit events carry the decision and actors chain but not the
+    minted delegation token itself, so each agent reports the token it
+    received; the console renders it as a TOKEN card. Failures never affect
+    the request.
+    """
+    if not CHATBOT_UPDATES_URL:
+        return
+    subject = actor = "?"
+    try:
+        payload = token.split(".")[1]
+        claims = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
+        subject = claims.get("sub") or "?"
+        actor = (claims.get("act") or {}).get("sub") or "?"
+    except Exception:  # nosec B110 - opaque token: report it without claims  # noqa: S110
+        pass
+    event = {
+        "service": WEATHER_AGENT_NAME,
+        "decision": "TOKEN_EXCHANGED",
+        "subject": subject,
+        "actor": actor,
+        "reason": token,
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    }
+
+    async def _post() -> None:
+        try:
+            async with httpx.AsyncClient(timeout=3) as client:
+                await client.post(CHATBOT_UPDATES_URL, json=event)
+        except Exception:
+            _logger.debug("Exchanged-token report to the console failed")
+
+    # no running loop (sync caller): skip reporting
+    with suppress(RuntimeError):
+        asyncio.get_running_loop().create_task(_post())
 
 
 def _message_text(context: RequestContext) -> str:
@@ -255,7 +308,7 @@ def _extract_city(prompt: str) -> str:
 
 
 def _is_hq_request(prompt: str) -> bool:
-    """Return True if the user is asking about CanBank's headquarters weather."""
+    """Return True if the user is asking about the organization's headquarters weather."""
     if not prompt:
         return False
     lowered = prompt.lower()
@@ -292,7 +345,7 @@ def _extract_node_props(result: CallToolResult) -> dict[str, Any]:
         if isinstance(block, TextContent) and block.text:
             try:
                 candidates.append(json.loads(block.text))
-            except (json.JSONDecodeError, ValueError):
+            except ValueError:
                 continue
 
     for payload in candidates:
@@ -639,7 +692,7 @@ def _format_exception_chain(exc: BaseException) -> str:
 
 
 async def _fetch_hq_weather_via_ciq(access_token: str) -> str:
-    """Run the canbank get-hq-weather query and format the standard weather sentence."""
+    """Run the subject's HQ-weather query and format the standard weather sentence."""
     async with _mcp_session(access_token) as session:
         result = await session.call_tool(
             "ciq_execute",
@@ -651,7 +704,7 @@ async def _fetch_hq_weather_via_ciq(access_token: str) -> str:
         msg = f"ciq_execute({CIQ_QUERY_HQ_WEATHER}) returned no rows: {_format_call_tool_result(result)[:300]}"
         raise RuntimeError(msg)
 
-    location = nodes.get("weather.property.location") or "CanBank HQ"
+    location = nodes.get("weather.property.location") or WEATHER_HQ_NAME
     current = nodes.get("weather.property.current")
     units = nodes.get("weather.property.units")
     if not isinstance(current, dict) or not isinstance(units, dict):
@@ -718,6 +771,11 @@ class WeatherExecutor(AgentExecutor):
         access_token = _get_access_token_from_context(context)
         if not access_token:
             raise HTTPException(status_code=401, detail="Authorization required")
+        # Demo feature: the short-lived delegation token is intentionally
+        # surfaced in the console audit terminal to show the exchange chain;
+        # logs carry only a redacted fingerprint to avoid credential leaks.
+        _logger.info("Exchanged bearer token (redacted): %s...%s", access_token[:6], access_token[-6:])
+        _report_exchanged_token(access_token)
 
         prompt = _message_text(context)
         _logger.info("Received message for %s: %s", WEATHER_AGENT_NAME, prompt)
@@ -737,9 +795,10 @@ class WeatherExecutor(AgentExecutor):
         )
 
         is_hq = _is_hq_request(prompt)
-        # When the user asked about HQ, _extract_city would yield e.g. "CanBank HQ"
-        # which the geocoder can't resolve. Use DEFAULT_CITY for the HQ fallback so
-        # the user still gets weather data when the CIQ path is unavailable.
+        # When the user asked about HQ, _extract_city would yield e.g. the HQ
+        # display name, which the geocoder can't resolve. Use DEFAULT_CITY for
+        # the HQ fallback so the user still gets weather data when the CIQ
+        # path is unavailable.
         city = DEFAULT_CITY if is_hq else _extract_city(prompt)
         use_ciq = is_hq and bool(MCP_SERVER_URL)
         try:

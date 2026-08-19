@@ -1,11 +1,15 @@
+# Copyright (c) 2026 IndyKite
 """Orchestrator agent - A2A-compliant agent (a2a-sdk>=1.1.0) that receives and relays messages to the retriever."""
 
 import asyncio
+import base64
+import json
 import logging
 import os
 import re
 import time
 import uuid
+from contextlib import suppress
 from contextvars import ContextVar
 from pathlib import Path
 from typing import Any
@@ -87,7 +91,7 @@ logging.getLogger("ddgs").setLevel(logging.WARNING)
 # reconfigured); set LIB_LOG_LEVEL=DEBUG to see the SDK logs, condensed to
 # one-line breadcrumbs.
 _LIB_LOG_LEVEL = os.getenv("LIB_LOG_LEVEL", "INFO").upper()
-_LIB_LOG_LEVELNO = getattr(logging, _LIB_LOG_LEVEL, logging.INFO)
+_LIB_LOG_LEVELNO = {"CRITICAL": 50, "ERROR": 40, "WARNING": 30, "INFO": 20, "DEBUG": 10}.get(_LIB_LOG_LEVEL, 20)
 
 
 class _CondenseLibLogs(logging.Filter):
@@ -155,6 +159,48 @@ def _get_access_token_from_context(context: "RequestContext | None") -> str:
     if auth.lower().startswith("bearer "):
         return auth[7:].strip()
     return auth.strip() if auth else ""
+
+
+CHATBOT_UPDATES_URL = os.getenv("CHATBOT_UPDATES_URL", "http://chatbot:3000/api/push-update").strip()
+
+
+def _report_exchanged_token(token: str) -> None:
+    """Post the exchanged bearer token to the console's audit terminal (fire-and-forget).
+
+    The gateways' audit events carry the decision and actors chain but not the
+    minted delegation token itself, so each agent reports the token it
+    received; the console renders it as a TOKEN card. Failures never affect
+    the request.
+    """
+    if not CHATBOT_UPDATES_URL:
+        return
+    subject = actor = "?"
+    try:
+        payload = token.split(".")[1]
+        claims = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
+        subject = claims.get("sub") or "?"
+        actor = (claims.get("act") or {}).get("sub") or "?"
+    except Exception:  # nosec B110 - opaque token: report it without claims  # noqa: S110
+        pass
+    event = {
+        "service": ORCHESTRATOR_AGENT_NAME,
+        "decision": "TOKEN_EXCHANGED",
+        "subject": subject,
+        "actor": actor,
+        "reason": token,
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    }
+
+    async def _post() -> None:
+        try:
+            async with httpx.AsyncClient(timeout=3) as client:
+                await client.post(CHATBOT_UPDATES_URL, json=event)
+        except Exception:
+            _logger.debug("Exchanged-token report to the console failed")
+
+    # no running loop (sync caller): skip reporting
+    with suppress(RuntimeError):
+        asyncio.get_running_loop().create_task(_post())
 
 
 # ---------------------------------------------------------------------------
@@ -271,10 +317,13 @@ async def _call_agent(base_url: str, text: str, token: str) -> str:  # noqa: C90
             return ""
 
         _logger.info("Polling agent task: %s", task_id)
-        max_polls = int(ORCHESTRATOR_TIMEOUT / 2)
+        # Poll fast: downstream answers are often ready within seconds, and a
+        # coarse interval adds straight latency to every user prompt.
+        poll_interval = 0.5
+        max_polls = int(ORCHESTRATOR_TIMEOUT / poll_interval)
 
         for _ in range(max_polls):
-            await asyncio.sleep(2)
+            await asyncio.sleep(poll_interval)
             poll_payload = {
                 "jsonrpc": "2.0",
                 "id": uuid.uuid4().hex,
@@ -286,7 +335,7 @@ async def _call_agent(base_url: str, text: str, token: str) -> str:  # noqa: C90
                 poll_resp.raise_for_status()
             except Exception as e:
                 _logger.warning("Error polling agent task %s: %s", task_id, e)
-                await asyncio.sleep(2)
+                await asyncio.sleep(poll_interval)
                 continue
 
             poll_body = poll_resp.json()
@@ -647,8 +696,10 @@ def _build_skill_catalog_prompt() -> str:
         return ""
     lines = [
         "The following skills provide specialized instructions for specific tasks.",
-        "When a task matches a skill's description, call the activate_skill tool "
-        "with the skill's name to load its full instructions.",
+        (
+            "When a task matches a skill's description, call the activate_skill tool "
+            "with the skill's name to load its full instructions."
+        ),
         "",
         "<available_skills>",
     ]
@@ -689,6 +740,7 @@ _activate_skill_tool = _make_activate_skill_tool(_SKILL_REGISTRY)
 _orchestrator_tools = ([_activate_skill_tool] if _activate_skill_tool is not None else []) + [
     query_retriever,
     query_weather,
+    _search_tool,  # duckduckgo_search - the tool the web-search skill advertises
 ]
 if ANALYST_URL:
     _orchestrator_tools.append(query_drive)
@@ -736,6 +788,11 @@ class OrchestratorExecutor(AgentExecutor):
         access_token = _get_access_token_from_context(context)
         if not access_token:
             raise HTTPException(status_code=401, detail="Authorization required")
+        # Demo feature: the short-lived delegation token is intentionally
+        # surfaced in the console audit terminal to show the exchange chain;
+        # logs carry only a redacted fingerprint to avoid credential leaks.
+        _logger.info("Exchanged bearer token (redacted): %s...%s", access_token[:6], access_token[-6:])
+        _report_exchanged_token(access_token)
         _current_access_token.set(access_token)
 
         # SDK 1.0: context.message.parts is list[Part]; Part.text is the text field directly.

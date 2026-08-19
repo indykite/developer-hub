@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 """Per-dataset static defaults (manifest loader) for instant-stack.
 
 Config-API elements that don't depend on runtime values live here as *data*, in
@@ -5,7 +6,7 @@ Config-API elements that don't depend on runtime values live here as *data*, in
 modules. The api modules still own env substitution (PROJECT_ID,
 CIQ_POLICY_ID_*, ...); this module owns only the static, per-dataset data.
 
-Select the active dataset with the ``DATASET`` env var (default ``"iag"``)::
+Select the active dataset with the ``DATASET`` env var (default ``"canbank"``)::
 
     data/<DATASET>/manifest.json
 
@@ -31,10 +32,10 @@ _DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 # load_dotenv is idempotent, so app.py's later call is harmless.
 load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
-# Which dataset to load. Defaults to "iag" (the only one today). Drop a new
+# Which dataset to load. Defaults to "canbank" (the original demo). Drop a new
 # ``data/<name>/`` folder (manifest.json + nodes.json + relationships.json) to
 # add another and select it with DATASET=<name> (in .env or as an env var).
-DATASET = (os.getenv("DATASET") or "iag").strip() or "iag"
+DATASET = (os.getenv("DATASET") or "canbank").strip() or "canbank"
 
 DATASET_DIR = _DATA_DIR / DATASET
 _MANIFEST_PATH = DATASET_DIR / "manifest.json"

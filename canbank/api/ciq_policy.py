@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 import json
 import logging
 import os
@@ -67,7 +68,7 @@ api_ciq_policy = APIBlueprint(
 )
 
 
-def _build_default(  # noqa: PLR0913
+def _build_default(  # noqa: PLR0913, PLR0917
     slot: str,
     project_id: str,
     name: str,

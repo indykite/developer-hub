@@ -71,6 +71,12 @@ services:
     #    build:
     #      context: .
     #      dockerfile: ./orchestrator_agent/Dockerfile
+    # Usecase bundle: domain vocabulary (env) + skills (volume). Switch demos
+    # with USECASE=<name> in .env; see usecases/README.md.
+    env_file:
+      - ./usecases/${USECASE:-canbank}/usecase.env
+    volumes:
+      - ./usecases/${USECASE:-canbank}/skills/orchestrator:/app/skills:ro
     ports:
       - "${ORCHESTRATOR_PORT}:${ORCHESTRATOR_PORT}"
     networks:
@@ -127,6 +133,10 @@ services:
     #    build:
     #      context: .
     #      dockerfile: ./retriever_agent/Dockerfile
+    env_file:
+      - ./usecases/${USECASE:-canbank}/usecase.env
+    volumes:
+      - ./usecases/${USECASE:-canbank}/skills/retriever:/app/skills:ro
     ports:
       - "${RETRIEVER_PORT}:${RETRIEVER_PORT}"
     networks:
@@ -206,6 +216,10 @@ services:
     #    build:
     #      context: .
     #      dockerfile: ./analyst_agent/Dockerfile
+    env_file:
+      - ./usecases/${USECASE:-canbank}/usecase.env
+    volumes:
+      - ./usecases/${USECASE:-canbank}/skills/analyst:/app/skills:ro
     ports:
       - "${ANALYST_PORT}:${ANALYST_PORT}"
     networks:
@@ -278,6 +292,8 @@ services:
     #    build:
     #      context: .
     #      dockerfile: ./weather_agent/Dockerfile
+    env_file:
+      - ./usecases/${USECASE:-canbank}/usecase.env
     ports:
       - "${WEATHER_PORT}:${WEATHER_PORT}"
     networks:

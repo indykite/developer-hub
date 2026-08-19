@@ -1,0 +1,725 @@
+{
+  "dataset": "insurance",
+  "display_name": "SecureHome Insurance IAG demo",
+  "description": "Household-insurance dataset (Mitchell family et al.) adapted for the Agent Gateway demo: relationship-aware access, cross-sell leads, policy documents.",
+  "ciq_queries": [
+    {
+      "slot": "1",
+      "name": "get-self",
+      "display_name": "Get Self",
+      "description": "Retrieve the authenticated user's profile, department and manager. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-self\", \"input_params\": { } }.",
+      "query": {
+        "nodes": [
+          "subject.external_id",
+          "subject.property.name",
+          "subject.property.email",
+          "subject.property.title",
+          "department.property.name",
+          "manager.property.name"
+        ],
+        "relationships": [],
+        "aggregate_values": [
+          "agent"
+        ]
+      }
+    },
+    {
+      "slot": "2",
+      "name": "get-home-insurance-access",
+      "display_name": "Get Home Insurance Access",
+      "description": "Home insurance visible to a household caller: full details of the caller's own policy, limited details (no financials) of the spouse's. Call tool 'ciq_execute' with input_params {\"caller_id\": \"<person external_id>\"}. Example: { \"id\": \"get-home-insurance-access\", \"input_params\": { \"caller_id\": \"james\" } }.",
+      "query": {
+        "nodes": [
+          "caller.external_id",
+          "caller.property.first_name",
+          "caller.property.last_name",
+          "spouse.external_id",
+          "spouse.property.first_name",
+          "spouse.property.last_name",
+          "callerInsurance.external_id",
+          "callerInsurance.property.policy_number",
+          "callerInsurance.property.coverage_type",
+          "callerInsurance.property.coverage_amount",
+          "callerInsurance.property.deductible",
+          "callerInsurance.property.annual_premium",
+          "callerInsurance.property.start_date",
+          "callerInsurance.property.end_date",
+          "spouseInsurance.external_id",
+          "spouseInsurance.property.policy_number",
+          "spouseInsurance.property.coverage_type",
+          "spouseInsurance.property.start_date",
+          "spouseInsurance.property.end_date"
+        ],
+        "relationships": [
+          "r_married",
+          "r_caller_policy",
+          "r_spouse_policy"
+        ],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "3",
+      "name": "get-family-overview",
+      "display_name": "Get Family Overview",
+      "description": "Household overview for a caller: spouse, children with birth dates, and the family property. Call tool 'ciq_execute' with input_params {\"caller_id\": \"<person external_id>\"}. Example: { \"id\": \"get-family-overview\", \"input_params\": { \"caller_id\": \"james\" } }.",
+      "query": {
+        "nodes": [
+          "caller.external_id",
+          "caller.property.first_name",
+          "caller.property.last_name",
+          "caller.property.email",
+          "spouse.property.first_name",
+          "spouse.property.last_name",
+          "spouse.property.email",
+          "child.external_id",
+          "child.property.first_name",
+          "child.property.last_name",
+          "child.property.date_of_birth",
+          "property.property.address",
+          "property.property.city",
+          "property.property.property_type"
+        ],
+        "relationships": [
+          "r_married",
+          "r_parent",
+          "r_resides"
+        ],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "4",
+      "name": "get-teens-driving-age",
+      "display_name": "Get Teens Approaching Driving Age",
+      "description": "Find household children approaching driving age (roughly 15-17) with their parents' contact details - the cross-sell lead list. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-teens-driving-age\", \"input_params\": { } }.",
+      "query": {
+        "nodes": [
+          "parent.external_id",
+          "parent.property.first_name",
+          "parent.property.last_name",
+          "parent.property.email",
+          "child.external_id",
+          "child.property.first_name",
+          "child.property.last_name",
+          "child.property.date_of_birth",
+          "property.property.address",
+          "property.property.city"
+        ],
+        "relationships": [
+          "r_parent",
+          "r_resides"
+        ],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "5",
+      "name": "get-authorized-drivers",
+      "display_name": "Get Authorized Drivers",
+      "description": "Who is authorized to drive a vehicle, by license plate. Call tool 'ciq_execute' with input_params {\"license_plate\": \"<plate>\"}. Example: { \"id\": \"get-authorized-drivers\", \"input_params\": { \"license_plate\": \"IL-ABC1234\" } }.",
+      "query": {
+        "nodes": [
+          "driver.external_id",
+          "driver.property.first_name",
+          "driver.property.last_name",
+          "vehicle.external_id",
+          "vehicle.property.make",
+          "vehicle.property.model",
+          "vehicle.property.year",
+          "vehicle.property.color",
+          "vehicle.property.license_plate"
+        ],
+        "relationships": [
+          "r_auth"
+        ],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "6",
+      "name": "get-policy-documents",
+      "display_name": "Get Policy Documents",
+      "description": "List SecureHome's internal policy documents with a content excerpt from each PDF. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-policy-documents\", \"input_params\": { } }.",
+      "query": {
+        "nodes": [
+          "folder.property.name",
+          "doc.external_id",
+          "doc.property.name",
+          "doc.property.description",
+          "doc.property.url",
+          "doc.property.content_excerpt",
+          "taxonomy.property.name"
+        ],
+        "relationships": [
+          "r_contains",
+          "r_class"
+        ],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "7",
+      "name": "get-hq-weather",
+      "display_name": "Get HQ Weather",
+      "description": "Get HQ Weather returns the current weather reading for SecureHome's Chicago headquarters: temperature, apparent temperature, wind speed and weather code, together with the unit labels. The hq_weather Weather node carries `latitude` and `longitude` properties that are substituted into the `weather` external data resolver URL. The `current` and `units` properties are populated live from open-meteo at query time. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-hq-weather\", \"input_params\": { } }.",
+      "query": {
+        "nodes": [
+          "weather.external_id",
+          "weather.property.location",
+          "weather.property.latitude",
+          "weather.property.longitude",
+          "weather.property.current",
+          "weather.property.units"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "8",
+      "name": "get-my-household",
+      "display_name": "Get My Household",
+      "description": "The logged-in customer's own household: profile, spouse, children, property, vehicles with authorized drivers, own home insurance in full, and the spouse's policy WITHOUT financial details. Person-subject query for customer logins (e.g. james) - staff use the caller_id queries instead. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-my-household\", \"input_params\": { } }.",
+      "query": {
+        "nodes": [
+          "subject.external_id",
+          "subject.property.first_name",
+          "subject.property.last_name",
+          "subject.property.email",
+          "spouse.external_id",
+          "spouse.property.first_name",
+          "spouse.property.last_name",
+          "child.property.first_name",
+          "child.property.last_name",
+          "child.property.date_of_birth",
+          "property.property.address",
+          "property.property.city",
+          "ownInsurance.external_id",
+          "ownInsurance.property.policy_number",
+          "ownInsurance.property.coverage_type",
+          "ownInsurance.property.coverage_amount",
+          "ownInsurance.property.deductible",
+          "ownInsurance.property.annual_premium",
+          "spouseInsurance.external_id",
+          "spouseInsurance.property.policy_number",
+          "spouseInsurance.property.coverage_type",
+          "spouseInsurance.property.start_date",
+          "spouseInsurance.property.end_date",
+          "vehicle.property.make",
+          "vehicle.property.model",
+          "vehicle.property.license_plate",
+          "driver.property.first_name",
+          "driver.property.last_name"
+        ],
+        "relationships": [
+          "r_married",
+          "r_parent",
+          "r_resides",
+          "r_own_policy",
+          "r_spouse_policy",
+          "r_owns",
+          "r_auth"
+        ],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "9",
+      "name": "get-agent-workflows",
+      "display_name": "Get Agent Workflows",
+      "description": "\n            Given an agent id return the list of workflows within which that agent participates.\n            Example: { \"id\": \"get-agent-workflows\", \"input_params\": { \"agent_id\": \"agent_id\" } }\n            ",
+      "query": {
+        "nodes": [],
+        "relationships": [],
+        "aggregate_values": [
+          "workflow",
+          "agent_list"
+        ]
+      }
+    }
+  ],
+  "ciq_policies": [
+    {
+      "slot": "1",
+      "name": "get-self",
+      "display_name": "Get Self",
+      "description": "Return the authenticated user, their department and their manager.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User {external_id: $token.sub}) WITH subject OPTIONAL MATCH (subject)-[:WORKS_IN]->(department:Department) WITH subject, department OPTIONAL MATCH (subject)-[:REPORTS_TO]->(manager:User) WITH subject, department, manager, $token.act.sub AS agent",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "department.*",
+            "manager.*"
+          ],
+          "relationships": [],
+          "aggregate_values": [
+            "agent"
+          ]
+        }
+      },
+      "tags": [
+        "insurance",
+        "self",
+        "profile"
+      ]
+    },
+    {
+      "slot": "2",
+      "name": "get-home-insurance-access",
+      "display_name": "Get Home Insurance Access",
+      "description": "Home insurance visible to a household caller: full details of the caller's own policy, limited details (no financials) of the spouse's. Call tool 'ciq_execute' with input_params {\"caller_id\": \"<person external_id>\"}. Example: { \"id\": \"get-home-insurance-access\", \"input_params\": { \"caller_id\": \"james\" } }.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User {external_id: $token.sub}) WITH subject MATCH (caller:Person {external_id: $caller_id}) OPTIONAL MATCH (caller)-[r_married:MARRIED_TO]->(spouse:Person) OPTIONAL MATCH (caller)-[r_caller_policy:PRIMARY_POLICYHOLDER]->(callerInsurance:HomeInsurance) OPTIONAL MATCH (spouse)-[r_spouse_policy:PRIMARY_POLICYHOLDER]->(spouseInsurance:HomeInsurance)",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "caller.*",
+            "spouse.external_id",
+            "spouse.property.first_name",
+            "spouse.property.last_name",
+            "callerInsurance.*",
+            "spouseInsurance.external_id",
+            "spouseInsurance.property.policy_number",
+            "spouseInsurance.property.coverage_type",
+            "spouseInsurance.property.start_date",
+            "spouseInsurance.property.end_date"
+          ],
+          "relationships": [
+            "r_married",
+            "r_caller_policy",
+            "r_spouse_policy"
+          ],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "insurance",
+        "household",
+        "policyaccess"
+      ]
+    },
+    {
+      "slot": "3",
+      "name": "get-family-overview",
+      "display_name": "Get Family Overview",
+      "description": "Household overview for a caller: spouse, children with birth dates, and the family property. Call tool 'ciq_execute' with input_params {\"caller_id\": \"<person external_id>\"}. Example: { \"id\": \"get-family-overview\", \"input_params\": { \"caller_id\": \"james\" } }.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User {external_id: $token.sub}) WITH subject MATCH (caller:Person {external_id: $caller_id}) OPTIONAL MATCH (caller)-[r_married:MARRIED_TO]->(spouse:Person) OPTIONAL MATCH (caller)-[r_parent:PARENT_OF]->(child:Person) OPTIONAL MATCH (caller)-[r_resides:RESIDES_AT]->(property:PropertyEstate)",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "caller.*",
+            "spouse.*",
+            "child.*",
+            "property.*"
+          ],
+          "relationships": [
+            "r_married",
+            "r_parent",
+            "r_resides"
+          ],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "insurance",
+        "household",
+        "family"
+      ]
+    },
+    {
+      "slot": "4",
+      "name": "get-teens-driving-age",
+      "display_name": "Get Teens Approaching Driving Age",
+      "description": "Find household children approaching driving age (roughly 15-17) with their parents' contact details - the cross-sell lead list. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-teens-driving-age\", \"input_params\": { } }.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User {external_id: $token.sub}) WITH subject MATCH (parent:Person)-[r_parent:PARENT_OF]->(child:Person) MATCH (child)-[r_resides:RESIDES_AT]->(property:PropertyEstate)",
+          "filter": [
+            {
+              "operator": "AND",
+              "operands": [
+                {
+                  "attribute": "child.property.date_of_birth",
+                  "operator": ">",
+                  "value": "2009-01-01"
+                },
+                {
+                  "attribute": "child.property.date_of_birth",
+                  "operator": "<",
+                  "value": "2011-12-31"
+                }
+              ]
+            }
+          ]
+        },
+        "allowed_reads": {
+          "nodes": [
+            "parent.*",
+            "child.*",
+            "property.*"
+          ],
+          "relationships": [
+            "r_parent",
+            "r_resides"
+          ],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "insurance",
+        "sales",
+        "leads"
+      ]
+    },
+    {
+      "slot": "5",
+      "name": "get-authorized-drivers",
+      "display_name": "Get Authorized Drivers",
+      "description": "Who is authorized to drive a vehicle, by license plate. Call tool 'ciq_execute' with input_params {\"license_plate\": \"<plate>\"}. Example: { \"id\": \"get-authorized-drivers\", \"input_params\": { \"license_plate\": \"IL-ABC1234\" } }.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User {external_id: $token.sub}) WITH subject MATCH (driver:Person)-[r_auth:AUTHORIZED_DRIVER]->(vehicle:Vehicle)",
+          "filter": [
+            {
+              "attribute": "vehicle.property.license_plate",
+              "operator": "=",
+              "value": "$license_plate"
+            }
+          ]
+        },
+        "allowed_reads": {
+          "nodes": [
+            "driver.*",
+            "vehicle.*"
+          ],
+          "relationships": [
+            "r_auth"
+          ],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "insurance",
+        "vehicle",
+        "drivers"
+      ]
+    },
+    {
+      "slot": "6",
+      "name": "get-policy-documents",
+      "display_name": "Get Policy Documents",
+      "description": "List SecureHome's internal policy documents with a content excerpt from each PDF. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-policy-documents\", \"input_params\": { } }.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User {external_id: $token.sub}) WITH subject MATCH (folder:Folder {external_id: 'policy-library'})-[r_contains:CONTAINS]->(doc:Document) OPTIONAL MATCH (doc)-[r_class:CLASSIFIED_AS]->(taxonomy:Taxonomy)",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "folder.*",
+            "doc.*",
+            "taxonomy.*"
+          ],
+          "relationships": [
+            "r_contains",
+            "r_class"
+          ],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "insurance",
+        "documents"
+      ]
+    },
+    {
+      "slot": "7",
+      "name": "get-hq-weather",
+      "display_name": "Get HQ Weather",
+      "description": "Return the current weather reading for SecureHome's Chicago headquarters. The hq_weather Weather node's temperature property is populated at query time by the `weather` external data resolver, which calls open-meteo.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User {external_id: $token.sub}) WITH subject MATCH (weather:Weather {external_id: 'hq_weather'})",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "weather.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "insurance",
+        "weather"
+      ]
+    },
+    {
+      "slot": "8",
+      "name": "get-my-household",
+      "display_name": "Get My Household",
+      "description": "The logged-in customer's own household: profile, spouse, children, property, vehicles with authorized drivers, own home insurance in full, and the spouse's policy WITHOUT financial details. Person-subject query for customer logins (e.g. james) - staff use the caller_id queries instead. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-my-household\", \"input_params\": { } }.",
+      "tags": [
+        "insurance",
+        "customer",
+        "household"
+      ],
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person {external_id: $token.sub}) OPTIONAL MATCH (subject)-[r_married:MARRIED_TO]->(spouse:Person) OPTIONAL MATCH (subject)-[r_parent:PARENT_OF]->(child:Person) OPTIONAL MATCH (subject)-[r_resides:RESIDES_AT]->(property:PropertyEstate) OPTIONAL MATCH (subject)-[r_own_policy:PRIMARY_POLICYHOLDER]->(ownInsurance:HomeInsurance) OPTIONAL MATCH (spouse)-[r_spouse_policy:PRIMARY_POLICYHOLDER]->(spouseInsurance:HomeInsurance) OPTIONAL MATCH (subject)-[r_owns:OWNS]->(vehicle:Vehicle) OPTIONAL MATCH (driver:Person)-[r_auth:AUTHORIZED_DRIVER]->(vehicle)",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "spouse.external_id",
+            "spouse.property.first_name",
+            "spouse.property.last_name",
+            "child.*",
+            "property.*",
+            "ownInsurance.*",
+            "spouseInsurance.external_id",
+            "spouseInsurance.property.policy_number",
+            "spouseInsurance.property.coverage_type",
+            "spouseInsurance.property.start_date",
+            "spouseInsurance.property.end_date",
+            "vehicle.*",
+            "driver.property.first_name",
+            "driver.property.last_name"
+          ],
+          "relationships": [
+            "r_married",
+            "r_parent",
+            "r_resides",
+            "r_own_policy",
+            "r_spouse_policy",
+            "r_owns",
+            "r_auth"
+          ],
+          "aggregate_values": []
+        }
+      }
+    },
+    {
+      "slot": "9",
+      "name": "get-agent-workflows",
+      "display_name": "Get Agent Workflows",
+      "description": "Given an agent get the workflow and all of the possible relationships",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "_Application"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:_Application) MATCH (wf:Workflow)-[rels:INVOKES*]->(a:Agent {external_id: $agent_id}) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) WITH subject, wf.external_id AS workflow, [r IN rels | endNode(r).external_id] AS agent_list",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [],
+          "relationships": [],
+          "aggregate_values": [
+            "workflow",
+            "agent_list"
+          ]
+        }
+      },
+      "tags": []
+    }
+  ],
+  "resolvers": [
+    {
+      "slot": "1",
+      "name": "weather",
+      "display_name": "Current Weather",
+      "description": "Fetches the current weather block (temperature, apparent temperature, wind speed and weather code) for the latitude/longitude passed via input_params. Defaults to SecureHome's London HQ (51.5072, -0.1276) when input_params are absent. Use this as the `external_value` on a Weather node property. Pair with the `weather-units` resolver to also retrieve the unit labels.",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude={$latitude || 51.5072}&longitude={$longitude || -0.1276}&current=temperature_2m,apparent_temperature,wind_speed_10m,weather_code&timezone=auto",
+      "method": "GET",
+      "headers": {},
+      "request_payload": "",
+      "request_content_type": "JSON",
+      "response_content_type": "JSON",
+      "response_selector": ".current"
+    },
+    {
+      "slot": "2",
+      "name": "weather-units",
+      "display_name": "Current Weather Units",
+      "description": "Fetches the unit labels (e.g. \u00b0C, km/h) for the current weather block at the latitude/longitude passed via input_params (defaults to London HQ).",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude={$latitude || 51.5072}&longitude={$longitude || -0.1276}&current=temperature_2m,apparent_temperature,wind_speed_10m,weather_code&timezone=auto",
+      "method": "GET",
+      "headers": {},
+      "request_payload": "",
+      "request_content_type": "JSON",
+      "response_content_type": "JSON",
+      "response_selector": ".current_units"
+    }
+  ],
+  "app_agent": {
+    "name": "insurance-agent",
+    "display_name": "Insurance Agent",
+    "description": "App agent for the SecureHome insurance demo",
+    "api_permissions": [
+      "Authorization",
+      "Capture",
+      "ContXIQ",
+      "IKGRead",
+      "EntityMatching",
+      "ReadDataSchema"
+    ],
+    "credentials_expire_days": 180
+  },
+  "mcp_server": {
+    "name": "securehome-mcp-server",
+    "display_name": "SecureHome MCP Server",
+    "description": "MCP Server configuration for SecureHome Insurance - binds the App Agent and Token Introspect used to authenticate inbound MCP traffic.",
+    "enabled": true,
+    "scopes_supported": [
+      "name",
+      "email"
+    ]
+  },
+  "token_introspect": {
+    "name": "securehome-token-introspect",
+    "display_name": "SecureHome Token Introspect",
+    "description": "Token introspect for SecureHome Insurance users authenticated via their IdP",
+    "ikg_node_type": "User",
+    "jwt_matcher": {
+      "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous/",
+      "audience": "indykiteagent-mcp"
+    },
+    "claims_mapping": {
+      "email": {
+        "selector": "email"
+      }
+    },
+    "offline_validation": {},
+    "perform_upsert": true
+  },
+  "kbac": [
+    {
+      "name": "user-can-trigger-workflow",
+      "display_name": "User can trigger workflow",
+      "description": "Allow a user to trigger an agentic workflow when their department can trigger it OR they have been assigned to it directly.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-indykite"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "CAN_TRIGGER"
+        ],
+        "resource": {
+          "type": "Workflow"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:WORKS_IN|CAN_TRIGGER*..3]->(resource:Workflow)"
+        }
+      }
+    },
+    {
+      "name": "person-can-trigger-workflow",
+      "display_name": "Person can trigger workflow",
+      "description": "Allow a household customer (Person) to trigger an agentic workflow they have been assigned to directly.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-indykite"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_TRIGGER"
+        ],
+        "resource": {
+          "type": "Workflow"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:CAN_TRIGGER]->(resource:Workflow)"
+        }
+      }
+    }
+  ],
+  "application": {
+    "name": "insurance-app",
+    "display_name": "SecureHome Insurance App",
+    "description": "SecureHome Insurance demo consuming the IndyKite Knowledge Graph"
+  },
+  "project": {
+    "name": "insurance-demo",
+    "display_name": "SecureHome Insurance Demo",
+    "description": "Household insurance demo project for IndyKite KBAC and ContX IQ",
+    "region": "europe-west1",
+    "db_connection": {
+      "name": "",
+      "password": "",
+      "url": "",
+      "username": ""
+    }
+  }
+}

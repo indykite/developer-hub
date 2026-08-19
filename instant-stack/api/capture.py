@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 import concurrent.futures
 import json
 import logging
@@ -52,6 +53,7 @@ def show_create_form():
         "capture/create_form.html",
         default_data=default_data,
         default_json=default_json,
+        dataset=_dataset.DATASET,
     )
 
 

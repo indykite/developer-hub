@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 import base64
 import json
 import logging
