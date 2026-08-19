@@ -1,0 +1,5479 @@
+{
+  "nodes": [
+    {
+      "external_id": "james",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "James"
+        },
+        {
+          "type": "last_name",
+          "value": "Mitchell"
+        },
+        {
+          "type": "email",
+          "value": "james.mitchell@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0101"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "1975-03-15"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "123 Oak Avenue"
+        },
+        {
+          "type": "city",
+          "value": "Chicago"
+        },
+        {
+          "type": "state",
+          "value": "IL"
+        },
+        {
+          "type": "zip_code",
+          "value": "60601"
+        },
+        {
+          "type": "occupation",
+          "value": "Engineer"
+        },
+        {
+          "type": "annual_income",
+          "value": "95000"
+        }
+      ]
+    },
+    {
+      "external_id": "adult-002",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Sarah"
+        },
+        {
+          "type": "last_name",
+          "value": "Mitchell"
+        },
+        {
+          "type": "email",
+          "value": "sarah.mitchell@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0102"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "1982-07-22"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "123 Oak Avenue"
+        },
+        {
+          "type": "city",
+          "value": "Chicago"
+        },
+        {
+          "type": "state",
+          "value": "IL"
+        },
+        {
+          "type": "zip_code",
+          "value": "60601"
+        },
+        {
+          "type": "occupation",
+          "value": "Marketing Manager"
+        },
+        {
+          "type": "annual_income",
+          "value": "85000"
+        }
+      ]
+    },
+    {
+      "external_id": "adult-003",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Michael"
+        },
+        {
+          "type": "last_name",
+          "value": "Williams"
+        },
+        {
+          "type": "email",
+          "value": "michael.williams@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0103"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "1968-11-08"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "789 Pine Road"
+        },
+        {
+          "type": "city",
+          "value": "Los Angeles"
+        },
+        {
+          "type": "state",
+          "value": "CA"
+        },
+        {
+          "type": "zip_code",
+          "value": "90001"
+        },
+        {
+          "type": "occupation",
+          "value": "Attorney"
+        },
+        {
+          "type": "annual_income",
+          "value": "150000"
+        }
+      ]
+    },
+    {
+      "external_id": "adult-004",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Emily"
+        },
+        {
+          "type": "last_name",
+          "value": "Williams"
+        },
+        {
+          "type": "email",
+          "value": "emily.williams@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0104"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "1990-01-30"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "789 Pine Road"
+        },
+        {
+          "type": "city",
+          "value": "Los Angeles"
+        },
+        {
+          "type": "state",
+          "value": "CA"
+        },
+        {
+          "type": "zip_code",
+          "value": "90001"
+        },
+        {
+          "type": "occupation",
+          "value": "Nurse"
+        },
+        {
+          "type": "annual_income",
+          "value": "72000"
+        }
+      ]
+    },
+    {
+      "external_id": "adult-005",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "David"
+        },
+        {
+          "type": "last_name",
+          "value": "Garcia"
+        },
+        {
+          "type": "email",
+          "value": "david.garcia@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0105"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "1979-05-12"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "654 Birch Drive"
+        },
+        {
+          "type": "city",
+          "value": "Phoenix"
+        },
+        {
+          "type": "state",
+          "value": "AZ"
+        },
+        {
+          "type": "zip_code",
+          "value": "85001"
+        },
+        {
+          "type": "occupation",
+          "value": "Construction Manager"
+        },
+        {
+          "type": "annual_income",
+          "value": "88000"
+        }
+      ]
+    },
+    {
+      "external_id": "adult-006",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Jennifer"
+        },
+        {
+          "type": "last_name",
+          "value": "Garcia"
+        },
+        {
+          "type": "email",
+          "value": "jennifer.garcia@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0106"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "1985-09-25"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "654 Birch Drive"
+        },
+        {
+          "type": "city",
+          "value": "Phoenix"
+        },
+        {
+          "type": "state",
+          "value": "AZ"
+        },
+        {
+          "type": "zip_code",
+          "value": "85001"
+        },
+        {
+          "type": "occupation",
+          "value": "Accountant"
+        },
+        {
+          "type": "annual_income",
+          "value": "78000"
+        }
+      ]
+    },
+    {
+      "external_id": "adult-007",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Robert"
+        },
+        {
+          "type": "last_name",
+          "value": "Anderson"
+        },
+        {
+          "type": "email",
+          "value": "robert.anderson@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0107"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "1972-12-03"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "147 Walnut Street"
+        },
+        {
+          "type": "city",
+          "value": "San Antonio"
+        },
+        {
+          "type": "state",
+          "value": "TX"
+        },
+        {
+          "type": "zip_code",
+          "value": "78201"
+        },
+        {
+          "type": "occupation",
+          "value": "Sales Director"
+        },
+        {
+          "type": "annual_income",
+          "value": "110000"
+        }
+      ]
+    },
+    {
+      "external_id": "adult-008",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Amanda"
+        },
+        {
+          "type": "last_name",
+          "value": "Anderson"
+        },
+        {
+          "type": "email",
+          "value": "amanda.anderson@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0108"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "1988-04-18"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "147 Walnut Street"
+        },
+        {
+          "type": "city",
+          "value": "San Antonio"
+        },
+        {
+          "type": "state",
+          "value": "TX"
+        },
+        {
+          "type": "zip_code",
+          "value": "78201"
+        },
+        {
+          "type": "occupation",
+          "value": "Software Developer"
+        },
+        {
+          "type": "annual_income",
+          "value": "105000"
+        }
+      ]
+    },
+    {
+      "external_id": "adult-009",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Christopher"
+        },
+        {
+          "type": "last_name",
+          "value": "Thomas"
+        },
+        {
+          "type": "email",
+          "value": "christopher.thomas@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0109"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "1965-08-27"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "369 Ash Boulevard"
+        },
+        {
+          "type": "city",
+          "value": "Dallas"
+        },
+        {
+          "type": "state",
+          "value": "TX"
+        },
+        {
+          "type": "zip_code",
+          "value": "75201"
+        },
+        {
+          "type": "occupation",
+          "value": "Physician"
+        },
+        {
+          "type": "annual_income",
+          "value": "220000"
+        }
+      ]
+    },
+    {
+      "external_id": "adult-010",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Jessica"
+        },
+        {
+          "type": "last_name",
+          "value": "Thomas"
+        },
+        {
+          "type": "email",
+          "value": "jessica.thomas@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0110"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "1993-02-14"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "369 Ash Boulevard"
+        },
+        {
+          "type": "city",
+          "value": "Dallas"
+        },
+        {
+          "type": "state",
+          "value": "TX"
+        },
+        {
+          "type": "zip_code",
+          "value": "75201"
+        },
+        {
+          "type": "occupation",
+          "value": "UX Designer"
+        },
+        {
+          "type": "annual_income",
+          "value": "92000"
+        }
+      ]
+    },
+    {
+      "external_id": "adult-011",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Daniel"
+        },
+        {
+          "type": "last_name",
+          "value": "Moore"
+        },
+        {
+          "type": "email",
+          "value": "daniel.moore@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0111"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "1977-06-09"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "852 Hickory Lane"
+        },
+        {
+          "type": "city",
+          "value": "Austin"
+        },
+        {
+          "type": "state",
+          "value": "TX"
+        },
+        {
+          "type": "zip_code",
+          "value": "78701"
+        },
+        {
+          "type": "occupation",
+          "value": "Financial Analyst"
+        },
+        {
+          "type": "annual_income",
+          "value": "98000"
+        }
+      ]
+    },
+    {
+      "external_id": "adult-012",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Michelle"
+        },
+        {
+          "type": "last_name",
+          "value": "Moore"
+        },
+        {
+          "type": "email",
+          "value": "michelle.moore@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0112"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "1984-10-21"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "852 Hickory Lane"
+        },
+        {
+          "type": "city",
+          "value": "Austin"
+        },
+        {
+          "type": "state",
+          "value": "TX"
+        },
+        {
+          "type": "zip_code",
+          "value": "78701"
+        },
+        {
+          "type": "occupation",
+          "value": "Human Resources Manager"
+        },
+        {
+          "type": "annual_income",
+          "value": "82000"
+        }
+      ]
+    },
+    {
+      "external_id": "adult-013",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Matthew"
+        },
+        {
+          "type": "last_name",
+          "value": "White"
+        },
+        {
+          "type": "email",
+          "value": "matthew.white@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0113"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "1970-03-05"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "159 Magnolia Street"
+        },
+        {
+          "type": "city",
+          "value": "Fort Worth"
+        },
+        {
+          "type": "state",
+          "value": "TX"
+        },
+        {
+          "type": "zip_code",
+          "value": "76101"
+        },
+        {
+          "type": "occupation",
+          "value": "Architect"
+        },
+        {
+          "type": "annual_income",
+          "value": "115000"
+        }
+      ]
+    },
+    {
+      "external_id": "adult-014",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Ashley"
+        },
+        {
+          "type": "last_name",
+          "value": "White"
+        },
+        {
+          "type": "email",
+          "value": "ashley.white@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0114"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "1991-07-17"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "159 Magnolia Street"
+        },
+        {
+          "type": "city",
+          "value": "Fort Worth"
+        },
+        {
+          "type": "state",
+          "value": "TX"
+        },
+        {
+          "type": "zip_code",
+          "value": "76101"
+        },
+        {
+          "type": "occupation",
+          "value": "Teacher"
+        },
+        {
+          "type": "annual_income",
+          "value": "58000"
+        }
+      ]
+    },
+    {
+      "external_id": "adult-015",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Andrew"
+        },
+        {
+          "type": "last_name",
+          "value": "Clark"
+        },
+        {
+          "type": "email",
+          "value": "andrew.clark@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0115"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "1980-11-29"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "468 Sycamore Road"
+        },
+        {
+          "type": "city",
+          "value": "Charlotte"
+        },
+        {
+          "type": "state",
+          "value": "NC"
+        },
+        {
+          "type": "zip_code",
+          "value": "28201"
+        },
+        {
+          "type": "occupation",
+          "value": "IT Manager"
+        },
+        {
+          "type": "annual_income",
+          "value": "102000"
+        }
+      ]
+    },
+    {
+      "external_id": "adult-016",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Stephanie"
+        },
+        {
+          "type": "last_name",
+          "value": "Clark"
+        },
+        {
+          "type": "email",
+          "value": "stephanie.clark@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0116"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "1987-01-08"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "468 Sycamore Road"
+        },
+        {
+          "type": "city",
+          "value": "Charlotte"
+        },
+        {
+          "type": "state",
+          "value": "NC"
+        },
+        {
+          "type": "zip_code",
+          "value": "28201"
+        },
+        {
+          "type": "occupation",
+          "value": "Product Manager"
+        },
+        {
+          "type": "annual_income",
+          "value": "125000"
+        }
+      ]
+    },
+    {
+      "external_id": "adult-017",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Joshua"
+        },
+        {
+          "type": "last_name",
+          "value": "Robinson"
+        },
+        {
+          "type": "email",
+          "value": "joshua.robinson@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0117"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "1974-04-23"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "681 Cypress Lane"
+        },
+        {
+          "type": "city",
+          "value": "Indianapolis"
+        },
+        {
+          "type": "state",
+          "value": "IN"
+        },
+        {
+          "type": "zip_code",
+          "value": "46201"
+        },
+        {
+          "type": "occupation",
+          "value": "Operations Manager"
+        },
+        {
+          "type": "annual_income",
+          "value": "89000"
+        }
+      ]
+    },
+    {
+      "external_id": "adult-018",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Nicole"
+        },
+        {
+          "type": "last_name",
+          "value": "Robinson"
+        },
+        {
+          "type": "email",
+          "value": "nicole.robinson@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0118"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "1989-08-11"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "681 Cypress Lane"
+        },
+        {
+          "type": "city",
+          "value": "Indianapolis"
+        },
+        {
+          "type": "state",
+          "value": "IN"
+        },
+        {
+          "type": "zip_code",
+          "value": "46201"
+        },
+        {
+          "type": "occupation",
+          "value": "Data Scientist"
+        },
+        {
+          "type": "annual_income",
+          "value": "118000"
+        }
+      ]
+    },
+    {
+      "external_id": "adult-019",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Kevin"
+        },
+        {
+          "type": "last_name",
+          "value": "Hall"
+        },
+        {
+          "type": "email",
+          "value": "kevin.hall@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0119"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "1969-12-16"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "903 Dogwood Street"
+        },
+        {
+          "type": "city",
+          "value": "Denver"
+        },
+        {
+          "type": "state",
+          "value": "CO"
+        },
+        {
+          "type": "zip_code",
+          "value": "80201"
+        },
+        {
+          "type": "occupation",
+          "value": "Civil Engineer"
+        },
+        {
+          "type": "annual_income",
+          "value": "97000"
+        }
+      ]
+    },
+    {
+      "external_id": "adult-020",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Laura"
+        },
+        {
+          "type": "last_name",
+          "value": "Hall"
+        },
+        {
+          "type": "email",
+          "value": "laura.hall@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0120"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "1983-05-02"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "903 Dogwood Street"
+        },
+        {
+          "type": "city",
+          "value": "Denver"
+        },
+        {
+          "type": "state",
+          "value": "CO"
+        },
+        {
+          "type": "zip_code",
+          "value": "80201"
+        },
+        {
+          "type": "occupation",
+          "value": "Pharmacist"
+        },
+        {
+          "type": "annual_income",
+          "value": "128000"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-001",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Ethan"
+        },
+        {
+          "type": "last_name",
+          "value": "Mitchell"
+        },
+        {
+          "type": "email",
+          "value": "ethan.mitchell@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0201"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2010-06-15"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "123 Oak Avenue"
+        },
+        {
+          "type": "city",
+          "value": "Chicago"
+        },
+        {
+          "type": "state",
+          "value": "IL"
+        },
+        {
+          "type": "zip_code",
+          "value": "60601"
+        },
+        {
+          "type": "school",
+          "value": "Lincoln High School"
+        },
+        {
+          "type": "grade",
+          "value": "12th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-002",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Olivia"
+        },
+        {
+          "type": "last_name",
+          "value": "Mitchell"
+        },
+        {
+          "type": "email",
+          "value": "olivia.mitchell@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0202"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2010-03-22"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "123 Oak Avenue"
+        },
+        {
+          "type": "city",
+          "value": "Chicago"
+        },
+        {
+          "type": "state",
+          "value": "IL"
+        },
+        {
+          "type": "zip_code",
+          "value": "60601"
+        },
+        {
+          "type": "school",
+          "value": "Lincoln High School"
+        },
+        {
+          "type": "grade",
+          "value": "11th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-003",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Noah"
+        },
+        {
+          "type": "last_name",
+          "value": "Williams"
+        },
+        {
+          "type": "email",
+          "value": "noah.williams@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0203"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2010-01-08"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "789 Pine Road"
+        },
+        {
+          "type": "city",
+          "value": "Los Angeles"
+        },
+        {
+          "type": "state",
+          "value": "CA"
+        },
+        {
+          "type": "zip_code",
+          "value": "90001"
+        },
+        {
+          "type": "school",
+          "value": "Roosevelt High School"
+        },
+        {
+          "type": "grade",
+          "value": "12th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-004",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Emma"
+        },
+        {
+          "type": "last_name",
+          "value": "Williams"
+        },
+        {
+          "type": "email",
+          "value": "emma.williams@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0204"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2010-09-14"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "789 Pine Road"
+        },
+        {
+          "type": "city",
+          "value": "Los Angeles"
+        },
+        {
+          "type": "state",
+          "value": "CA"
+        },
+        {
+          "type": "zip_code",
+          "value": "90001"
+        },
+        {
+          "type": "school",
+          "value": "Roosevelt High School"
+        },
+        {
+          "type": "grade",
+          "value": "10th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-005",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Liam"
+        },
+        {
+          "type": "last_name",
+          "value": "Garcia"
+        },
+        {
+          "type": "email",
+          "value": "liam.garcia@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0205"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2010-10-30"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "654 Birch Drive"
+        },
+        {
+          "type": "city",
+          "value": "Phoenix"
+        },
+        {
+          "type": "state",
+          "value": "AZ"
+        },
+        {
+          "type": "zip_code",
+          "value": "85001"
+        },
+        {
+          "type": "school",
+          "value": "Madison High School"
+        },
+        {
+          "type": "grade",
+          "value": "9th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-006",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Sophia"
+        },
+        {
+          "type": "last_name",
+          "value": "Garcia"
+        },
+        {
+          "type": "email",
+          "value": "sophia.garcia@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0206"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2010-12-03"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "654 Birch Drive"
+        },
+        {
+          "type": "city",
+          "value": "Phoenix"
+        },
+        {
+          "type": "state",
+          "value": "AZ"
+        },
+        {
+          "type": "zip_code",
+          "value": "85001"
+        },
+        {
+          "type": "school",
+          "value": "Madison High School"
+        },
+        {
+          "type": "grade",
+          "value": "12th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-007",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Mason"
+        },
+        {
+          "type": "last_name",
+          "value": "Anderson"
+        },
+        {
+          "type": "email",
+          "value": "mason.anderson@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0207"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2010-07-19"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "147 Walnut Street"
+        },
+        {
+          "type": "city",
+          "value": "San Antonio"
+        },
+        {
+          "type": "state",
+          "value": "TX"
+        },
+        {
+          "type": "zip_code",
+          "value": "78201"
+        },
+        {
+          "type": "school",
+          "value": "Kennedy High School"
+        },
+        {
+          "type": "grade",
+          "value": "11th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-008",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Isabella"
+        },
+        {
+          "type": "last_name",
+          "value": "Anderson"
+        },
+        {
+          "type": "email",
+          "value": "isabella.anderson@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0208"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2011-04-25"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "147 Walnut Street"
+        },
+        {
+          "type": "city",
+          "value": "San Antonio"
+        },
+        {
+          "type": "state",
+          "value": "TX"
+        },
+        {
+          "type": "zip_code",
+          "value": "78201"
+        },
+        {
+          "type": "school",
+          "value": "Kennedy High School"
+        },
+        {
+          "type": "grade",
+          "value": "12th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-009",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Lucas"
+        },
+        {
+          "type": "last_name",
+          "value": "Thomas"
+        },
+        {
+          "type": "email",
+          "value": "lucas.thomas@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0209"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2010-11-11"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "369 Ash Boulevard"
+        },
+        {
+          "type": "city",
+          "value": "Dallas"
+        },
+        {
+          "type": "state",
+          "value": "TX"
+        },
+        {
+          "type": "zip_code",
+          "value": "75201"
+        },
+        {
+          "type": "school",
+          "value": "Monroe High School"
+        },
+        {
+          "type": "grade",
+          "value": "10th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-010",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Mia"
+        },
+        {
+          "type": "last_name",
+          "value": "Thomas"
+        },
+        {
+          "type": "email",
+          "value": "mia.thomas@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0210"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2011-02-28"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "369 Ash Boulevard"
+        },
+        {
+          "type": "city",
+          "value": "Dallas"
+        },
+        {
+          "type": "state",
+          "value": "TX"
+        },
+        {
+          "type": "zip_code",
+          "value": "75201"
+        },
+        {
+          "type": "school",
+          "value": "Monroe High School"
+        },
+        {
+          "type": "grade",
+          "value": "9th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-011",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Alexander"
+        },
+        {
+          "type": "last_name",
+          "value": "Moore"
+        },
+        {
+          "type": "email",
+          "value": "alexander.moore@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0211"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2010-08-07"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "852 Hickory Lane"
+        },
+        {
+          "type": "city",
+          "value": "Austin"
+        },
+        {
+          "type": "state",
+          "value": "TX"
+        },
+        {
+          "type": "zip_code",
+          "value": "78701"
+        },
+        {
+          "type": "school",
+          "value": "Tyler High School"
+        },
+        {
+          "type": "grade",
+          "value": "12th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-012",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Charlotte"
+        },
+        {
+          "type": "last_name",
+          "value": "Moore"
+        },
+        {
+          "type": "email",
+          "value": "charlotte.moore@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0212"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2010-10-16"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "852 Hickory Lane"
+        },
+        {
+          "type": "city",
+          "value": "Austin"
+        },
+        {
+          "type": "state",
+          "value": "TX"
+        },
+        {
+          "type": "zip_code",
+          "value": "78701"
+        },
+        {
+          "type": "school",
+          "value": "Tyler High School"
+        },
+        {
+          "type": "grade",
+          "value": "11th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-013",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Benjamin"
+        },
+        {
+          "type": "last_name",
+          "value": "White"
+        },
+        {
+          "type": "email",
+          "value": "benjamin.white@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0213"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2011-01-23"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "159 Magnolia Street"
+        },
+        {
+          "type": "city",
+          "value": "Fort Worth"
+        },
+        {
+          "type": "state",
+          "value": "TX"
+        },
+        {
+          "type": "zip_code",
+          "value": "76101"
+        },
+        {
+          "type": "school",
+          "value": "Polk High School"
+        },
+        {
+          "type": "grade",
+          "value": "10th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-014",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Amelia"
+        },
+        {
+          "type": "last_name",
+          "value": "White"
+        },
+        {
+          "type": "email",
+          "value": "amelia.white@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0214"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2010-11-09"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "159 Magnolia Street"
+        },
+        {
+          "type": "city",
+          "value": "Fort Worth"
+        },
+        {
+          "type": "state",
+          "value": "TX"
+        },
+        {
+          "type": "zip_code",
+          "value": "76101"
+        },
+        {
+          "type": "school",
+          "value": "Polk High School"
+        },
+        {
+          "type": "grade",
+          "value": "9th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-015",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "William"
+        },
+        {
+          "type": "last_name",
+          "value": "Clark"
+        },
+        {
+          "type": "email",
+          "value": "william.clark@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0215"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2011-03-17"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "468 Sycamore Road"
+        },
+        {
+          "type": "city",
+          "value": "Charlotte"
+        },
+        {
+          "type": "state",
+          "value": "NC"
+        },
+        {
+          "type": "zip_code",
+          "value": "28201"
+        },
+        {
+          "type": "school",
+          "value": "Taylor High School"
+        },
+        {
+          "type": "grade",
+          "value": "12th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-016",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Harper"
+        },
+        {
+          "type": "last_name",
+          "value": "Clark"
+        },
+        {
+          "type": "email",
+          "value": "harper.clark@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0216"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2011-12-01"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "468 Sycamore Road"
+        },
+        {
+          "type": "city",
+          "value": "Charlotte"
+        },
+        {
+          "type": "state",
+          "value": "NC"
+        },
+        {
+          "type": "zip_code",
+          "value": "28201"
+        },
+        {
+          "type": "school",
+          "value": "Taylor High School"
+        },
+        {
+          "type": "grade",
+          "value": "11th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-017",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "James"
+        },
+        {
+          "type": "last_name",
+          "value": "Robinson"
+        },
+        {
+          "type": "email",
+          "value": "james.robinson.jr@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0217"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2011-04-12"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "681 Cypress Lane"
+        },
+        {
+          "type": "city",
+          "value": "Indianapolis"
+        },
+        {
+          "type": "state",
+          "value": "IN"
+        },
+        {
+          "type": "zip_code",
+          "value": "46201"
+        },
+        {
+          "type": "school",
+          "value": "Pierce High School"
+        },
+        {
+          "type": "grade",
+          "value": "10th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-018",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Evelyn"
+        },
+        {
+          "type": "last_name",
+          "value": "Robinson"
+        },
+        {
+          "type": "email",
+          "value": "evelyn.robinson@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0218"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2010-09-05"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "681 Cypress Lane"
+        },
+        {
+          "type": "city",
+          "value": "Indianapolis"
+        },
+        {
+          "type": "state",
+          "value": "IN"
+        },
+        {
+          "type": "zip_code",
+          "value": "46201"
+        },
+        {
+          "type": "school",
+          "value": "Pierce High School"
+        },
+        {
+          "type": "grade",
+          "value": "9th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-019",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Henry"
+        },
+        {
+          "type": "last_name",
+          "value": "Hall"
+        },
+        {
+          "type": "email",
+          "value": "henry.hall@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0219"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2010-11-28"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "903 Dogwood Street"
+        },
+        {
+          "type": "city",
+          "value": "Denver"
+        },
+        {
+          "type": "state",
+          "value": "CO"
+        },
+        {
+          "type": "zip_code",
+          "value": "80201"
+        },
+        {
+          "type": "school",
+          "value": "Buchanan High School"
+        },
+        {
+          "type": "grade",
+          "value": "12th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-020",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Abigail"
+        },
+        {
+          "type": "last_name",
+          "value": "Hall"
+        },
+        {
+          "type": "email",
+          "value": "abigail.hall@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0220"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2011-05-20"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "903 Dogwood Street"
+        },
+        {
+          "type": "city",
+          "value": "Denver"
+        },
+        {
+          "type": "state",
+          "value": "CO"
+        },
+        {
+          "type": "zip_code",
+          "value": "80201"
+        },
+        {
+          "type": "school",
+          "value": "Buchanan High School"
+        },
+        {
+          "type": "grade",
+          "value": "11th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-021",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Sebastian"
+        },
+        {
+          "type": "last_name",
+          "value": "King"
+        },
+        {
+          "type": "email",
+          "value": "sebastian.king@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0221"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2011-02-14"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "225 Linden Street"
+        },
+        {
+          "type": "city",
+          "value": "Portland"
+        },
+        {
+          "type": "state",
+          "value": "OR"
+        },
+        {
+          "type": "zip_code",
+          "value": "97201"
+        },
+        {
+          "type": "school",
+          "value": "Cleveland High School"
+        },
+        {
+          "type": "grade",
+          "value": "12th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-022",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Scarlett"
+        },
+        {
+          "type": "last_name",
+          "value": "Wright"
+        },
+        {
+          "type": "email",
+          "value": "scarlett.wright@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0222"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2010-12-31"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "336 Aspen Way"
+        },
+        {
+          "type": "city",
+          "value": "Nashville"
+        },
+        {
+          "type": "state",
+          "value": "TN"
+        },
+        {
+          "type": "zip_code",
+          "value": "37201"
+        },
+        {
+          "type": "school",
+          "value": "Hillsboro High School"
+        },
+        {
+          "type": "grade",
+          "value": "10th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-023",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Jack"
+        },
+        {
+          "type": "last_name",
+          "value": "Lopez"
+        },
+        {
+          "type": "email",
+          "value": "jack.lopez@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0223"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2011-03-08"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "447 Beech Court"
+        },
+        {
+          "type": "city",
+          "value": "Las Vegas"
+        },
+        {
+          "type": "state",
+          "value": "NV"
+        },
+        {
+          "type": "zip_code",
+          "value": "89101"
+        },
+        {
+          "type": "school",
+          "value": "Durango High School"
+        },
+        {
+          "type": "grade",
+          "value": "9th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-024",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Victoria"
+        },
+        {
+          "type": "last_name",
+          "value": "Hill"
+        },
+        {
+          "type": "email",
+          "value": "victoria.hill@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0224"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2010-10-22"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "558 Alder Drive"
+        },
+        {
+          "type": "city",
+          "value": "Detroit"
+        },
+        {
+          "type": "state",
+          "value": "MI"
+        },
+        {
+          "type": "zip_code",
+          "value": "48201"
+        },
+        {
+          "type": "school",
+          "value": "Cass Technical High School"
+        },
+        {
+          "type": "grade",
+          "value": "12th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-025",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Owen"
+        },
+        {
+          "type": "last_name",
+          "value": "Scott"
+        },
+        {
+          "type": "email",
+          "value": "owen.scott@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0225"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2008-01-15"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "669 Fir Lane"
+        },
+        {
+          "type": "city",
+          "value": "Memphis"
+        },
+        {
+          "type": "state",
+          "value": "TN"
+        },
+        {
+          "type": "zip_code",
+          "value": "38101"
+        },
+        {
+          "type": "school",
+          "value": "Central High School"
+        },
+        {
+          "type": "grade",
+          "value": "11th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-026",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Penelope"
+        },
+        {
+          "type": "last_name",
+          "value": "Green"
+        },
+        {
+          "type": "email",
+          "value": "penelope.green@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0226"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2009-06-27"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "780 Locust Avenue"
+        },
+        {
+          "type": "city",
+          "value": "Louisville"
+        },
+        {
+          "type": "state",
+          "value": "KY"
+        },
+        {
+          "type": "zip_code",
+          "value": "40201"
+        },
+        {
+          "type": "school",
+          "value": "Male High School"
+        },
+        {
+          "type": "grade",
+          "value": "10th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-027",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Daniel"
+        },
+        {
+          "type": "last_name",
+          "value": "Adams"
+        },
+        {
+          "type": "email",
+          "value": "daniel.adams.teen@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0227"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2010-11-03"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "891 Mulberry Street"
+        },
+        {
+          "type": "city",
+          "value": "Baltimore"
+        },
+        {
+          "type": "state",
+          "value": "MD"
+        },
+        {
+          "type": "zip_code",
+          "value": "21201"
+        },
+        {
+          "type": "school",
+          "value": "Patterson High School"
+        },
+        {
+          "type": "grade",
+          "value": "9th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-028",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Layla"
+        },
+        {
+          "type": "last_name",
+          "value": "Baker"
+        },
+        {
+          "type": "email",
+          "value": "layla.baker@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0228"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2007-05-18"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "102 Palm Road"
+        },
+        {
+          "type": "city",
+          "value": "Milwaukee"
+        },
+        {
+          "type": "state",
+          "value": "WI"
+        },
+        {
+          "type": "zip_code",
+          "value": "53201"
+        },
+        {
+          "type": "school",
+          "value": "Riverside High School"
+        },
+        {
+          "type": "grade",
+          "value": "12th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-029",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Michael"
+        },
+        {
+          "type": "last_name",
+          "value": "Nelson"
+        },
+        {
+          "type": "email",
+          "value": "michael.nelson.teen@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0229"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2008-08-24"
+        },
+        {
+          "type": "gender",
+          "value": "male"
+        },
+        {
+          "type": "address",
+          "value": "213 Sequoia Court"
+        },
+        {
+          "type": "city",
+          "value": "Albuquerque"
+        },
+        {
+          "type": "state",
+          "value": "NM"
+        },
+        {
+          "type": "zip_code",
+          "value": "87101"
+        },
+        {
+          "type": "school",
+          "value": "Eldorado High School"
+        },
+        {
+          "type": "grade",
+          "value": "11th"
+        }
+      ]
+    },
+    {
+      "external_id": "teen-030",
+      "type": "Person",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "first_name",
+          "value": "Riley"
+        },
+        {
+          "type": "last_name",
+          "value": "Carter"
+        },
+        {
+          "type": "email",
+          "value": "riley.carter@example.com"
+        },
+        {
+          "type": "phone",
+          "value": "+1-555-0230"
+        },
+        {
+          "type": "date_of_birth",
+          "value": "2009-12-10"
+        },
+        {
+          "type": "gender",
+          "value": "female"
+        },
+        {
+          "type": "address",
+          "value": "324 Cottonwood Boulevard"
+        },
+        {
+          "type": "city",
+          "value": "Tucson"
+        },
+        {
+          "type": "state",
+          "value": "AZ"
+        },
+        {
+          "type": "zip_code",
+          "value": "85701"
+        },
+        {
+          "type": "school",
+          "value": "Catalina High School"
+        },
+        {
+          "type": "grade",
+          "value": "10th"
+        }
+      ]
+    },
+    {
+      "external_id": "home-insurance-001",
+      "type": "HomeInsurance",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "policy_number",
+          "value": "HI-2024-001"
+        },
+        {
+          "type": "coverage_type",
+          "value": "Premium"
+        },
+        {
+          "type": "annual_premium",
+          "value": "1850"
+        },
+        {
+          "type": "coverage_amount",
+          "value": "450000"
+        },
+        {
+          "type": "deductible",
+          "value": "1000"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-01-15"
+        },
+        {
+          "type": "end_date",
+          "value": "2025-01-15"
+        },
+        {
+          "type": "property_address",
+          "value": "123 Oak Avenue"
+        },
+        {
+          "type": "property_city",
+          "value": "Chicago"
+        },
+        {
+          "type": "property_state",
+          "value": "IL"
+        },
+        {
+          "type": "property_zip_code",
+          "value": "60601"
+        }
+      ]
+    },
+    {
+      "external_id": "home-insurance-002",
+      "type": "HomeInsurance",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "policy_number",
+          "value": "HI-2024-002"
+        },
+        {
+          "type": "coverage_type",
+          "value": "Standard"
+        },
+        {
+          "type": "annual_premium",
+          "value": "1420"
+        },
+        {
+          "type": "coverage_amount",
+          "value": "380000"
+        },
+        {
+          "type": "deductible",
+          "value": "1500"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-02-01"
+        },
+        {
+          "type": "end_date",
+          "value": "2025-02-01"
+        },
+        {
+          "type": "property_address",
+          "value": "456 Maple Street"
+        },
+        {
+          "type": "property_city",
+          "value": "New York"
+        },
+        {
+          "type": "property_state",
+          "value": "NY"
+        },
+        {
+          "type": "property_zip_code",
+          "value": "10001"
+        }
+      ]
+    },
+    {
+      "external_id": "home-insurance-003",
+      "type": "HomeInsurance",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "policy_number",
+          "value": "HI-2024-003"
+        },
+        {
+          "type": "coverage_type",
+          "value": "Premium Plus"
+        },
+        {
+          "type": "annual_premium",
+          "value": "2650"
+        },
+        {
+          "type": "coverage_amount",
+          "value": "750000"
+        },
+        {
+          "type": "deductible",
+          "value": "2000"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-03-10"
+        },
+        {
+          "type": "end_date",
+          "value": "2025-03-10"
+        },
+        {
+          "type": "property_address",
+          "value": "789 Pine Road"
+        },
+        {
+          "type": "property_city",
+          "value": "Los Angeles"
+        },
+        {
+          "type": "property_state",
+          "value": "CA"
+        },
+        {
+          "type": "property_zip_code",
+          "value": "90001"
+        }
+      ]
+    },
+    {
+      "external_id": "home-insurance-004",
+      "type": "HomeInsurance",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "policy_number",
+          "value": "HI-2024-004"
+        },
+        {
+          "type": "coverage_type",
+          "value": "Basic"
+        },
+        {
+          "type": "annual_premium",
+          "value": "980"
+        },
+        {
+          "type": "coverage_amount",
+          "value": "220000"
+        },
+        {
+          "type": "deductible",
+          "value": "2500"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-01-20"
+        },
+        {
+          "type": "end_date",
+          "value": "2025-01-20"
+        },
+        {
+          "type": "property_address",
+          "value": "321 Cedar Lane"
+        },
+        {
+          "type": "property_city",
+          "value": "Houston"
+        },
+        {
+          "type": "property_state",
+          "value": "TX"
+        },
+        {
+          "type": "property_zip_code",
+          "value": "77001"
+        }
+      ]
+    },
+    {
+      "external_id": "home-insurance-005",
+      "type": "HomeInsurance",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "policy_number",
+          "value": "HI-2024-005"
+        },
+        {
+          "type": "coverage_type",
+          "value": "Standard"
+        },
+        {
+          "type": "annual_premium",
+          "value": "1150"
+        },
+        {
+          "type": "coverage_amount",
+          "value": "285000"
+        },
+        {
+          "type": "deductible",
+          "value": "1500"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-04-05"
+        },
+        {
+          "type": "end_date",
+          "value": "2025-04-05"
+        },
+        {
+          "type": "property_address",
+          "value": "654 Birch Drive"
+        },
+        {
+          "type": "property_city",
+          "value": "Phoenix"
+        },
+        {
+          "type": "property_state",
+          "value": "AZ"
+        },
+        {
+          "type": "property_zip_code",
+          "value": "85001"
+        }
+      ]
+    },
+    {
+      "external_id": "home-insurance-006",
+      "type": "HomeInsurance",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "policy_number",
+          "value": "HI-2024-006"
+        },
+        {
+          "type": "coverage_type",
+          "value": "Premium"
+        },
+        {
+          "type": "annual_premium",
+          "value": "1780"
+        },
+        {
+          "type": "coverage_amount",
+          "value": "420000"
+        },
+        {
+          "type": "deductible",
+          "value": "1000"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-02-15"
+        },
+        {
+          "type": "end_date",
+          "value": "2025-02-15"
+        },
+        {
+          "type": "property_address",
+          "value": "987 Elm Court"
+        },
+        {
+          "type": "property_city",
+          "value": "Philadelphia"
+        },
+        {
+          "type": "property_state",
+          "value": "PA"
+        },
+        {
+          "type": "property_zip_code",
+          "value": "19101"
+        }
+      ]
+    },
+    {
+      "external_id": "home-insurance-007",
+      "type": "HomeInsurance",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "policy_number",
+          "value": "HI-2024-007"
+        },
+        {
+          "type": "coverage_type",
+          "value": "Standard"
+        },
+        {
+          "type": "annual_premium",
+          "value": "1320"
+        },
+        {
+          "type": "coverage_amount",
+          "value": "340000"
+        },
+        {
+          "type": "deductible",
+          "value": "1500"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-05-01"
+        },
+        {
+          "type": "end_date",
+          "value": "2025-05-01"
+        },
+        {
+          "type": "property_address",
+          "value": "147 Walnut Street"
+        },
+        {
+          "type": "property_city",
+          "value": "San Antonio"
+        },
+        {
+          "type": "property_state",
+          "value": "TX"
+        },
+        {
+          "type": "property_zip_code",
+          "value": "78201"
+        }
+      ]
+    },
+    {
+      "external_id": "home-insurance-008",
+      "type": "HomeInsurance",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "policy_number",
+          "value": "HI-2024-008"
+        },
+        {
+          "type": "coverage_type",
+          "value": "Premium Plus"
+        },
+        {
+          "type": "annual_premium",
+          "value": "2180"
+        },
+        {
+          "type": "coverage_amount",
+          "value": "580000"
+        },
+        {
+          "type": "deductible",
+          "value": "2000"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-03-20"
+        },
+        {
+          "type": "end_date",
+          "value": "2025-03-20"
+        },
+        {
+          "type": "property_address",
+          "value": "258 Spruce Avenue"
+        },
+        {
+          "type": "property_city",
+          "value": "San Diego"
+        },
+        {
+          "type": "property_state",
+          "value": "CA"
+        },
+        {
+          "type": "property_zip_code",
+          "value": "92101"
+        }
+      ]
+    },
+    {
+      "external_id": "home-insurance-009",
+      "type": "HomeInsurance",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "policy_number",
+          "value": "HI-2024-009"
+        },
+        {
+          "type": "coverage_type",
+          "value": "Premium"
+        },
+        {
+          "type": "annual_premium",
+          "value": "2450"
+        },
+        {
+          "type": "coverage_amount",
+          "value": "650000"
+        },
+        {
+          "type": "deductible",
+          "value": "1000"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-06-10"
+        },
+        {
+          "type": "end_date",
+          "value": "2025-06-10"
+        },
+        {
+          "type": "property_address",
+          "value": "369 Ash Boulevard"
+        },
+        {
+          "type": "property_city",
+          "value": "Dallas"
+        },
+        {
+          "type": "property_state",
+          "value": "TX"
+        },
+        {
+          "type": "property_zip_code",
+          "value": "75201"
+        }
+      ]
+    },
+    {
+      "external_id": "home-insurance-010",
+      "type": "HomeInsurance",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "policy_number",
+          "value": "HI-2024-010"
+        },
+        {
+          "type": "coverage_type",
+          "value": "Standard"
+        },
+        {
+          "type": "annual_premium",
+          "value": "1580"
+        },
+        {
+          "type": "coverage_amount",
+          "value": "395000"
+        },
+        {
+          "type": "deductible",
+          "value": "1500"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-04-15"
+        },
+        {
+          "type": "end_date",
+          "value": "2025-04-15"
+        },
+        {
+          "type": "property_address",
+          "value": "741 Poplar Way"
+        },
+        {
+          "type": "property_city",
+          "value": "San Jose"
+        },
+        {
+          "type": "property_state",
+          "value": "CA"
+        },
+        {
+          "type": "property_zip_code",
+          "value": "95101"
+        }
+      ]
+    },
+    {
+      "external_id": "workplace-insurance-001",
+      "type": "WorkplaceInsurance",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "policy_number",
+          "value": "WI-2024-001"
+        },
+        {
+          "type": "employer_name",
+          "value": "TechCorp Industries"
+        },
+        {
+          "type": "coverage_type",
+          "value": "Comprehensive"
+        },
+        {
+          "type": "annual_premium",
+          "value": "3200"
+        },
+        {
+          "type": "coverage_amount",
+          "value": "500000"
+        },
+        {
+          "type": "deductible",
+          "value": "500"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-01-01"
+        },
+        {
+          "type": "end_date",
+          "value": "2024-12-31"
+        }
+      ]
+    },
+    {
+      "external_id": "workplace-insurance-002",
+      "type": "WorkplaceInsurance",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "policy_number",
+          "value": "WI-2024-002"
+        },
+        {
+          "type": "employer_name",
+          "value": "Marketing Solutions LLC"
+        },
+        {
+          "type": "coverage_type",
+          "value": "Standard"
+        },
+        {
+          "type": "annual_premium",
+          "value": "2400"
+        },
+        {
+          "type": "coverage_amount",
+          "value": "350000"
+        },
+        {
+          "type": "deductible",
+          "value": "750"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-02-01"
+        },
+        {
+          "type": "end_date",
+          "value": "2025-01-31"
+        }
+      ]
+    },
+    {
+      "external_id": "workplace-insurance-003",
+      "type": "WorkplaceInsurance",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "policy_number",
+          "value": "WI-2024-003"
+        },
+        {
+          "type": "employer_name",
+          "value": "Anderson Law Firm"
+        },
+        {
+          "type": "coverage_type",
+          "value": "Premium"
+        },
+        {
+          "type": "annual_premium",
+          "value": "4800"
+        },
+        {
+          "type": "coverage_amount",
+          "value": "1000000"
+        },
+        {
+          "type": "deductible",
+          "value": "1000"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-01-15"
+        },
+        {
+          "type": "end_date",
+          "value": "2025-01-15"
+        }
+      ]
+    },
+    {
+      "external_id": "workplace-insurance-004",
+      "type": "WorkplaceInsurance",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "policy_number",
+          "value": "WI-2024-004"
+        },
+        {
+          "type": "employer_name",
+          "value": "Houston Medical Center"
+        },
+        {
+          "type": "coverage_type",
+          "value": "Comprehensive"
+        },
+        {
+          "type": "annual_premium",
+          "value": "3600"
+        },
+        {
+          "type": "coverage_amount",
+          "value": "600000"
+        },
+        {
+          "type": "deductible",
+          "value": "500"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-03-01"
+        },
+        {
+          "type": "end_date",
+          "value": "2025-02-28"
+        }
+      ]
+    },
+    {
+      "external_id": "workplace-insurance-005",
+      "type": "WorkplaceInsurance",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "policy_number",
+          "value": "WI-2024-005"
+        },
+        {
+          "type": "employer_name",
+          "value": "BuildRight Construction"
+        },
+        {
+          "type": "coverage_type",
+          "value": "Premium"
+        },
+        {
+          "type": "annual_premium",
+          "value": "5200"
+        },
+        {
+          "type": "coverage_amount",
+          "value": "750000"
+        },
+        {
+          "type": "deductible",
+          "value": "1500"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-01-01"
+        },
+        {
+          "type": "end_date",
+          "value": "2024-12-31"
+        }
+      ]
+    },
+    {
+      "external_id": "workplace-insurance-006",
+      "type": "WorkplaceInsurance",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "policy_number",
+          "value": "WI-2024-006"
+        },
+        {
+          "type": "employer_name",
+          "value": "Financial Partners Inc"
+        },
+        {
+          "type": "coverage_type",
+          "value": "Standard"
+        },
+        {
+          "type": "annual_premium",
+          "value": "2800"
+        },
+        {
+          "type": "coverage_amount",
+          "value": "400000"
+        },
+        {
+          "type": "deductible",
+          "value": "750"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-04-01"
+        },
+        {
+          "type": "end_date",
+          "value": "2025-03-31"
+        }
+      ]
+    },
+    {
+      "external_id": "workplace-insurance-007",
+      "type": "WorkplaceInsurance",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "policy_number",
+          "value": "WI-2024-007"
+        },
+        {
+          "type": "employer_name",
+          "value": "Global Sales Corp"
+        },
+        {
+          "type": "coverage_type",
+          "value": "Comprehensive"
+        },
+        {
+          "type": "annual_premium",
+          "value": "3400"
+        },
+        {
+          "type": "coverage_amount",
+          "value": "550000"
+        },
+        {
+          "type": "deductible",
+          "value": "500"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-02-15"
+        },
+        {
+          "type": "end_date",
+          "value": "2025-02-15"
+        }
+      ]
+    },
+    {
+      "external_id": "workplace-insurance-008",
+      "type": "WorkplaceInsurance",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "policy_number",
+          "value": "WI-2024-008"
+        },
+        {
+          "type": "employer_name",
+          "value": "InnovateTech Software"
+        },
+        {
+          "type": "coverage_type",
+          "value": "Premium"
+        },
+        {
+          "type": "annual_premium",
+          "value": "4200"
+        },
+        {
+          "type": "coverage_amount",
+          "value": "800000"
+        },
+        {
+          "type": "deductible",
+          "value": "1000"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-01-01"
+        },
+        {
+          "type": "end_date",
+          "value": "2024-12-31"
+        }
+      ]
+    },
+    {
+      "external_id": "workplace-insurance-009",
+      "type": "WorkplaceInsurance",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "policy_number",
+          "value": "WI-2024-009"
+        },
+        {
+          "type": "employer_name",
+          "value": "Dallas Health Systems"
+        },
+        {
+          "type": "coverage_type",
+          "value": "Comprehensive"
+        },
+        {
+          "type": "annual_premium",
+          "value": "5600"
+        },
+        {
+          "type": "coverage_amount",
+          "value": "1200000"
+        },
+        {
+          "type": "deductible",
+          "value": "500"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-03-15"
+        },
+        {
+          "type": "end_date",
+          "value": "2025-03-15"
+        }
+      ]
+    },
+    {
+      "external_id": "workplace-insurance-010",
+      "type": "WorkplaceInsurance",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "policy_number",
+          "value": "WI-2024-010"
+        },
+        {
+          "type": "employer_name",
+          "value": "Creative Design Studio"
+        },
+        {
+          "type": "coverage_type",
+          "value": "Standard"
+        },
+        {
+          "type": "annual_premium",
+          "value": "2200"
+        },
+        {
+          "type": "coverage_amount",
+          "value": "300000"
+        },
+        {
+          "type": "deductible",
+          "value": "750"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-05-01"
+        },
+        {
+          "type": "end_date",
+          "value": "2025-04-30"
+        }
+      ]
+    },
+    {
+      "external_id": "mortgage-001",
+      "type": "Mortgage",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "loan_number",
+          "value": "MTG-2020-001"
+        },
+        {
+          "type": "principal_amount",
+          "value": "360000"
+        },
+        {
+          "type": "interest_rate",
+          "value": "3.75"
+        },
+        {
+          "type": "term_years",
+          "value": "30"
+        },
+        {
+          "type": "monthly_payment",
+          "value": "1667"
+        },
+        {
+          "type": "start_date",
+          "value": "2020-03-01"
+        },
+        {
+          "type": "lender_name",
+          "value": "First National Bank"
+        },
+        {
+          "type": "property_address",
+          "value": "123 Oak Avenue"
+        },
+        {
+          "type": "property_city",
+          "value": "Chicago"
+        },
+        {
+          "type": "property_state",
+          "value": "IL"
+        },
+        {
+          "type": "property_zip_code",
+          "value": "60601"
+        }
+      ]
+    },
+    {
+      "external_id": "mortgage-002",
+      "type": "Mortgage",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "loan_number",
+          "value": "MTG-2021-002"
+        },
+        {
+          "type": "principal_amount",
+          "value": "520000"
+        },
+        {
+          "type": "interest_rate",
+          "value": "3.25"
+        },
+        {
+          "type": "term_years",
+          "value": "30"
+        },
+        {
+          "type": "monthly_payment",
+          "value": "2263"
+        },
+        {
+          "type": "start_date",
+          "value": "2021-06-15"
+        },
+        {
+          "type": "lender_name",
+          "value": "City Mortgage Corp"
+        },
+        {
+          "type": "property_address",
+          "value": "456 Maple Street"
+        },
+        {
+          "type": "property_city",
+          "value": "New York"
+        },
+        {
+          "type": "property_state",
+          "value": "NY"
+        },
+        {
+          "type": "property_zip_code",
+          "value": "10001"
+        }
+      ]
+    },
+    {
+      "external_id": "mortgage-003",
+      "type": "Mortgage",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "loan_number",
+          "value": "MTG-2019-003"
+        },
+        {
+          "type": "principal_amount",
+          "value": "850000"
+        },
+        {
+          "type": "interest_rate",
+          "value": "4.0"
+        },
+        {
+          "type": "term_years",
+          "value": "30"
+        },
+        {
+          "type": "monthly_payment",
+          "value": "4058"
+        },
+        {
+          "type": "start_date",
+          "value": "2019-09-01"
+        },
+        {
+          "type": "lender_name",
+          "value": "Pacific Home Loans"
+        },
+        {
+          "type": "property_address",
+          "value": "789 Pine Road"
+        },
+        {
+          "type": "property_city",
+          "value": "Los Angeles"
+        },
+        {
+          "type": "property_state",
+          "value": "CA"
+        },
+        {
+          "type": "property_zip_code",
+          "value": "90001"
+        }
+      ]
+    },
+    {
+      "external_id": "mortgage-004",
+      "type": "Mortgage",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "loan_number",
+          "value": "MTG-2022-004"
+        },
+        {
+          "type": "principal_amount",
+          "value": "185000"
+        },
+        {
+          "type": "interest_rate",
+          "value": "5.5"
+        },
+        {
+          "type": "term_years",
+          "value": "15"
+        },
+        {
+          "type": "monthly_payment",
+          "value": "1510"
+        },
+        {
+          "type": "start_date",
+          "value": "2022-01-10"
+        },
+        {
+          "type": "lender_name",
+          "value": "Texas Home Finance"
+        },
+        {
+          "type": "property_address",
+          "value": "321 Cedar Lane"
+        },
+        {
+          "type": "property_city",
+          "value": "Houston"
+        },
+        {
+          "type": "property_state",
+          "value": "TX"
+        },
+        {
+          "type": "property_zip_code",
+          "value": "77001"
+        }
+      ]
+    },
+    {
+      "external_id": "mortgage-005",
+      "type": "Mortgage",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "loan_number",
+          "value": "MTG-2021-005"
+        },
+        {
+          "type": "principal_amount",
+          "value": "245000"
+        },
+        {
+          "type": "interest_rate",
+          "value": "3.875"
+        },
+        {
+          "type": "term_years",
+          "value": "30"
+        },
+        {
+          "type": "monthly_payment",
+          "value": "1152"
+        },
+        {
+          "type": "start_date",
+          "value": "2021-04-20"
+        },
+        {
+          "type": "lender_name",
+          "value": "Desert Sun Mortgage"
+        },
+        {
+          "type": "property_address",
+          "value": "654 Birch Drive"
+        },
+        {
+          "type": "property_city",
+          "value": "Phoenix"
+        },
+        {
+          "type": "property_state",
+          "value": "AZ"
+        },
+        {
+          "type": "property_zip_code",
+          "value": "85001"
+        }
+      ]
+    },
+    {
+      "external_id": "mortgage-006",
+      "type": "Mortgage",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "loan_number",
+          "value": "MTG-2020-006"
+        },
+        {
+          "type": "principal_amount",
+          "value": "380000"
+        },
+        {
+          "type": "interest_rate",
+          "value": "3.5"
+        },
+        {
+          "type": "term_years",
+          "value": "30"
+        },
+        {
+          "type": "monthly_payment",
+          "value": "1706"
+        },
+        {
+          "type": "start_date",
+          "value": "2020-08-05"
+        },
+        {
+          "type": "lender_name",
+          "value": "Liberty Bank"
+        },
+        {
+          "type": "property_address",
+          "value": "987 Elm Court"
+        },
+        {
+          "type": "property_city",
+          "value": "Philadelphia"
+        },
+        {
+          "type": "property_state",
+          "value": "PA"
+        },
+        {
+          "type": "property_zip_code",
+          "value": "19101"
+        }
+      ]
+    },
+    {
+      "external_id": "mortgage-007",
+      "type": "Mortgage",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "loan_number",
+          "value": "MTG-2023-007"
+        },
+        {
+          "type": "principal_amount",
+          "value": "295000"
+        },
+        {
+          "type": "interest_rate",
+          "value": "6.25"
+        },
+        {
+          "type": "term_years",
+          "value": "30"
+        },
+        {
+          "type": "monthly_payment",
+          "value": "1816"
+        },
+        {
+          "type": "start_date",
+          "value": "2023-02-28"
+        },
+        {
+          "type": "lender_name",
+          "value": "Lone Star Lending"
+        },
+        {
+          "type": "property_address",
+          "value": "147 Walnut Street"
+        },
+        {
+          "type": "property_city",
+          "value": "San Antonio"
+        },
+        {
+          "type": "property_state",
+          "value": "TX"
+        },
+        {
+          "type": "property_zip_code",
+          "value": "78201"
+        }
+      ]
+    },
+    {
+      "external_id": "mortgage-008",
+      "type": "Mortgage",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "loan_number",
+          "value": "MTG-2018-008"
+        },
+        {
+          "type": "principal_amount",
+          "value": "620000"
+        },
+        {
+          "type": "interest_rate",
+          "value": "4.25"
+        },
+        {
+          "type": "term_years",
+          "value": "30"
+        },
+        {
+          "type": "monthly_payment",
+          "value": "3050"
+        },
+        {
+          "type": "start_date",
+          "value": "2018-11-15"
+        },
+        {
+          "type": "lender_name",
+          "value": "Coastal Credit Union"
+        },
+        {
+          "type": "property_address",
+          "value": "258 Spruce Avenue"
+        },
+        {
+          "type": "property_city",
+          "value": "San Diego"
+        },
+        {
+          "type": "property_state",
+          "value": "CA"
+        },
+        {
+          "type": "property_zip_code",
+          "value": "92101"
+        }
+      ]
+    },
+    {
+      "external_id": "mortgage-009",
+      "type": "Mortgage",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "loan_number",
+          "value": "MTG-2022-009"
+        },
+        {
+          "type": "principal_amount",
+          "value": "475000"
+        },
+        {
+          "type": "interest_rate",
+          "value": "5.75"
+        },
+        {
+          "type": "term_years",
+          "value": "15"
+        },
+        {
+          "type": "monthly_payment",
+          "value": "3944"
+        },
+        {
+          "type": "start_date",
+          "value": "2022-07-01"
+        },
+        {
+          "type": "lender_name",
+          "value": "Texas Capital Bank"
+        },
+        {
+          "type": "property_address",
+          "value": "369 Ash Boulevard"
+        },
+        {
+          "type": "property_city",
+          "value": "Dallas"
+        },
+        {
+          "type": "property_state",
+          "value": "TX"
+        },
+        {
+          "type": "property_zip_code",
+          "value": "75201"
+        }
+      ]
+    },
+    {
+      "external_id": "mortgage-010",
+      "type": "Mortgage",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "loan_number",
+          "value": "MTG-2021-010"
+        },
+        {
+          "type": "principal_amount",
+          "value": "550000"
+        },
+        {
+          "type": "interest_rate",
+          "value": "3.625"
+        },
+        {
+          "type": "term_years",
+          "value": "30"
+        },
+        {
+          "type": "monthly_payment",
+          "value": "2508"
+        },
+        {
+          "type": "start_date",
+          "value": "2021-10-20"
+        },
+        {
+          "type": "lender_name",
+          "value": "Silicon Valley Bank"
+        },
+        {
+          "type": "property_address",
+          "value": "741 Poplar Way"
+        },
+        {
+          "type": "property_city",
+          "value": "San Jose"
+        },
+        {
+          "type": "property_state",
+          "value": "CA"
+        },
+        {
+          "type": "property_zip_code",
+          "value": "95101"
+        }
+      ]
+    },
+    {
+      "external_id": "vehicle-001",
+      "type": "Vehicle",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "vin",
+          "value": "1HGBH41JXMN109186"
+        },
+        {
+          "type": "make",
+          "value": "Honda"
+        },
+        {
+          "type": "model",
+          "value": "Accord"
+        },
+        {
+          "type": "year",
+          "value": "2022"
+        },
+        {
+          "type": "color",
+          "value": "Silver"
+        },
+        {
+          "type": "license_plate",
+          "value": "IL-ABC1234"
+        },
+        {
+          "type": "mileage",
+          "value": "28500"
+        }
+      ]
+    },
+    {
+      "external_id": "vehicle-002",
+      "type": "Vehicle",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "vin",
+          "value": "5YJSA1E26MF123456"
+        },
+        {
+          "type": "make",
+          "value": "Tesla"
+        },
+        {
+          "type": "model",
+          "value": "Model 3"
+        },
+        {
+          "type": "year",
+          "value": "2023"
+        },
+        {
+          "type": "color",
+          "value": "White"
+        },
+        {
+          "type": "license_plate",
+          "value": "NY-TES2023"
+        },
+        {
+          "type": "mileage",
+          "value": "15200"
+        }
+      ]
+    },
+    {
+      "external_id": "vehicle-003",
+      "type": "Vehicle",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "vin",
+          "value": "WVWZZZ3CZWE123789"
+        },
+        {
+          "type": "make",
+          "value": "BMW"
+        },
+        {
+          "type": "model",
+          "value": "X5"
+        },
+        {
+          "type": "year",
+          "value": "2021"
+        },
+        {
+          "type": "color",
+          "value": "Black"
+        },
+        {
+          "type": "license_plate",
+          "value": "CA-BMW5555"
+        },
+        {
+          "type": "mileage",
+          "value": "42300"
+        }
+      ]
+    },
+    {
+      "external_id": "vehicle-004",
+      "type": "Vehicle",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "vin",
+          "value": "1FTFW1ET5DFA12345"
+        },
+        {
+          "type": "make",
+          "value": "Ford"
+        },
+        {
+          "type": "model",
+          "value": "F-150"
+        },
+        {
+          "type": "year",
+          "value": "2020"
+        },
+        {
+          "type": "color",
+          "value": "Blue"
+        },
+        {
+          "type": "license_plate",
+          "value": "TX-FRD1500"
+        },
+        {
+          "type": "mileage",
+          "value": "58700"
+        }
+      ]
+    },
+    {
+      "external_id": "vehicle-005",
+      "type": "Vehicle",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "vin",
+          "value": "JN1TANT31Z0000001"
+        },
+        {
+          "type": "make",
+          "value": "Nissan"
+        },
+        {
+          "type": "model",
+          "value": "Altima"
+        },
+        {
+          "type": "year",
+          "value": "2022"
+        },
+        {
+          "type": "color",
+          "value": "Red"
+        },
+        {
+          "type": "license_plate",
+          "value": "AZ-NIS4567"
+        },
+        {
+          "type": "mileage",
+          "value": "31800"
+        }
+      ]
+    },
+    {
+      "external_id": "vehicle-006",
+      "type": "Vehicle",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "vin",
+          "value": "2T1BURHE5JC123456"
+        },
+        {
+          "type": "make",
+          "value": "Toyota"
+        },
+        {
+          "type": "model",
+          "value": "Camry"
+        },
+        {
+          "type": "year",
+          "value": "2023"
+        },
+        {
+          "type": "color",
+          "value": "Gray"
+        },
+        {
+          "type": "license_plate",
+          "value": "PA-TOY2023"
+        },
+        {
+          "type": "mileage",
+          "value": "12400"
+        }
+      ]
+    },
+    {
+      "external_id": "vehicle-007",
+      "type": "Vehicle",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "vin",
+          "value": "1G1YY22G965109876"
+        },
+        {
+          "type": "make",
+          "value": "Chevrolet"
+        },
+        {
+          "type": "model",
+          "value": "Corvette"
+        },
+        {
+          "type": "year",
+          "value": "2021"
+        },
+        {
+          "type": "color",
+          "value": "Yellow"
+        },
+        {
+          "type": "license_plate",
+          "value": "TX-VET2021"
+        },
+        {
+          "type": "mileage",
+          "value": "18900"
+        }
+      ]
+    },
+    {
+      "external_id": "vehicle-008",
+      "type": "Vehicle",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "vin",
+          "value": "WAUZZZ8K9DA098765"
+        },
+        {
+          "type": "make",
+          "value": "Audi"
+        },
+        {
+          "type": "model",
+          "value": "A4"
+        },
+        {
+          "type": "year",
+          "value": "2022"
+        },
+        {
+          "type": "color",
+          "value": "Navy"
+        },
+        {
+          "type": "license_plate",
+          "value": "CA-AUD4444"
+        },
+        {
+          "type": "mileage",
+          "value": "25600"
+        }
+      ]
+    },
+    {
+      "external_id": "vehicle-009",
+      "type": "Vehicle",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "vin",
+          "value": "WBA3A5C51DF123456"
+        },
+        {
+          "type": "make",
+          "value": "Mercedes-Benz"
+        },
+        {
+          "type": "model",
+          "value": "E-Class"
+        },
+        {
+          "type": "year",
+          "value": "2020"
+        },
+        {
+          "type": "color",
+          "value": "White"
+        },
+        {
+          "type": "license_plate",
+          "value": "TX-MBZ9999"
+        },
+        {
+          "type": "mileage",
+          "value": "47200"
+        }
+      ]
+    },
+    {
+      "external_id": "vehicle-010",
+      "type": "Vehicle",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "vin",
+          "value": "JTDKN3DU5A0123456"
+        },
+        {
+          "type": "make",
+          "value": "Toyota"
+        },
+        {
+          "type": "model",
+          "value": "Prius"
+        },
+        {
+          "type": "year",
+          "value": "2023"
+        },
+        {
+          "type": "color",
+          "value": "Green"
+        },
+        {
+          "type": "license_plate",
+          "value": "CA-ECO2023"
+        },
+        {
+          "type": "mileage",
+          "value": "8900"
+        }
+      ]
+    },
+    {
+      "external_id": "car-sharing-001",
+      "type": "CarSharingAgreement",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "agreement_id",
+          "value": "CSA-2024-001"
+        },
+        {
+          "type": "start_date",
+          "value": "2026-01-01"
+        },
+        {
+          "type": "end_date",
+          "value": "2029-12-31"
+        },
+        {
+          "type": "terms",
+          "value": "Shared use between household members with 50/50 cost split"
+        },
+        {
+          "type": "monthly_fee",
+          "value": "150"
+        },
+        {
+          "type": "status",
+          "value": "Active"
+        }
+      ]
+    },
+    {
+      "external_id": "car-sharing-002",
+      "type": "CarSharingAgreement",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "agreement_id",
+          "value": "CSA-2024-002"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-02-15"
+        },
+        {
+          "type": "end_date",
+          "value": "2029-02-15"
+        },
+        {
+          "type": "terms",
+          "value": "Weekend sharing arrangement with primary driver during weekdays"
+        },
+        {
+          "type": "monthly_fee",
+          "value": "100"
+        },
+        {
+          "type": "status",
+          "value": "Active"
+        }
+      ]
+    },
+    {
+      "external_id": "car-sharing-003",
+      "type": "CarSharingAgreement",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "agreement_id",
+          "value": "CSA-2024-003"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-03-01"
+        },
+        {
+          "type": "end_date",
+          "value": "2029-08-31"
+        },
+        {
+          "type": "terms",
+          "value": "Summer sharing agreement for college student returning home"
+        },
+        {
+          "type": "monthly_fee",
+          "value": "75"
+        },
+        {
+          "type": "status",
+          "value": "Active"
+        }
+      ]
+    },
+    {
+      "external_id": "car-sharing-004",
+      "type": "CarSharingAgreement",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "agreement_id",
+          "value": "CSA-2024-004"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-01-15"
+        },
+        {
+          "type": "end_date",
+          "value": "2029-01-15"
+        },
+        {
+          "type": "terms",
+          "value": "Commuter sharing with alternating days for work travel"
+        },
+        {
+          "type": "monthly_fee",
+          "value": "200"
+        },
+        {
+          "type": "status",
+          "value": "Active"
+        }
+      ]
+    },
+    {
+      "external_id": "car-sharing-005",
+      "type": "CarSharingAgreement",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "agreement_id",
+          "value": "CSA-2024-005"
+        },
+        {
+          "type": "start_date",
+          "value": "2024-04-01"
+        },
+        {
+          "type": "end_date",
+          "value": "2029-10-01"
+        },
+        {
+          "type": "terms",
+          "value": "Teen driver training agreement with supervised driving hours"
+        },
+        {
+          "type": "monthly_fee",
+          "value": "50"
+        },
+        {
+          "type": "status",
+          "value": "Active"
+        }
+      ]
+    },
+    {
+      "external_id": "property-001",
+      "type": "PropertyEstate",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "property_id",
+          "value": "PROP-001"
+        },
+        {
+          "type": "address",
+          "value": "123 Oak Avenue"
+        },
+        {
+          "type": "city",
+          "value": "Chicago"
+        },
+        {
+          "type": "state",
+          "value": "IL"
+        },
+        {
+          "type": "zip_code",
+          "value": "60601"
+        },
+        {
+          "type": "property_type",
+          "value": "Single Family Home"
+        },
+        {
+          "type": "year_built",
+          "value": "1985"
+        },
+        {
+          "type": "square_feet",
+          "value": "2400"
+        },
+        {
+          "type": "bedrooms",
+          "value": "4"
+        },
+        {
+          "type": "bathrooms",
+          "value": "2.5"
+        },
+        {
+          "type": "estimated_value",
+          "value": "450000"
+        }
+      ]
+    },
+    {
+      "external_id": "property-002",
+      "type": "PropertyEstate",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "property_id",
+          "value": "PROP-002"
+        },
+        {
+          "type": "address",
+          "value": "789 Pine Road"
+        },
+        {
+          "type": "city",
+          "value": "Los Angeles"
+        },
+        {
+          "type": "state",
+          "value": "CA"
+        },
+        {
+          "type": "zip_code",
+          "value": "90001"
+        },
+        {
+          "type": "property_type",
+          "value": "Single Family Home"
+        },
+        {
+          "type": "year_built",
+          "value": "1972"
+        },
+        {
+          "type": "square_feet",
+          "value": "3200"
+        },
+        {
+          "type": "bedrooms",
+          "value": "5"
+        },
+        {
+          "type": "bathrooms",
+          "value": "3"
+        },
+        {
+          "type": "estimated_value",
+          "value": "850000"
+        }
+      ]
+    },
+    {
+      "external_id": "property-003",
+      "type": "PropertyEstate",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "property_id",
+          "value": "PROP-003"
+        },
+        {
+          "type": "address",
+          "value": "654 Birch Drive"
+        },
+        {
+          "type": "city",
+          "value": "Phoenix"
+        },
+        {
+          "type": "state",
+          "value": "AZ"
+        },
+        {
+          "type": "zip_code",
+          "value": "85001"
+        },
+        {
+          "type": "property_type",
+          "value": "Single Family Home"
+        },
+        {
+          "type": "year_built",
+          "value": "1998"
+        },
+        {
+          "type": "square_feet",
+          "value": "2100"
+        },
+        {
+          "type": "bedrooms",
+          "value": "4"
+        },
+        {
+          "type": "bathrooms",
+          "value": "2"
+        },
+        {
+          "type": "estimated_value",
+          "value": "285000"
+        }
+      ]
+    },
+    {
+      "external_id": "property-004",
+      "type": "PropertyEstate",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "property_id",
+          "value": "PROP-004"
+        },
+        {
+          "type": "address",
+          "value": "147 Walnut Street"
+        },
+        {
+          "type": "city",
+          "value": "San Antonio"
+        },
+        {
+          "type": "state",
+          "value": "TX"
+        },
+        {
+          "type": "zip_code",
+          "value": "78201"
+        },
+        {
+          "type": "property_type",
+          "value": "Single Family Home"
+        },
+        {
+          "type": "year_built",
+          "value": "2005"
+        },
+        {
+          "type": "square_feet",
+          "value": "2600"
+        },
+        {
+          "type": "bedrooms",
+          "value": "4"
+        },
+        {
+          "type": "bathrooms",
+          "value": "2.5"
+        },
+        {
+          "type": "estimated_value",
+          "value": "340000"
+        }
+      ]
+    },
+    {
+      "external_id": "property-005",
+      "type": "PropertyEstate",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "property_id",
+          "value": "PROP-005"
+        },
+        {
+          "type": "address",
+          "value": "369 Ash Boulevard"
+        },
+        {
+          "type": "city",
+          "value": "Dallas"
+        },
+        {
+          "type": "state",
+          "value": "TX"
+        },
+        {
+          "type": "zip_code",
+          "value": "75201"
+        },
+        {
+          "type": "property_type",
+          "value": "Single Family Home"
+        },
+        {
+          "type": "year_built",
+          "value": "1990"
+        },
+        {
+          "type": "square_feet",
+          "value": "3500"
+        },
+        {
+          "type": "bedrooms",
+          "value": "5"
+        },
+        {
+          "type": "bathrooms",
+          "value": "3.5"
+        },
+        {
+          "type": "estimated_value",
+          "value": "650000"
+        }
+      ]
+    },
+    {
+      "external_id": "property-006",
+      "type": "PropertyEstate",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "property_id",
+          "value": "PROP-006"
+        },
+        {
+          "type": "address",
+          "value": "852 Hickory Lane"
+        },
+        {
+          "type": "city",
+          "value": "Austin"
+        },
+        {
+          "type": "state",
+          "value": "TX"
+        },
+        {
+          "type": "zip_code",
+          "value": "78701"
+        },
+        {
+          "type": "property_type",
+          "value": "Single Family Home"
+        },
+        {
+          "type": "year_built",
+          "value": "2010"
+        },
+        {
+          "type": "square_feet",
+          "value": "2800"
+        },
+        {
+          "type": "bedrooms",
+          "value": "4"
+        },
+        {
+          "type": "bathrooms",
+          "value": "3"
+        },
+        {
+          "type": "estimated_value",
+          "value": "520000"
+        }
+      ]
+    },
+    {
+      "external_id": "property-007",
+      "type": "PropertyEstate",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "property_id",
+          "value": "PROP-007"
+        },
+        {
+          "type": "address",
+          "value": "159 Magnolia Street"
+        },
+        {
+          "type": "city",
+          "value": "Fort Worth"
+        },
+        {
+          "type": "state",
+          "value": "TX"
+        },
+        {
+          "type": "zip_code",
+          "value": "76101"
+        },
+        {
+          "type": "property_type",
+          "value": "Single Family Home"
+        },
+        {
+          "type": "year_built",
+          "value": "1995"
+        },
+        {
+          "type": "square_feet",
+          "value": "2200"
+        },
+        {
+          "type": "bedrooms",
+          "value": "3"
+        },
+        {
+          "type": "bathrooms",
+          "value": "2"
+        },
+        {
+          "type": "estimated_value",
+          "value": "220000"
+        }
+      ]
+    },
+    {
+      "external_id": "property-008",
+      "type": "PropertyEstate",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "property_id",
+          "value": "PROP-008"
+        },
+        {
+          "type": "address",
+          "value": "468 Sycamore Road"
+        },
+        {
+          "type": "city",
+          "value": "Charlotte"
+        },
+        {
+          "type": "state",
+          "value": "NC"
+        },
+        {
+          "type": "zip_code",
+          "value": "28201"
+        },
+        {
+          "type": "property_type",
+          "value": "Single Family Home"
+        },
+        {
+          "type": "year_built",
+          "value": "2002"
+        },
+        {
+          "type": "square_feet",
+          "value": "2500"
+        },
+        {
+          "type": "bedrooms",
+          "value": "4"
+        },
+        {
+          "type": "bathrooms",
+          "value": "2.5"
+        },
+        {
+          "type": "estimated_value",
+          "value": "420000"
+        }
+      ]
+    },
+    {
+      "external_id": "property-009",
+      "type": "PropertyEstate",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "property_id",
+          "value": "PROP-009"
+        },
+        {
+          "type": "address",
+          "value": "681 Cypress Lane"
+        },
+        {
+          "type": "city",
+          "value": "Indianapolis"
+        },
+        {
+          "type": "state",
+          "value": "IN"
+        },
+        {
+          "type": "zip_code",
+          "value": "46201"
+        },
+        {
+          "type": "property_type",
+          "value": "Single Family Home"
+        },
+        {
+          "type": "year_built",
+          "value": "1988"
+        },
+        {
+          "type": "square_feet",
+          "value": "2300"
+        },
+        {
+          "type": "bedrooms",
+          "value": "4"
+        },
+        {
+          "type": "bathrooms",
+          "value": "2"
+        },
+        {
+          "type": "estimated_value",
+          "value": "380000"
+        }
+      ]
+    },
+    {
+      "external_id": "property-010",
+      "type": "PropertyEstate",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "property_id",
+          "value": "PROP-010"
+        },
+        {
+          "type": "address",
+          "value": "903 Dogwood Street"
+        },
+        {
+          "type": "city",
+          "value": "Denver"
+        },
+        {
+          "type": "state",
+          "value": "CO"
+        },
+        {
+          "type": "zip_code",
+          "value": "80201"
+        },
+        {
+          "type": "property_type",
+          "value": "Single Family Home"
+        },
+        {
+          "type": "year_built",
+          "value": "1978"
+        },
+        {
+          "type": "square_feet",
+          "value": "2700"
+        },
+        {
+          "type": "bedrooms",
+          "value": "4"
+        },
+        {
+          "type": "bathrooms",
+          "value": "2.5"
+        },
+        {
+          "type": "estimated_value",
+          "value": "550000"
+        }
+      ]
+    },
+    {
+      "external_id": "company-000",
+      "type": "InsuranceCompany",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "SecureHome Insurance"
+        }
+      ]
+    },
+    {
+      "external_id": "wf1",
+      "type": "Workflow",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "wf2",
+      "type": "Workflow",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "wf3",
+      "type": "Workflow",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "wf-drive",
+      "type": "Workflow",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "wf-drive-analyst",
+      "type": "Workflow",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "wf-drive-console",
+      "type": "Workflow",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "wf3-console",
+      "type": "Workflow",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "indykiteagent",
+      "type": "Agent",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "indykiteagent-2",
+      "type": "Agent",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "indykiteagent-3",
+      "type": "Agent",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "indykiteagent-4",
+      "type": "Agent",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "indykiteagent-mcp",
+      "type": "Agent",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "indykiteagent-drive",
+      "type": "Agent",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "hq_weather",
+      "type": "Weather",
+      "is_identity": false,
+      "labels": [],
+      "properties": [
+        {
+          "type": "location",
+          "value": "SecureHome HQ (Chicago)"
+        },
+        {
+          "type": "latitude",
+          "value": 41.8781
+        },
+        {
+          "type": "longitude",
+          "value": -87.6298
+        },
+        {
+          "type": "current",
+          "external_value": "weather"
+        },
+        {
+          "type": "units",
+          "external_value": "weather-units"
+        }
+      ]
+    },
+    {
+      "external_id": "support",
+      "type": "Department",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Customer Support"
+        }
+      ]
+    },
+    {
+      "external_id": "sales",
+      "type": "Department",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Sales & Growth"
+        }
+      ]
+    },
+    {
+      "external_id": "millicent",
+      "type": "User",
+      "is_identity": true,
+      "labels": [
+        "Employee"
+      ],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Millicent Contextsworth"
+        },
+        {
+          "type": "title",
+          "value": "Customer Service Representative"
+        },
+        {
+          "type": "email",
+          "value": "millicent@securehome.example"
+        }
+      ]
+    },
+    {
+      "external_id": "rebecca",
+      "type": "User",
+      "is_identity": true,
+      "labels": [
+        "Employee"
+      ],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Rebecca Welton"
+        },
+        {
+          "type": "title",
+          "value": "Sales & Growth Representative"
+        },
+        {
+          "type": "email",
+          "value": "rebecca@securehome.example"
+        }
+      ]
+    },
+    {
+      "external_id": "leslie",
+      "type": "User",
+      "is_identity": true,
+      "labels": [
+        "Employee"
+      ],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Leslie Higgins"
+        },
+        {
+          "type": "title",
+          "value": "Customer Support Manager"
+        },
+        {
+          "type": "email",
+          "value": "leslie@securehome.example"
+        }
+      ]
+    },
+    {
+      "external_id": "policy-library",
+      "type": "Folder",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "SecureHome Policy Library"
+        }
+      ]
+    },
+    {
+      "external_id": "policy",
+      "type": "Taxonomy",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Policy"
+        },
+        {
+          "type": "description",
+          "value": "Internal policy documents"
+        }
+      ]
+    },
+    {
+      "external_id": "claims_handling_policy",
+      "type": "Document",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Claims Handling Policy"
+        },
+        {
+          "type": "description",
+          "value": "Internal procedure for receiving, triaging, and settling household claims."
+        },
+        {
+          "type": "url",
+          "value": "https://intranet.securehome.example/policies/claims-handling-policy.pdf"
+        },
+        {
+          "type": "content_excerpt",
+          "value": "All household claims must be acknowledged within one business day of first notice of loss. A claims adjuster is assigned within three business days; property damage claims above $25,000 additionally require a field inspection before any settlement offer. Claims may only be discussed with the primary policyholder, a named co-insured, or a household member holding documented authorization. Emergency mitigation costs (water extraction, board-up, temporary housing up to 14 nights) are pre-approved to a limit of $5,000 without adjuster sign-off. Settlement offers require dual approval when the estimate exceeds the adjuster's authority limit of $50,000. Fraud indicators - inconsistent loss dates, recent coverage increases, prior claim clustering - must be escalated to the Special Investigations Unit within 24 hours."
+        }
+      ]
+    },
+    {
+      "external_id": "underwriting_guidelines",
+      "type": "Document",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Underwriting Guidelines"
+        },
+        {
+          "type": "description",
+          "value": "Risk acceptance rules for new household policies and endorsements."
+        },
+        {
+          "type": "url",
+          "value": "https://intranet.securehome.example/policies/underwriting-guidelines.pdf"
+        },
+        {
+          "type": "content_excerpt",
+          "value": "Standard household risks are single-family dwellings built after 1950 with updated electrical, plumbing, and roofing within the last 25 years. Dwellings valued above $1,000,000, homes with commercial use, or properties with prior subsidence require referral to a senior underwriter. Teen drivers aged 15-17 may be added to a household auto endorsement only with a certified driver-education completion and a named-vehicle assignment; a good-student discount of up to 15% applies with a GPA of 3.0 or higher. Car-sharing arrangements with non-resident drivers must be recorded as named endorsements - informal lending of vehicles voids accident forgiveness. Premium quotes are valid for 30 days from issue."
+        }
+      ]
+    },
+    {
+      "external_id": "home_policy_terms",
+      "type": "Document",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Home Policy Standard Terms"
+        },
+        {
+          "type": "description",
+          "value": "Customer-facing standard terms for SecureHome Premium home insurance (HI-2024 series)."
+        },
+        {
+          "type": "url",
+          "value": "https://intranet.securehome.example/policies/home-policy-standard-terms.pdf"
+        },
+        {
+          "type": "content_excerpt",
+          "value": "The Premium plan covers dwelling reconstruction up to the scheduled coverage amount, other structures at 10% of dwelling coverage, and personal property at 50% of dwelling coverage, subject to the policy deductible. Full financial details of a policy - coverage amount, deductible, and annual premium - are visible only to the primary policyholder; a spouse or co-resident sees the policy number, coverage type, and term dates unless added as a named insured. Loss of use coverage pays additional living expenses for up to 24 months. Water backup, jewelry above $5,000 per item, and home business equipment require scheduled endorsements. Cancellation by the insured takes effect at 12:01 a.m. on the requested date with pro-rata refund of unearned premium."
+        }
+      ]
+    }
+  ]
+}

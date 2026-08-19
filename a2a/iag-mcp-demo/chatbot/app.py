@@ -1,8 +1,10 @@
+# Copyright (c) 2026 IndyKite
 """Chatbot web app - A2A client UI that forwards prompts to the Orchestrator Agent."""
 
 import argparse
 import asyncio
 import base64
+import concurrent.futures
 import hashlib
 import json
 import logging
@@ -78,6 +80,7 @@ update_queue = Queue()
 
 @app.route("/api/push-update", methods=["POST"])
 def push_update():
+    """Receive an audit/decision event (gateway or token webhook) and queue it for the SSE stream."""
     data = request.json or {}
     decision = data.get("decision")
     reason = data.get("reason")
@@ -103,6 +106,8 @@ def push_update():
 
 @app.route("/api/updates")
 def updates_sse():
+    """Stream queued audit events to the browser as Server-Sent Events."""
+
     def event_stream():
         # Optional: Send a comment to keep the connection alive immediately
         yield ": connected\n\n"
@@ -120,7 +125,7 @@ def updates_sse():
                 # Clean up when the browser closes the connection
                 break
             except Exception as e:
-                logger.error(f"SSE Error: {e}")  # noqa: G004,TRY400
+                logger.error("SSE Error: %s", e)  # noqa: TRY400
                 break
 
     return Response(
@@ -136,6 +141,7 @@ def updates_sse():
 
 @app.route("/api/health", methods=["GET"])
 def health():
+    """Report chatbot health and the configured orchestrator target."""
     return jsonify(
         {
             "status": "healthy",
@@ -286,8 +292,19 @@ def _stream_sse(message: str, context_id: str | None, access_token: str | None =
 
         return asyncio.run(collect_all())
 
+    # Run the orchestrator round-trip in a worker thread and keep bytes
+    # flowing to the browser meanwhile: a response body that stays silent for
+    # the whole task (5-200s) gets killed by stale keep-alives / middleboxes,
+    # surfacing as "Error in input stream" with the finished answer lost.
     try:
-        events = run_async()
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+            future = pool.submit(run_async)
+            while True:
+                try:
+                    events = future.result(timeout=2.0)
+                    break
+                except concurrent.futures.TimeoutError:
+                    yield ": ping\n\n"
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("Received %d event(s) from orchestrator", len(events))
             for ev in events:
@@ -304,6 +321,7 @@ def _stream_sse(message: str, context_id: str | None, access_token: str | None =
 
 @app.route("/api/chat/stream", methods=["POST"])
 def chat_stream():
+    """Forward a prompt to the orchestrator and stream the response back as SSE."""
     access_token = _get_access_token()
     if not access_token:
         logger.warning("Warning: Prompting user not authenticated.")
@@ -327,6 +345,7 @@ def chat_stream():
 
 @app.route("/api/chat", methods=["POST"])
 def chat():
+    """Forward a prompt to the orchestrator and return the full response as JSON (non-streaming)."""
     access_token = _get_access_token()
     if not access_token:
         logger.warning("Warning: Prompting user not authenticated.")
@@ -350,11 +369,13 @@ def chat():
 
 @app.route("/")
 def index():
+    """Serve the chatbot single-page UI."""
     return send_from_directory("static", "index.html")
 
 
 @app.route("/static/<path:filename>")
 def static_files(filename):
+    """Serve a static asset (CSS, JS, images) from the static directory."""
     return send_from_directory("static", filename)
 
 

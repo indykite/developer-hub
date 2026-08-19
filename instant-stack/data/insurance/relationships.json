@@ -1,0 +1,3573 @@
+{
+  "relationships": [
+    {
+      "source": {
+        "external_id": "james",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "adult-002",
+        "type": "Person"
+      },
+      "type": "MARRIED_TO",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-002",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "james",
+        "type": "Person"
+      },
+      "type": "MARRIED_TO",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-003",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "adult-004",
+        "type": "Person"
+      },
+      "type": "MARRIED_TO",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-004",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "adult-003",
+        "type": "Person"
+      },
+      "type": "MARRIED_TO",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-005",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "adult-006",
+        "type": "Person"
+      },
+      "type": "MARRIED_TO",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-006",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "adult-005",
+        "type": "Person"
+      },
+      "type": "MARRIED_TO",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-007",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "adult-008",
+        "type": "Person"
+      },
+      "type": "MARRIED_TO",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-008",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "adult-007",
+        "type": "Person"
+      },
+      "type": "MARRIED_TO",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-009",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "adult-010",
+        "type": "Person"
+      },
+      "type": "MARRIED_TO",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-010",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "adult-009",
+        "type": "Person"
+      },
+      "type": "MARRIED_TO",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-011",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "adult-012",
+        "type": "Person"
+      },
+      "type": "MARRIED_TO",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-012",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "adult-011",
+        "type": "Person"
+      },
+      "type": "MARRIED_TO",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-013",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "adult-014",
+        "type": "Person"
+      },
+      "type": "MARRIED_TO",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-014",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "adult-013",
+        "type": "Person"
+      },
+      "type": "MARRIED_TO",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-015",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "adult-016",
+        "type": "Person"
+      },
+      "type": "MARRIED_TO",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-016",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "adult-015",
+        "type": "Person"
+      },
+      "type": "MARRIED_TO",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-017",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "adult-018",
+        "type": "Person"
+      },
+      "type": "MARRIED_TO",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-018",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "adult-017",
+        "type": "Person"
+      },
+      "type": "MARRIED_TO",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-019",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "adult-020",
+        "type": "Person"
+      },
+      "type": "MARRIED_TO",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-020",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "adult-019",
+        "type": "Person"
+      },
+      "type": "MARRIED_TO",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "james",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-001",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-002",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-001",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "james",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-002",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-002",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-002",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-003",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-003",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-004",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-003",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-003",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-004",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-004",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-004",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-005",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-005",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-006",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-005",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-005",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-006",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-006",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-006",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-007",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-007",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-008",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-007",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-007",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-008",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-008",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-008",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-009",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-009",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-010",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-009",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-009",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-010",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-010",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-010",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-011",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-011",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-012",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-011",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-011",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-012",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-012",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-012",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-013",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-013",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-014",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-013",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-013",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-014",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-014",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-014",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-015",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-015",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-016",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-015",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-015",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-016",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-016",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-016",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-017",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-017",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-018",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-017",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-017",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-018",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-018",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-018",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-019",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-019",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-020",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-019",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-019",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-020",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-020",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "teen-020",
+        "type": "Person"
+      },
+      "type": "PARENT_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-002",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "home-insurance-001",
+        "type": "HomeInsurance"
+      },
+      "type": "PRIMARY_POLICYHOLDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-004",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "home-insurance-003",
+        "type": "HomeInsurance"
+      },
+      "type": "PRIMARY_POLICYHOLDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-006",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "home-insurance-005",
+        "type": "HomeInsurance"
+      },
+      "type": "PRIMARY_POLICYHOLDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-008",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "home-insurance-007",
+        "type": "HomeInsurance"
+      },
+      "type": "PRIMARY_POLICYHOLDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-010",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "home-insurance-009",
+        "type": "HomeInsurance"
+      },
+      "type": "PRIMARY_POLICYHOLDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-012",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "home-insurance-002",
+        "type": "HomeInsurance"
+      },
+      "type": "PRIMARY_POLICYHOLDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-014",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "home-insurance-004",
+        "type": "HomeInsurance"
+      },
+      "type": "PRIMARY_POLICYHOLDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-016",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "home-insurance-006",
+        "type": "HomeInsurance"
+      },
+      "type": "PRIMARY_POLICYHOLDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-018",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "home-insurance-008",
+        "type": "HomeInsurance"
+      },
+      "type": "PRIMARY_POLICYHOLDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-020",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "home-insurance-010",
+        "type": "HomeInsurance"
+      },
+      "type": "PRIMARY_POLICYHOLDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "james",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "mortgage-001",
+        "type": "Mortgage"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-003",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "mortgage-003",
+        "type": "Mortgage"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-005",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "mortgage-005",
+        "type": "Mortgage"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-007",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "mortgage-007",
+        "type": "Mortgage"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-009",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "mortgage-009",
+        "type": "Mortgage"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-011",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "mortgage-002",
+        "type": "Mortgage"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-013",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "mortgage-004",
+        "type": "Mortgage"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-015",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "mortgage-006",
+        "type": "Mortgage"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-017",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "mortgage-008",
+        "type": "Mortgage"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-019",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "mortgage-010",
+        "type": "Mortgage"
+      },
+      "type": "HOLDS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "james",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-001",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-002",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-001",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "teen-001",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-001",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "teen-002",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-001",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-003",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-002",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-004",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-002",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "teen-003",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-002",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "teen-004",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-002",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-005",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-003",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-006",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-003",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "teen-005",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-003",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "teen-006",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-003",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-007",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-004",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-008",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-004",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "teen-007",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-004",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "teen-008",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-004",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-009",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-005",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-010",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-005",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "teen-009",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-005",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "teen-010",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-005",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-011",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-006",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-012",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-006",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "teen-011",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-006",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "teen-012",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-006",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-013",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-007",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-014",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-007",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "teen-013",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-007",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "teen-014",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-007",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-015",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-008",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-016",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-008",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "teen-015",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-008",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "teen-016",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-008",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-017",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-009",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-018",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-009",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "teen-017",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-009",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "teen-018",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-009",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-019",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-010",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-020",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-010",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "teen-019",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-010",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "teen-020",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-010",
+        "type": "PropertyEstate"
+      },
+      "type": "RESIDES_AT",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "mortgage-001",
+        "type": "Mortgage"
+      },
+      "target": {
+        "external_id": "property-001",
+        "type": "PropertyEstate"
+      },
+      "type": "SECURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "mortgage-003",
+        "type": "Mortgage"
+      },
+      "target": {
+        "external_id": "property-002",
+        "type": "PropertyEstate"
+      },
+      "type": "SECURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "mortgage-005",
+        "type": "Mortgage"
+      },
+      "target": {
+        "external_id": "property-003",
+        "type": "PropertyEstate"
+      },
+      "type": "SECURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "mortgage-007",
+        "type": "Mortgage"
+      },
+      "target": {
+        "external_id": "property-004",
+        "type": "PropertyEstate"
+      },
+      "type": "SECURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "mortgage-009",
+        "type": "Mortgage"
+      },
+      "target": {
+        "external_id": "property-005",
+        "type": "PropertyEstate"
+      },
+      "type": "SECURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "mortgage-002",
+        "type": "Mortgage"
+      },
+      "target": {
+        "external_id": "property-006",
+        "type": "PropertyEstate"
+      },
+      "type": "SECURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "mortgage-004",
+        "type": "Mortgage"
+      },
+      "target": {
+        "external_id": "property-007",
+        "type": "PropertyEstate"
+      },
+      "type": "SECURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "mortgage-006",
+        "type": "Mortgage"
+      },
+      "target": {
+        "external_id": "property-008",
+        "type": "PropertyEstate"
+      },
+      "type": "SECURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "mortgage-008",
+        "type": "Mortgage"
+      },
+      "target": {
+        "external_id": "property-009",
+        "type": "PropertyEstate"
+      },
+      "type": "SECURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "mortgage-010",
+        "type": "Mortgage"
+      },
+      "target": {
+        "external_id": "property-010",
+        "type": "PropertyEstate"
+      },
+      "type": "SECURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "home-insurance-001",
+        "type": "HomeInsurance"
+      },
+      "target": {
+        "external_id": "property-001",
+        "type": "PropertyEstate"
+      },
+      "type": "COVERS_PROPERTY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "home-insurance-003",
+        "type": "HomeInsurance"
+      },
+      "target": {
+        "external_id": "property-002",
+        "type": "PropertyEstate"
+      },
+      "type": "COVERS_PROPERTY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "home-insurance-005",
+        "type": "HomeInsurance"
+      },
+      "target": {
+        "external_id": "property-003",
+        "type": "PropertyEstate"
+      },
+      "type": "COVERS_PROPERTY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "home-insurance-007",
+        "type": "HomeInsurance"
+      },
+      "target": {
+        "external_id": "property-004",
+        "type": "PropertyEstate"
+      },
+      "type": "COVERS_PROPERTY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "home-insurance-009",
+        "type": "HomeInsurance"
+      },
+      "target": {
+        "external_id": "property-005",
+        "type": "PropertyEstate"
+      },
+      "type": "COVERS_PROPERTY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "home-insurance-002",
+        "type": "HomeInsurance"
+      },
+      "target": {
+        "external_id": "property-006",
+        "type": "PropertyEstate"
+      },
+      "type": "COVERS_PROPERTY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "home-insurance-004",
+        "type": "HomeInsurance"
+      },
+      "target": {
+        "external_id": "property-007",
+        "type": "PropertyEstate"
+      },
+      "type": "COVERS_PROPERTY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "home-insurance-006",
+        "type": "HomeInsurance"
+      },
+      "target": {
+        "external_id": "property-008",
+        "type": "PropertyEstate"
+      },
+      "type": "COVERS_PROPERTY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "home-insurance-008",
+        "type": "HomeInsurance"
+      },
+      "target": {
+        "external_id": "property-009",
+        "type": "PropertyEstate"
+      },
+      "type": "COVERS_PROPERTY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "home-insurance-010",
+        "type": "HomeInsurance"
+      },
+      "target": {
+        "external_id": "property-010",
+        "type": "PropertyEstate"
+      },
+      "type": "COVERS_PROPERTY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "james",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-001",
+        "type": "PropertyEstate"
+      },
+      "type": "LINKED_TO_PROPERTY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-003",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-002",
+        "type": "PropertyEstate"
+      },
+      "type": "LINKED_TO_PROPERTY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-005",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-003",
+        "type": "PropertyEstate"
+      },
+      "type": "LINKED_TO_PROPERTY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-007",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-004",
+        "type": "PropertyEstate"
+      },
+      "type": "LINKED_TO_PROPERTY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-009",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-005",
+        "type": "PropertyEstate"
+      },
+      "type": "LINKED_TO_PROPERTY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-011",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-006",
+        "type": "PropertyEstate"
+      },
+      "type": "LINKED_TO_PROPERTY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-013",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-007",
+        "type": "PropertyEstate"
+      },
+      "type": "LINKED_TO_PROPERTY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-015",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-008",
+        "type": "PropertyEstate"
+      },
+      "type": "LINKED_TO_PROPERTY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-017",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-009",
+        "type": "PropertyEstate"
+      },
+      "type": "LINKED_TO_PROPERTY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-019",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "property-010",
+        "type": "PropertyEstate"
+      },
+      "type": "LINKED_TO_PROPERTY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "workplace-insurance-001",
+        "type": "WorkplaceInsurance"
+      },
+      "target": {
+        "external_id": "teen-001",
+        "type": "Person"
+      },
+      "type": "COVERS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "workplace-insurance-001",
+        "type": "WorkplaceInsurance"
+      },
+      "target": {
+        "external_id": "teen-002",
+        "type": "Person"
+      },
+      "type": "COVERS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "workplace-insurance-003",
+        "type": "WorkplaceInsurance"
+      },
+      "target": {
+        "external_id": "teen-003",
+        "type": "Person"
+      },
+      "type": "COVERS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "workplace-insurance-003",
+        "type": "WorkplaceInsurance"
+      },
+      "target": {
+        "external_id": "teen-004",
+        "type": "Person"
+      },
+      "type": "COVERS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "workplace-insurance-005",
+        "type": "WorkplaceInsurance"
+      },
+      "target": {
+        "external_id": "teen-005",
+        "type": "Person"
+      },
+      "type": "COVERS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "workplace-insurance-005",
+        "type": "WorkplaceInsurance"
+      },
+      "target": {
+        "external_id": "teen-006",
+        "type": "Person"
+      },
+      "type": "COVERS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "workplace-insurance-008",
+        "type": "WorkplaceInsurance"
+      },
+      "target": {
+        "external_id": "teen-007",
+        "type": "Person"
+      },
+      "type": "COVERS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "workplace-insurance-008",
+        "type": "WorkplaceInsurance"
+      },
+      "target": {
+        "external_id": "teen-008",
+        "type": "Person"
+      },
+      "type": "COVERS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "workplace-insurance-009",
+        "type": "WorkplaceInsurance"
+      },
+      "target": {
+        "external_id": "teen-009",
+        "type": "Person"
+      },
+      "type": "COVERS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "workplace-insurance-009",
+        "type": "WorkplaceInsurance"
+      },
+      "target": {
+        "external_id": "teen-010",
+        "type": "Person"
+      },
+      "type": "COVERS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "james",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "workplace-insurance-001",
+        "type": "WorkplaceInsurance"
+      },
+      "type": "EMPLOYED_UNDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-003",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "workplace-insurance-003",
+        "type": "WorkplaceInsurance"
+      },
+      "type": "EMPLOYED_UNDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-005",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "workplace-insurance-005",
+        "type": "WorkplaceInsurance"
+      },
+      "type": "EMPLOYED_UNDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-008",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "workplace-insurance-008",
+        "type": "WorkplaceInsurance"
+      },
+      "type": "EMPLOYED_UNDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-009",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "workplace-insurance-009",
+        "type": "WorkplaceInsurance"
+      },
+      "type": "EMPLOYED_UNDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "workplace-insurance-001",
+        "type": "WorkplaceInsurance"
+      },
+      "target": {
+        "external_id": "company-000",
+        "type": "InsuranceCompany"
+      },
+      "type": "INSURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "workplace-insurance-002",
+        "type": "WorkplaceInsurance"
+      },
+      "target": {
+        "external_id": "company-000",
+        "type": "InsuranceCompany"
+      },
+      "type": "INSURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "workplace-insurance-003",
+        "type": "WorkplaceInsurance"
+      },
+      "target": {
+        "external_id": "company-000",
+        "type": "InsuranceCompany"
+      },
+      "type": "INSURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "workplace-insurance-004",
+        "type": "WorkplaceInsurance"
+      },
+      "target": {
+        "external_id": "company-000",
+        "type": "InsuranceCompany"
+      },
+      "type": "INSURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "workplace-insurance-005",
+        "type": "WorkplaceInsurance"
+      },
+      "target": {
+        "external_id": "company-000",
+        "type": "InsuranceCompany"
+      },
+      "type": "INSURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "workplace-insurance-006",
+        "type": "WorkplaceInsurance"
+      },
+      "target": {
+        "external_id": "company-000",
+        "type": "InsuranceCompany"
+      },
+      "type": "INSURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "workplace-insurance-007",
+        "type": "WorkplaceInsurance"
+      },
+      "target": {
+        "external_id": "company-000",
+        "type": "InsuranceCompany"
+      },
+      "type": "INSURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "workplace-insurance-008",
+        "type": "WorkplaceInsurance"
+      },
+      "target": {
+        "external_id": "company-000",
+        "type": "InsuranceCompany"
+      },
+      "type": "INSURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "workplace-insurance-009",
+        "type": "WorkplaceInsurance"
+      },
+      "target": {
+        "external_id": "company-000",
+        "type": "InsuranceCompany"
+      },
+      "type": "INSURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "workplace-insurance-010",
+        "type": "WorkplaceInsurance"
+      },
+      "target": {
+        "external_id": "company-000",
+        "type": "InsuranceCompany"
+      },
+      "type": "INSURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "home-insurance-001",
+        "type": "HomeInsurance"
+      },
+      "target": {
+        "external_id": "company-000",
+        "type": "InsuranceCompany"
+      },
+      "type": "INSURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "home-insurance-002",
+        "type": "HomeInsurance"
+      },
+      "target": {
+        "external_id": "company-000",
+        "type": "InsuranceCompany"
+      },
+      "type": "INSURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "home-insurance-003",
+        "type": "HomeInsurance"
+      },
+      "target": {
+        "external_id": "company-000",
+        "type": "InsuranceCompany"
+      },
+      "type": "INSURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "home-insurance-004",
+        "type": "HomeInsurance"
+      },
+      "target": {
+        "external_id": "company-000",
+        "type": "InsuranceCompany"
+      },
+      "type": "INSURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "home-insurance-005",
+        "type": "HomeInsurance"
+      },
+      "target": {
+        "external_id": "company-000",
+        "type": "InsuranceCompany"
+      },
+      "type": "INSURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "home-insurance-006",
+        "type": "HomeInsurance"
+      },
+      "target": {
+        "external_id": "company-000",
+        "type": "InsuranceCompany"
+      },
+      "type": "INSURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "home-insurance-007",
+        "type": "HomeInsurance"
+      },
+      "target": {
+        "external_id": "company-000",
+        "type": "InsuranceCompany"
+      },
+      "type": "INSURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "home-insurance-008",
+        "type": "HomeInsurance"
+      },
+      "target": {
+        "external_id": "company-000",
+        "type": "InsuranceCompany"
+      },
+      "type": "INSURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "home-insurance-009",
+        "type": "HomeInsurance"
+      },
+      "target": {
+        "external_id": "company-000",
+        "type": "InsuranceCompany"
+      },
+      "type": "INSURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "home-insurance-010",
+        "type": "HomeInsurance"
+      },
+      "target": {
+        "external_id": "company-000",
+        "type": "InsuranceCompany"
+      },
+      "type": "INSURED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "james",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-001",
+        "type": "Vehicle"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-002",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-002",
+        "type": "Vehicle"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-003",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-003",
+        "type": "Vehicle"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-004",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-004",
+        "type": "Vehicle"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-005",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-005",
+        "type": "Vehicle"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-006",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-006",
+        "type": "Vehicle"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-007",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-007",
+        "type": "Vehicle"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-008",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-008",
+        "type": "Vehicle"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-009",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-009",
+        "type": "Vehicle"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-010",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-010",
+        "type": "Vehicle"
+      },
+      "type": "OWNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-002",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-001",
+        "type": "Vehicle"
+      },
+      "type": "PRIMARY_POLICYHOLDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-002",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-002",
+        "type": "Vehicle"
+      },
+      "type": "PRIMARY_POLICYHOLDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-004",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-003",
+        "type": "Vehicle"
+      },
+      "type": "PRIMARY_POLICYHOLDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-004",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-004",
+        "type": "Vehicle"
+      },
+      "type": "PRIMARY_POLICYHOLDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-006",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-005",
+        "type": "Vehicle"
+      },
+      "type": "PRIMARY_POLICYHOLDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-006",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-006",
+        "type": "Vehicle"
+      },
+      "type": "PRIMARY_POLICYHOLDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-008",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-007",
+        "type": "Vehicle"
+      },
+      "type": "PRIMARY_POLICYHOLDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-008",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-008",
+        "type": "Vehicle"
+      },
+      "type": "PRIMARY_POLICYHOLDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-010",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-009",
+        "type": "Vehicle"
+      },
+      "type": "PRIMARY_POLICYHOLDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-010",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-010",
+        "type": "Vehicle"
+      },
+      "type": "PRIMARY_POLICYHOLDER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "james",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-001",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-002",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-001",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "james",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-002",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-002",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-002",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-003",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-003",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-004",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-003",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-003",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-004",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-004",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-004",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-005",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-005",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-006",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-005",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-005",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-006",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-006",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-006",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-007",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-007",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-008",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-007",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-007",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-008",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-008",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-008",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-009",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-009",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-010",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-009",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-009",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-010",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-010",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-010",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-005",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "car-sharing-001",
+        "type": "CarSharingAgreement"
+      },
+      "type": "PARTICIPATES_IN",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-006",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "car-sharing-001",
+        "type": "CarSharingAgreement"
+      },
+      "type": "PARTICIPATES_IN",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-019",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "car-sharing-001",
+        "type": "CarSharingAgreement"
+      },
+      "type": "PARTICIPATES_IN",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "car-sharing-001",
+        "type": "CarSharingAgreement"
+      },
+      "target": {
+        "external_id": "vehicle-005",
+        "type": "Vehicle"
+      },
+      "type": "COVERS_VEHICLE",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-019",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-005",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-007",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "car-sharing-002",
+        "type": "CarSharingAgreement"
+      },
+      "type": "PARTICIPATES_IN",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-009",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "car-sharing-002",
+        "type": "CarSharingAgreement"
+      },
+      "type": "PARTICIPATES_IN",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "car-sharing-002",
+        "type": "CarSharingAgreement"
+      },
+      "target": {
+        "external_id": "vehicle-007",
+        "type": "Vehicle"
+      },
+      "type": "COVERS_VEHICLE",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-009",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-007",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-011",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "car-sharing-003",
+        "type": "CarSharingAgreement"
+      },
+      "type": "PARTICIPATES_IN",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-013",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "car-sharing-003",
+        "type": "CarSharingAgreement"
+      },
+      "type": "PARTICIPATES_IN",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "car-sharing-003",
+        "type": "CarSharingAgreement"
+      },
+      "target": {
+        "external_id": "vehicle-004",
+        "type": "Vehicle"
+      },
+      "type": "COVERS_VEHICLE",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-013",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-004",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-015",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "car-sharing-004",
+        "type": "CarSharingAgreement"
+      },
+      "type": "PARTICIPATES_IN",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-017",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "car-sharing-004",
+        "type": "CarSharingAgreement"
+      },
+      "type": "PARTICIPATES_IN",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "car-sharing-004",
+        "type": "CarSharingAgreement"
+      },
+      "target": {
+        "external_id": "vehicle-008",
+        "type": "Vehicle"
+      },
+      "type": "COVERS_VEHICLE",
+      "properties": []
+    },
+    {
+      "source": {
+        "external_id": "adult-017",
+        "type": "Person"
+      },
+      "target": {
+        "external_id": "vehicle-008",
+        "type": "Vehicle"
+      },
+      "type": "AUTHORIZED_DRIVER",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf1"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "indykiteagent"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-2"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "indykiteagent-2"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-mcp"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf2"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf2"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "indykiteagent"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-3"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf2"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "indykiteagent-3"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-mcp"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf2"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf3"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-4"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-drive"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-drive"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "indykiteagent-4"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-mcp"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-drive-analyst"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-4"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-analyst"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "indykiteagent-4"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-drive"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-analyst"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-drive-console"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-console"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "indykiteagent"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-4"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "indykiteagent-4"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-drive"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf3-console"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "indykiteagent"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-4"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "indykiteagent-4"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-mcp"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-drive"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-drive-analyst"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-drive-console"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf1"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf2"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf3"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf3-console"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "sales"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-drive"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "sales"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-drive-analyst"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "sales"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-drive-console"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "sales"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf1"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "sales"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf2"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "sales"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf3"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "sales"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf3-console"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "User",
+        "external_id": "millicent"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "properties": [],
+      "type": "WORKS_IN"
+    },
+    {
+      "source": {
+        "type": "User",
+        "external_id": "rebecca"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "sales"
+      },
+      "properties": [],
+      "type": "WORKS_IN"
+    },
+    {
+      "source": {
+        "type": "User",
+        "external_id": "leslie"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "properties": [],
+      "type": "WORKS_IN"
+    },
+    {
+      "source": {
+        "type": "User",
+        "external_id": "millicent"
+      },
+      "target": {
+        "type": "User",
+        "external_id": "leslie"
+      },
+      "properties": [],
+      "type": "REPORTS_TO"
+    },
+    {
+      "source": {
+        "type": "Folder",
+        "external_id": "policy-library"
+      },
+      "target": {
+        "type": "Document",
+        "external_id": "claims_handling_policy"
+      },
+      "properties": [],
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "claims_handling_policy"
+      },
+      "target": {
+        "type": "Taxonomy",
+        "external_id": "policy"
+      },
+      "properties": [],
+      "type": "CLASSIFIED_AS"
+    },
+    {
+      "source": {
+        "type": "Folder",
+        "external_id": "policy-library"
+      },
+      "target": {
+        "type": "Document",
+        "external_id": "underwriting_guidelines"
+      },
+      "properties": [],
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "underwriting_guidelines"
+      },
+      "target": {
+        "type": "Taxonomy",
+        "external_id": "policy"
+      },
+      "properties": [],
+      "type": "CLASSIFIED_AS"
+    },
+    {
+      "source": {
+        "type": "Folder",
+        "external_id": "policy-library"
+      },
+      "target": {
+        "type": "Document",
+        "external_id": "home_policy_terms"
+      },
+      "properties": [],
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "home_policy_terms"
+      },
+      "target": {
+        "type": "Taxonomy",
+        "external_id": "policy"
+      },
+      "properties": [],
+      "type": "CLASSIFIED_AS"
+    },
+    {
+      "source": {
+        "type": "InsuranceCompany",
+        "external_id": "company-000"
+      },
+      "target": {
+        "type": "Folder",
+        "external_id": "policy-library"
+      },
+      "properties": [],
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "james"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf1"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "james"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf2"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "james"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf3"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    }
+  ]
+}

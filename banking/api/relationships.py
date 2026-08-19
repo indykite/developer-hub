@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 import concurrent.futures
 import json
 import logging

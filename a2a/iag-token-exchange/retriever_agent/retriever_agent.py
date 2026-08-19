@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 """Retriever agent - A2A-compliant agent (a2a-sdk>=1.1.0) that uses a remote MCP server via the official MCP SDK."""
 # Reason: warnings.filterwarnings() must run before LangChain imports to suppress
 # the Pydantic V1 deprecation warning on Python 3.14+, so all other imports

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 """Provision-everything add-on: replay every create button AFTER the MCP server config.
 
 The five Getting Started configurations (Project, Application, App Agent,

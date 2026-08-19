@@ -136,7 +136,7 @@
                     <h5 class="mb-0">Data Capture</h5>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted mb-3">Import the IAG demo dataset (<code>data/iag/nodes.json</code> and <code>data/iag/relationships.json</code>) into the IndyKite Knowledge Graph (IKG). Creates the CanBank organization hierarchy, employees, customers, accounts, policy documents, regulatory agreements, tickets and decisions - plus the agent-workflow graph (users, workflows <code>wf1</code>-<code>wf3</code>, the <code>indykiteagent*</code> agents with <code>workflow_name</code> / <code>discriminating_property</code> edges) used by the IndyKite Agent Gateway.</p>
+                    <p class="text-muted mb-3">Import the active dataset (<code>data/{{ dataset }}/nodes.json</code> and <code>data/{{ dataset }}/relationships.json</code>) into the IndyKite Knowledge Graph (IKG). Creates the dataset's full graph - its entities, relationships and documents, plus the agent-workflow graph (users, workflows <code>wf1</code>-<code>wf3</code>, the <code>indykiteagent*</code> agents with <code>workflow_name</code> / <code>discriminating_property</code> edges) used by the IndyKite Agent Gateway.</p>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <a href="/api_capture/create" class="card h-100 text-decoration-none">

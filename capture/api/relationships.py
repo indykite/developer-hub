@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 import concurrent.futures
 import logging
 import os
@@ -123,6 +124,7 @@ def _iter_results_bounded(chunk_iter, process_chunk):
 
 @api_relationships.get("/select", tags=[tag])
 def select_json_file():
+    """Render the form listing the available relationship JSON files to upsert."""
     json_files = (
         sorted(f.name for f in RELATIONSHIPS_DIR.iterdir() if f.suffix == ".json") if RELATIONSHIPS_DIR.exists() else []
     )
@@ -131,6 +133,7 @@ def select_json_file():
 
 @api_relationships.post("/create", tags=[tag])
 def upsert_file():
+    """Upsert the relationships from the selected JSON file into the IKG via the Capture API."""
     selected_file = request.form.get("json_file")
     if not selected_file:
         flash("No file selected", "danger")

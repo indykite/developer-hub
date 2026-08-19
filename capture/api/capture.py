@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 import concurrent.futures
 import logging
 import os
@@ -123,12 +124,14 @@ def _iter_results_bounded(chunk_iter, process_chunk):
 
 @api_capture.get("/select", tags=[tag])
 def select_json_file():
+    """Render the form listing the available node JSON files to upsert."""
     json_files = sorted(f.name for f in NODES_DIR.iterdir() if f.suffix == ".json") if NODES_DIR.exists() else []
     return render_template("capture/select_file.html", json_files=json_files)
 
 
 @api_capture.post("/create", tags=[tag])
 def upsert_file():
+    """Upsert the nodes from the selected JSON file into the IKG via the Capture API."""
     selected_file = request.form.get("json_file")
     if not selected_file:
         flash("No file selected", "danger")

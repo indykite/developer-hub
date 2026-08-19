@@ -12,7 +12,7 @@ Contains some configuration yaml files for the open-source AgentGateway tool. Se
 
 ## `chatbot`
 
-A simple Web GUI app and  A2A client that enables Human-user prompting and interactions. The `chatbot` communicates directly with the `orachestrator_agent` (see below).
+A simple Web GUI app and  A2A client that enables Human-user prompting and interactions. The `chatbot` communicates directly with the `orchestrator_agent` (see below).
 
 ## `orchestrator_agent`
 
@@ -30,14 +30,16 @@ is wired into the stack as an additional downstream agent the `orchestrator_agen
 delegate to - useful for demonstrating multi-agent routing behind the Indykite Agent
 Gateway.
 
-When the prompt mentions CanBank's headquarters (`HQ`, `headquarters`, `office`) **and**
-`MCP_SERVER_URL` is configured, the agent takes a different path: it calls the canbank
-`get-hq-weather` knowledge query through the IndyKite MCP server. That query reads the
-`hq_weather` Weather node, whose `current` and `units` properties are populated live by
-the canbank `weather` and `weather-units` external data resolvers (open-meteo). All
-other cities still go through the direct Open-Meteo path. See
-[`canbank/README.md`](../../canbank/README.md#external-data-resolvers) for the resolver
-setup.
+When the prompt mentions the subject's headquarters (keywords from
+`WEATHER_HQ_KEYWORDS` in the subject's `usecase.env`, e.g. `HQ`, `headquarters`,
+`office`) **and** `MCP_SERVER_URL` is configured, the agent takes a different path:
+it calls the subject's `get-hq-weather` knowledge query through the IndyKite MCP
+server. That query reads the `hq_weather` Weather node, whose `current` and `units`
+properties are populated live by the subject's `weather` and `weather-units`
+external data resolvers (open-meteo). All other cities still go through the direct
+Open-Meteo path. See
+[`canbank/README.md`](../../canbank/README.md#external-data-resolvers) for the
+canbank resolver setup.
 
 ## `analyst_agent`
 
@@ -59,6 +61,21 @@ Bruno collection of sample data, ciq queries and kbac queries, plus the
 [`wf4-parallel-mcp`](bruno/iag-demo/wf4-parallel-mcp) suite mirroring the
 jarvis-proto "WF4 - Parallel Multi-Agent MCP" e2e tests.
 
+## `usecases`
+
+The demo's domain, packaged per subject (`canbank`, `insurance`): a
+`usecase.env` with the domain vocabulary, the per-agent skill files mounted
+into the containers, and a `DEMO_SCRIPT.md` with the suggested prompts and
+narrative. The agents, gateways, and compose topology stay subject-agnostic;
+see [`usecases/README.md`](usecases/README.md) for selecting and adding
+subjects.
+
+## `drive_mcp`
+
+The Google Drive MCP server used by the optional `drive` compose profile
+(the reference stdio server wrapped into Streamable HTTP); see
+[`drive_mcp/README.md`](drive_mcp/README.md).
+
 ## Running the demo
 
 The stack boots five Agent Gateway instances: four protecting the
@@ -72,10 +89,11 @@ MCP gateway and the [Google Drive section](#proxying-a-non-indykite-mcp-server-g
 for Drive.
 
 In short, the actual run sequence is:
-provision the IndyKite project (step 1) → `cp .example.env .env` and fill it
-(step 2) → `make` (step 3) → check the gateway image tag (step 4) →
-`docker compose up -d` (step 5) → log in at `http://localhost:3000` and prompt
-(step 6). For Google Drive, additionally follow the
+provision the IndyKite project (step 1) → `cp .example.env .env.<subject>`,
+fill it, and `./switch-usecase.sh <usecase>` (step 2) → `make` (step 3) →
+check the gateway image tag (step 4) → `docker compose up -d` (step 5) →
+log in at `http://localhost:3000` and prompt (step 6). For Google Drive,
+additionally follow the
 [Drive section](#proxying-a-non-indykite-mcp-server-google-drive-profile-drive)
 before step 5.
 
@@ -89,20 +107,22 @@ before step 5.
   (`uv`, `poetry`, `venv` + `pip`) works if you prefer. You only need this
   locally if you plan to run or debug the services outside Docker; the
   `docker compose up` path installs everything inside the images.
-- **An IndyKite project** provisioned with the data, policies and queries
-  below. Two equivalent ways to do it:
-    - **the [`canbank-iag`](../../canbank-iag) Flask app**: pre-filled forms
-    for everything (capture nodes/relationships, CIQ policies + knowledge
-    queries incl. `get-agent-workflows`, KBAC policy, App Agent, Token
-    Introspect, MCP server config, external data resolvers); its data files
-    are kept byte-identical to this Bruno collection, or
-    - **the Bruno collection** (`bruno/iag-demo`), request by request, as
-    linked below.
+- **An IndyKite project** per subject, provisioned with that subject's data,
+  policies and queries (each subject lives in its own project; see
+  [`usecases/README.md`](usecases/README.md)). Both subjects provision with
+  **instant-stack**: `data/canbank` for **canbank** (`DATASET=canbank`) and
+  `data/insurance` for **insurance** (`DATASET=insurance`; see
+  [`usecases/insurance/DEMO_SCRIPT.md`](usecases/insurance/DEMO_SCRIPT.md)).
+  The instant-stack manifests cover everything: capture
+  nodes/relationships, CIQ policies + knowledge queries incl.
+  `get-agent-workflows`, KBAC policies, App Agent, Token Introspect, MCP
+  server config, and external data resolvers. For canbank, the **Bruno
+  collection** (`bruno/iag-demo`) mirrors the same data request-by-request
+  as a manual alternative, as linked below.
 
   Required in either case:
-    - the canbank graph ingested (Bruno:
-    [`bruno/iag-demo/ingest/{canbank,customers,customer-docs}`](bruno/iag-demo/ingest),
-    or canbank-iag's Capture forms),
+    - the canbank graph ingested (instant-stack `data/canbank`, or Bruno:
+    [`bruno/iag-demo/ingest/{canbank,customers,customer-docs}`](bruno/iag-demo/ingest)),
     - the agent-workflow graph ingested (Bruno:
     [`bruno/iag-demo/ingest/agent-workflow`](bruno/iag-demo/ingest/agent-workflow)):
     `User`s, `Workflow`s (`wf1`/`wf2`/`wf3` plus the Drive/console shapes
@@ -131,13 +151,17 @@ before step 5.
 - **(Optional) Gemini API key**, otherwise an **Ollama** instance reachable
   from Docker (default `http://host.docker.internal:11434`).
 
-### 2. Configure `.env`
+### 2. Configure the subject's env file
+
+Each subject keeps a complete env file (`.env.canbank`, `.env.insurance`, …;
+gitignored) and `.env` is a symlink to the active one:
 
 ```bash
-cp .example.env .env
+cp .example.env .env.canbank        # or .env.insurance - fill the placeholders
+./switch-usecase.sh canbank         # relinks .env and (re)creates the stack
 ```
 
-The root `.env` (this file) is always required: `docker compose` loads it for
+The root `.env` symlink is always required: `docker compose` loads it for
 every service. The per-service `.env` files under `chatbot/`,
 `orchestrator_agent/`, `retriever_agent/`, and `weather_agent/` are only used
 when running those services directly on the host (outside Docker); they are
@@ -334,8 +358,8 @@ Actual steps to get Drive working end-to-end:
    # equivalent one-off alternative: docker compose --profile drive up -d
    ```
 
-The graph data (Bruno ingest and the `canbank-iag` app) always includes the
-Drive workflows and the `indykiteagent-drive` agent: they are inert while
+The graph data (instant-stack datasets and the Bruno ingest) always includes
+the Drive workflows and the `indykiteagent-drive` agent: they are inert while
 the profile is off, so the same provisioning works for both modes.
 
 Three ways to exercise it, in increasing order of demo value:
@@ -390,8 +414,8 @@ Parallel `INVOKES` edges between the same agent pair are discriminated by the
 `workflow_name` property (`discriminating_property: workflow_name`). Because
 `allowed_workflow_id` is single-valued, the analyst and drive gateways run
 unpinned (`ANALYST_WORKFLOW_ID=` / `DRIVE_WORKFLOW_ID=` empty, like `mcp-iag`)
-so all shapes authorize. Re-ingest the workflow data after upgrading (bruno
-`ingest/agent-workflow` or the `canbank-iag` app).
+so all shapes authorize. Re-ingest the workflow data after upgrading
+(instant-stack, or bruno `ingest/agent-workflow`).
 
 The chatbot console reaches Drive through the orchestrator's `query_drive`
 tool (enabled when `ANALYST_HOST` is set on the orchestrator, wired by
@@ -433,8 +457,10 @@ Two ways to see it:
 
 ### 6. Try the demo prompts
 
-See [`CANBANK_DEMO_SCRIPT.md`](CANBANK_DEMO_SCRIPT.md) for the scripted tour.
-Quick prompts once you're logged in as **Leslie**:
+See the active subject's demo script for the scripted tour:
+[`usecases/canbank/DEMO_SCRIPT.md`](usecases/canbank/DEMO_SCRIPT.md) or
+[`usecases/insurance/DEMO_SCRIPT.md`](usecases/insurance/DEMO_SCRIPT.md).
+Quick canbank prompts once you're logged in as **Leslie**:
 
 - *"What policy documents pertain to refunds?"*
 - *"Retrieve past decisions that incorporated the 'refund_policy' document."*
@@ -482,7 +508,7 @@ agent skills (`<agent>/skills/`):
 - `canbank-authz` - dataset-owned: the exact policy triples of *this* project
   (`User -CAN_TRIGGER-> Workflow`, `User -CAN_RETRIEVE-> Quote` with known
   ids). Keep its table in sync with the `kbac` section of
-  `canbank-iag/data/iag/manifest.json` when policies change; remove it if the
+  instant-stack `data/canbank/manifest.json` when policies change; remove it if the
   platform ever exposes policy vocabulary through the MCP server itself.
 
 With the `drive` profile up, log in as **millicent** and mention "Google

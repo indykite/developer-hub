@@ -33,6 +33,6 @@ the only (subject, action, resource) triples that can ever evaluate to
   evaluates to `false` regardless of the user's real permissions.
 
 Maintenance note: keep this table in sync with the project's KBAC policies
-(`canbank-iag/data/iag/manifest.json`, `kbac` section). Remove this skill if
+(instant-stack `data/canbank/manifest.json`, `kbac` section). Remove this skill if
 the dataset changes or once the platform exposes policy vocabulary through
 the MCP server itself.

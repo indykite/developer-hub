@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 """Load music defaults extracted from the postman collection.
 
 The postman bodies contain `{{project_gid}}`, `{{app_agent_gid}}` etc. placeholders

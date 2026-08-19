@@ -66,3 +66,9 @@ htmlcov/
 # (keep the directory itself so the compose bind mount works on fresh clones)
 drive_mcp/.gdrive/*
 !drive_mcp/.gdrive/.gitkeep
+drive_mcp/.gdrive-server-credentials.json
+drive_mcp/gcp-oauth.keys.json
+
+# Per-subject env files hold project bindings and secrets
+.env.*
+!.example.env

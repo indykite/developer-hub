@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 """A2A client that forwards messages to the Orchestrator Agent via a plain HTTP gateway.
 
 The gateway is a simple reverse proxy — it has no A2A agent card and does not implement

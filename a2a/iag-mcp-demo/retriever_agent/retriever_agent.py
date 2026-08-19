@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 """Retriever agent - A2A-compliant agent (a2a-sdk>=1.1.0) that uses a remote MCP server via the official MCP SDK."""
 # Reason: warnings.filterwarnings() must run before LangChain imports to suppress
 # the Pydantic V1 deprecation warning on Python 3.14+, so all other imports
@@ -177,6 +178,10 @@ MCP_SESSION_TTL = float(os.getenv("MCP_SESSION_TTL", "300"))
 CIQ_QUERY_STOCK_PRICE = os.getenv("CIQ_QUERY_STOCK_PRICE", "").strip() or "get-stock-quote"
 CIQ_QUERY_PURCHASE_LIMIT = os.getenv("CIQ_QUERY_PURCHASE_LIMIT", "").strip() or "get-stock-trade-threshold"
 CIQ_QUERY_STORE_DECISION = os.getenv("CIQ_QUERY_STORE_DECISION", "").strip() or "store-decision"
+# Subject toggle for the composite floor(limit/price) tool - only meaningful
+# for usecases whose dataset defines a purchase-limit + unit-price query pair
+# (see usecases/<subject>/usecase.env).
+MAX_PURCHASE_TOOL_ENABLED = os.getenv("MAX_PURCHASE_TOOL_ENABLED", "true").strip().lower() in ("true", "1", "yes")
 _LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
 logging.basicConfig(
@@ -191,7 +196,7 @@ logging.basicConfig(
 # reconfigured); set LIB_LOG_LEVEL=DEBUG to see the SDK logs, condensed to
 # one-line breadcrumbs.
 _LIB_LOG_LEVEL = os.getenv("LIB_LOG_LEVEL", "INFO").upper()
-_LIB_LOG_LEVELNO = getattr(logging, _LIB_LOG_LEVEL, logging.INFO)
+_LIB_LOG_LEVELNO = {"CRITICAL": 50, "ERROR": 40, "WARNING": 30, "INFO": 20, "DEBUG": 10}.get(_LIB_LOG_LEVEL, 20)
 
 
 class _CondenseLibLogs(logging.Filter):
@@ -397,27 +402,22 @@ _BASE_SYSTEM_PROMPT = (
     "You are a helpful data retriever assistant that uses the Indykite MCP server to retrieve data. "
     "The backend exposes both MCP Resources and MCP Tools; both should be listed and considered at runtime.\n"
     "Upon receiving a request, you must:\n"
-    "1. Consider the combination of (a) your skills (authzen, ciq-execute, max-purchase-amount, "
-    "retriever) and (b) available MCP resources and MCP tools. Use list_resources to discover MCP "
+    "1. Consider the combination of (a) your loaded skills (see <available_skills>) and (b) available "
+    "MCP resources and MCP tools. Use list_resources to discover MCP "
     "resources (URIs, names, descriptions). Your bound tools already include the MCP server's tools "
     "(e.g. list_resources, read_resource, ciq_execute, plus any AuthZEN or other tools from the server).\n"
     "2. Select from this combined list which to run: either call an MCP tool (list_resources, "
-    "read_resource, ciq_execute, or an AuthZEN tool), or use max_purchase_amount, or activate a "
+    "read_resource, ciq_execute, or an AuthZEN tool), or one of your other bound tools, or activate a "
     "skill (activate_skill) and then run the matching tool, or reply without a tool (retriever).\n"
     "3. Run the selected tool or skill. Skills authzen and ciq-execute match MCP resources or tools "
     "exposed by the server—use list_resources and the tool list to see what is available and choose "
     "the right resource or tool for the request.\n"
     'Use ciq_execute with a concrete {"id": "<query-id>"} and its "input_params" — '
-    "NEVER call ciq_execute with empty arguments. Known query ids (call with these exact shapes):\n"
-    '  {"id": "get-stock-quote", "input_params": {"ticker": "NVDA"}}\n'
-    '  {"id": "get-stock-trade-threshold", "input_params": {"customer_external_id": "rebecca"}}\n'
-    '  {"id": "get-self", "input_params": {}}\n'
-    '  {"id": "get-internal-documents", "input_params": {"taxonomy_external_id": "policy"}}\n'
-    '  {"id": "get-decisions", "input_params": {"document_external_id": "refund_policy"}}\n'
-    '  {"id": "get-customer-facing-documents", "input_params": {}}\n'
-    '  {"id": "get-regulatory-agreements", "input_params": {}}\n'
-    "Substitute the real ticker / customer / document / taxonomy from the user question; "
-    "if unsure which id fits, call list_resources first.\n"
+    "NEVER call ciq_execute with empty arguments, and NEVER invent a query id. Valid ids and "
+    "their exact call shapes come from (a) the examples in your activated ciq-execute skill and "
+    '(b) the MCP server itself: read_resource on "indykite://knowledge-queries/" lists every '
+    "query, each description carrying a ready-to-use ciq_execute example. Substitute the real "
+    "values from the user question; if unsure which id fits, read that resource first.\n"
     "AuthZEN (evaluation, evaluations, resource_search, subject_search, action_search): example "
     '{"subject":{"type":"user","id":"alice"},"action":{"name":"view"},"resource":{"type":"record","id":"109"}}; '
     'response {"decision":true} or {"decision":false}. Return data only when evaluation is '
@@ -913,9 +913,9 @@ def _make_langchain_tool(session: ClientSession, mcp_tool: Any) -> StructuredToo
         # the LLM would otherwise retry in a loop).
         if tool_name == "ciq_execute" and not args.get("id"):
             return (
-                'ciq_execute requires a query "id" (e.g. get-self, get-stock-quote, '
-                "get-internal-documents, get-decisions) and its input_params. "
-                "Retry with a concrete id, or call list_resources to discover valid ids."
+                'ciq_execute requires a query "id" and its input_params. Retry with a '
+                "concrete id from your ciq-execute skill, or read_resource on "
+                '"indykite://knowledge-queries/" to discover valid ids.'
             )
         _logger.info(
             "MCP RPC request: %s",
@@ -944,6 +944,48 @@ def _get_access_token_from_context(context: RequestContext | None) -> str:
     if auth.lower().startswith("bearer "):
         return auth[7:].strip()
     return auth.strip() if auth else ""
+
+
+CHATBOT_UPDATES_URL = os.getenv("CHATBOT_UPDATES_URL", "http://chatbot:3000/api/push-update").strip()
+
+
+def _report_exchanged_token(token: str) -> None:
+    """Post the exchanged bearer token to the console's audit terminal (fire-and-forget).
+
+    The gateways' audit events carry the decision and actors chain but not the
+    minted delegation token itself, so each agent reports the token it
+    received; the console renders it as a TOKEN card. Failures never affect
+    the request.
+    """
+    if not CHATBOT_UPDATES_URL:
+        return
+    subject = actor = "?"
+    try:
+        payload = token.split(".")[1]
+        claims = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
+        subject = claims.get("sub") or "?"
+        actor = (claims.get("act") or {}).get("sub") or "?"
+    except Exception:  # nosec B110 - opaque token: report it without claims  # noqa: S110
+        pass
+    event = {
+        "service": RETRIEVER_AGENT_NAME,
+        "decision": "TOKEN_EXCHANGED",
+        "subject": subject,
+        "actor": actor,
+        "reason": token,
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    }
+
+    async def _post() -> None:
+        try:
+            async with httpx.AsyncClient(timeout=3) as client:
+                await client.post(CHATBOT_UPDATES_URL, json=event)
+        except Exception:
+            _logger.debug("Exchanged-token report to the console failed")
+
+    # no running loop (sync caller): skip reporting
+    with suppress(RuntimeError):
+        asyncio.get_running_loop().create_task(_post())
 
 
 # ---------------------------------------------------------------------------
@@ -1081,11 +1123,14 @@ class _McpToolsEntry:
             await self.conn.ready.wait()
             if self.conn.result is not None:
                 session, mcp_tools, mcp_resources = self.conn.result
-                lc_tools: list[StructuredTool] = [
-                    _make_list_resources_tool(session),
-                    _make_read_resource_tool(session),
-                    _make_max_purchase_amount_tool(session),
-                ] + [_make_langchain_tool(session, t) for t in mcp_tools]
+                lc_tools: list[StructuredTool] = (
+                    [
+                        _make_list_resources_tool(session),
+                        _make_read_resource_tool(session),
+                    ]
+                    + ([_make_max_purchase_amount_tool(session)] if MAX_PURCHASE_TOOL_ENABLED else [])
+                    + [_make_langchain_tool(session, t) for t in mcp_tools]
+                )
                 activate_skill_tool = _make_activate_skill_tool(_SKILL_REGISTRY)
                 if activate_skill_tool is not None:
                     lc_tools = [activate_skill_tool, *lc_tools]
@@ -1444,6 +1489,11 @@ class RetrieverExecutor(AgentExecutor):
         access_token = _get_access_token_from_context(context)
         if not access_token:
             raise HTTPException(status_code=401, detail="Authorization required")
+        # Demo feature: the short-lived delegation token is intentionally
+        # surfaced in the console audit terminal to show the exchange chain;
+        # logs carry only a redacted fingerprint to avoid credential leaks.
+        _logger.info("Exchanged bearer token (redacted): %s...%s", access_token[:6], access_token[-6:])
+        _report_exchanged_token(access_token)
         await _process_retriever_request(context, event_queue, access_token)
 
     # skipcq: PYL-R0201 - AgentExecutor interface override; must stay an instance method

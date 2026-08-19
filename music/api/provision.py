@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 """Provision-everything add-on: replay every create button in order, from the top.
 
 Runs the FULL setup end to end: Project, wait for the project's IKG to become
@@ -601,8 +602,10 @@ def _capture_iter(client, step):
                 break
             yield (
                 "progress",
-                f"try {attempt} hit a cached permission denial: re-saved the agent's permissions, "
-                f"retrying in {CAPTURE_RETRY_DELAY_SECONDS}s",
+                (
+                    f"try {attempt} hit a cached permission denial: re-saved the agent's permissions, "
+                    f"retrying in {CAPTURE_RETRY_DELAY_SECONDS}s"
+                ),
             )
             time.sleep(CAPTURE_RETRY_DELAY_SECONDS)
         else:

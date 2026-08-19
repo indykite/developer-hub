@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 """Orchestrator agent - A2A-compliant agent (a2a-sdk>=1.0.0a0) that receives and relays messages to the retriever."""
 
 import asyncio

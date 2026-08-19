@@ -1,3 +1,4 @@
+# Copyright (c) 2026 IndyKite
 """Chat API — story-driven walkthrough of every music CIQ execute.
 
 The story script lives in data/scenario.json. Each step references a CIQ
