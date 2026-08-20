@@ -6,7 +6,33 @@ import { CallToolRequestSchema, ListResourcesRequestSchema, ListToolsRequestSche
 import fs from "fs";
 import { google } from "googleapis";
 import path from "path";
+import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
 const drive = google.drive("v3");
+
+// Extract plain text from a PDF byte buffer. The reference gdrive server only
+// exports Google-native docs to text and returns every other binary (PDFs
+// included) as an opaque base64 blob the LLM cannot read; this makes the
+// analyst able to answer over real PDF documents. verbosity: 0 keeps pdfjs
+// silent - any stdout write would corrupt the stdio JSON-RPC stream.
+async function extractPdfText(arrayBuffer) {
+    const doc = await getDocument({
+        data: new Uint8Array(arrayBuffer),
+        useSystemFonts: true,
+        verbosity: 0,
+    }).promise;
+    try {
+        const pages = [];
+        for (let pageNum = 1; pageNum <= doc.numPages; pageNum++) {
+            const page = await doc.getPage(pageNum);
+            const content = await page.getTextContent();
+            pages.push(content.items.map((item) => item.str).join(" "));
+        }
+        return pages.join("\n\n").trim();
+    }
+    finally {
+        await doc.destroy();
+    }
+}
 const server = new Server({
     name: "example-servers/gdrive",
     version: "0.1.0",
@@ -87,17 +113,36 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
             ],
         };
     }
-    else {
-        return {
-            contents: [
-                {
-                    uri: request.params.uri,
-                    mimeType: mimeType,
-                    blob: Buffer.from(res.data).toString("base64"),
-                },
-            ],
-        };
+    // PDFs: extract text so the LLM can read the document. Fall back to the
+    // base64 blob below if extraction fails (encrypted / scanned-image PDF).
+    if (mimeType === "application/pdf") {
+        try {
+            const text = await extractPdfText(res.data);
+            if (text) {
+                return {
+                    contents: [
+                        {
+                            uri: request.params.uri,
+                            mimeType: "text/plain",
+                            text,
+                        },
+                    ],
+                };
+            }
+        }
+        catch (err) {
+            console.error(`PDF text extraction failed for ${fileId}: ${err?.message ?? err}`);
+        }
     }
+    return {
+        contents: [
+            {
+                uri: request.params.uri,
+                mimeType: mimeType,
+                blob: Buffer.from(res.data).toString("base64"),
+            },
+        ],
+    };
 });
 server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {

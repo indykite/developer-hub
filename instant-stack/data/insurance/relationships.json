@@ -3403,7 +3403,7 @@
     },
     {
       "source": {
-        "type": "User",
+        "type": "Person",
         "external_id": "millicent"
       },
       "target": {
@@ -3415,7 +3415,7 @@
     },
     {
       "source": {
-        "type": "User",
+        "type": "Person",
         "external_id": "rebecca"
       },
       "target": {
@@ -3427,7 +3427,7 @@
     },
     {
       "source": {
-        "type": "User",
+        "type": "Person",
         "external_id": "leslie"
       },
       "target": {
@@ -3439,11 +3439,11 @@
     },
     {
       "source": {
-        "type": "User",
+        "type": "Person",
         "external_id": "millicent"
       },
       "target": {
-        "type": "User",
+        "type": "Person",
         "external_id": "leslie"
       },
       "properties": [],
@@ -3568,6 +3568,90 @@
       },
       "properties": [],
       "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Document",
+        "external_id": "claims_handling_policy"
+      },
+      "properties": [],
+      "type": "CAN_VIEW"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Document",
+        "external_id": "underwriting_guidelines"
+      },
+      "properties": [],
+      "type": "CAN_VIEW"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Document",
+        "external_id": "home_policy_terms"
+      },
+      "properties": [],
+      "type": "CAN_VIEW"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "sales"
+      },
+      "target": {
+        "type": "Document",
+        "external_id": "claims_handling_policy"
+      },
+      "properties": [],
+      "type": "CAN_VIEW"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "sales"
+      },
+      "target": {
+        "type": "Document",
+        "external_id": "underwriting_guidelines"
+      },
+      "properties": [],
+      "type": "CAN_VIEW"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "sales"
+      },
+      "target": {
+        "type": "Document",
+        "external_id": "home_policy_terms"
+      },
+      "properties": [],
+      "type": "CAN_VIEW"
+    },
+    {
+      "source": {
+        "type": "InsuranceCompany",
+        "external_id": "company-000"
+      },
+      "target": {
+        "type": "Document",
+        "external_id": "home_policy_terms"
+      },
+      "properties": [],
+      "type": "PUBLISHES"
     }
   ]
 }

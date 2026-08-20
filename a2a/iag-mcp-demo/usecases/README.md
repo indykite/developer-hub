@@ -1,19 +1,19 @@
-# Subjects
+# Usecases
 
-A *subject* is the demo's domain packaged as configuration: everything that
+A *usecase* is the demo's domain packaged as configuration: everything that
 makes the app "the CanBank demo" or "the CanSure Insurance demo" lives here,
 while the agents, gateways, chatbot, and compose topology stay
-subject-agnostic.
+usecase-agnostic.
 
-## Selecting a subject
+## Selecting a usecase
 
-Each subject owns a **complete** env file - `.env.canbank`, `.env.insurance`
-(gitignored; they hold the subject's platform bindings and secrets:
+Each usecase owns a **complete** env file - `.env.canbank`, `.env.insurance`
+(gitignored; they hold the usecase's platform bindings and secrets:
 `USECASE`, `CIQ_QUERY_ID`, `MCP_SERVER_URL`, `APP_AGENT_CREDENTIALS_TOKEN`,
 `WORKFLOW_ID`, `AUTHZEN_SUBJECT_TYPES`, ports, IdP clients, ...). The
 committed template is the single `.example.env` (its comments flag the
-per-subject values) - copy it to `.env.<subject>` and fill the placeholders,
-taking the subject's values from that subject's provisioning output. `.env` is a
+per-usecase values) - copy it to `.env.<usecase>` and fill the placeholders,
+taking the usecase's values from that usecase's provisioning output. `.env` is a
 symlink to the active one, so every plain `docker compose` command works
 unchanged. Switch with:
 
@@ -22,7 +22,7 @@ unchanged. Switch with:
 ```
 
 Everything switches atomically - skills, vocabulary, AND the platform
-project bindings - so a half-switched stack (one subject's skills against
+project bindings - so a half-switched stack (one usecase's skills against
 the other's project) cannot happen. The compose file wires the bundle in
 two ways per agent:
 
@@ -44,7 +44,7 @@ usecases/<name>/
     analyst/         # mounted at /app/skills in the analyst
 ```
 
-## Adding a subject
+## Adding a usecase
 
 1. Copy an existing bundle and adapt: `usecase.env`, the dataset-specific
    skill (`<name>-authz` - keep its KBAC vocabulary table in sync with the
@@ -54,5 +54,5 @@ usecases/<name>/
    queries referenced by `usecase.env`.
 3. Point `USECASE=<name>` in `.env` and recreate the agents.
 
-The graph dataset is the other half of a subject: prompts only return data
+The graph dataset is the other half of a usecase: prompts only return data
 once the matching dataset is provisioned in the IndyKite project.

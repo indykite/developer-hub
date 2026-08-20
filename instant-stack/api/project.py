@@ -62,7 +62,12 @@ def update_env_variable(key, value):
 
 
 def clean_env_file():
-    """Remove all environment variables except SA_TOKEN and URL_ENDPOINTS from .env file."""
+    """Remove the project-owned environment variables from the .env file.
+
+    Keeps SA_TOKEN, URL_ENDPOINTS, ORGANIZATION_ID, and DATASET - settings not
+    owned by the project lifecycle - so deleting a project doesn't silently
+    switch the app back to the default dataset.
+    """
     env_file = Path(__file__).parent.parent / ".env"
 
     # Read existing .env file
@@ -73,8 +78,10 @@ def clean_env_file():
     with env_file.open() as f:
         lines = f.readlines()
 
-    # Keep SA_TOKEN, URL_ENDPOINTS, and ORGANIZATION_ID (not owned by the project lifecycle)
-    keep_vars = ["SA_TOKEN", "URL_ENDPOINTS", "ORGANIZATION_ID"]
+    # Settings not owned by the project lifecycle survive the cleanup. DATASET
+    # selects which data/<name>/ bundle is active - dropping it would flip the
+    # app back to the default dataset after every project deletion.
+    keep_vars = ["SA_TOKEN", "URL_ENDPOINTS", "ORGANIZATION_ID", "DATASET"]
     updated_lines = []
     removed_keys = []
 
@@ -104,7 +111,7 @@ def clean_env_file():
     for var in removed_keys:
         os.environ.pop(var, None)
 
-    logger.info("Cleaned .env file, keeping SA_TOKEN, URL_ENDPOINTS, and ORGANIZATION_ID")
+    logger.info("Cleaned .env file, keeping SA_TOKEN, URL_ENDPOINTS, ORGANIZATION_ID, and DATASET")
 
 
 class Unauthorized(BaseModel):

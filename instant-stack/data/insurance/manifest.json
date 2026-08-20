@@ -7,7 +7,7 @@
       "slot": "1",
       "name": "get-self",
       "display_name": "Get Self",
-      "description": "Retrieve the authenticated user's profile, department and manager. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-self\", \"input_params\": { } }.",
+      "description": "Retrieve the authenticated person's profile, department and manager. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-self\", \"input_params\": { } }.",
       "query": {
         "nodes": [
           "subject.external_id",
@@ -140,20 +140,28 @@
       "slot": "6",
       "name": "get-policy-documents",
       "display_name": "Get Policy Documents",
-      "description": "List SecureHome's internal policy documents with a content excerpt from each PDF. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-policy-documents\", \"input_params\": { } }.",
+      "description": "List the SecureHome policy documents the caller is allowed to view, with a content excerpt from each PDF: staff see the whole policy library (department CAN_VIEW), customers only the company-published documents (staffDoc columns empty). Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-policy-documents\", \"input_params\": { } }.",
       "query": {
         "nodes": [
           "folder.property.name",
-          "doc.external_id",
-          "doc.property.name",
-          "doc.property.description",
-          "doc.property.url",
-          "doc.property.content_excerpt",
-          "taxonomy.property.name"
+          "staffDoc.external_id",
+          "staffDoc.property.name",
+          "staffDoc.property.description",
+          "staffDoc.property.url",
+          "staffDoc.property.content_excerpt",
+          "pubDoc.external_id",
+          "pubDoc.property.name",
+          "pubDoc.property.description",
+          "pubDoc.property.url",
+          "pubDoc.property.content_excerpt",
+          "staffTaxonomy.property.name",
+          "pubTaxonomy.property.name"
         ],
         "relationships": [
-          "r_contains",
-          "r_class"
+          "r_staff_contains",
+          "r_pub_contains",
+          "r_staff_class",
+          "r_pub_class"
         ],
         "aggregate_values": []
       }
@@ -244,16 +252,16 @@
       "slot": "1",
       "name": "get-self",
       "display_name": "Get Self",
-      "description": "Return the authenticated user, their department and their manager.",
+      "description": "Return the authenticated person, their department and their manager.",
       "policy": {
         "meta": {
           "policy_version": "1.0-ciq"
         },
         "subject": {
-          "type": "User"
+          "type": "Person"
         },
         "condition": {
-          "cypher": "MATCH (subject:User {external_id: $token.sub}) WITH subject OPTIONAL MATCH (subject)-[:WORKS_IN]->(department:Department) WITH subject, department OPTIONAL MATCH (subject)-[:REPORTS_TO]->(manager:User) WITH subject, department, manager, $token.act.sub AS agent",
+          "cypher": "MATCH (subject:Person {external_id: $token.sub}) WITH subject OPTIONAL MATCH (subject)-[:WORKS_IN]->(department:Department) WITH subject, department OPTIONAL MATCH (subject)-[:REPORTS_TO]->(manager:Person) WITH subject, department, manager, $token.act.sub AS agent",
           "filter": []
         },
         "allowed_reads": {
@@ -284,10 +292,10 @@
           "policy_version": "1.0-ciq"
         },
         "subject": {
-          "type": "User"
+          "type": "Person"
         },
         "condition": {
-          "cypher": "MATCH (subject:User {external_id: $token.sub}) WITH subject MATCH (caller:Person {external_id: $caller_id}) OPTIONAL MATCH (caller)-[r_married:MARRIED_TO]->(spouse:Person) OPTIONAL MATCH (caller)-[r_caller_policy:PRIMARY_POLICYHOLDER]->(callerInsurance:HomeInsurance) OPTIONAL MATCH (spouse)-[r_spouse_policy:PRIMARY_POLICYHOLDER]->(spouseInsurance:HomeInsurance)",
+          "cypher": "MATCH (subject:Person {external_id: $token.sub}) WITH subject MATCH (caller:Person {external_id: $caller_id}) OPTIONAL MATCH (caller)-[r_married:MARRIED_TO]->(spouse:Person) OPTIONAL MATCH (caller)-[r_caller_policy:PRIMARY_POLICYHOLDER]->(callerInsurance:HomeInsurance) OPTIONAL MATCH (spouse)-[r_spouse_policy:PRIMARY_POLICYHOLDER]->(spouseInsurance:HomeInsurance)",
           "filter": []
         },
         "allowed_reads": {
@@ -327,10 +335,10 @@
           "policy_version": "1.0-ciq"
         },
         "subject": {
-          "type": "User"
+          "type": "Person"
         },
         "condition": {
-          "cypher": "MATCH (subject:User {external_id: $token.sub}) WITH subject MATCH (caller:Person {external_id: $caller_id}) OPTIONAL MATCH (caller)-[r_married:MARRIED_TO]->(spouse:Person) OPTIONAL MATCH (caller)-[r_parent:PARENT_OF]->(child:Person) OPTIONAL MATCH (caller)-[r_resides:RESIDES_AT]->(property:PropertyEstate)",
+          "cypher": "MATCH (subject:Person {external_id: $token.sub}) WITH subject MATCH (caller:Person {external_id: $caller_id}) OPTIONAL MATCH (caller)-[r_married:MARRIED_TO]->(spouse:Person) OPTIONAL MATCH (caller)-[r_parent:PARENT_OF]->(child:Person) OPTIONAL MATCH (caller)-[r_resides:RESIDES_AT]->(property:PropertyEstate)",
           "filter": []
         },
         "allowed_reads": {
@@ -364,10 +372,10 @@
           "policy_version": "1.0-ciq"
         },
         "subject": {
-          "type": "User"
+          "type": "Person"
         },
         "condition": {
-          "cypher": "MATCH (subject:User {external_id: $token.sub}) WITH subject MATCH (parent:Person)-[r_parent:PARENT_OF]->(child:Person) MATCH (child)-[r_resides:RESIDES_AT]->(property:PropertyEstate)",
+          "cypher": "MATCH (subject:Person {external_id: $token.sub}) WITH subject MATCH (parent:Person)-[r_parent:PARENT_OF]->(child:Person) MATCH (child)-[r_resides:RESIDES_AT]->(property:PropertyEstate)",
           "filter": [
             {
               "operator": "AND",
@@ -415,10 +423,10 @@
           "policy_version": "1.0-ciq"
         },
         "subject": {
-          "type": "User"
+          "type": "Person"
         },
         "condition": {
-          "cypher": "MATCH (subject:User {external_id: $token.sub}) WITH subject MATCH (driver:Person)-[r_auth:AUTHORIZED_DRIVER]->(vehicle:Vehicle)",
+          "cypher": "MATCH (subject:Person {external_id: $token.sub}) WITH subject MATCH (driver:Person)-[r_auth:AUTHORIZED_DRIVER]->(vehicle:Vehicle)",
           "filter": [
             {
               "attribute": "vehicle.property.license_plate",
@@ -448,27 +456,31 @@
       "slot": "6",
       "name": "get-policy-documents",
       "display_name": "Get Policy Documents",
-      "description": "List SecureHome's internal policy documents with a content excerpt from each PDF. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-policy-documents\", \"input_params\": { } }.",
+      "description": "Policy documents the caller may view: staff reach the full policy library through their department's CAN_VIEW edges; customers see only documents the company publishes.",
       "policy": {
         "meta": {
           "policy_version": "1.0-ciq"
         },
         "subject": {
-          "type": "User"
+          "type": "Person"
         },
         "condition": {
-          "cypher": "MATCH (subject:User {external_id: $token.sub}) WITH subject MATCH (folder:Folder {external_id: 'policy-library'})-[r_contains:CONTAINS]->(doc:Document) OPTIONAL MATCH (doc)-[r_class:CLASSIFIED_AS]->(taxonomy:Taxonomy)",
+          "cypher": "MATCH (subject:Person {external_id: $token.sub}) WITH subject MATCH (folder:Folder {external_id: 'policy-library'}) OPTIONAL MATCH (subject)-[:WORKS_IN]->(:Department)-[:CAN_VIEW]->(staffDoc:Document)<-[r_staff_contains:CONTAINS]-(folder) OPTIONAL MATCH (folder)-[r_pub_contains:CONTAINS]->(pubDoc:Document)<-[:PUBLISHES]-(:InsuranceCompany) OPTIONAL MATCH (staffDoc)-[r_staff_class:CLASSIFIED_AS]->(staffTaxonomy:Taxonomy) OPTIONAL MATCH (pubDoc)-[r_pub_class:CLASSIFIED_AS]->(pubTaxonomy:Taxonomy)",
           "filter": []
         },
         "allowed_reads": {
           "nodes": [
             "folder.*",
-            "doc.*",
-            "taxonomy.*"
+            "staffDoc.*",
+            "pubDoc.*",
+            "staffTaxonomy.*",
+            "pubTaxonomy.*"
           ],
           "relationships": [
-            "r_contains",
-            "r_class"
+            "r_staff_contains",
+            "r_pub_contains",
+            "r_staff_class",
+            "r_pub_class"
           ],
           "aggregate_values": []
         }
@@ -488,10 +500,10 @@
           "policy_version": "1.0-ciq"
         },
         "subject": {
-          "type": "User"
+          "type": "Person"
         },
         "condition": {
-          "cypher": "MATCH (subject:User {external_id: $token.sub}) WITH subject MATCH (weather:Weather {external_id: 'hq_weather'})",
+          "cypher": "MATCH (subject:Person {external_id: $token.sub}) WITH subject MATCH (weather:Weather {external_id: 'hq_weather'})",
           "filter": []
         },
         "allowed_reads": {
@@ -644,7 +656,7 @@
     "name": "securehome-token-introspect",
     "display_name": "SecureHome Token Introspect",
     "description": "Token introspect for SecureHome Insurance users authenticated via their IdP",
-    "ikg_node_type": "User",
+    "ikg_node_type": "Person",
     "jwt_matcher": {
       "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous/",
       "audience": "indykiteagent-mcp"
@@ -659,32 +671,9 @@
   },
   "kbac": [
     {
-      "name": "user-can-trigger-workflow",
-      "display_name": "User can trigger workflow",
-      "description": "Allow a user to trigger an agentic workflow when their department can trigger it OR they have been assigned to it directly.",
-      "status": "ACTIVE",
-      "policy": {
-        "meta": {
-          "policy_version": "1.0-indykite"
-        },
-        "subject": {
-          "type": "User"
-        },
-        "actions": [
-          "CAN_TRIGGER"
-        ],
-        "resource": {
-          "type": "Workflow"
-        },
-        "condition": {
-          "cypher": "MATCH (subject:User)-[:WORKS_IN|CAN_TRIGGER*..3]->(resource:Workflow)"
-        }
-      }
-    },
-    {
       "name": "person-can-trigger-workflow",
       "display_name": "Person can trigger workflow",
-      "description": "Allow a household customer (Person) to trigger an agentic workflow they have been assigned to directly.",
+      "description": "A person may trigger a workflow their department can trigger (staff) or that they have been assigned directly (customer).",
       "status": "ACTIVE",
       "policy": {
         "meta": {
@@ -700,7 +689,53 @@
           "type": "Workflow"
         },
         "condition": {
-          "cypher": "MATCH (subject:Person)-[:CAN_TRIGGER]->(resource:Workflow)"
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN|CAN_TRIGGER*..3]->(resource:Workflow)"
+        }
+      }
+    },
+    {
+      "name": "staff-can-view-document",
+      "display_name": "Staff can view document",
+      "description": "A staff person may view a document their department is granted CAN_VIEW on.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-indykite"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_VIEW"
+        ],
+        "resource": {
+          "type": "Document"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN]->(:Department)-[:CAN_VIEW]->(resource:Document)"
+        }
+      }
+    },
+    {
+      "name": "published-document-viewable",
+      "display_name": "Published document viewable",
+      "description": "Any authenticated person may view a document the insurance company publishes to customers. Staff already see all documents via their department; a customer login (a Person not in any department) sees only the published one.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-indykite"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_VIEW"
+        ],
+        "resource": {
+          "type": "Document"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person) MATCH (:InsuranceCompany)-[:PUBLISHES]->(resource:Document)"
         }
       }
     }

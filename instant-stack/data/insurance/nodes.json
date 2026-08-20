@@ -5316,7 +5316,7 @@
     },
     {
       "external_id": "millicent",
-      "type": "User",
+      "type": "Person",
       "is_identity": true,
       "labels": [
         "Employee"
@@ -5338,7 +5338,7 @@
     },
     {
       "external_id": "rebecca",
-      "type": "User",
+      "type": "Person",
       "is_identity": true,
       "labels": [
         "Employee"
@@ -5360,7 +5360,7 @@
     },
     {
       "external_id": "leslie",
-      "type": "User",
+      "type": "Person",
       "is_identity": true,
       "labels": [
         "Employee"
