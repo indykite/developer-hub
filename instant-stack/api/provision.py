@@ -1,14 +1,19 @@
 # Copyright (c) 2026 IndyKite
-"""Provision-everything add-on: replay every create button AFTER the MCP server config.
+"""Provision-everything add-on: replay every create button in order, from the top.
 
-The five Getting Started configurations (Project, Application, App Agent,
-Token Introspect, MCP Server) are assumed to exist already - their IDs and
-tokens are read from .env. The run replays everything that follows them on the
-landing page, in click order: both captures (nodes + relationships), the KBAC
-policy, the three external data resolvers, then each CIQ policy immediately
-followed by its knowledge query (slots 1-10). Each step POSTs the exact form
-payload the corresponding create form would submit, through the Flask test
-client, so it runs the same route handlers as a person clicking the buttons.
+The whole stack is provisioned from the manifest, so a run needs only an
+existing organization to create the project in - nothing else is assumed to
+exist except the run inputs (URL_ENDPOINTS, SA_TOKEN, ORGANIZATION_ID, and
+optionally DATASET to pick the data/<name>/ bundle). Steps run in dependency order:
+Project -> Application -> App Agent (+ credentials) -> Token Introspect ->
+MCP Server, then both captures (nodes + relationships), the KBAC policies,
+the external data resolvers, and each CIQ policy immediately followed by its
+knowledge query. Each payload reads the prior step's saved id from the
+environment (lazily, per step), so the create-chain threads through in one
+run. Each step POSTs the exact form payload the corresponding create form
+would submit, through the Flask test client, so it runs the same route
+handlers as a person clicking the buttons - and skip_existing skips any step
+whose id is already in .env.
 
 Captures on a freshly created project/agent can hit a transient 401, "failed to
 evaluate API access" (the evaluation errored while the IKG was still stabilizing
@@ -29,6 +34,7 @@ import re
 import time
 from pathlib import Path
 
+import requests
 from api import _dataset
 from api.capture import _load_default_nodes
 from api.ciq_knowledge_query import _QUERY_DEFS
@@ -62,15 +68,26 @@ CAPTURE_TRIES = 4
 EVAL_ERROR_RETRY_DELAY_SECONDS = 70
 _FAILED_TO_EVALUATE = "failed to evaluate API access"
 
-# Environment values the run cannot create itself (they come from the five
-# Getting Started steps), in checklist order.
+# A fresh project's IKG database takes minutes to provision. The App Agent must
+# be created only AFTER the IKG is ACTIVE: the platform projects the agent's API
+# permissions into the IKG when the agent is created, and an event processed
+# while the IKG is still provisioning is dropped without retry - leaving the
+# agent permanently unauthorized (the capture then 401s "Invalid AppAgent JWT").
+IKG_READY_DEADLINE_SECONDS = 600
+IKG_POLL_DELAY_SECONDS = 5
+# The agent's permissions are written in the same transaction as the create, so
+# a short fixed pause before the first capture is enough.
+AGENT_SETTLE_SECONDS = 2
+
+# Environment values the run cannot create itself, in checklist order.
 PREREQUISITES = [
     ("URL_ENDPOINTS", "Platform API base URL (e.g. https://eu.api.indykite.com)"),
     ("SA_TOKEN", "Service-account token"),
-    ("PROJECT_ID", "Project ID (Getting Started step 1)"),
-    ("APP_TOKEN", "App Agent token (Getting Started step 3)"),
+    ("ORGANIZATION_ID", "Organization ID the project is created under"),
 ]
-OPTIONAL_KEYS = []
+OPTIONAL_KEYS = [
+    ("DATASET", "Which data/<name>/ bundle to provision (default: canbank)"),
+]
 
 
 class Unauthorized(BaseModel):
@@ -128,6 +145,81 @@ def _ciq_query_payload(slot):
     return _query_default_for_slot(slot)
 
 
+def _project_payload():
+    # /api_project/create form fields. organization_id is a run input (env),
+    # everything else from the manifest project section.
+    p = _dataset.PROJECT
+    db = p.get("db_connection", {}) or {}
+    return {
+        "name": p.get("name", ""),
+        "display_name": p.get("display_name", ""),
+        "description": p.get("description", ""),
+        "organization_id": os.getenv("ORGANIZATION_ID", ""),
+        "region": p.get("region", "europe-west1"),
+        "ikg_size": p.get("ikg_size", "2GB"),
+        "db_name": db.get("name", ""),
+        "db_url": db.get("url", ""),
+        "db_username": db.get("username", ""),
+        "db_password": db.get("password", ""),
+    }
+
+
+def _application_payload():
+    a = _dataset.APPLICATION
+    return {
+        "name": a.get("name", ""),
+        "display_name": a.get("display_name", ""),
+        "description": a.get("description", ""),
+        "project_id": os.getenv("PROJECT_ID", ""),
+    }
+
+
+def _app_agent_payload():
+    # The create route splits api_permissions on newlines/commas; the app-agent
+    # create also registers credentials, saving APP_TOKEN in the same step.
+    a = _dataset.APP_AGENT
+    return {
+        "name": a.get("name", ""),
+        "display_name": a.get("display_name", ""),
+        "description": a.get("description", ""),
+        "application_id": os.getenv("APPLICATION_ID", ""),
+        "api_permissions": "\n".join(_dataset.DEFAULT_API_PERMISSIONS),
+    }
+
+
+def _mcp_server_payload():
+    # References the app agent + token introspect created earlier in the run.
+    s = _dataset.MCP_SERVER
+    return {
+        "name": s.get("name", ""),
+        "display_name": s.get("display_name", ""),
+        "description": s.get("description", ""),
+        "enabled": "true" if s.get("enabled", True) else "false",
+        "project_id": os.getenv("PROJECT_ID", ""),
+        "app_agent_id": os.getenv("APP_AGENT_ID", ""),
+        "token_introspect_id": os.getenv("TOKEN_INTROSPECT_ID", ""),
+        "scopes_supported": ",".join(s.get("scopes_supported", [])),
+    }
+
+
+def _token_introspect_payload():
+    # Mirrors the /api_token_introspect/create form: JSON-valued fields are
+    # posted as JSON strings, perform_upsert as a "true"/"false" string. Values
+    # come from the dataset manifest (token_introspect section).
+    ti = _dataset.TOKEN_INTROSPECT
+    return {
+        "name": ti.get("name", ""),
+        "display_name": ti.get("display_name", ""),
+        "description": ti.get("description", ""),
+        "ikg_node_type": ti.get("ikg_node_type", "Person"),
+        "jwt_matcher": json.dumps(ti.get("jwt_matcher", {})),
+        "claims_mapping": json.dumps(ti.get("claims_mapping", {})),
+        "offline_validation": json.dumps(ti.get("offline_validation", {})),
+        "perform_upsert": "true" if ti.get("perform_upsert", True) else "false",
+        "project_id": os.getenv("PROJECT_ID", ""),
+    }
+
+
 # --------------------------------------------------------------------------
 # Step list - the landing-page buttons after the MCP server config, in order.
 # --------------------------------------------------------------------------
@@ -138,8 +230,75 @@ def _step(label, path, payload, env_keys, kind="create"):
 
 
 def build_steps():
-    """Return the ordered steps: captures, KBAC, resolvers, then CIQ policy+query pairs."""
-    steps = [
+    """Return the ordered steps: token introspect, captures, KBAC, resolvers, then CIQ policy+query pairs."""
+    steps = []
+    # Getting-Started configs, in dependency order, so a run can start from an
+    # empty project: project -> application -> app agent (+credentials) ->
+    # token introspect -> mcp server. Each payload reads the prior step's saved
+    # id from the environment (lazily, per step), so the chain threads through.
+    # Each is added only when the manifest declares that section, and is
+    # skip_existing-gated on the id it records.
+
+    def _label(cfg, prefix):
+        return f"{prefix}: {cfg.get('display_name') or cfg.get('name', '')}"
+
+    if _dataset.PROJECT:
+        steps.append(
+            _step(_label(_dataset.PROJECT, "Create project"), "/api_project/create", _project_payload, ["PROJECT_ID"]),
+        )
+        # The IKG wait MUST precede the App Agent: the platform projects the
+        # agent's API permissions into the IKG on create, and an event
+        # processed while the IKG is still provisioning is dropped without
+        # retry - leaving the agent permanently unauthorized (capture 401s).
+        steps.append(_step("Wait for project IKG", None, None, ["IKG_READY"], kind="ikg"))
+    if _dataset.APPLICATION:
+        steps.append(
+            _step(
+                _label(_dataset.APPLICATION, "Create application"),
+                "/api_application/create",
+                _application_payload,
+                ["APPLICATION_ID"],
+            ),
+        )
+    if _dataset.APP_AGENT:
+        steps.append(
+            _step(
+                _label(_dataset.APP_AGENT, "Create app agent"),
+                "/api_app_agent/create",
+                _app_agent_payload,
+                ["APP_AGENT_ID", "APP_TOKEN"],
+            ),
+        )
+    if _dataset.TOKEN_INTROSPECT:
+        steps.append(
+            _step(
+                _label(_dataset.TOKEN_INTROSPECT, "Create token introspect"),
+                "/api_token_introspect/create",
+                _token_introspect_payload,
+                ["TOKEN_INTROSPECT_ID"],
+            ),
+        )
+    if _dataset.MCP_SERVER:
+        steps.append(
+            _step(
+                _label(_dataset.MCP_SERVER, "Create MCP server"),
+                "/api_mcp_server/create",
+                _mcp_server_payload,
+                ["MCP_SERVER_ID"],
+            ),
+        )
+    if _dataset.APP_AGENT:
+        # Let the fresh agent's permissions settle before the first capture.
+        steps.append(
+            _step(
+                f"Wait {AGENT_SETTLE_SECONDS}s for App Agent permissions",
+                None,
+                None,
+                ["AGENT_READY"],
+                kind="settle",
+            ),
+        )
+    steps += [
         _step(
             "Capture nodes",
             "/api_capture/create",
@@ -275,11 +434,79 @@ def _capture_iter(client, step):
     yield "result", (False, f"{detail} (after {attempt} tr{'y' if attempt == 1 else 'ies'})")
 
 
+def _read_ikg_status(url_endpoints, sa_token, project_id):
+    """Read the project's ikg_status (PENDING/ACTIVE/FAILED/...). Returns (status, error_message)."""
+    try:
+        response = requests.get(
+            f"{url_endpoints}/configs/v1/projects/{project_id}",
+            headers={"Authorization": f"Bearer {sa_token}"},
+            timeout=30,
+        )
+    except requests.RequestException as e:
+        return "", str(e)[:100]
+    if response.status_code >= HTTP_BAD_REQUEST:
+        return "", f"project read failed with status {response.status_code}"
+    try:
+        return response.json().get("ikg_status", ""), ""
+    except ValueError:
+        return "", "invalid JSON from project read"
+
+
+def _ikg_iter():
+    """Wait-for-IKG step: poll the project's ikg_status until ACTIVE.
+
+    Yields ("progress", msg) while waiting, then one ("result", (ok, detail)).
+    """
+    url_endpoints = os.getenv("URL_ENDPOINTS")
+    sa_token = os.getenv("SA_TOKEN")
+    project_id = os.getenv("PROJECT_ID")
+    if not (url_endpoints and sa_token and project_id):
+        yield "result", (False, "URL_ENDPOINTS / SA_TOKEN / PROJECT_ID missing from env")
+        return
+    start = time.monotonic()
+    while time.monotonic() - start < IKG_READY_DEADLINE_SECONDS:
+        status, err = _read_ikg_status(url_endpoints, sa_token, project_id)
+        elapsed = int(time.monotonic() - start)
+        if status == "ACTIVE":
+            update_env_variable("IKG_READY", "true")
+            yield "result", (True, f"project IKG is ACTIVE after {elapsed}s")
+            return
+        if status == "FAILED":
+            yield "result", (False, "project IKG provisioning FAILED - delete the project and provision again")
+            return
+        yield "progress", f"waiting for the project IKG to provision: {status or err} ({elapsed}s)"
+        time.sleep(IKG_POLL_DELAY_SECONDS)
+    minutes = IKG_READY_DEADLINE_SECONDS // 60
+    yield "result", (False, f"project IKG still not ACTIVE after {minutes} minutes - check the project in the Hub")
+
+
+def _settle_iter():
+    """Give the fresh App Agent a moment before the first capture.
+
+    The permissions are written with the agent create, so a short fixed pause
+    is enough - no data-plane readiness probe needed.
+    """
+    if not os.getenv("APP_TOKEN"):
+        yield "result", (False, "APP_TOKEN missing from env")
+        return
+    time.sleep(AGENT_SETTLE_SECONDS)
+    update_env_variable("AGENT_READY", "true")
+    yield "result", (True, f"waited {AGENT_SETTLE_SECONDS}s - agent permissions are assigned with the create")
+
+
 def _execute_step(client, step):
     """Run one step, yielding ("substep", detail) progress and exactly one final ("result", (ok, detail))."""
     try:
         if step["kind"] == "capture":
             for kind, payload in _capture_iter(client, step):
+                yield ("substep", payload) if kind == "progress" else ("result", payload)
+            return
+        if step["kind"] == "ikg":
+            for kind, payload in _ikg_iter():
+                yield ("substep", payload) if kind == "progress" else ("result", payload)
+            return
+        if step["kind"] == "settle":
+            for kind, payload in _settle_iter():
                 yield ("substep", payload) if kind == "progress" else ("result", payload)
             return
         response = client.post(step["path"], data=step["payload"]())

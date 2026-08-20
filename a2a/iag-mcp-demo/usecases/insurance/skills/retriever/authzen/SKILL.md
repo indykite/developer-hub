@@ -1,6 +1,6 @@
 ---
 name: authzen
-description: Run AuthZEN (OpenID) authorization requests. This skill matches MCP resources or tools exposed by the backend—use list_resources and the available MCP tools to find the AuthZEN capability (evaluation, evaluations, resource_search, subject_search, action_search) and run the matching resource or tool.
+description: Run AuthZEN (OpenID) authorization requests. This skill matches MCP resources or tools exposed by the backend—use list_resources and the available MCP tools to find the AuthZEN capability (authzen_evaluate, authzen_evaluations, authzen_search_resource, authzen_search_subject, authzen_search_action) and run the matching resource or tool.
 tags:
   - mcp
   - retriever
@@ -19,24 +19,25 @@ examples:
 Use this skill when the request involves **authorization**. AuthZEN matches
 **MCP resources or tools** exposed by the backend. List MCP resources and
 inspect available MCP tools to find the AuthZEN capability (as a resource or
-tool), then run it. The backend supports five AuthZEN operations: evaluation,
-evaluations, resource_search, subject_search, action_search.
+tool), then run it. The backend exposes the AuthZEN operations as tools named
+authzen_evaluate, authzen_evaluations, authzen_search_resource,
+authzen_search_subject, and authzen_search_action.
 
 ## AuthZEN operations (5)
 
-1. **evaluation** – Single authorization check: can this subject perform this action on this resource?
+1. **authzen_evaluate** – Single authorization check: can this subject perform this action on this resource?
    Example request: `{"subject":{"type":"<SubjectType>","id":"<subject_external_id>"},"action":{"name":"<ACTION_NAME>"},"resource":{"type":"<ResourceType>","id":"<resource_external_id>"}}`
    Response: `{"decision": true}` or `{"decision": false}`.
 
-2. **evaluations** – Batch of evaluation requests (multiple subject-action-resource checks in one call).
+2. **authzen_evaluations** – Batch of evaluation requests (multiple subject-action-resource checks in one call).
 
-3. **resource_search** – Search for resources the subject is authorized to access (e.g. "which records can user X view?"). Needs no resource id - an empty result IS the answer: the user has none they may access.
+3. **authzen_search_resource** – Search for resources the subject is authorized to access (e.g. "which records can user X view?"). Needs no resource id - an empty result IS the answer: the user has none they may access.
 
-4. **subject_search** – Search for subjects (e.g. who has access to this resource).
+4. **authzen_search_subject** – Search for subjects (e.g. who has access to this resource).
 
-5. **action_search** – Search for actions (e.g. what actions can this subject perform on this resource?).
+5. **authzen_search_action** – Search for actions (e.g. what actions can this subject perform on this resource?).
 
-Use the MCP tools that correspond to these operations (as exposed by the server). If the server exposes a single AuthZEN tool, pass the appropriate request shape for evaluation, evaluations, resource_search, subject_search, or action_search.
+Use the MCP tools that correspond to these operations (as exposed by the server). If the server exposes a single AuthZEN tool, pass the appropriate request shape for the evaluate, evaluations, or search operation.
 
 ## Request vocabulary - never guess it
 
@@ -47,8 +48,8 @@ project's policies accept.
 
 Decisions are rendered by the project's **KBAC policies**, which define the
 exact (subject type, action name, resource type) vocabulary. These are
-**case-sensitive knowledge-graph terms** (e.g. `User`, `Workflow`,
-`CAN_TRIGGER`), NOT generic REST words - `user`, `view`, `read`, or `execute`
+**case-sensitive knowledge-graph terms** (e.g. `Person`, `Workflow`,
+`CAN_TRIGGER`), NOT generic REST words - `person`, `view`, `read`, or `execute`
 will simply evaluate to `false`. A `false` from a made-up type or action is
 indistinguishable from a real denial, so:
 
@@ -68,7 +69,7 @@ indistinguishable from a real denial, so:
 ## When to use
 
 - User asks "can X do Y on Z?", "is X allowed to ...?", or similar permission questions - use evaluation when you hold a concrete resource id.
-- "Why can't I ..." / "which X can I ..." with no concrete id - prefer resource_search.
+- "Why can't I ..." / "which X can I ..." with no concrete id - prefer authzen_search_resource.
 - User asks for authorized resources, subjects, or actions (search-style AuthZEN requests).
 
 ## Workflow
@@ -78,5 +79,5 @@ indistinguishable from a real denial, so:
    query results, the conversation).
 2. Resolve `subject_id` for "I/me" questions via the self-profile query.
 3. Select and run the AuthZEN resource or tool that matches the request
-   (evaluation, evaluations, resource_search, subject_search, action_search)
-   and report the raw decision with a short plain-language explanation.
+   (authzen_evaluate, authzen_evaluations, authzen_search_resource,
+   authzen_search_subject, authzen_search_action) and report the raw decision with a short plain-language explanation.

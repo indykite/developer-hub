@@ -1,10 +1,11 @@
 ---
 name: ciq-execute
 description: Executes specific CIQ knowledge queries. Use this ONLY after receiving a resource list from 'list_resources'. Requires a valid 'id' and 'input_params'.
-user-invocable: false
-metadata:
-  tags: [mcp, analyst, ciq, knowledge-graph]
-  depends_on: "list_resources"
+tags:
+  - mcp
+  - analyst
+  - ciq
+  - knowledge-graph
 ---
 
 # CIQ Execute
@@ -17,7 +18,7 @@ the right input parameters.
 
 - **ciq_execute** – Executes a CIQ query. Arguments:
     - `id` (required): The query ID (e.g. a GID or name from the server).
-    - `input_params` (optional): JSON object of input parameters (e.g. `ticker`, `customer_external_id`, `user_external_id`).
+    - `input_params` (optional): JSON object of input parameters (e.g. `caller_id`, `license_plate`).
 
 ## When to use
 

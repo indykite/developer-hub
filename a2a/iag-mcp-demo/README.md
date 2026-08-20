@@ -30,12 +30,12 @@ is wired into the stack as an additional downstream agent the `orchestrator_agen
 delegate to - useful for demonstrating multi-agent routing behind the Indykite Agent
 Gateway.
 
-When the prompt mentions the subject's headquarters (keywords from
-`WEATHER_HQ_KEYWORDS` in the subject's `usecase.env`, e.g. `HQ`, `headquarters`,
+When the prompt mentions the usecase's headquarters (keywords from
+`WEATHER_HQ_KEYWORDS` in the usecase's `usecase.env`, e.g. `HQ`, `headquarters`,
 `office`) **and** `MCP_SERVER_URL` is configured, the agent takes a different path:
-it calls the subject's `get-hq-weather` knowledge query through the IndyKite MCP
+it calls the usecase's `get-hq-weather` knowledge query through the IndyKite MCP
 server. That query reads the `hq_weather` Weather node, whose `current` and `units`
-properties are populated live by the subject's `weather` and `weather-units`
+properties are populated live by the usecase's `weather` and `weather-units`
 external data resolvers (open-meteo). All other cities still go through the direct
 Open-Meteo path. See
 [`canbank/README.md`](../../canbank/README.md#external-data-resolvers) for the
@@ -63,12 +63,12 @@ jarvis-proto "WF4 - Parallel Multi-Agent MCP" e2e tests.
 
 ## `usecases`
 
-The demo's domain, packaged per subject (`canbank`, `insurance`): a
+The demo's domain, packaged per usecase (`canbank`, `insurance`): a
 `usecase.env` with the domain vocabulary, the per-agent skill files mounted
 into the containers, and a `DEMO_SCRIPT.md` with the suggested prompts and
-narrative. The agents, gateways, and compose topology stay subject-agnostic;
+narrative. The agents, gateways, and compose topology stay usecase-agnostic;
 see [`usecases/README.md`](usecases/README.md) for selecting and adding
-subjects.
+usecases.
 
 ## `drive_mcp`
 
@@ -89,7 +89,7 @@ MCP gateway and the [Google Drive section](#proxying-a-non-indykite-mcp-server-g
 for Drive.
 
 In short, the actual run sequence is:
-provision the IndyKite project (step 1) → `cp .example.env .env.<subject>`,
+provision the IndyKite project (step 1) → `cp .example.env .env.<usecase>`,
 fill it, and `./switch-usecase.sh <usecase>` (step 2) → `make` (step 3) →
 check the gateway image tag (step 4) → `docker compose up -d` (step 5) →
 log in at `http://localhost:3000` and prompt (step 6). For Google Drive,
@@ -107,9 +107,9 @@ before step 5.
   (`uv`, `poetry`, `venv` + `pip`) works if you prefer. You only need this
   locally if you plan to run or debug the services outside Docker; the
   `docker compose up` path installs everything inside the images.
-- **An IndyKite project** per subject, provisioned with that subject's data,
-  policies and queries (each subject lives in its own project; see
-  [`usecases/README.md`](usecases/README.md)). Both subjects provision with
+- **An IndyKite project** per usecase, provisioned with that usecase's data,
+  policies and queries (each usecase lives in its own project; see
+  [`usecases/README.md`](usecases/README.md)). Both usecases provision with
   **instant-stack**: `data/canbank` for **canbank** (`DATASET=canbank`) and
   `data/insurance` for **insurance** (`DATASET=insurance`; see
   [`usecases/insurance/DEMO_SCRIPT.md`](usecases/insurance/DEMO_SCRIPT.md)).
@@ -151,9 +151,9 @@ before step 5.
 - **(Optional) Gemini API key**, otherwise an **Ollama** instance reachable
   from Docker (default `http://host.docker.internal:11434`).
 
-### 2. Configure the subject's env file
+### 2. Configure the usecase's env file
 
-Each subject keeps a complete env file (`.env.canbank`, `.env.insurance`, …;
+Each usecase keeps a complete env file (`.env.canbank`, `.env.insurance`, …;
 gitignored) and `.env` is a symlink to the active one:
 
 ```bash
@@ -457,7 +457,7 @@ Two ways to see it:
 
 ### 6. Try the demo prompts
 
-See the active subject's demo script for the scripted tour:
+See the active usecase's demo script for the scripted tour:
 [`usecases/canbank/DEMO_SCRIPT.md`](usecases/canbank/DEMO_SCRIPT.md) or
 [`usecases/insurance/DEMO_SCRIPT.md`](usecases/insurance/DEMO_SCRIPT.md).
 Quick canbank prompts once you're logged in as **Leslie**:
