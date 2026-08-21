@@ -73,7 +73,8 @@ _FAILED_TO_EVALUATE = "failed to evaluate API access"
 # permissions into the IKG when the agent is created, and an event processed
 # while the IKG is still provisioning is dropped without retry - leaving the
 # agent permanently unauthorized (the capture then 401s "Invalid AppAgent JWT").
-IKG_READY_DEADLINE_SECONDS = 600
+# Aura instances can take 10-15 minutes, so allow 30 before giving up.
+IKG_READY_DEADLINE_SECONDS = 1800
 IKG_POLL_DELAY_SECONDS = 5
 # The agent's permissions are written in the same transaction as the create, so
 # a short fixed pause before the first capture is enough.
