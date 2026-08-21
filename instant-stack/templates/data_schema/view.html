@@ -1,0 +1,124 @@
+{% extends "layouts/base.html" %}
+{% block title %}Data Schema{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <h3 class="mb-2">Data Schema</h3>
+                    <p class="text-muted mb-4">The observed schema of the IndyKite Knowledge Graph, read from
+                        <code>GET /data-schema/v1/</code>. Type names, property names, and counts only - never the
+                        data itself.
+                        {% if graph_metadata.updated_at %}<br>Schema last updated: <code>{{ graph_metadata.updated_at }}</code>.{% endif %}
+                    </p>
+
+                    {% if status_code != 200 %}
+                        <div class="alert alert-warning" role="alert">
+                            <strong>No schema available</strong>
+                            {% if status_code == 404 %}
+                                - the project's graph is empty (nothing captured yet).
+                            {% elif status_code %}
+                                - the schema endpoint returned status {{ status_code }}.
+                            {% else %}
+                                - could not reach the schema endpoint (check <code>URL_ENDPOINTS</code> and
+                                <code>APP_TOKEN</code> in <code>.env</code>).
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="mb-4">
+                            <span class="badge bg-secondary me-2">{{ node_types|length }} node type{{ '' if node_types|length == 1 else 's' }}</span>
+                            <span class="badge bg-secondary me-2">{{ edges|length }} relationship combination{{ '' if edges|length == 1 else 's' }}</span>
+                            <span class="badge bg-secondary me-2">{{ total_nodes }} node{{ '' if total_nodes == 1 else 's' }}</span>
+                            <span class="badge bg-secondary">{{ total_edges }} relationship{{ '' if total_edges == 1 else 's' }}</span>
+                        </div>
+
+                        <!-- Node types -->
+                        <div class="card mb-4">
+                            <div class="card-header"><strong>Node types</strong></div>
+                            <div class="card-body p-0">
+                                {% for n in node_types %}
+                                <div class="p-3 {% if not loop.last %}border-bottom{% endif %}">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span><code>{{ n.name }}</code>
+                                            {% for label in n.user_defined_labels %}<span class="badge bg-dark ms-1">{{ label.name }}</span>{% endfor %}
+                                        </span>
+                                        <span class="badge bg-secondary">{{ n.node_count }} node{{ '' if n.node_count == 1 else 's' }}</span>
+                                    </div>
+                                    {% if n.properties %}
+                                    <table class="table table-sm mb-0 small">
+                                        <thead>
+                                            <tr><th style="width: 40%;">Property</th><th style="width: 15%;">Count</th><th>Types</th></tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for pname, pinfo in n.properties.items() | sort %}
+                                            <tr>
+                                                <td><code>{{ pname }}</code></td>
+                                                <td>{{ pinfo.count }}</td>
+                                                <td>{% for t in pinfo.types %}<span class="badge bg-info text-dark me-1">{{ t.type }}: {{ t.count }}</span>{% endfor %}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                    {% else %}
+                                    <p class="text-muted small mb-0">No properties observed.</p>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Relationships -->
+                        <div class="card mb-4">
+                            <div class="card-header"><strong>Relationships</strong></div>
+                            <div class="card-body p-0">
+                                {% for e in edges %}
+                                <div class="p-3 {% if not loop.last %}border-bottom{% endif %} d-flex justify-content-between align-items-center">
+                                    <span class="small">
+                                        <code>({{ e.source }})</code>
+                                        <span class="mx-1">-[<strong>{{ e.relation }}</strong>]-&gt;</span>
+                                        <code>({{ e.target }})</code>
+                                        {% if e.properties %}
+                                        <span class="text-muted ms-2">props: {% for pname in e.properties.keys() | sort %}<code>{{ pname }}</code>{% if not loop.last %}, {% endif %}{% endfor %}</span>
+                                        {% endif %}
+                                    </span>
+                                    <span class="badge bg-secondary">{{ e.count }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if raw_json %}
+                    <!-- Original response exactly as returned by GET /data-schema/v1/ -->
+                    <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <strong>Raw API response</strong>
+                            <button type="button" id="raw-toggle" class="btn btn-sm btn-secondary" onclick="toggleRawSchema()">Show raw JSON</button>
+                        </div>
+                        <div class="card-body d-none" id="raw-body">
+                            <p class="text-muted small mb-2">The original JGFv2 document returned by <code>GET /data-schema/v1/</code>.</p>
+                            <pre style="max-height: 600px; overflow-y: auto;">{{ raw_json }}</pre>
+                        </div>
+                    </div>
+                    <script>
+                        function toggleRawSchema() {
+                            var body = document.getElementById("raw-body");
+                            var btn = document.getElementById("raw-toggle");
+                            var hidden = body.classList.toggle("d-none");
+                            btn.textContent = hidden ? "Show raw JSON" : "Hide raw JSON";
+                        }
+                    </script>
+                    {% endif %}
+
+                    <div class="mt-4">
+                        <a href="{{ url_for('api_data_schema.view_schema') }}" class="btn btn-primary">Refresh</a>
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
