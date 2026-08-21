@@ -86,8 +86,9 @@ HTTP_SERVER_ERROR = 500
 # A fresh project's IKG database takes minutes to provision, and any data-plane
 # call before it is ACTIVE just errors (and pollutes the platform's per-pod
 # error caches). The project read exposes ikg_status (PENDING/ACTIVE/FAILED),
-# so wait on that - cheap config-plane polling with no side effects.
-IKG_READY_DEADLINE_SECONDS = 600
+# so wait on that - cheap config-plane polling with no side effects. Aura
+# instances can take 10-15 minutes, so allow 30 before giving up.
+IKG_READY_DEADLINE_SECONDS = 1800
 IKG_POLL_DELAY_SECONDS = 5
 # The platform assigns a fresh App Agent's API permissions in the same
 # transaction as the agent create, so a short settle after the config steps is
