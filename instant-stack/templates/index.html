@@ -160,6 +160,41 @@
                 </div>
             </div>
 
+            <!-- Data Schema Card: hidden until an async check confirms nodes AND
+                 relationships are captured, so the index never blocks on the
+                 platform call. -->
+            <div class="card mb-4 d-none" id="data-schema-card">
+                <div class="card-header">
+                    <h5 class="mb-0">Data Schema</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">The IKG has no up-front schema - it emerges from the captured data. Inspect the observed schema (node types with their properties and counts, and every <code>(source)-[relation]-&gt;(target)</code> combination) via <code>GET /data-schema/v1/</code>. Use it to copy exact type and property spellings before authoring Cypher, or to verify a capture landed.</p>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <a href="/api_data_schema/view" class="card h-100 text-decoration-none">
+                                <div class="card-body">
+                                    <h6 class="mb-2">View Data Schema</h6>
+                                    <p class="text-muted small mb-0">Observed node types, properties, and relationship combinations in the current graph.</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                // Reveal the Data Schema card only once the graph actually holds
+                // nodes and relationships. Done client-side so the page renders
+                // immediately instead of waiting on the platform schema call.
+                fetch("/api_data_schema/status")
+                    .then(function (r) { return r.ok ? r.json() : { captured: false }; })
+                    .then(function (d) {
+                        if (d && d.captured) {
+                            document.getElementById("data-schema-card").classList.remove("d-none");
+                        }
+                    })
+                    .catch(function () { /* leave the card hidden on any error */ });
+            </script>
+
             <!-- Authorization Card -->
             <div class="card mb-4">
                 <div class="card-header">
