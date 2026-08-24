@@ -949,6 +949,11 @@ def _get_access_token_from_context(context: RequestContext | None) -> str:
 CHATBOT_UPDATES_URL = os.getenv("CHATBOT_UPDATES_URL", "http://chatbot:3000/api/push-update").strip()
 
 
+# Strong references to in-flight report tasks: without this the event loop
+# holds only a weak reference and the task can be GC'd before it runs.
+_background_tasks: set = set()
+
+
 def _report_exchanged_token(token: str) -> None:
     """Post the exchanged bearer token to the console's audit terminal (fire-and-forget).
 
@@ -985,7 +990,9 @@ def _report_exchanged_token(token: str) -> None:
 
     # no running loop (sync caller): skip reporting
     with suppress(RuntimeError):
-        asyncio.get_running_loop().create_task(_post())
+        task = asyncio.get_running_loop().create_task(_post())
+        _background_tasks.add(task)
+        task.add_done_callback(_background_tasks.discard)
 
 
 # ---------------------------------------------------------------------------

@@ -2,11 +2,14 @@
 """Orchestrator agent - A2A-compliant agent (a2a-sdk>=1.1.0) that receives and relays messages to the retriever."""
 
 import asyncio
+import base64
+import json
 import logging
 import os
 import re
 import time
 import uuid
+from contextlib import suppress
 from contextvars import ContextVar
 from pathlib import Path
 from typing import Any
@@ -171,6 +174,55 @@ def _get_ik_token_from_context(context: "RequestContext | None") -> str:
         return ""
     req_headers = context.call_context.state.get("headers") or {}
     return (req_headers.get("x-ik-token") or req_headers.get("X-IK-Token") or "").strip()
+
+
+CHATBOT_UPDATES_URL = os.getenv("CHATBOT_UPDATES_URL", "http://chatbot:3000/api/push-update").strip()
+
+
+# Strong references to in-flight report tasks: without this the event loop
+# holds only a weak reference and the task can be GC'd before it runs.
+_background_tasks: set = set()
+
+
+def _report_exchanged_token(token: str) -> None:
+    """Post the exchanged bearer token to the console's audit terminal (fire-and-forget).
+
+    The gateways' audit events carry the decision and actors chain but not the
+    minted delegation token itself, so each agent reports the token it
+    received; the console renders it as a TOKEN card. Failures never affect
+    the request.
+    """
+    if not CHATBOT_UPDATES_URL:
+        return
+    subject = actor = "?"
+    try:
+        payload = token.split(".")[1]
+        claims = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
+        subject = claims.get("sub") or "?"
+        actor = (claims.get("act") or {}).get("sub") or "?"
+    except Exception:  # nosec B110 - opaque token: report it without claims  # noqa: S110
+        pass
+    event = {
+        "service": ORCHESTRATOR_AGENT_NAME,
+        "decision": "TOKEN_EXCHANGED",
+        "subject": subject,
+        "actor": actor,
+        "reason": token,
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    }
+
+    async def _post() -> None:
+        try:
+            async with httpx.AsyncClient(timeout=3) as client:
+                await client.post(CHATBOT_UPDATES_URL, json=event)
+        except Exception:
+            _logger.debug("Exchanged-token report to the console failed")
+
+    # no running loop (sync caller): skip reporting
+    with suppress(RuntimeError):
+        task = asyncio.get_running_loop().create_task(_post())
+        _background_tasks.add(task)
+        task.add_done_callback(_background_tasks.discard)
 
 
 # ---------------------------------------------------------------------------
@@ -767,6 +819,12 @@ class OrchestratorExecutor(AgentExecutor):
             raise HTTPException(status_code=401, detail="Authorization required")
         _current_access_token.set(access_token)
         _current_ik_token.set(_get_ik_token_from_context(context))
+
+        # Demo feature: the short-lived delegation token is intentionally
+        # surfaced in the console audit terminal to show the exchange chain;
+        # logs carry only a redacted fingerprint to avoid credential leaks.
+        _logger.info("Exchanged bearer token (redacted): %s...%s", access_token[:6], access_token[-6:])
+        _report_exchanged_token(access_token)
 
         # SDK 1.0: context.message.parts is list[Part]; Part.text is the text field directly.
         raw_text = ""

@@ -31,7 +31,7 @@
 
         <!-- Terminal sidebar -->
         <div class="terminal-container" id="terminalContainer">
-            <div class="terminal-title" style="font-weight: bold; margin-bottom: 10px;">Audit Log Terminal</div>
+            <div class="terminal-title"><span class="terminal-dot"></span>Audit Log Terminal</div>
             <div class="terminal-messages" id="terminalMessages"></div>
         </div>
 
@@ -186,10 +186,10 @@
         if (!message) return;
 
         terminalMessages.innerHTML = '';
-        seenMessages.clear();
+        clearAuditState();
         const startingLine = document.createElement('div');
-        startingLine.className = 'terminal-message system';
-        startingLine.textContent = `[system]\nSending new request...`;
+        startingLine.className = 'audit-divider';
+        startingLine.textContent = 'new request';
         terminalMessages.appendChild(startingLine);
         requestAnimationFrame(() => {
             terminalMessages.scrollTop = terminalMessages.scrollHeight;
@@ -303,22 +303,133 @@
     }
 
     let seenMessages = new Set();
-    function addTerminalMessage(event) {
-        const messageKey = `${event.service}:${event.reason}`;
-        if (seenMessages.has(messageKey)) {
-            return;
-        }
-        seenMessages.add(messageKey);
+    // Exchanged-token events are merged into the matching gateway card, keyed
+    // on subject:actor. pendingTokens holds tokens that arrive before their
+    // card (briefly; standalone fallback after a timeout).
+    const tokenTargets = new Map();
+    const pendingTokens = new Map();
 
-        const line = document.createElement('div');
-        line.className = `terminal-message ${event.decision.toLowerCase()}`;
-        line.textContent = `${event.timestamp}\n[${event.service}]\n\n[${event.subject}] is [${event.decision}] to invoke [${event.actor}]\n\nReason: ${event.reason}`;
-        terminalMessages.appendChild(line);
+    function clearAuditState() {
+        seenMessages.clear();
+        tokenTargets.clear();
+        for (const pending of pendingTokens.values()) clearTimeout(pending.timer);
+        pendingTokens.clear();
+    }
+
+    function formatAuditTime(timestamp) {
+        const parsed = new Date(timestamp);
+        if (isNaN(parsed.getTime())) return timestamp || '';
+        return parsed.toLocaleTimeString([], {hour12: false});
+    }
+
+    function attachDetails(card, label, value, extraClass) {
+        if (!value) return;
+        const details = document.createElement('details');
+        details.className = `audit-reason${extraClass ? ' ' + extraClass : ''}`;
+        const summary = document.createElement('summary');
+        summary.textContent = label;
+        const text = document.createElement('div');
+        text.textContent = value;
+        details.append(summary, text);
+        card.appendChild(details);
+    }
+
+    function renderAuditCard(event, decision) {
+        const card = document.createElement('div');
+        card.className = `audit-card ${decision}`;
+
+        const head = document.createElement('div');
+        head.className = 'audit-card-head';
+        const service = document.createElement('span');
+        service.className = 'audit-service';
+        service.textContent = event.service || 'unknown';
+        const time = document.createElement('span');
+        time.className = 'audit-time';
+        time.textContent = formatAuditTime(event.timestamp);
+        head.append(service, time);
+
+        const flow = document.createElement('div');
+        flow.className = 'audit-flow';
+        const subject = document.createElement('span');
+        subject.className = 'audit-principal';
+        subject.textContent = event.subject || '?';
+        const arrow = document.createElement('span');
+        arrow.className = 'audit-arrow';
+        arrow.textContent = '→';
+        const actor = document.createElement('span');
+        actor.className = 'audit-principal';
+        actor.textContent = event.actor || '?';
+        const badge = document.createElement('span');
+        badge.className = 'audit-badge';
+        badge.textContent = decision === 'authorized' ? 'AUTHORIZED'
+            : decision === 'token_exchanged' ? 'TOKEN'
+            : 'NOT AUTHORIZED';
+        flow.append(subject, arrow, actor, badge);
+
+        card.append(head, flow);
+        attachDetails(card, decision === 'token_exchanged' ? 'token' : 'reason', event.reason,
+            decision === 'token_exchanged' ? 'audit-token' : undefined);
+
+        terminalMessages.appendChild(card);
 
         // Ensure autoscroll after layout update
         requestAnimationFrame(() => {
             terminalMessages.scrollTop = terminalMessages.scrollHeight;
         });
+        return card;
+    }
+
+    function addTerminalMessage(event) {
+        const decision = (event.decision || '').toLowerCase();
+        const pairKey = `${event.subject}:${event.actor}`;
+
+        // Dedupe gateway audit events on service:reason. Skip for
+        // token_exchanged: event.reason is the full token, so keying on it would
+        // retain the credential in the Set (and bloat it) - the pairKey merge
+        // below is already idempotent for a repeated token hop.
+        if (decision !== 'token_exchanged') {
+            const messageKey = `${event.service}:${event.reason}`;
+            if (seenMessages.has(messageKey)) {
+                return;
+            }
+            seenMessages.add(messageKey);
+        }
+
+        if (decision === 'token_exchanged') {
+            const target = tokenTargets.get(pairKey);
+            if (target) {
+                const existing = target.querySelector('.audit-token div');
+                if (existing) {
+                    // Repeat hop for the same subject->actor pair: keep the
+                    // one card and refresh it with the latest token.
+                    existing.textContent = event.reason;
+                    const time = target.querySelector('.audit-time');
+                    if (time) time.textContent = formatAuditTime(event.timestamp);
+                } else {
+                    attachDetails(target, 'token', event.reason, 'audit-token');
+                }
+                return;
+            }
+            // Gateway card not rendered yet: hold the token briefly, then
+            // fall back to a standalone TOKEN card so it is never lost.
+            const previous = pendingTokens.get(pairKey);
+            if (previous) clearTimeout(previous.timer);
+            const timer = setTimeout(() => {
+                pendingTokens.delete(pairKey);
+                renderAuditCard(event, decision);
+            }, 4000);
+            pendingTokens.set(pairKey, {event, timer});
+            return;
+        }
+
+        const card = renderAuditCard(event, decision);
+        tokenTargets.set(pairKey, card);
+        const pending = pendingTokens.get(pairKey);
+        if (pending) {
+            clearTimeout(pending.timer);
+            pendingTokens.delete(pairKey);
+            attachDetails(card, 'token', pending.event.reason, 'audit-token');
+        }
     }
 
     let updatesSource;
