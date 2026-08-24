@@ -4,6 +4,7 @@
 import argparse
 import asyncio
 import base64
+import concurrent.futures
 import hashlib
 import json
 import logging
@@ -267,6 +268,34 @@ def _get_access_token():
     return session.get("access_token")
 
 
+def _collect_with_heartbeat(run_async):
+    """Drive run_async in a worker thread, yielding heartbeats while it runs.
+
+    Yields ("ping", None) every 2s while waiting, then one final
+    ("events", list) with the collected events. Not a context-managed executor:
+    `with ThreadPoolExecutor` calls shutdown(wait=True) on teardown, so a client
+    disconnect mid-task would block this worker until the orchestrator
+    round-trip finishes. Managed manually and shut down with wait=False instead.
+    """
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+    future = executor.submit(run_async)
+    try:
+        while True:
+            try:
+                events = future.result(timeout=2.0)
+            except concurrent.futures.TimeoutError:
+                yield "ping", None
+            else:
+                yield "events", events
+                return
+    except GeneratorExit:
+        # Client disconnected: don't block teardown on the worker thread.
+        future.cancel()
+        raise
+    finally:
+        executor.shutdown(wait=False, cancel_futures=True)
+
+
 def _stream_sse(message: str, context_id: str | None, access_token: str | None = None):
     """Collect stream fully in async context, then yield SSE.
 
@@ -291,8 +320,17 @@ def _stream_sse(message: str, context_id: str | None, access_token: str | None =
 
         return asyncio.run(collect_all())
 
+    # Run the orchestrator round-trip in a worker thread and keep bytes
+    # flowing to the browser meanwhile: a response body that stays silent for
+    # the whole task (5-200s) gets killed by stale keep-alives / middleboxes,
+    # surfacing as "Error in input stream" with the finished answer lost.
     try:
-        events = run_async()
+        events = []
+        for kind, payload in _collect_with_heartbeat(run_async):
+            if kind == "ping":
+                yield ": ping\n\n"
+            else:
+                events = payload
         if logger.isEnabledFor(logging.DEBUG):
             logger.debug("Received %d event(s) from orchestrator", len(events))
             for ev in events:

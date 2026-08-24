@@ -243,7 +243,7 @@ make new-analyst
 ```yaml
 services:
   iag-base:
-    image: indykite/agent-gateway:2.42.7   # or any newer tag from Docker Hub
+    image: indykite/agent-gateway:2.43.6   # or any newer tag from Docker Hub
 ```
 
 All gateways inherit this tag. `2.42.x` adds the `token_service` exchange
@@ -259,7 +259,7 @@ If you are on Apple Silicon, add a `platform` attribute:
 ```yaml
 services:
   iag-base:
-    image: indykite/agent-gateway:2.42.7
+    image: indykite/agent-gateway:2.43.6
     platform: linux/amd64
 ```
 
@@ -625,7 +625,7 @@ Each one shows the full chain in the audit terminal: `orchestrator-iag` →
   auth enforced).
 - **`manifest unknown` / `manifest for indykite/agent-gateway:<tag> not found`**:
   the pinned tag doesn't exist for your platform. Pick a valid one from
-  [Docker Hub](https://hub.docker.com/r/indykite/agent-gateway/tags) (`2.42.7`
+  [Docker Hub](https://hub.docker.com/r/indykite/agent-gateway/tags) (`2.43.6`
   is the tested pin; `2.21.1`+ has MCP proxying, `2.42.0`+ the Token Service
   block) and, on Apple Silicon, add `platform: linux/amd64`.
 - **OAuth redirect mismatch**: the Provider `console` client's redirect URL
