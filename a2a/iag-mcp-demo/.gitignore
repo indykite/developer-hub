@@ -66,6 +66,14 @@ htmlcov/
 # (keep the directory itself so the compose bind mount works on fresh clones)
 drive_mcp/.gdrive/*
 !drive_mcp/.gdrive/.gitkeep
+
+# CRM agent - Salesforce connected-app keypair (RFC 7523 signing): the private
+# key (and any cert) under keys/, plus the certificate the openssl command
+# writes at the app root before it is uploaded to the connected app.
+# (keep the keys/ directory itself so the compose bind mount works on fresh clones)
+crm_agent/keys/*
+!crm_agent/keys/.gitkeep
+sf-jwt.crt
 drive_mcp/.gdrive-server-credentials.json
 drive_mcp/gcp-oauth.keys.json
 

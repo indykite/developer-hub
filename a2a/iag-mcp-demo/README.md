@@ -55,6 +55,20 @@ isolated MCP sessions through the same `mcp-iag` gateway, with per-user
 authorization bound to each Bearer token. See
 [Parallel multi-agent MCP (WF4)](#parallel-multi-agent-mcp-wf4).
 
+## `crm_agent`
+
+An A2A agent that files **Salesforce cases on behalf of a person** (optional
+`crm` compose profile, insurance usecase). It receives the gateway-minted
+delegation token, then performs a second, standards-based token exchange - an
+OAuth 2.0 JWT Bearer assertion (RFC 7523) signed with the connected app's
+private key - for a Salesforce access token, and creates the Case via the
+REST API. The Case description records the delegated subject and the agent
+actor chain; both tokens surface in the console's audit terminal as TOKEN
+cards. No LLM: the orchestrator's `query_crm` tool composes the
+subject/description deterministically. Its workflow (`wf-crm`) is
+staff-only - a customer's request ends in a red DENY. See
+[Salesforce cases (profile `crm`)](#salesforce-cases-profile-crm).
+
 ## `bruno`
 
 Bruno collection of sample data, ciq queries and kbac queries, plus the
@@ -147,7 +161,8 @@ before step 5.
 - **Provider clients** for `console` (chatbot login), `indykiteagent`
   (orchestrator), `indykiteagent-2` (retriever), `indykiteagent-3`
   (weather), and `indykiteagent-4` (analyst): each with its secret.
-  The optional Drive MCP PoC additionally needs `indykiteagent-drive`.
+  The optional Drive MCP PoC additionally needs `indykiteagent-drive`, and
+  the optional CRM profile needs `indykiteagent-crm`.
 - **(Optional) Gemini API key**, otherwise an **Ollama** instance reachable
   from Docker (default `http://host.docker.internal:11434`).
 
@@ -202,13 +217,14 @@ LLM selection:
 The three in-repo services are built locally. There's a makefile for this:
 
 ```bash
-make                 # build chatbot, orchestrator-agent, retriever-agent, weather-agent, analyst-agent
+make                 # build chatbot, orchestrator-agent, retriever-agent, weather-agent, analyst-agent, crm-agent
 # or individually:
 make new-chatbot
 make new-orchestrator
 make new-retriever
 make new-weather
 make new-analyst
+make new-crm
 ```
 
 ### 4. Pin the Agent Gateway image tag
@@ -421,6 +437,61 @@ The chatbot console reaches Drive through the orchestrator's `query_drive`
 tool (enabled when `ANALYST_HOST` is set on the orchestrator, wired by
 default): console -> orchestrator -> analyst -> `drive-mcp-iag` -> Drive, with
 every hop introspected, authorized against the chains above, and audited.
+
+### Salesforce cases (profile `crm`)
+
+The `crm` compose profile (insurance usecase) adds a delegation story that
+lands in a **real third-party SaaS**: a staff login asks the console to open
+a case, and a Case appears in a Salesforce dev org, created on behalf of the
+delegated person:
+
+```text
+console -> orchestrator-iag -> orchestrator --query_crm--> crm-iag (wf-crm) -> crm_agent
+                                                                                |  RFC 7523 JWT (signed with the connected app's key)
+                                                                                +-> Salesforce /services/oauth2/token -> Case via REST
+```
+
+The CRM agent receives the gateway-minted delegation token, reads its `sub` +
+`act` chain, then exchanges a signed JWT Bearer assertion (RFC 7523) for a
+Salesforce access token and creates the Case - the description records
+"Filed on behalf of `<subject>` via agent chain ...". The audit terminal shows
+**two** TOKEN cards per run: the IndyKite delegation token and the Salesforce
+access token (redacted by default - it is a third-party credential; set
+`SF_REPORT_FULL_TOKEN=true` to display it in full).
+`wf-crm` is staff-only (`support`/`sales` hold `CAN_TRIGGER`;
+`james` does not), so the same prompt from the customer login ends in a red
+DENY - authorization by relationship.
+
+Setup, once (details in the insurance
+[`DEMO_SCRIPT.md`](usecases/insurance/DEMO_SCRIPT.md) prerequisites):
+
+1. A Salesforce Developer Edition org with a **classic Connected App**
+   (in new orgs first enable `Setup -> External Client App Settings ->
+   Allow creation of connected apps`; the External Client App UI does not
+   expose the JWT Bearer flow): Enable OAuth Settings, **Use digital
+   signatures** + upload the certificate, scopes `api` **and**
+   `refresh_token/offline_access`, policy "Admin approved users are
+   pre-authorized" + assign the integration user's profile.
+2. Generate the keypair
+   (`openssl req -x509 -newkey rsa:2048 -nodes -keyout crm_agent/keys/sf-jwt.key
+   -out sf-jwt.crt -days 365 -subj "/CN=iag-mcp-demo"`); upload `sf-jwt.crt`
+   to the connected app. Both files are gitignored; the private key stays at
+   `crm_agent/keys/sf-jwt.key` (mounted read-only). Make it readable by the
+   container's non-root user: `chmod 644 crm_agent/keys/sf-jwt.key`.
+3. Fill `.env`: `CRM_IDP_CLIENT_ID/SECRET` (`indykiteagent-crm`),
+   `IAG_CRM_HOST=crm-iag`, `SF_CONSUMER_KEY`, `SF_USERNAME`, and add `crm` to
+   `COMPOSE_PROFILES`. The dataset must carry the `wf-crm` workflow
+   (instant-stack `data/insurance`).
+
+The orchestrator registers `query_crm` only when `CRM_HOST` is set (empty in
+canbank - the tool, containers, and story are absent there). Unlike the other
+agents, the CRM agent's port is **not** published to the host: it trusts the
+gateway-verified delegation token for the on-behalf-of attribution written
+into Salesforce, so only `crm-iag` may reach it (internal network). Common errors:
+`invalid_grant / invalid assertion` = certificate/key mismatch or the app not
+yet propagated (2-10 min); `refresh_token scope is required ...` = missing
+`refresh_token` scope or the pre-authorization policy; a "permission error"
+reading credentials = the key file is not readable by uid 1001 (`chmod 644`).
 
 ### Parallel multi-agent MCP (WF4)
 

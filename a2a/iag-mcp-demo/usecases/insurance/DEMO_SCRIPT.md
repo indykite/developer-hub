@@ -19,8 +19,18 @@ Switch with `./switch-usecase.sh insurance` (relinks `.env` to
    queries (`get-self`, `get-home-insurance-access`, `get-family-overview`,
    `get-teens-driving-age`, `get-authorized-drivers`, `get-policy-documents`,
    `get-hq-weather`, `get-my-household`) plus `get-agent-workflows` for the
-   gateways, weather resolvers.
-2. **PDFs**: the six sample documents in [`documents/`](documents/) split
+   gateways, weather resolvers - and the CRM workflow (`wf-crm`, agent
+   `indykiteagent-crm`, `CAN_TRIGGER` from support and sales only).
+2. **Salesforce (CRM acts)**: a Developer Edition org with a connected app
+   for the OAuth 2.0 JWT Bearer flow (RFC 7523): generate a keypair
+   (`openssl req -x509 -newkey rsa:2048 -nodes -keyout crm_agent/keys/sf-jwt.key
+   -out sf-jwt.crt -days 365 -subj "/CN=iag-mcp-demo"`), upload `sf-jwt.crt`
+   to the connected app, enable OAuth + "Use digital signatures", scope
+   "Manage user data via APIs (api)", set the permitted-users policy to
+   "Admin approved users are pre-authorized" and assign the integration
+   user's profile. Fill `SF_CONSUMER_KEY`, `SF_USERNAME` in `.env`; also
+   create the `indykiteagent-crm` IdP client (`CRM_IDP_CLIENT_ID/SECRET`).
+3. **PDFs**: the six sample documents in [`documents/`](documents/) split
    into two groups with different homes.
 
    Three live **in the graph** (Document nodes in the policy library, full
@@ -83,7 +93,16 @@ token introspect binds `ikg_node_type: Person`). Staff are `Person`s who
    `staff-can-view-document` authorizes **all three** - Claims Handling
    Policy, Underwriting Guidelines, Home Policy Standard Terms. Note the two
    internal ones. (Contrast with Act 3.)
-6. "what are the knowledge queries?"
+6. "Open a Salesforce case for James Mitchell about his water-backup claim."
+   → the orchestrator routes to the CRM agent through `crm-iag` (`wf-crm`,
+   staff-only). Watch the audit terminal: the AUTHORIZED hop, the IndyKite
+   delegation TOKEN card, then a **second TOKEN card** - the Salesforce
+   access token minted via the OAuth 2.0 JWT Bearer flow (RFC 7523),
+   redacted by default (`SF_REPORT_FULL_TOKEN=true` shows it in full). The
+   answer carries the Case number and a link; the Case description records
+   "Filed on behalf of millicent via agent chain ..." - the delegation
+   chain lands in a real third-party SaaS.
+7. "what are the knowledge queries?"
 
 ## Act 2 - Sales: the teen-driver lead (log in as rebecca)
 
@@ -120,7 +139,11 @@ token introspect binds `ikg_node_type: Person`). Staff are `Person`s who
 4. "List the files in the Google Drive" → **NOT AUTHORIZED**: james may
    trigger the chat workflows but not `wf-drive` - watch the red DENY card
    in the audit terminal. Authorization working is best shown by a denial.
-5. "What's the weather at SecureHome HQ?" - works: `wf2` is granted.
+5. "Open a Salesforce case about my water-backup claim" → **NOT AUTHORIZED**:
+   `wf-crm` is staff-only (support/sales hold the `CAN_TRIGGER` edge, james
+   does not) - the same prompt millicent ran in Act 1 ends in a red DENY
+   here. Same tool, different person, different decision.
+6. "What's the weather at SecureHome HQ?" - works: `wf2` is granted.
 
 ## Act 4 - Documents and the wider stack (any staff login)
 
@@ -169,6 +192,31 @@ the retriever/graph path:
    Chicago `hq_weather` node; live conditions via the weather resolvers.
 9. "Can I trigger workflow wf1?" - AuthZEN with the `insurance-authz`
    vocabulary.
+
+CRM prompts (Salesforce, staff logins only - `wf-crm`). Each case lands in
+the connected dev org with the on-behalf-of person and the agent chain
+recorded in the description; watch for the **two** TOKEN cards per run
+(IndyKite delegation, then the Salesforce access token from the RFC 7523
+exchange):
+
+1. **Claim case** (millicent) - "Open a Salesforce case for James Mitchell
+   about his water-backup claim." - the Act 1 beat: case number + Lightning
+   link in the answer.
+2. **Sales follow-up** (rebecca) - "File a CRM case to follow up on the
+   teen-driver quote for Olivia Mitchell." - shows the sales department
+   holds `CAN_TRIGGER` on `wf-crm` too, not just support.
+3. **Structured subject** (any staff) - "Open a Salesforce case. Subject:
+   Policy renewal HI-2024-001. It is about renewing Sarah Mitchell's home
+   policy before the term ends." - the orchestrator passes an explicit
+   subject line; the case title matches it exactly.
+4. **Graph + CRM bridge** (millicent) - "What can James Mitchell (james) see
+   about the home insurance? Then open a Salesforce case asking underwriting
+   to add him as a named insured." - the retriever answers from the graph,
+   then the CRM agent files the follow-up case in the same conversation.
+5. **The denial** (james) - "Open a Salesforce case about my water-backup
+   claim" - the Act 3 beat: red NOT AUTHORIZED, because no `CAN_TRIGGER`
+   path links james to `wf-crm`. Same prompt millicent ran in 1, opposite
+   decision - authorization by relationship, not by feature flag.
 
 Watch the audit terminal throughout: every hop shows the gateway decision
 (subject → actor, AUTHORIZED / NOT AUTHORIZED, reason) and the exchanged

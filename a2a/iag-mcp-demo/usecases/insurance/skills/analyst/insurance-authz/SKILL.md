@@ -22,10 +22,10 @@ policies - the only (subject, action, resource) triples that can ever
 evaluate to `true` here. Use these exact, case-sensitive values in AuthZEN
 requests:
 
-| subject_type | action_name   | resource_type | known resource ids                                                                     |
-|--------------|---------------|---------------|----------------------------------------------------------------------------------------|
-| `Person`     | `CAN_TRIGGER` | `Workflow`    | `wf1`, `wf2`, `wf3`, `wf-drive`, `wf-drive-analyst`, `wf-drive-console`, `wf3-console` |
-| `Person`     | `CAN_VIEW`    | `Document`    | `claims_handling_policy`, `underwriting_guidelines`, `home_policy_terms`               |
+| subject_type | action_name   | resource_type | known resource ids                                                                               |
+|--------------|---------------|---------------|--------------------------------------------------------------------------------------------------|
+| `Person`     | `CAN_TRIGGER` | `Workflow`    | `wf1`, `wf2`, `wf3`, `wf-drive`, `wf-drive-analyst`, `wf-drive-console`, `wf3-console`, `wf-crm` |
+| `Person`     | `CAN_VIEW`    | `Document`    | `claims_handling_policy`, `underwriting_guidelines`, `home_policy_terms`                         |
 
 - **Every subject is a `Person`** - there is no `User` subject type in this
   dataset. Staff carry the `Employee` label and reach workflows and
@@ -36,8 +36,11 @@ requests:
   query if unknown.
 - Staff (via `Department -CAN_VIEW->`) can view all three documents and
   trigger every workflow.
+- `wf-crm` (Salesforce case filing) is staff-only: the departments hold the
+  `CAN_TRIGGER` edge, customers do not - a customer asking to open a CRM case
+  is denied by design.
 - Customer `james` (= James Mitchell) can trigger the chat workflows
-  (`wf1`/`wf2`/`wf3`) but NOT the Drive ones, and can view only
+  (`wf1`/`wf2`/`wf3`) but NOT the Drive ones or `wf-crm`, and can view only
   `home_policy_terms` - the customer-facing document the company publishes
   (`published-document-viewable` policy). Denials on the rest are by design.
 - Other household members (`adult-002`, `teen-001`, `teen-002`) are data
