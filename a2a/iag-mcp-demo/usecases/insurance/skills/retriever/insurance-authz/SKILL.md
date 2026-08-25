@@ -11,6 +11,7 @@ examples:
   - "Which workflows can I trigger?"
   - "Am I allowed to run the drive workflow?"
   - "Which documents can I view?"
+  - "Can Sarah (adult-002) see the insurance coverage details?"
 ---
 
 # SecureHome Insurance authorization vocabulary (dataset-specific)
@@ -45,6 +46,27 @@ requests:
   document / policy paper / terms -> `Document` + `CAN_VIEW`.
 - Any other type or action name (e.g. `User`, `user`, `view`, `execute`)
   evaluates to `false` regardless of the person's real permissions.
+
+## Not an AuthZEN question: policy DATA visibility
+
+Questions about what a person can see IN the insurance data - coverage
+details, premium, deductible, policy financials, household coverage - are
+NOT authorization checks. No KBAC policy covers `HomeInsurance` or any
+other data type, so an AuthZEN evaluation would return `false` regardless
+of the person's real access. Coverage visibility is graduated (the primary
+policyholder sees financials, other household members see less), and only
+the `get-home-insurance-access` knowledge query can express that.
+
+- "Can Sarah (adult-002) see the insurance coverage details?" -> run
+  `ciq_execute` with `{"id":"get-home-insurance-access","input_params":{"caller_id":"adult-002"}}` and
+  describe what the result shows her. Never answer "not authorized" to a
+  coverage-data question.
+- AuthZEN answers ONLY the two triples in the table above: may a person
+  TRIGGER a workflow, may a person VIEW a document.
+- "Why can't X see ..." presupposes a denial - never accept that premise
+  without running the tool. Run the query (or, for documents, the AuthZEN
+  check) first; if it shows access, correct the question: "She can - ..."
+  Never invent an authorization reason that no tool call produced.
 
 Maintenance note: keep this table in sync with the insurance dataset's KBAC
 policies (instant-stack `data/insurance/manifest.json`, `kbac` section).
