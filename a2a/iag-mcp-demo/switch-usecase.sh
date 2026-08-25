@@ -16,4 +16,6 @@ if grep -q "restore before switching" ".env.${name}"; then
 fi
 ln -sf ".env.${name}" .env
 echo "active usecase: ${name}"
-docker compose up -d
+# --remove-orphans stops containers of profile-gated pairs (drive, crm) that
+# the new usecase's COMPOSE_PROFILES no longer enables.
+docker compose up -d --remove-orphans

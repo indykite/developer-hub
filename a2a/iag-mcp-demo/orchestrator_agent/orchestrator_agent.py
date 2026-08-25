@@ -75,6 +75,12 @@ ANALYST_HOST = os.getenv("ANALYST_HOST", "").strip()
 ANALYST_PORT = int(os.getenv("ANALYST_PORT", "8885"))
 _ANALYST_DEFAULT_URL = f"http://{ANALYST_HOST}:{ANALYST_PORT}" if ANALYST_HOST else ""
 ANALYST_URL = (os.getenv("ANALYST_URL", "").strip() or _ANALYST_DEFAULT_URL).rstrip("/")
+# The CRM gateway relays Salesforce case prompts (crm-iag -> crm agent).
+# Empty CRM_HOST disables the query_crm tool (usecases without a CRM story).
+CRM_HOST = os.getenv("CRM_HOST", "").strip()
+CRM_PORT = int(os.getenv("CRM_PORT", "8888"))
+_CRM_DEFAULT_URL = f"http://{CRM_HOST}:{CRM_PORT}" if CRM_HOST else ""
+CRM_URL = (os.getenv("CRM_URL", "").strip() or _CRM_DEFAULT_URL).rstrip("/")
 ORCHESTRATOR_TIMEOUT = float(os.getenv("ORCHESTRATOR_TIMEOUT", "300"))
 _LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
@@ -399,6 +405,11 @@ async def _call_analyst(text: str) -> str:
     return await _call_agent(ANALYST_URL, text, _current_access_token.get())
 
 
+async def _call_crm(text: str) -> str:
+    """Send *text* to the CRM agent (Salesforce cases)."""
+    return await _call_agent(CRM_URL, text, _current_access_token.get())
+
+
 async def _call_agent_a2a(base_url: str, text: str, token: str) -> str:  # noqa: C901, PLR0912
     """Send *text* to a downstream A2A agent using card resolution and the SDK client."""
     headers: dict[str, str] = {}
@@ -527,6 +538,23 @@ async def query_drive(query: str) -> str:
         f"Google Drive request - answer ONLY with the drive_* tools (e.g. drive_search), "
         f"never with knowledge-graph or CIQ tools: {query}",
     )
+
+
+# ---------------------------------------------------------------------------
+# LangChain tool: query_crm
+# ---------------------------------------------------------------------------
+
+
+@tool
+async def query_crm(query: str) -> str:
+    """Forward a Salesforce case request to the CRM agent.
+
+    Use this for: opening/filing a support case or ticket in Salesforce or the
+    CRM, on behalf of a customer. Compose the argument as
+    'subject: <short case title>' on the first line, then the case description
+    (include who the case is for, e.g. 'on behalf of James Mitchell').
+    """
+    return await _call_crm(query)
 
 
 # ---------------------------------------------------------------------------
@@ -726,12 +754,21 @@ _DRIVE_PROMPT = (
     if ANALYST_URL
     else ""
 )
+# Same gating for the CRM tool: only steer towards query_crm when registered.
+_CRM_PROMPT = (
+    "For opening or filing a support case or ticket in Salesforce/the CRM, use query_crm and compose "
+    "its argument as 'subject: <title>' on the first line then the description, naming who the case "
+    "is for. Do not use query_retriever for Salesforce cases. "
+    if CRM_URL
+    else ""
+)
 _BASE_SYSTEM_PROMPT = (
     "You are an orchestrator. Your primary job is to relay prompts to downstream agents. "
     "Look at your available skills and choose the right one for each request. "
     "For weather/forecast/current conditions, use query_weather. "
     "Do not use query_retriever for weather. "
     + _DRIVE_PROMPT
+    + _CRM_PROMPT
     + "ALWAYS use the query_retriever tool for: MCP, MCP tools or resources, data retrieval, "
     "internal documents, real-time stock prices, "
     "questions about employees, enterprise data, authorization (AuthZEN), knowledge queries, or any "
@@ -751,6 +788,8 @@ _orchestrator_tools = ([_activate_skill_tool] if _activate_skill_tool is not Non
 ]
 if ANALYST_URL:
     _orchestrator_tools.append(query_drive)
+if CRM_URL:
+    _orchestrator_tools.append(query_crm)
 _llm_with_tools = _llm.bind_tools(_orchestrator_tools)
 
 orchestrator_card = AgentCard(
@@ -928,6 +967,10 @@ if __name__ == "__main__":
         _logger.info("Analyst URL (query_drive): %s", ANALYST_URL)
     else:
         _logger.info("ANALYST_HOST not set - query_drive tool disabled")
+    if CRM_URL:
+        _logger.info("CRM URL (query_crm): %s", CRM_URL)
+    else:
+        _logger.info("CRM_HOST not set - query_crm tool disabled")
     # uvicorn must bind to 0.0.0.0 inside Docker; safe because the container
     # network exposes only the intended port via compose.
     uvicorn.run(

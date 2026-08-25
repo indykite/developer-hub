@@ -26,6 +26,9 @@ services:
       - mcp-iag-network
       - analyst-iag-network
       - drive-mcp-iag-network
+      # Membership in every agent network lets the agents' exchanged-token
+      # webhooks reach http://chatbot:3000 (harmless when a profile is off).
+      - crm-iag-network
     volumes:
       - flask_session_data:/tmp/flask_session
     environment:
@@ -84,6 +87,7 @@ services:
       - retriever-iag-network
       - weather-iag-network
       - analyst-iag-network
+      - crm-iag-network
     environment:
       ADVERTISED_HOST: ${ORCHESTRATOR_HOST}
       ORCHESTRATOR_PORT: ${ORCHESTRATOR_PORT}
@@ -96,6 +100,10 @@ services:
       # through the analyst gateway; leave empty to disable the Drive tool.
       ANALYST_HOST: ${IAG_ANALYST_HOST}
       ANALYST_PORT: ${IAG_ANALYST_PORT}
+      # Routes query_crm (console -> orchestrator -> crm-iag -> crm agent ->
+      # Salesforce) through the CRM gateway; leave empty to disable the tool.
+      CRM_HOST: ${IAG_CRM_HOST:-}
+      CRM_PORT: ${IAG_CRM_PORT:-8888}
       GEMINI_ENABLED: ${GEMINI_ENABLED}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GEMINI_MODEL: ${GEMINI_MODEL}
@@ -255,6 +263,74 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+  #  Protects the CRM agent (Salesforce cases; insurance usecase only - leave
+  #  IAG_CRM_HOST empty in usecases without a CRM story to disable the route)
+  crm-iag:
+    extends:
+      service: iag-base
+      file: iag-base-docker.yaml
+    # Started only for usecases that enable the "crm" profile in their env
+    # file (COMPOSE_PROFILES in .env.<usecase>); the switch script's
+    # --remove-orphans stops the pair when switching to a usecase without it.
+    profiles: ["crm"]
+    ports:
+      - "${IAG_CRM_PORT:-8888}:${IAG_CRM_PORT:-8888}"
+    networks:
+      - crm-iag-network
+    environment:
+      K_SERVICE: crm-iag
+      JARVIS_SERVICE_NAME: crm-iag
+      JARVIS_SERVICE_PORT: ${IAG_CRM_PORT:-8888}
+      JARVIS_PROTECTED_AGENT_BASE_URL: http://${CRM_HOST:-crm}:${CRM_PORT:-6006}
+      # Defaults keep `docker compose up` warning-free with a .env predating
+      # the CRM pair - compose validates these specs even when the profile is
+      # disabled (same convention as the drive PoC).
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${CRM_IDP_CLIENT_ID:-}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${CRM_IDP_CLIENT_SECRET:-}
+      # The CRM agent runs its own workflow (wf-crm: staff -> orchestrator ->
+      # crm), not the base ${WORKFLOW_ID}. allowed_workflow_id is one value per
+      # gateway.
+      JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${CRM_WORKFLOW_ID:-wf-crm}
+    volumes:
+      - ./audit-config.yaml:/app/.configs/audit-config.yaml
+    command: ["--config=/app/.configs/audit-config.yaml"]
+
+  crm:
+    image: crm-agent:latest
+    #    platform: linux/amd64
+    #    build:
+    #      context: .
+    #      dockerfile: ./crm_agent/Dockerfile
+    profiles: ["crm"]
+    env_file:
+      - ./usecases/${USECASE:-canbank}/usecase.env
+    # Deliberately NOT published to the host: the agent trusts the delegation
+    # token it receives because crm-iag minted and verified it. A host port
+    # would allow bypassing the gateway with a self-crafted JWT, whose spoofed
+    # sub/act would be written into Salesforce as attribution. Only crm-iag
+    # reaches it, over the internal network.
+    networks:
+      - crm-iag-network
+    environment:
+      ADVERTISED_HOST: ${CRM_HOST:-crm}
+      CRM_PORT: ${CRM_PORT:-6006}
+      CRM_AGENT_NAME: crm_agent
+      # Salesforce connected app (OAuth 2.0 JWT Bearer flow, RFC 7523). The
+      # private key pairs with the certificate uploaded to the connected app;
+      # mounted read-only from ./crm_agent/keys (gitignored).
+      SF_LOGIN_URL: ${SF_LOGIN_URL:-https://login.salesforce.com}
+      SF_CONSUMER_KEY: ${SF_CONSUMER_KEY:-}
+      SF_USERNAME: ${SF_USERNAME:-}
+      SF_PRIVATE_KEY_FILE: ${SF_PRIVATE_KEY_FILE:-/app/keys/sf-jwt.key}
+      SF_API_VERSION: ${SF_API_VERSION:-v61.0}
+      LOG_LEVEL: ${LOG_LEVEL}
+      # Third-party (a2a/httpx) log level; DEBUG shows SDK event breadcrumbs.
+      LIB_LOG_LEVEL: ${LIB_LOG_LEVEL:-INFO}
+    volumes:
+      - ./crm_agent/keys:/app/keys:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   #  Protects the MCP server (MCP-protocol proxy mode)
   #  Single shared gateway that the retriever and weather agents call instead of
   #  hitting the MCP server directly, so MCP traffic is subject to the same
@@ -382,6 +458,8 @@ networks:
   weather-iag-network:
     driver: bridge
   analyst-iag-network:
+    driver: bridge
+  crm-iag-network:
     driver: bridge
   mcp-iag-network:
     driver: bridge

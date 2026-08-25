@@ -5229,7 +5229,19 @@
       "properties": []
     },
     {
+      "external_id": "wf-crm",
+      "type": "Workflow",
+      "is_identity": false,
+      "properties": []
+    },
+    {
       "external_id": "indykiteagent",
+      "type": "Agent",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "indykiteagent-crm",
       "type": "Agent",
       "is_identity": false,
       "properties": []

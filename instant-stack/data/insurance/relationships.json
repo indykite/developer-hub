@@ -3058,6 +3058,68 @@
     },
     {
       "source": {
+        "type": "Workflow",
+        "external_id": "wf-crm"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-crm"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "indykiteagent"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-crm"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-crm"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-crm"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "sales"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-crm"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
         "type": "Agent",
         "external_id": "indykiteagent-4"
       },
