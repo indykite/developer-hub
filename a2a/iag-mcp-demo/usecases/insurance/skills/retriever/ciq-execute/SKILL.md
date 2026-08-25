@@ -33,6 +33,11 @@ the right input parameters.
 - "Who is authorized to drive IL-ABC1234?" -> `{"id": "get-authorized-drivers", "input_params": {"license_plate": "IL-ABC1234"}}`
 - "What policy documents do we have?" -> `{"id": "get-policy-documents", "input_params": { }}`
 - "Show my household coverage" (logged-in customer, e.g. james) -> `{"id": "get-my-household", "input_params": { }}`
+- "Can Sarah Mitchell (adult-002) see the insurance coverage details?" -> `{"id": "get-home-insurance-access", "input_params": {"caller_id": "adult-002"}}` - a "can X see the policy/coverage" question is a data question: answer from what the query returns, not via AuthZEN
+- `get-home-insurance-access` requires `caller_id` = a Person's `external_id` (e.g. `james`, `adult-002`).
+  An address ("123 Oak Avenue"), policy number, or property is NOT a caller_id - never pass one as the parameter.
+  If the user asks for coverage details without naming a person, ask whose view they want (e.g. "Sarah, adult-002"
+  or "James, james") instead of answering "no data found": in this dataset coverage access is always relative to a person.
 
 ## Workflow
 
