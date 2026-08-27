@@ -221,3 +221,16 @@ exchange):
 Watch the audit terminal throughout: every hop shows the gateway decision
 (subject → actor, AUTHORIZED / NOT AUTHORIZED, reason) and the exchanged
 delegation token for that hop.
+
+**The why? beat** (requires the explain queries provisioned -
+`EXPLAIN_STAFF_QUERY_ID` / `EXPLAIN_DIRECT_QUERY_ID` in `.env`): click
+**why?** on any decision card and the console asks the live graph for the
+authorization path.
+
+- millicent's AUTHORIZED card → the modal draws
+  `(millicent)-[WORKS_IN]->(Customer Support)-[CAN_TRIGGER]->(wf1)` - the
+  exact relationship chain the KBAC policy matched.
+- james's red wf-crm DENY card (Act 3) → the modal draws james and `wf-crm`
+  as two disconnected nodes: **no path in the graph, that is the whole
+  reason**. Nothing was configured to deny him; the relationship is just
+  not there.

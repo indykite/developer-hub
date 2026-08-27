@@ -47,6 +47,25 @@ OAUTH_TOKEN_AUTH = (os.getenv("ID_SERVER_TOKEN_AUTH", "basic") or "basic").lower
 OAUTH_SCOPES = os.getenv("ID_SERVER_SCOPES", "openid profile email").strip()
 SECRET_KEY = os.getenv("FLASK_SECRET_KEY") or secrets.token_hex(32)
 
+# "Explain the decision": the audit cards' why? button renders the live
+# authorization path via two CIQ explain queries (staff leg + direct leg)
+# executed against the platform with the app-agent credentials. The feature is
+# hidden unless all four values are configured (same gating as other optional
+# routes). EXPLAIN_WORKFLOW_MAP ("service=wf,service=wf") lets the UI derive
+# the workflow id for DENY cards, whose reason text does not name it.
+INDYKITE_BASE_URL = (os.getenv("INDYKITE_BASE_URL") or "").strip().rstrip("/")
+APP_AGENT_CREDENTIALS_TOKEN = (os.getenv("APP_AGENT_CREDENTIALS_TOKEN") or "").strip()
+EXPLAIN_STAFF_QUERY_ID = (os.getenv("EXPLAIN_STAFF_QUERY_ID") or "").strip()
+EXPLAIN_DIRECT_QUERY_ID = (os.getenv("EXPLAIN_DIRECT_QUERY_ID") or "").strip()
+EXPLAIN_ENABLED = all(
+    (INDYKITE_BASE_URL, APP_AGENT_CREDENTIALS_TOKEN, EXPLAIN_STAFF_QUERY_ID, EXPLAIN_DIRECT_QUERY_ID),
+)
+EXPLAIN_WORKFLOW_MAP = {
+    svc.strip(): wf.strip()
+    for svc, _, wf in (pair.partition("=") for pair in (os.getenv("EXPLAIN_WORKFLOW_MAP") or "").split(","))
+    if svc.strip() and wf.strip()
+}
+
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
 # configure server-side session to make sure it works with Docker
@@ -241,6 +260,103 @@ def auth_callback():  # noqa: PLR0911, C901
         return redirect("/?error=" + urllib.parse.quote(str(e)[:100]))
 
 
+def _ciq_execute(query_id, input_params):
+    """Run one CIQ explain query against the platform; returns the data rows.
+
+    _Application-subject policy: the app-agent key alone authenticates - no
+    user token involved. An empty list means the policy matched nothing (for
+    the explain queries: no such path in the graph), not an error.
+    """
+    resp = httpx.post(
+        f"{INDYKITE_BASE_URL}/contx-iq/v1/execute",
+        headers={"Content-Type": "application/json", "X-IK-ClientKey": APP_AGENT_CREDENTIALS_TOKEN},
+        json={"id": query_id, "input_params": input_params},
+        timeout=20.0,
+    )
+    resp.raise_for_status()
+    return (resp.json() or {}).get("data") or []
+
+
+def _row_node(row_nodes, alias, node_type):
+    """Build one cytoscape node element from a CIQ row's alias.* keys, or None."""
+    ext_id = row_nodes.get(f"{alias}.external_id")
+    if not ext_id:
+        return None
+    label = row_nodes.get(f"{alias}.property.name") or row_nodes.get(f"{alias}.property.first_name") or ext_id
+    return {"data": {"id": ext_id, "label": label, "type": node_type}}
+
+
+def _explain_elements(subject_id, workflow_id):
+    """Query both explain legs and map the rows to cytoscape elements.
+
+    Edge types are known by construction (each leg's cypher fixes them), so
+    the queries declare only nodes and the edges are emitted here.
+    """
+    params = {"subject_id": subject_id, "workflow_id": workflow_id}
+    nodes, edges = {}, {}
+
+    def add_node(element):
+        if element:
+            nodes[element["data"]["id"]] = element
+        return element
+
+    def add_edge(source, target, rel):
+        if source and target:
+            key = f"{source['data']['id']}->{rel}->{target['data']['id']}"
+            edges[key] = {
+                "data": {"id": key, "source": source["data"]["id"], "target": target["data"]["id"], "label": rel},
+            }
+
+    # Staff leg: subject -WORKS_IN-> department -CAN_TRIGGER-> workflow.
+    # Alias "p" (insurance Person) or "u" (canbank User) - accept either.
+    for row in _ciq_execute(EXPLAIN_STAFF_QUERY_ID, params):
+        row_nodes = row.get("nodes") or {}
+        alias = "p" if "p.external_id" in row_nodes else "u"
+        subject = add_node(_row_node(row_nodes, alias, "Subject"))
+        department = add_node(_row_node(row_nodes, "d", "Department"))
+        workflow = add_node(_row_node(row_nodes, "wf", "Workflow"))
+        add_edge(subject, department, "WORKS_IN")
+        add_edge(department, workflow, "CAN_TRIGGER")
+
+    # Direct leg: subject -CAN_TRIGGER-> workflow.
+    for row in _ciq_execute(EXPLAIN_DIRECT_QUERY_ID, params):
+        row_nodes = row.get("nodes") or {}
+        alias = "p" if "p.external_id" in row_nodes else "u"
+        subject = add_node(_row_node(row_nodes, alias, "Subject"))
+        workflow = add_node(_row_node(row_nodes, "wf", "Workflow"))
+        add_edge(subject, workflow, "CAN_TRIGGER")
+
+    found = bool(edges)
+    if not found:
+        # Deny view: render the two endpoints disconnected.
+        nodes[subject_id] = {"data": {"id": subject_id, "label": subject_id, "type": "Subject"}}
+        nodes[workflow_id] = {"data": {"id": workflow_id, "label": workflow_id, "type": "Workflow"}}
+    return {"found": found, "elements": {"nodes": list(nodes.values()), "edges": list(edges.values())}}
+
+
+@app.route("/api/explain", methods=["GET"])
+def explain_decision():
+    """Explain an audit decision: return the live authorization path as cytoscape elements."""
+    if not EXPLAIN_ENABLED:
+        return jsonify({"error": "explain is not configured"}), 404
+    # The route spends the app-agent credentials: when the console has a login
+    # flow, require a session so anonymous callers can't probe the graph.
+    if ID_SERVER_BASE_URL and not session.get("access_token"):
+        return jsonify({"error": "authentication required"}), 401
+    subject_id = (request.args.get("subject") or "").strip()
+    workflow_id = (request.args.get("workflow") or "").strip()
+    if not subject_id or not workflow_id:
+        return jsonify({"error": "subject and workflow are required"}), 400
+    try:
+        return jsonify(_explain_elements(subject_id, workflow_id))
+    except httpx.HTTPStatusError as e:
+        logger.warning("Explain query failed: %s", e)
+        return jsonify({"error": f"explain query failed: {e.response.status_code}"}), 502
+    except httpx.HTTPError as e:
+        logger.warning("Explain query unreachable: %s", e)
+        return jsonify({"error": "platform unreachable"}), 502
+
+
 @app.route("/api/config", methods=["GET"])
 def get_config():
     """Public config for the frontend (e.g. logout URL from ID_SERVER_BASE_URL)."""
@@ -253,7 +369,15 @@ def get_config():
         if id_token:
             query_parts.append(f"id_token_hint={urllib.parse.quote(id_token, safe='')}")
         logout_url = f"{ID_SERVER_BASE_URL}/oauth-session/logout?{'&'.join(query_parts)}"
-    return jsonify({"logout_url": logout_url})
+    return jsonify(
+        {
+            "logout_url": logout_url,
+            # why? buttons on the audit cards (hidden when not configured);
+            # the map derives a DENY card's workflow id from its gateway name.
+            "explain_enabled": EXPLAIN_ENABLED,
+            "explain_workflow_map": EXPLAIN_WORKFLOW_MAP,
+        },
+    )
 
 
 @app.route("/api/auth/logout", methods=["POST"])

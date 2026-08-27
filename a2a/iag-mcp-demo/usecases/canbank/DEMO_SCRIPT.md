@@ -137,3 +137,12 @@ Watch the audit terminal throughout: every hop shows the gateway decision
 (subject → actor, AUTHORIZED / NOT AUTHORIZED, reason) and the exchanged
 delegation token for that hop - a new token with the user as the subject and
 the agent as the actor, so the agent provably acts on the user's behalf.
+
+**The why? beat** (requires the explain queries provisioned -
+`EXPLAIN_STAFF_QUERY_ID` / `EXPLAIN_DIRECT_QUERY_ID` in `.env`): click
+**why?** on any AUTHORIZED / NOT AUTHORIZED card and the console asks the
+live graph for the authorization path - e.g.
+`(leslie)-[WORKS_IN]->(Department)-[CAN_TRIGGER]->(wf1)`, or two
+disconnected nodes when no path exists (the denial explained). Capture a new
+`CAN_TRIGGER` edge and the same card's why? shows the path - authorization
+is data.

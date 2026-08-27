@@ -215,6 +215,40 @@
           "r_closed"
         ]
       }
+    },
+    {
+      "slot": "11",
+      "name": "explain-staff-workflow-access",
+      "display_name": "Explain Staff Workflow Access",
+      "description": "Authorization-path explainer for the console's why? cards: returns the staff path User -WORKS_IN-> Department -CAN_TRIGGER-> Workflow when it exists in the graph (empty data = no such path). Example: { \"id\": \"explain-staff-workflow-access\", \"input_params\": { \"subject_id\": \"millicent\", \"workflow_id\": \"wf1\" } }.",
+      "query": {
+        "nodes": [
+          "u.external_id",
+          "u.property.name",
+          "u.property.first_name",
+          "d.external_id",
+          "d.property.name",
+          "wf.external_id"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "12",
+      "name": "explain-direct-workflow-access",
+      "display_name": "Explain Direct Workflow Access",
+      "description": "Authorization-path explainer for the console's why? cards: returns the direct User -CAN_TRIGGER-> Workflow edge when it exists in the graph (empty data = no such path). Example: { \"id\": \"explain-direct-workflow-access\", \"input_params\": { \"subject_id\": \"james\", \"workflow_id\": \"wf1\" } }.",
+      "query": {
+        "nodes": [
+          "u.external_id",
+          "u.property.name",
+          "u.property.first_name",
+          "wf.external_id"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
     }
   ],
   "ciq_policies": [
@@ -554,6 +588,67 @@
         "canbank",
         "decisions",
         "write"
+      ]
+    },
+    {
+      "slot": "11",
+      "name": "explain-staff-workflow-access",
+      "display_name": "Explain Staff Workflow Access",
+      "description": "Read the User-Department-Workflow authorization path for the console explainer (CanBank).",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "_Application"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:_Application) MATCH (u:User {external_id: $subject_id})-[w:WORKS_IN]->(d:Department)-[t:CAN_TRIGGER]->(wf:Workflow {external_id: $workflow_id})",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "u.*",
+            "d.*",
+            "wf.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "explain",
+        "authorization"
+      ]
+    },
+    {
+      "slot": "12",
+      "name": "explain-direct-workflow-access",
+      "display_name": "Explain Direct Workflow Access",
+      "description": "Read the direct User-Workflow CAN_TRIGGER edge for the console explainer (CanBank).",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "_Application"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:_Application) MATCH (u:User {external_id: $subject_id})-[t:CAN_TRIGGER]->(wf:Workflow {external_id: $workflow_id})",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "u.*",
+            "wf.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "explain",
+        "authorization"
       ]
     }
   ],

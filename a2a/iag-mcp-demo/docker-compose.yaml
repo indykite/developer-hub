@@ -44,6 +44,19 @@ services:
       CHATBOT_REDIRECT_URL: http://${CHATBOT_HOST}:${CHATBOT_PORT}/auth/callback
       FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
       LOG_LEVEL: ${LOG_LEVEL}
+      # "Explain the decision" (why? cards): the chatbot runs the two explain
+      # CIQ queries against the platform with the app-agent credentials.
+      # Feature hidden when the query ids are unset. The map derives a DENY
+      # card's workflow id from its gateway name (deny reasons don't carry it).
+      INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
+      APP_AGENT_CREDENTIALS_TOKEN: ${APP_AGENT_CREDENTIALS_TOKEN}
+      EXPLAIN_STAFF_QUERY_ID: ${EXPLAIN_STAFF_QUERY_ID:-}
+      EXPLAIN_DIRECT_QUERY_ID: ${EXPLAIN_DIRECT_QUERY_ID:-}
+      EXPLAIN_WORKFLOW_MAP: >-
+        orchestrator-iag=${WORKFLOW_ID},retriever-iag=${WORKFLOW_ID},
+        mcp-iag=${WORKFLOW_ID},weather-iag=${WEATHER_WORKFLOW_ID:-},
+        analyst-iag=${ANALYST_WORKFLOW_ID:-},crm-iag=${CRM_WORKFLOW_ID:-},
+        drive-mcp-iag=${DRIVE_WORKFLOW_ID:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     command: python app.py --host 0.0.0.0 --port ${CHATBOT_PORT}
