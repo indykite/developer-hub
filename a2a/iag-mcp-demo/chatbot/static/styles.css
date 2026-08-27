@@ -398,3 +398,78 @@ body {
 
 .empty-state p { font-size: 16px; margin-bottom: 8px; }
 .empty-state p:last-child { font-size: 13px; opacity: 0.7; }
+
+/* ------------------------------------------------------------------ */
+/* "Explain the decision" - why? button + authorization-path modal    */
+/* ------------------------------------------------------------------ */
+
+.audit-why {
+    margin-left: auto;
+    padding: 1px 8px;
+    font-size: 10px;
+    color: #9ca3af;
+    background: transparent;
+    border: 1px solid #374151;
+    border-radius: 10px;
+    cursor: pointer;
+}
+.audit-why:hover {
+    color: #e5e7eb;
+    border-color: #6b7280;
+}
+
+.explain-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+.explain-modal {
+    width: min(680px, 92vw);
+    background: #111318;
+    border: 1px solid #2a2f3a;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+}
+.explain-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.explain-title {
+    font-weight: 600;
+    color: #e5e7eb;
+    font-size: 14px;
+}
+.explain-close {
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+}
+.explain-close:hover { color: #e5e7eb; }
+.explain-status {
+    font-size: 12px;
+    margin-bottom: 8px;
+    color: #9ca3af;
+}
+.explain-status.granted { color: #34d399; }
+.explain-status.denied { color: #f87171; }
+.explain-canvas {
+    height: 380px;
+    background: #1a1a1a;
+    border: 1px solid #2a2f3a;
+    border-radius: 8px;
+}
+.explain-hint {
+    margin-top: 8px;
+    font-size: 10px;
+    color: #6b7280;
+}

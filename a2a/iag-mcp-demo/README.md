@@ -493,6 +493,37 @@ yet propagated (2-10 min); `refresh_token scope is required ...` = missing
 `refresh_token` scope or the pre-authorization policy; a "permission error"
 reading credentials = the key file is not readable by uid 1001 (`chmod 644`).
 
+### Explain the decision (why? cards)
+
+Every AUTHORIZED / NOT AUTHORIZED card in the console's audit terminal can
+carry a **why?** button that renders the authorization path behind the
+decision, live from the graph:
+
+```text
+why? click -> chatbot GET /api/explain?subject=millicent&workflow=wf1
+           -> POST {INDYKITE_BASE_URL}/contx-iq/v1/execute   (app-agent key)
+              explain-staff-workflow-access  + explain-direct-workflow-access
+           -> cytoscape modal: (millicent)-[WORKS_IN]->(Support)-[CAN_TRIGGER]->(wf1)
+```
+
+The two `_Application`-subject explain queries mirror the KBAC policy's two
+path shapes with every hop aliased (a `*..3` pattern cannot expose its
+intermediate nodes): the staff leg `Subject-[WORKS_IN]->Department-
+[CAN_TRIGGER]->Workflow` and the direct leg `Subject-[CAN_TRIGGER]->Workflow`.
+A **denial renders as the two nodes with no connecting path** - the graph
+shows *why not*. Since the query runs live, changing the graph mid-demo
+(capture a new `CAN_TRIGGER` edge) changes the answer on the next click.
+
+Setup: the queries ship in both datasets (instant-stack `data/canbank` slots
+11/12, `data/insurance` slots 10/11 - subject `User` vs `Person`); provision
+them and put the two gids in `.env` (`EXPLAIN_STAFF_QUERY_ID`,
+`EXPLAIN_DIRECT_QUERY_ID`). The buttons appear only when both are set. The
+audit events don't carry the workflow id, so the UI parses it from the
+AUTHORIZED reason text and falls back to a gateway->workflow map
+(`EXPLAIN_WORKFLOW_MAP`, assembled in compose from the `*_WORKFLOW_ID` vars)
+for DENY cards. Cytoscape is vendored at
+`chatbot/static/assets/js/cytoscape.min.js` (no CDN).
+
 ### Parallel multi-agent MCP (WF4)
 
 Mirrors the jarvis-proto e2e suite *"12 IAG Tests / 06 WF4 - Parallel
