@@ -3,12 +3,20 @@ version: '3.9'
 
 services:
   iag-base:
-    # Pinned: 2.42.x adds the token_service block (delegation minted by the
-    # IndyKite Token Service; delegated token travels in X-IK-Token, policies
-    # read it as $ik_token). 2.21.1 was the previous pin (first with MCP
-    # proxying). All gateways share this tag.
+    # Pinned: 2.47.0+ reads the incoming X-IK-Token in token-service mode
+    # (introspected at the Token Service, subject of this hop's exchange), so
+    # multi-hop A2A delegation chains grow hop by hop. 2.42.x added the
+    # token_service block (delegation minted by the IndyKite Token Service;
+    # travels in X-IK-Token, policies read it as $ik_token); 2.21.1 was the
+    # first tag with MCP proxying. All gateways share this tag.
     # See https://hub.docker.com/r/indykite/agent-gateway/tags.
-    image: indykite/agent-gateway:2.43.6
+    image: indykite/agent-gateway:2.48.0
+    # The image bakes a HEALTHCHECK on :9080/healthz, but the 2.48.0 gateway
+    # binary registers no healthcheck server and every service-port route
+    # needs auth (the probe insists on a 200), so every gateway would sit
+    # "unhealthy" forever. Disable it - a plain "Up" is the honest status.
+    healthcheck:
+      disable: true
     environment:
       JARVIS_SERVICE_LOG_LEVEL: debug
       JARVIS_SERVICE_ENVIRONMENT: demo
@@ -17,13 +25,15 @@ services:
       JARVIS_IDENTITY_PROVIDER_CLIENT_CREDENTIAL_ENDPOINT: "oauth-token"
       JARVIS_IDENTITY_PROVIDER_EXCHANGE_ENDPOINT: "oauth-token"
       # NOTE on the Token Service (JARVIS_TOKEN_SERVICE_*): it is enabled per
-      # gateway in docker-compose.yaml, NOT here. On 2.42.0 a gateway in
-      # token-service mode keeps the user's raw token in Authorization and
-      # ignores incoming X-IK-Token when building the actors chain, so
-      # multi-hop A2A chains cannot grow. The A2A gateways therefore keep the
-      # classic IdP exchange (chain travels in Authorization), and only the
-      # MCP gateways - the last hop before the platform - mint their
-      # delegation at the Token Service.
+      # gateway in docker-compose.yaml, NOT here. Since 2.47.0 a gateway in
+      # token-service mode reads the incoming X-IK-Token (introspects it at
+      # the Token Service, requires its sub to match the access token) and
+      # exchanges IT, so the act chain nests hop by hop - the A2A gateways
+      # now mint their delegation at the Token Service (user token stays in
+      # Authorization, chain travels in X-IK-Token). The MCP gateways keep
+      # the classic IdP exchange until the platform MCP server that validates
+      # delegated tokens (mcp-server 2.49.0) is rolled out to the target
+      # environment - see the notes on mcp-iag / drive-mcp-iag.
       JARVIS_CONTX_IQ_BASE_URL: ${INDYKITE_BASE_URL}/contx-iq/v1
       JARVIS_CONTX_IQ_QUERY_ID: ${CIQ_QUERY_ID}
       JARVIS_CONTX_IQ_APP_AGENT_CREDENTIALS_TOKEN: ${APP_AGENT_CREDENTIALS_TOKEN}

@@ -243,23 +243,26 @@ make new-analyst
 ```yaml
 services:
   iag-base:
-    image: indykite/agent-gateway:2.43.6   # or any newer tag from Docker Hub
+    image: indykite/agent-gateway:2.48.0   # or any newer tag from Docker Hub
 ```
 
-All gateways inherit this tag. `2.42.x` adds the `token_service` exchange
-block (delegation minted by the IndyKite Token Service, travelling in
-`X-IK-Token`); `2.21.1` was the first tag with MCP proxying
-(`JARVIS_PROTECTED_AGENT_PROTOCOL: mcp`), which the `mcp-iag` and
-`drive-mcp-iag` services need - the published `2.0.x` tags ignore the protocol
-and 404 every MCP method after the auth pipeline passes. Avoid floating tags
-like `latest` so the demo behaviour is reproducible.
+All gateways inherit this tag. `2.47.0` makes a gateway in token-service mode
+read the incoming `X-IK-Token` (introspected at the Token Service, used as
+the subject of this hop's exchange), so multi-hop A2A delegation chains grow
+hop by hop - the minimum for the A2A gateways' token-service mode. `2.42.x`
+added the `token_service` exchange block itself (delegation minted by the
+IndyKite Token Service, travelling in `X-IK-Token`); `2.21.1` was the first
+tag with MCP proxying (`JARVIS_PROTECTED_AGENT_PROTOCOL: mcp`), which the
+`mcp-iag` and `drive-mcp-iag` services need - the published `2.0.x` tags
+ignore the protocol and 404 every MCP method after the auth pipeline passes.
+Avoid floating tags like `latest` so the demo behaviour is reproducible.
 
 If you are on Apple Silicon, add a `platform` attribute:
 
 ```yaml
 services:
   iag-base:
-    image: indykite/agent-gateway:2.43.6
+    image: indykite/agent-gateway:2.48.0
     platform: linux/amd64
 ```
 
@@ -276,8 +279,12 @@ for different releases.
 
 ### Token Service setup
 
-The Token Service issues the exchanged (delegation) tokens for the MCP
-gateways. Full build/config/run details live in
+The Token Service issues the exchanged (delegation) tokens for the A2A
+gateways (the MCP gateways join once the platform's mcp-server `2.49.0` -
+which validates the `X-IK-Token` delegated token and accepts any Token
+Introspect config of the app space - is rolled out to the target
+environment; see the notes in `docker-compose.yaml`). Full
+build/config/run details live in
 [`token-service/README.md`](token-service/README.md); in short:
 
 1. **Build the image** from the jarvis repository

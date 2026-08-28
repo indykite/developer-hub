@@ -361,9 +361,14 @@
         actor.textContent = event.actor || '?';
         const badge = document.createElement('span');
         badge.className = 'audit-badge';
+        // Token-service audits carry their own decision vocabulary (RFC 7662
+        // introspections, exchange refusals) - label each precisely instead
+        // of defaulting every unknown decision to NOT AUTHORIZED.
         badge.textContent = decision === 'authorized' ? 'AUTHORIZED'
             : decision === 'token_exchanged' ? 'TOKEN'
-            : 'NOT AUTHORIZED';
+            : decision === 'introspected' ? 'INTROSPECTED'
+            : decision === 'not_authorized' ? 'NOT AUTHORIZED'
+            : decision.toUpperCase().replaceAll('_', ' ');
         flow.append(subject, arrow, actor, badge);
 
         card.append(head, flow);

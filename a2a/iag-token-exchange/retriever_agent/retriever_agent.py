@@ -971,16 +971,20 @@ CHATBOT_UPDATES_URL = os.getenv("CHATBOT_UPDATES_URL", "http://chatbot:3000/api/
 _background_tasks: set = set()
 
 
-def _report_exchanged_token(token: str) -> None:
+def _report_exchanged_token(token: str, delegation: str = "") -> None:
     """Post the exchanged bearer token to the console's audit terminal (fire-and-forget).
 
     The gateways' audit events carry the decision and actors chain but not the
     minted delegation token itself, so each agent reports the token it
-    received; the console renders it as a TOKEN card. Failures never affect
-    the request.
+    received; the console renders it as a TOKEN card. In token-service mode
+    the delegation travels in X-IK-Token beside the user's own bearer, so the
+    caller passes it too and the card shows the chained token; without one
+    (classic mode) the Authorization bearer already carries the chain.
+    Failures never affect the request.
     """
     if not CHATBOT_UPDATES_URL:
         return
+    token = delegation or token
     subject = actor = "?"
     try:
         payload = token.split(".")[1]
@@ -1518,7 +1522,7 @@ class RetrieverExecutor(AgentExecutor):
         # surfaced in the console audit terminal to show the exchange chain;
         # logs carry only a redacted fingerprint to avoid credential leaks.
         _logger.info("Exchanged bearer token (redacted): %s...%s", access_token[:6], access_token[-6:])
-        _report_exchanged_token(access_token)
+        _report_exchanged_token(access_token, _current_ik_token.get())
 
         await _process_retriever_request(context, event_queue, access_token)
 

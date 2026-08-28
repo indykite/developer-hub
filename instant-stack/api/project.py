@@ -64,9 +64,10 @@ def update_env_variable(key, value):
 def clean_env_file():
     """Remove the project-owned environment variables from the .env file.
 
-    Keeps SA_TOKEN, URL_ENDPOINTS, ORGANIZATION_ID, and DATASET - settings not
-    owned by the project lifecycle - so deleting a project doesn't silently
-    switch the app back to the default dataset.
+    Keeps SA_TOKEN, URL_ENDPOINTS, ORGANIZATION_ID, DATASET and
+    TOKEN_SERVICE_PUBLIC_JWK - settings not owned by the project lifecycle -
+    so deleting a project doesn't silently switch the app back to the default
+    dataset or drop the token-service key the canbank-ts manifest resolves.
     """
     env_file = Path(__file__).parent.parent / ".env"
 
@@ -81,7 +82,10 @@ def clean_env_file():
     # Settings not owned by the project lifecycle survive the cleanup. DATASET
     # selects which data/<name>/ bundle is active - dropping it would flip the
     # app back to the default dataset after every project deletion.
-    keep_vars = ["SA_TOKEN", "URL_ENDPOINTS", "ORGANIZATION_ID", "DATASET"]
+    # TOKEN_SERVICE_PUBLIC_JWK belongs to the local token-service deployment,
+    # not to any project - the canbank-ts manifest resolves it via a
+    # ${TOKEN_SERVICE_PUBLIC_JWK} placeholder on the next provisioning run.
+    keep_vars = ["SA_TOKEN", "URL_ENDPOINTS", "ORGANIZATION_ID", "DATASET", "TOKEN_SERVICE_PUBLIC_JWK"]
     updated_lines = []
     removed_keys = []
 
@@ -111,7 +115,9 @@ def clean_env_file():
     for var in removed_keys:
         os.environ.pop(var, None)
 
-    logger.info("Cleaned .env file, keeping SA_TOKEN, URL_ENDPOINTS, ORGANIZATION_ID, and DATASET")
+    logger.info(
+        "Cleaned .env file, keeping SA_TOKEN, URL_ENDPOINTS, ORGANIZATION_ID, DATASET, and TOKEN_SERVICE_PUBLIC_JWK",
+    )
 
 
 class Unauthorized(BaseModel):

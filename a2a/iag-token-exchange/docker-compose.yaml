@@ -51,6 +51,14 @@ services:
   # Authorization header (policies read it as $ik_token). See token-service/.
   token-service:
     image: token-service:local
+    # The jarvis base image bakes a HEALTHCHECK on :9080/healthz, which only
+    # the gateway binary serves - the token-service binary does not register
+    # the healthcheck module, so probe the real endpoint instead.
+    healthcheck:
+      test: ["CMD", "/bin/http_health_probe", "http://localhost:8102/.well-known/openid-configuration"]
+      interval: 10s
+      timeout: 1s
+      start_period: 10s
     ports:
       - "${TOKEN_SERVICE_PORT:-8102}:8102"
     networks:
@@ -82,6 +90,16 @@ services:
       JARVIS_PROTECTED_AGENT_BASE_URL: http://${ORCHESTRATOR_HOST}:${ORCHESTRATOR_PORT}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${ORCHESTRATOR_IDP_CLIENT_ID}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${ORCHESTRATOR_IDP_CLIENT_SECRET}
+      # Token Service mode (gateway >= 2.47.0): delegation minted at the
+      # self-hosted Token Service; the user's token stays in Authorization,
+      # the chain travels in X-IK-Token and nests hop by hop. Comment the
+      # block out to fall back to the classic IdP exchange.
+      JARVIS_TOKEN_SERVICE_BASE_URL: ${TOKEN_SERVICE_BASE_URL:-http://token-service:8102}
+      JARVIS_TOKEN_SERVICE_EXCHANGE_ENDPOINT: "oauth2/token"
+      JARVIS_TOKEN_SERVICE_INTROSPECT_ENDPOINT: "oauth2/introspect"
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_TYPE: client_secret_basic
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_ID: ${TOKEN_SERVICE_CLIENT_ID:-agent-gateway}
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_SECRET: ${TOKEN_SERVICE_CLIENT_SECRET}
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]
@@ -138,6 +156,13 @@ services:
       JARVIS_PROTECTED_AGENT_BASE_URL: http://${RETRIEVER_HOST}:${RETRIEVER_PORT}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${RETRIEVER_IDP_CLIENT_ID}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${RETRIEVER_IDP_CLIENT_SECRET}
+      # Token Service mode (gateway >= 2.47.0) - see orchestrator-iag.
+      JARVIS_TOKEN_SERVICE_BASE_URL: ${TOKEN_SERVICE_BASE_URL:-http://token-service:8102}
+      JARVIS_TOKEN_SERVICE_EXCHANGE_ENDPOINT: "oauth2/token"
+      JARVIS_TOKEN_SERVICE_INTROSPECT_ENDPOINT: "oauth2/introspect"
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_TYPE: client_secret_basic
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_ID: ${TOKEN_SERVICE_CLIENT_ID:-agent-gateway}
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_SECRET: ${TOKEN_SERVICE_CLIENT_SECRET}
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]
@@ -194,6 +219,13 @@ services:
       # The weather agent runs wf2 (weather -> mcp), not the base ${WORKFLOW_ID}
       # (wf1). allowed_workflow_id is a single value per gateway.
       JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${WEATHER_WORKFLOW_ID}
+      # Token Service mode (gateway >= 2.47.0) - see orchestrator-iag.
+      JARVIS_TOKEN_SERVICE_BASE_URL: ${TOKEN_SERVICE_BASE_URL:-http://token-service:8102}
+      JARVIS_TOKEN_SERVICE_EXCHANGE_ENDPOINT: "oauth2/token"
+      JARVIS_TOKEN_SERVICE_INTROSPECT_ENDPOINT: "oauth2/introspect"
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_TYPE: client_secret_basic
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_ID: ${TOKEN_SERVICE_CLIENT_ID:-agent-gateway}
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_SECRET: ${TOKEN_SERVICE_CLIENT_SECRET}
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]
@@ -217,6 +249,13 @@ services:
       # The analyst runs its own workflow (wf3: millicent -> analyst -> mcp), not the
       # base ${WORKFLOW_ID} (wf1). allowed_workflow_id is a single value per gateway.
       JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${ANALYST_WORKFLOW_ID}
+      # Token Service mode (gateway >= 2.47.0) - see orchestrator-iag.
+      JARVIS_TOKEN_SERVICE_BASE_URL: ${TOKEN_SERVICE_BASE_URL:-http://token-service:8102}
+      JARVIS_TOKEN_SERVICE_EXCHANGE_ENDPOINT: "oauth2/token"
+      JARVIS_TOKEN_SERVICE_INTROSPECT_ENDPOINT: "oauth2/introspect"
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_TYPE: client_secret_basic
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_ID: ${TOKEN_SERVICE_CLIENT_ID:-agent-gateway}
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_SECRET: ${TOKEN_SERVICE_CLIENT_SECRET}
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]
@@ -276,12 +315,20 @@ services:
       - mcp-iag-network
     environment:
       K_SERVICE: mcp-iag
-      # Token Service mode is OFF for now: the platform's MCP endpoint gates
-      # Authorization on a single bound issuer+audience shape, which requires
-      # the classic final IdP exchange (aud = this gateway's client). Set the
-      # JARVIS_TOKEN_SERVICE_* block here once the platform supports the
-      # per-path audiences (see token-service/README.md and the findings
-      # report).
+      # Token Service mode is ON (verified 2026-08-28: RC runs mcp-server
+      # 2.49.0 - a garbage X-IK-Token gets 400 invalid_request naming the
+      # header). The platform no longer gates Authorization on the single
+      # bound issuer+audience shape (any Token Introspect config of the app
+      # space authenticates) and validates the X-IK-Token delegation itself.
+      # This block is REQUIRED while the A2A gateways run token-service
+      # mode: their chain travels in X-IK-Token, which a classic-mode
+      # gateway ignores - mixed modes on one path break the chain.
+      JARVIS_TOKEN_SERVICE_BASE_URL: ${TOKEN_SERVICE_BASE_URL:-http://token-service:8102}
+      JARVIS_TOKEN_SERVICE_EXCHANGE_ENDPOINT: "oauth2/token"
+      JARVIS_TOKEN_SERVICE_INTROSPECT_ENDPOINT: "oauth2/introspect"
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_TYPE: client_secret_basic
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_ID: ${TOKEN_SERVICE_CLIENT_ID:-agent-gateway}
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_SECRET: ${TOKEN_SERVICE_CLIENT_SECRET}
       JARVIS_SERVICE_NAME: mcp-iag
       JARVIS_SERVICE_PORT: ${IAG_MCP_PORT}
       # Switch the gateway out of the default "a2a" proxy mode into MCP proxy mode.
@@ -349,12 +396,13 @@ services:
       - drive-mcp-iag-network
     environment:
       K_SERVICE: drive-mcp-iag
-      # Token Service mode is OFF for now: the platform's MCP endpoint gates
-      # Authorization on a single bound issuer+audience shape, which requires
-      # the classic final IdP exchange (aud = this gateway's client). Set the
-      # JARVIS_TOKEN_SERVICE_* block here once the platform supports the
-      # per-path audiences (see token-service/README.md and the findings
-      # report).
+      # Token Service mode is ON - same block and reasoning as mcp-iag.
+      JARVIS_TOKEN_SERVICE_BASE_URL: ${TOKEN_SERVICE_BASE_URL:-http://token-service:8102}
+      JARVIS_TOKEN_SERVICE_EXCHANGE_ENDPOINT: "oauth2/token"
+      JARVIS_TOKEN_SERVICE_INTROSPECT_ENDPOINT: "oauth2/introspect"
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_TYPE: client_secret_basic
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_ID: ${TOKEN_SERVICE_CLIENT_ID:-agent-gateway}
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_SECRET: ${TOKEN_SERVICE_CLIENT_SECRET}
       JARVIS_SERVICE_NAME: drive-mcp-iag
       JARVIS_SERVICE_PORT: ${IAG_DRIVE_MCP_PORT:-8887}
       # MCP proxy mode, same as mcp-iag.

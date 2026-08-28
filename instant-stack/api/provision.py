@@ -203,11 +203,14 @@ def _mcp_server_payload():
     }
 
 
-def _token_introspect_payload():
+def _token_introspect_payload(index: int = 0):
     # Mirrors the /api_token_introspect/create form: JSON-valued fields are
     # posted as JSON strings, perform_upsert as a "true"/"false" string. Values
-    # come from the dataset manifest (token_introspect section).
-    ti = _dataset.TOKEN_INTROSPECT
+    # come from the dataset manifest (token_introspect section - a list; env
+    # placeholders like ${TOKEN_SERVICE_PUBLIC_JWK} are resolved at read time).
+    # env_key tells the create route where to record the resulting ID, so
+    # several configs don't overwrite each other's entry.
+    ti = _dataset.token_introspect_at(index)
     return {
         "name": ti.get("name", ""),
         "display_name": ti.get("display_name", ""),
@@ -218,6 +221,7 @@ def _token_introspect_payload():
         "offline_validation": json.dumps(ti.get("offline_validation", {})),
         "perform_upsert": "true" if ti.get("perform_upsert", True) else "false",
         "project_id": os.getenv("PROJECT_ID", ""),
+        "env_key": _dataset.token_introspect_env_key(index),
     }
 
 
@@ -270,15 +274,24 @@ def build_steps():
                 ["APP_AGENT_ID", "APP_TOKEN"],
             ),
         )
-    if _dataset.TOKEN_INTROSPECT:
-        steps.append(
-            _step(
-                _label(_dataset.TOKEN_INTROSPECT, "Create token introspect"),
-                "/api_token_introspect/create",
-                _token_introspect_payload,
-                ["TOKEN_INTROSPECT_ID"],
+    # One step per token-introspect config in the manifest (a list; a bare
+    # object is treated as one entry). The first config's ID keeps the
+    # TOKEN_INTROSPECT_ID name - the MCP server step binds to it - and later
+    # ones record TOKEN_INTROSPECT_ID_<n> (see _dataset.token_introspect_env_key).
+    steps.extend(
+        _step(
+            _label(
+                ti,
+                f"Create token introspect {i + 1}"
+                if len(_dataset.TOKEN_INTROSPECTS) > 1
+                else "Create token introspect",
             ),
+            "/api_token_introspect/create",
+            lambda i=i: _token_introspect_payload(i),
+            [_dataset.token_introspect_env_key(i)],
         )
+        for i, ti in enumerate(_dataset.TOKEN_INTROSPECTS)
+    )
     if _dataset.MCP_SERVER:
         steps.append(
             _step(
