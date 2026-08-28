@@ -113,6 +113,13 @@ body {
 .audit-card.authorized { border-left-color: #4ade80; }
 .audit-card.not_authorized { border-left-color: #f87171; }
 .audit-card.token_exchanged { border-left-color: var(--accent); }
+/* Informational token-service decisions (successful introspections). */
+.audit-card.introspected { border-left-color: #60a5fa; }
+/* Token-service refusals/errors keep the failure red. */
+.audit-card.introspected_inactive,
+.audit-card.introspection_refused,
+.audit-card.exchange_refused,
+.audit-card.error { border-left-color: #f87171; }
 
 .audit-card-head {
     display: flex;
@@ -169,6 +176,17 @@ body {
 .audit-card.token_exchanged .audit-badge {
     color: var(--accent);
     background: rgba(255, 107, 53, 0.12);
+}
+.audit-card.introspected .audit-badge {
+    color: #60a5fa;
+    background: rgba(96, 165, 250, 0.12);
+}
+.audit-card.introspected_inactive .audit-badge,
+.audit-card.introspection_refused .audit-badge,
+.audit-card.exchange_refused .audit-badge,
+.audit-card.error .audit-badge {
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.12);
 }
 
 .audit-reason { margin-top: 6px; }

@@ -88,7 +88,16 @@ def show_create_form():
     # online_validation: it verifies the token signature against the issuer's
     # JWKS; online_validation would call the IdP's /userinfo, which rejects ID
     # tokens (401 "Invalid token in Authorization header").
-    ti = _dataset.TOKEN_INTROSPECT
+    # The manifest holds a list of configs; ?index=<n> (0-based) pre-fills the
+    # nth one, default the first. ${ENV_VAR} placeholders are resolved from
+    # the environment (e.g. the token-service public JWK).
+    try:
+        index = max(0, int(request.args.get("index", "0")))
+    except ValueError:
+        index = 0
+    if _dataset.TOKEN_INTROSPECTS:
+        index = min(index, len(_dataset.TOKEN_INTROSPECTS) - 1)
+    ti = _dataset.token_introspect_at(index)
     default_data = {
         "claims_mapping": ti.get("claims_mapping", {}),
         "description": ti.get("description", ""),
@@ -99,8 +108,23 @@ def show_create_form():
         "offline_validation": ti.get("offline_validation", {}),
         "perform_upsert": ti.get("perform_upsert", True),
         "project_id": project_id,
+        # Which .env entry records the created ID - travels through the form
+        # as a hidden field so manual submits don't all overwrite
+        # TOKEN_INTROSPECT_ID (the entry the MCP server binding reads).
+        "env_key": _dataset.token_introspect_env_key(index),
     }
-    return render_template("token_introspect/create_form.html", default_data=default_data)
+    # Selector data: one tab per manifest config, so the single landing-page
+    # button reaches every config of a multi-entry dataset (e.g. canbank-ts).
+    configs = [
+        {"name": cfg.get("name", f"config {i + 1}"), "env_key": _dataset.token_introspect_env_key(i)}
+        for i, cfg in enumerate(_dataset.TOKEN_INTROSPECTS)
+    ]
+    return render_template(
+        "token_introspect/create_form.html",
+        default_data=default_data,
+        configs=configs,
+        index=index,
+    )
 
 
 @api_token_introspect.post("/create", tags=[tag])
@@ -165,6 +189,14 @@ def create_token_introspect():
             "response_text": response.text[:500] if response.text else "No response body",
         }
 
+    # Which .env entry records this config's ID. Sent by provisioning so the
+    # 2nd+ manifest config doesn't overwrite the 1st (see
+    # _dataset.token_introspect_env_key); restricted to the
+    # TOKEN_INTROSPECT_ID* family so the form can't write arbitrary .env keys.
+    env_key = request.form.get("env_key", "TOKEN_INTROSPECT_ID")
+    if not re.fullmatch(r"TOKEN_INTROSPECT_ID(_\d+)?", env_key):
+        env_key = "TOKEN_INTROSPECT_ID"
+
     # Extract and save token introspect ID if the request was successful
     token_introspect_id_saved = False
     token_introspect_id = None
@@ -176,11 +208,11 @@ def create_token_introspect():
 
         if token_introspect_id:
             try:
-                update_env_variable("TOKEN_INTROSPECT_ID", token_introspect_id)
+                update_env_variable(env_key, token_introspect_id)
                 token_introspect_id_saved = True
-                logger.info("Saved TOKEN_INTROSPECT_ID: %s", token_introspect_id)
+                logger.info("Saved %s: %s", env_key, token_introspect_id)
             except Exception:
-                logger.exception("Failed to save TOKEN_INTROSPECT_ID")
+                logger.exception("Failed to save %s", env_key)
 
     return render_template(
         "token_introspect/result.html",

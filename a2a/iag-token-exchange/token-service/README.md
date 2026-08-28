@@ -64,14 +64,25 @@ configuration (issuer + audience) and verify against its keys.
    `token-service` service in [`../docker-compose.yaml`](../docker-compose.yaml)
    joins every gateway network.
 2. ~~Bump the gateway image and point its exchange block at this service~~ -
-   done: gateways run `2.42.x` (which added the `JARVIS_TOKEN_SERVICE_*`
-   block), and idsvr-issued subject tokens are accepted via a second
-   introspection configuration (`jwks_uri` of the IdP).
-3. **Platform acceptance - pending**: the project's Token Introspect config
-   trusts this issuer (inline public JWKS, `https` issuer required), but the
-   platform MCP gate still rejects Token-Service-issued JWTs, so the
-   `JARVIS_TOKEN_SERVICE_*` blocks stay commented out in compose and the MCP
-   gateways keep the classic IdP exchange until that is fixed platform-side.
+   done: gateways run `2.48.0`. `2.42.x` added the `JARVIS_TOKEN_SERVICE_*`
+   block; `2.47.0` made the gateway read the incoming `X-IK-Token`
+   (introspected here, subject of the next exchange), so the **A2A gateways
+   now run token-service mode with multi-hop chains** - the block is live on
+   orchestrator/retriever/weather/analyst in `docker-compose.yaml`.
+   idsvr-issued subject tokens are accepted via a second introspection
+   configuration (`jwks_uri` of the IdP).
+3. **Platform acceptance - fixed in mcp-server `2.49.0` (2026-08-28),
+   rollout pending**: the MCP endpoint no longer gates Authorization on the
+   single issuer+audience shape the MCP config binds (any Token Introspect
+   config of the app space authenticates) and now introspects the
+   `X-IK-Token` delegated token itself (`400 invalid_request` on a bad one,
+   `sub` must match the access token). The project's Token Introspect config
+   already trusts this issuer (inline public JWKS, `https` issuer required).
+   The MCP gateways keep the classic IdP exchange until the release reaches
+   the target environment - probe: a valid Bearer plus a garbage
+   `X-IK-Token` answers `400` naming the header on the new server, while the
+   old one ignores it - then copy the `JARVIS_TOKEN_SERVICE_*` block onto
+   `mcp-iag`/`drive-mcp-iag`.
 4. ~~Point the audit section at the demo's audit terminal~~ - done: every
    exchange attempt is delivered to the chatbot's audit webhook
    (`audit.http.url`), tagged `service: token-service`.

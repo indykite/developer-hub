@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -134,7 +135,52 @@ MCP_SERVER: dict = _MANIFEST.get("mcp_server", {})
 # project_id is supplied at runtime from env. offline_validation is kept (not
 # online_validation) so IdP ID tokens validate against the issuer JWKS instead
 # of /userinfo.
-TOKEN_INTROSPECT: dict = _MANIFEST.get("token_introspect", {})
+# The manifest holds a list of configs; a bare object (the pre-list manifest
+# format) is accepted and treated as a one-element list. Keep the config the
+# MCP server should bind to FIRST: its ID is recorded as TOKEN_INTROSPECT_ID,
+# which _mcp_server_payload reads.
+_TI_RAW = _MANIFEST.get("token_introspect", {})
+TOKEN_INTROSPECTS: list = _TI_RAW if isinstance(_TI_RAW, list) else ([_TI_RAW] if _TI_RAW else [])
+# First config kept under the old name for callers that predate the list.
+TOKEN_INTROSPECT: dict = TOKEN_INTROSPECTS[0] if TOKEN_INTROSPECTS else {}
+
+# ${ENV_VAR} placeholders in token-introspect manifest strings, e.g. the
+# token-service public JWK in offline_validation.public_jwks - secrets and
+# per-deployment values stay in .env instead of being committed in the
+# manifest.
+_ENV_PLACEHOLDER = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
+
+
+def _resolve_env_placeholders(value):
+    """Recursively expand ``${ENV_VAR}`` placeholders from the environment.
+
+    An unset variable resolves to the empty string (and is logged by the
+    caller's request failing visibly at the Config API, not silently here).
+    """
+    if isinstance(value, str):
+        return _ENV_PLACEHOLDER.sub(lambda m: os.getenv(m.group(1), ""), value)
+    if isinstance(value, list):
+        return [_resolve_env_placeholders(v) for v in value]
+    if isinstance(value, dict):
+        return {k: _resolve_env_placeholders(v) for k, v in value.items()}
+    return value
+
+
+def token_introspect_env_key(index: int) -> str:
+    """Env key the created config's ID is recorded under.
+
+    The first config keeps the historical TOKEN_INTROSPECT_ID name so existing
+    .env files (and the MCP server binding) keep their meaning; later ones get
+    TOKEN_INTROSPECT_ID_<n>.
+    """
+    return "TOKEN_INTROSPECT_ID" if index == 0 else f"TOKEN_INTROSPECT_ID_{index + 1}"
+
+
+def token_introspect_at(index: int) -> dict:
+    """Return the token-introspect config at *index*, with env placeholders resolved."""
+    cfg = TOKEN_INTROSPECTS[index] if index < len(TOKEN_INTROSPECTS) else {}
+    return _resolve_env_placeholders(cfg)
+
 
 # --- KBAC authorization policies (migrated from api/authorization_policy.py) ---
 # Static KBAC form defaults. Both api/authorization_policy.py and provision.py's

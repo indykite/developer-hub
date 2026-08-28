@@ -10,7 +10,25 @@
                     <h3 class="mb-4">Create Token Introspect</h3>
                     <p class="text-muted mb-4">Configure token introspection settings and click "Create" to submit.</p>
 
+                    {% if configs and configs | length > 1 %}
+                    <div class="mb-4">
+                        <p class="text-muted small mb-2">This dataset declares {{ configs | length }} token-introspect configs. Create each one; its ID is saved under its own <code>.env</code> entry (shown on the tab).</p>
+                        <ul class="nav nav-pills">
+                            {% for cfg in configs %}
+                            <li class="nav-item">
+                                <a class="nav-link {% if loop.index0 == index %}active{% endif %}"
+                                   href="{{ url_for('api_token_introspect.show_create_form') }}?index={{ loop.index0 }}">
+                                    {{ loop.index }} &middot; {{ cfg.name }}
+                                    <span class="d-block small {% if loop.index0 == index %}text-white-50{% else %}text-muted{% endif %}">{{ cfg.env_key }}</span>
+                                </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
                     <form method="POST" action="{{ url_for('api_token_introspect.create_token_introspect') }}">
+                        <input type="hidden" name="env_key" value="{{ default_data.env_key }}">
                         <div class="mb-3">
                             <label for="project_id" class="form-label">Project ID *</label>
                             <input type="text" class="form-control" id="project_id" name="project_id" value="{{ default_data.project_id }}" required>

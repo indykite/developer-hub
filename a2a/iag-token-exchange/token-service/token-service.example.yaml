@@ -39,9 +39,12 @@ idp:
 # Which incoming subject/actor tokens are accepted, and how they are verified.
 # Phase 1: tokens signed by the local demo IdP key (see mint.py in the session
 # scratchpad). Phase 2 adds the real IdP (idsvr) issuer with its jwks_uri.
+# NOTE: since jarvis c722ed066, `configurations` is a MAP keyed by the
+# configuration name (a `- name: x` list entry fails startup with
+# "'configurations[0][name]' expected a map or struct, got \"string\"").
 token_introspection:
   configurations:
-    - name: demo-idp
+    demo-idp:
       token_types:
         - subject_token
         - actor_token
