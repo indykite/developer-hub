@@ -780,6 +780,29 @@
           "cypher": "MATCH (subject:User)-[:WORKS_IN]->(department:Department)-[:CAN_RETRIEVE]->(resource:Quote)"
         }
       }
+    },
+    {
+      "name": "staff-can-view-invoice",
+      "display_name": "Staff can view invoice",
+      "description": "A staff user may view the invoices of customers their department serves.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-indykite"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "CAN_VIEW"
+        ],
+        "resource": {
+          "type": "Invoice"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:WORKS_IN]->(:Department)-[:SERVES]->(:Customer)-[:HAS_INVOICE]->(resource:Invoice)"
+        }
+      }
     }
   ],
   "application": {

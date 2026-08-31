@@ -26,6 +26,7 @@ requests:
 |--------------|---------------|---------------|--------------------------------------------------------------------------------------------------|
 | `Person`     | `CAN_TRIGGER` | `Workflow`    | `wf1`, `wf2`, `wf3`, `wf-drive`, `wf-drive-analyst`, `wf-drive-console`, `wf3-console`, `wf-crm` |
 | `Person`     | `CAN_VIEW`    | `Document`    | `claims_handling_policy`, `underwriting_guidelines`, `home_policy_terms`                         |
+| `Person`     | `CAN_VIEW`    | `Invoice`     | `inv-hi-001` ... `inv-hi-010` (rows staff/customers may see differ - by SERVES/HAS_INVOICE)      |
 
 - **Every subject is a `Person`** - there is no `User` subject type in this
   dataset. Staff carry the `Employee` label and reach workflows and

@@ -5486,6 +5486,260 @@
           "value": "The Premium plan covers dwelling reconstruction up to the scheduled coverage amount, other structures at 10% of dwelling coverage, and personal property at 50% of dwelling coverage, subject to the policy deductible. Full financial details of a policy - coverage amount, deductible, and annual premium - are visible only to the primary policyholder; a spouse or co-resident sees the policy number, coverage type, and term dates unless added as a named insured. Loss of use coverage pays additional living expenses for up to 24 months. Water backup, jewelry above $5,000 per item, and home business equipment require scheduled endorsements. Cancellation by the insured takes effect at 12:01 a.m. on the requested date with pro-rata refund of unearned premium."
         }
       ]
+    },
+    {
+      "external_id": "inv-hi-001",
+      "type": "Invoice",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "invoice_number",
+          "value": "INV-HI-2024-001"
+        },
+        {
+          "type": "amount",
+          "value": "1850"
+        },
+        {
+          "type": "due_date",
+          "value": "2025-01-15"
+        },
+        {
+          "type": "status",
+          "value": "open"
+        }
+      ]
+    },
+    {
+      "external_id": "inv-hi-002",
+      "type": "Invoice",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "invoice_number",
+          "value": "INV-HI-2024-002"
+        },
+        {
+          "type": "amount",
+          "value": "1420"
+        },
+        {
+          "type": "due_date",
+          "value": "2025-02-01"
+        },
+        {
+          "type": "status",
+          "value": "open"
+        }
+      ]
+    },
+    {
+      "external_id": "inv-hi-003",
+      "type": "Invoice",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "invoice_number",
+          "value": "INV-HI-2024-003"
+        },
+        {
+          "type": "amount",
+          "value": "2650"
+        },
+        {
+          "type": "due_date",
+          "value": "2025-03-10"
+        },
+        {
+          "type": "status",
+          "value": "open"
+        }
+      ]
+    },
+    {
+      "external_id": "inv-hi-004",
+      "type": "Invoice",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "invoice_number",
+          "value": "INV-HI-2024-004"
+        },
+        {
+          "type": "amount",
+          "value": "980"
+        },
+        {
+          "type": "due_date",
+          "value": "2025-01-20"
+        },
+        {
+          "type": "status",
+          "value": "paid"
+        }
+      ]
+    },
+    {
+      "external_id": "inv-hi-005",
+      "type": "Invoice",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "invoice_number",
+          "value": "INV-HI-2024-005"
+        },
+        {
+          "type": "amount",
+          "value": "1150"
+        },
+        {
+          "type": "due_date",
+          "value": "2025-04-05"
+        },
+        {
+          "type": "status",
+          "value": "open"
+        }
+      ]
+    },
+    {
+      "external_id": "inv-hi-006",
+      "type": "Invoice",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "invoice_number",
+          "value": "INV-HI-2024-006"
+        },
+        {
+          "type": "amount",
+          "value": "1780"
+        },
+        {
+          "type": "due_date",
+          "value": "2025-02-15"
+        },
+        {
+          "type": "status",
+          "value": "overdue"
+        }
+      ]
+    },
+    {
+      "external_id": "inv-hi-007",
+      "type": "Invoice",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "invoice_number",
+          "value": "INV-HI-2024-007"
+        },
+        {
+          "type": "amount",
+          "value": "1320"
+        },
+        {
+          "type": "due_date",
+          "value": "2025-05-01"
+        },
+        {
+          "type": "status",
+          "value": "open"
+        }
+      ]
+    },
+    {
+      "external_id": "inv-hi-008",
+      "type": "Invoice",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "invoice_number",
+          "value": "INV-HI-2024-008"
+        },
+        {
+          "type": "amount",
+          "value": "2180"
+        },
+        {
+          "type": "due_date",
+          "value": "2025-03-20"
+        },
+        {
+          "type": "status",
+          "value": "paid"
+        }
+      ]
+    },
+    {
+      "external_id": "inv-hi-009",
+      "type": "Invoice",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "invoice_number",
+          "value": "INV-HI-2024-009"
+        },
+        {
+          "type": "amount",
+          "value": "2450"
+        },
+        {
+          "type": "due_date",
+          "value": "2025-06-10"
+        },
+        {
+          "type": "status",
+          "value": "open"
+        }
+      ]
+    },
+    {
+      "external_id": "inv-hi-010",
+      "type": "Invoice",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "invoice_number",
+          "value": "INV-HI-2024-010"
+        },
+        {
+          "type": "amount",
+          "value": "1580"
+        },
+        {
+          "type": "due_date",
+          "value": "2025-04-15"
+        },
+        {
+          "type": "status",
+          "value": "open"
+        }
+      ]
+    },
+    {
+      "external_id": "wf-erp",
+      "type": "Workflow",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "wf-erp-analyst",
+      "type": "Workflow",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "wf-erp-console",
+      "type": "Workflow",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "indykiteagent-erp",
+      "type": "Agent",
+      "is_identity": false,
+      "properties": []
     }
   ]
 }

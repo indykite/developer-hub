@@ -1982,6 +1982,360 @@
         "external_id": "tier_3"
       },
       "type": "IS_TIER"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "alison"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-cb-001"
+      },
+      "properties": [],
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "alison"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-cb-002"
+      },
+      "properties": [],
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "bob"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-cb-003"
+      },
+      "properties": [],
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "bob"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-cb-004"
+      },
+      "properties": [],
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "charlie"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-cb-005"
+      },
+      "properties": [],
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "charlie"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-cb-006"
+      },
+      "properties": [],
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "rebecca"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-cb-007"
+      },
+      "properties": [],
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "rebecca"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-cb-008"
+      },
+      "properties": [],
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "ted"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-cb-009"
+      },
+      "properties": [],
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "alison"
+      },
+      "properties": [],
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "bob"
+      },
+      "properties": [],
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "charlie"
+      },
+      "properties": [],
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "rebecca"
+      },
+      "properties": [],
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "ted"
+      },
+      "properties": [],
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-erp"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-erp"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-erp-analyst"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-4"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-analyst"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "indykiteagent-4"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-erp"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-analyst"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-erp-console"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "indykiteagent"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-4"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "indykiteagent-4"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-erp"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp-analyst"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp-console"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp-analyst"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp-console"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
     }
   ]
 }

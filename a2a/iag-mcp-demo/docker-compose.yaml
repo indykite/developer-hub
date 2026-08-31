@@ -29,6 +29,7 @@ services:
       # Membership in every agent network lets the agents' exchanged-token
       # webhooks reach http://chatbot:3000 (harmless when a profile is off).
       - crm-iag-network
+      - erp-mcp-iag-network
     volumes:
       - flask_session_data:/tmp/flask_session
     environment:
@@ -56,7 +57,7 @@ services:
         orchestrator-iag=${WORKFLOW_ID},retriever-iag=${WORKFLOW_ID},
         mcp-iag=${WORKFLOW_ID},weather-iag=${WEATHER_WORKFLOW_ID:-},
         analyst-iag=${ANALYST_WORKFLOW_ID:-},crm-iag=${CRM_WORKFLOW_ID:-},
-        drive-mcp-iag=${DRIVE_WORKFLOW_ID:-}
+        drive-mcp-iag=${DRIVE_WORKFLOW_ID:-},erp-mcp-iag=${ERP_WORKFLOW_ID:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     command: python app.py --host 0.0.0.0 --port ${CHATBOT_PORT}
@@ -117,6 +118,9 @@ services:
       # Salesforce) through the CRM gateway; leave empty to disable the tool.
       CRM_HOST: ${IAG_CRM_HOST:-}
       CRM_PORT: ${IAG_CRM_PORT:-8888}
+      # Enables query_erp (invoices via the analyst's erp_* backend); set
+      # true in the usecase env once the erp profile + backend are wired.
+      ERP_TOOL_ENABLED: ${ERP_TOOL_ENABLED:-}
       GEMINI_ENABLED: ${GEMINI_ENABLED}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GEMINI_MODEL: ${GEMINI_MODEL}
@@ -246,10 +250,11 @@ services:
     networks:
       - analyst-iag-network
       - mcp-iag-network
-      # Membership in the drive gateway network is harmless while the "drive"
-      # profile is off; it only matters when ANALYST_MCP_SERVER_URLS adds the
-      # drive backend.
+      # Membership in the drive/erp gateway networks is harmless while their
+      # profiles are off; it only matters when ANALYST_MCP_SERVER_URLS adds
+      # those backends.
       - drive-mcp-iag-network
+      - erp-mcp-iag-network
     environment:
       ADVERTISED_HOST: ${ANALYST_HOST}
       ANALYST_PORT: ${ANALYST_PORT}
@@ -461,6 +466,79 @@ services:
       # Google OAuth material - see drive_mcp/README.md for the auth bootstrap.
       - ./drive_mcp/.gdrive:/gdrive:ro
 
+  #  Protects the ERP MCP server (MCP-protocol proxy mode). Optional "erp"
+  #  profile: a Postgres invoices table whose rows are pre-filtered per caller
+  #  by AuthZEN search/resource before any SQL runs - same prompt, different
+  #  rows, and the database knows nothing about the graph.
+  erp-mcp-iag:
+    extends:
+      service: iag-base
+      file: iag-base-docker.yaml
+    profiles: ["erp"]
+    ports:
+      - "${IAG_ERP_MCP_PORT:-8889}:${IAG_ERP_MCP_PORT:-8889}"
+    networks:
+      # Client-facing net (analyst/chatbot) + the private backend net where
+      # erp-mcp and erp-db live - this gateway is the only bridge between them.
+      - erp-mcp-iag-network
+      - erp-backend-network
+    environment:
+      K_SERVICE: erp-mcp-iag
+      JARVIS_SERVICE_NAME: erp-mcp-iag
+      JARVIS_SERVICE_PORT: ${IAG_ERP_MCP_PORT:-8889}
+      JARVIS_PROTECTED_AGENT_PROTOCOL: mcp
+      JARVIS_PROTECTED_AGENT_BASE_URL: http://${ERP_MCP_HOST:-erp-mcp}:${ERP_MCP_PORT:-8010}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${ERP_MCP_IDP_CLIENT_ID:-indykiteagent-erp}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${ERP_MCP_IDP_CLIENT_SECRET:-}
+      # Left empty: three workflow shapes (wf-erp / wf-erp-analyst /
+      # wf-erp-console) converge on this gateway and allowed_workflow_id is
+      # single-valued - same trick as the drive gateway.
+      JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${ERP_WORKFLOW_ID:-}
+    volumes:
+      - ./audit-config.yaml:/app/.configs/audit-config.yaml
+    command: ["--config=/app/.configs/audit-config.yaml"]
+
+  erp-mcp:
+    image: erp-mcp:latest
+    #    platform: linux/amd64
+    #    build:
+    #      context: .
+    #      dockerfile: ./erp_mcp/Dockerfile
+    profiles: ["erp"]
+    # Trust boundary, enforced by topology: the server trusts the delegation
+    # token's subject because erp-mcp-iag minted and verified it - so nothing
+    # else may reach it (a direct caller could forge a JWT and read other
+    # subjects' rows). No host port, and membership ONLY in the private
+    # backend net, which clients (analyst/chatbot) are not on; the gateway
+    # is the sole bridge.
+    networks:
+      - erp-backend-network
+    environment:
+      ERP_MCP_PORT: ${ERP_MCP_PORT:-8010}
+      ERP_DB_DSN: postgresql://erp:erp@erp-db:5432/erp
+      INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
+      APP_AGENT_CREDENTIALS_TOKEN: ${APP_AGENT_CREDENTIALS_TOKEN}
+      # Subject node type for the AuthZEN search (insurance: Person,
+      # canbank: default User); reuses the gateways' subject-type env.
+      ERP_SUBJECT_TYPE: ${AUTHZEN_SUBJECT_TYPES:-User}
+      LOG_LEVEL: ${LOG_LEVEL}
+    depends_on:
+      - erp-db
+
+  erp-db:
+    image: postgres:16-alpine
+    profiles: ["erp"]
+    # Private backend net only - reached exclusively by erp-mcp.
+    networks:
+      - erp-backend-network
+    environment:
+      POSTGRES_USER: erp
+      POSTGRES_PASSWORD: erp
+      POSTGRES_DB: erp
+    volumes:
+      - ./erp_mcp/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - erp_db_data:/var/lib/postgresql/data
+
 networks:
   console-network:
     driver: bridge
@@ -478,6 +556,14 @@ networks:
     driver: bridge
   drive-mcp-iag-network:
     driver: bridge
+  erp-mcp-iag-network:
+    driver: bridge
+  # Private net for erp-mcp + erp-db; only the erp gateway bridges into it.
+  # A normal bridge (not internal:true) so erp-mcp keeps egress to the
+  # platform's search/resource API.
+  erp-backend-network:
+    driver: bridge
 
 volumes:
   flask_session_data: {}
+  erp_db_data: {}

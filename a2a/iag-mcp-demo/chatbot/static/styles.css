@@ -473,3 +473,32 @@ body {
     font-size: 10px;
     color: #6b7280;
 }
+
+/* ------------------------------------------------------------------ */
+/* Markdown tables in chat answers (e.g. ERP invoice lists): scroll   */
+/* inside the bubble instead of overflowing it.                       */
+/* ------------------------------------------------------------------ */
+
+.message-content table {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0;
+    font-size: 12.5px;
+    line-height: 1.4;
+}
+.message-content th,
+.message-content td {
+    border: 1px solid var(--border-color);
+    padding: 5px 10px;
+    text-align: left;
+    white-space: nowrap;
+}
+.message-content th {
+    background: rgba(255, 255, 255, 0.06);
+    font-weight: 600;
+}
+.message-content tr:nth-child(even) td {
+    background: rgba(255, 255, 255, 0.03);
+}

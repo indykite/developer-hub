@@ -30,7 +30,14 @@ Switch with `./switch-usecase.sh insurance` (relinks `.env` to
    "Admin approved users are pre-authorized" and assign the integration
    user's profile. Fill `SF_CONSUMER_KEY`, `SF_USERNAME` in `.env`; also
    create the `indykiteagent-crm` IdP client (`CRM_IDP_CLIENT_ID/SECRET`).
-3. **PDFs**: the six sample documents in [`documents/`](documents/) split
+3. **ERP invoices (profile `erp`)**: the graph-filtered Postgres - dataset
+   additions provisioned (Invoice nodes, `SERVES`/`HAS_INVOICE` edges, the
+   `staff-can-view-invoice`/`customer-own-invoice` policies, `wf-erp-*`
+   chains), the `indykiteagent-erp` IdP client, and in `.env`: `erp` in
+   `COMPOSE_PROFILES`, `,erp=http://erp-mcp-iag:8889/mcp` appended to
+   `ANALYST_MCP_SERVER_URLS`, `ERP_TOOL_ENABLED=true`,
+   `ERP_MCP_IDP_CLIENT_SECRET`. Build with `make new-erp-mcp`.
+4. **PDFs**: the six sample documents in [`documents/`](documents/) split
    into two groups with different homes.
 
    Three live **in the graph** (Document nodes in the policy library, full
@@ -102,7 +109,16 @@ token introspect binds `ikg_node_type: Person`). Staff are `Person`s who
    answer carries the Case number and a link; the Case description records
    "Filed on behalf of millicent via agent chain ..." - the delegation
    chain lands in a real third-party SaaS.
-7. "what are the knowledge queries?"
+7. "Show me the invoices" → `query_erp` → the analyst's `erp_*` backend:
+   **5 rows** - the premium invoices of the households support `SERVES`
+   (`inv-hi-001`..`005`, including james's). The rows were pre-filtered by
+   AuthZEN `search/resource` before any SQL ran.
+8. "Which invoices are still open?" - same filtered set, narrowed by
+   status (`inv-hi-004` is paid).
+9. "Show me invoice inv-hi-003" → full detail of Michael Williams' premium
+   invoice - **allowed**, support serves his household. (The exact same
+   prompt gets james an authorization error in Act 3.)
+10. "what are the knowledge queries?"
 
 ## Act 2 - Sales: the teen-driver lead (log in as rebecca)
 
@@ -116,6 +132,9 @@ token introspect binds `ikg_node_type: Person`). Staff are `Person`s who
 4. "What do our underwriting guidelines say about adding teen drivers?"
    → quotes the Underwriting Guidelines excerpt (driver-ed requirement,
    good-student discount).
+5. "Show me the invoices" → **the 5 OTHER rows** (`inv-hi-006`..`010`,
+   the households sales `SERVES`) - the exact same prompt millicent ran in
+   Act 1, zero overlap. Same prompt, different rows: the core ERP beat.
 
 ## Act 3 - End customer (log in as james = James Mitchell)
 
@@ -143,7 +162,14 @@ token introspect binds `ikg_node_type: Person`). Staff are `Person`s who
    `wf-crm` is staff-only (support/sales hold the `CAN_TRIGGER` edge, james
    does not) - the same prompt millicent ran in Act 1 ends in a red DENY
    here. Same tool, different person, different decision.
-6. "What's the weather at SecureHome HQ?" - works: `wf2` is granted.
+6. "Show me the invoices" → exactly **one row**, his own `inv-hi-001`
+   ($1,850 annual premium) - the direct `HAS_INVOICE` edge, no department
+   path.
+7. "Show me invoice inv-hi-003" → the kicker: an **authorization error** -
+   "james is not authorized to view invoice inv-hi-003 - no CAN_VIEW path
+   in the knowledge graph connects them." He can name the id; the graph
+   still says no.
+8. "What's the weather at SecureHome HQ?" - works: `wf2` is granted.
 
 ## Act 4 - Documents and the wider stack (any staff login)
 
@@ -221,6 +247,22 @@ exchange):
 Watch the audit terminal throughout: every hop shows the gateway decision
 (subject → actor, AUTHORIZED / NOT AUTHORIZED, reason) and the exchanged
 delegation token for that hop.
+
+**The ERP stagecraft** (the invoice prompts live in the acts: Act 1 #7-8
+millicent, Act 2 #5 rebecca, Act 3 #6-7 james - run them back to back for
+the same-prompt-different-rows contrast):
+
+- **The contrast shot**: the database hides nothing -
+  `docker exec iag-mcp-demo-erp-db-1 psql -U erp -d erp -c "SELECT
+  external_id, customer_name, amount, status FROM invoices;"` shows all
+  rows unfiltered. Only the graph-filtered path through the console shows
+  each person their slice (AuthZEN `search/resource` runs BEFORE the SQL).
+- **The live beat**: capture a new `SERVES` or `HAS_INVOICE` edge
+  (instant-stack) → the same prompt returns a different row count on the
+  next run. Authorization is data.
+- The first prompt per login is slower - the analyst opens its three MCP
+  backend sessions (indykite, drive, erp); warm for `MCP_SESSION_TTL`
+  afterwards.
 
 **The why? beat** (requires the explain queries provisioned -
 `EXPLAIN_STAFF_QUERY_ID` / `EXPLAIN_DIRECT_QUERY_ID` in `.env`): click
