@@ -81,6 +81,10 @@ CRM_HOST = os.getenv("CRM_HOST", "").strip()
 CRM_PORT = int(os.getenv("CRM_PORT", "8888"))
 _CRM_DEFAULT_URL = f"http://{CRM_HOST}:{CRM_PORT}" if CRM_HOST else ""
 CRM_URL = (os.getenv("CRM_URL", "").strip() or _CRM_DEFAULT_URL).rstrip("/")
+# The ERP invoices ride the analyst's erp_* MCP backend (like Drive). The
+# flag is set in the usecase env once the erp profile + backend are wired;
+# empty disables the query_erp tool.
+ERP_TOOL_ENABLED = (os.getenv("ERP_TOOL_ENABLED") or "").lower() in ("true", "1", "yes")
 ORCHESTRATOR_TIMEOUT = float(os.getenv("ORCHESTRATOR_TIMEOUT", "300"))
 _LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
@@ -558,6 +562,27 @@ async def query_crm(query: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# LangChain tool: query_erp
+# ---------------------------------------------------------------------------
+
+
+@tool
+async def query_erp(query: str) -> str:
+    """Forward an invoice/billing question to the analyst's ERP backend.
+
+    Use this for: invoices, billing, premiums due, account fees, payment
+    status. The rows come back pre-filtered by authorization for the calling
+    user.
+    """
+    # The analyst holds several MCP backends; make the ERP intent explicit so
+    # a rephrased query cannot be routed to the knowledge-graph tools instead.
+    return await _call_analyst(
+        f"ERP invoice request - answer ONLY with the erp_* tools (e.g. erp_list_invoices), "
+        f"never with knowledge-graph, CIQ or drive tools: {query}",
+    )
+
+
+# ---------------------------------------------------------------------------
 # Agent Skills (agentskills.io) - discovery & skill catalog
 # ---------------------------------------------------------------------------
 
@@ -762,6 +787,14 @@ _CRM_PROMPT = (
     if CRM_URL
     else ""
 )
+# And for the ERP tool: invoices/billing must not fall into the retriever
+# catch-all ("internal documents / enterprise data") below.
+_ERP_PROMPT = (
+    "For invoices, billing, premiums due, account fees or payment status, use query_erp - the rows "
+    "come back pre-filtered by authorization. Do not use query_retriever for invoices or billing. "
+    if ERP_TOOL_ENABLED and ANALYST_URL
+    else ""
+)
 _BASE_SYSTEM_PROMPT = (
     "You are an orchestrator. Your primary job is to relay prompts to downstream agents. "
     "Look at your available skills and choose the right one for each request. "
@@ -769,6 +802,7 @@ _BASE_SYSTEM_PROMPT = (
     "Do not use query_retriever for weather. "
     + _DRIVE_PROMPT
     + _CRM_PROMPT
+    + _ERP_PROMPT
     + "ALWAYS use the query_retriever tool for: MCP, MCP tools or resources, data retrieval, "
     "internal documents, real-time stock prices, "
     "questions about employees, enterprise data, authorization (AuthZEN), knowledge queries, or any "
@@ -790,6 +824,8 @@ if ANALYST_URL:
     _orchestrator_tools.append(query_drive)
 if CRM_URL:
     _orchestrator_tools.append(query_crm)
+if ERP_TOOL_ENABLED and ANALYST_URL:
+    _orchestrator_tools.append(query_erp)
 _llm_with_tools = _llm.bind_tools(_orchestrator_tools)
 
 orchestrator_card = AgentCard(
@@ -971,6 +1007,10 @@ if __name__ == "__main__":
         _logger.info("CRM URL (query_crm): %s", CRM_URL)
     else:
         _logger.info("CRM_HOST not set - query_crm tool disabled")
+    if ERP_TOOL_ENABLED and ANALYST_URL:
+        _logger.info("ERP route enabled (query_erp via the analyst's erp_* backend)")
+    else:
+        _logger.info("ERP_TOOL_ENABLED not set - query_erp tool disabled")
     # uvicorn must bind to 0.0.0.0 inside Docker; safe because the container
     # network exposes only the intended port via compose.
     uvicorn.run(

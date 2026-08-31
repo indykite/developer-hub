@@ -833,6 +833,52 @@
           "cypher": "MATCH (subject:Person) MATCH (:InsuranceCompany)-[:PUBLISHES]->(resource:Document)"
         }
       }
+    },
+    {
+      "name": "staff-can-view-invoice",
+      "display_name": "Staff can view invoice",
+      "description": "A staff person may view the invoices of customers their department serves.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-indykite"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_VIEW"
+        ],
+        "resource": {
+          "type": "Invoice"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN]->(:Department)-[:SERVES]->(:Person)-[:HAS_INVOICE]->(resource:Invoice)"
+        }
+      }
+    },
+    {
+      "name": "customer-own-invoice",
+      "display_name": "Customer sees own invoice",
+      "description": "A customer may view the invoices attached directly to them.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-indykite"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_VIEW"
+        ],
+        "resource": {
+          "type": "Invoice"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:HAS_INVOICE]->(resource:Invoice)"
+        }
+      }
     }
   ],
   "application": {

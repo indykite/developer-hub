@@ -42,3 +42,8 @@ new-crm:
 new-drive-mcp:
 	-@docker rmi drive-mcp
 	@docker build -t drive-mcp ./drive_mcp
+
+# ERP invoices MCP server (compose profile "erp"); not part of the default build.
+new-erp-mcp:
+	-@docker rmi erp-mcp
+	@docker build -t erp-mcp ./erp_mcp

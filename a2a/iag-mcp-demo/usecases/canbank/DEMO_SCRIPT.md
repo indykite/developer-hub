@@ -29,6 +29,13 @@ and recreates the stack; see `usecases/README.md`).
    `external_id=decision_001`.
 3. *(Optional)* the `drive` compose profile up for Act 4 (see the README's
    Google Drive section).
+4. *(Optional)* the `erp` compose profile for the invoice beats: dataset
+   additions provisioned (Invoice nodes, `SERVES`/`HAS_INVOICE` edges, the
+   `staff-can-view-invoice` policy, `wf-erp-*` chains), the
+   `indykiteagent-erp` IdP client, and in `.env`: `erp` in
+   `COMPOSE_PROFILES`, `,erp=http://erp-mcp-iag:8889/mcp` appended to
+   `ANALYST_MCP_SERVER_URLS`, `ERP_TOOL_ENABLED=true`,
+   `ERP_MCP_IDP_CLIENT_SECRET`. Build with `make new-erp-mcp`.
 
 ## The cast
 
@@ -58,7 +65,10 @@ and recreates the stack; see `usecases/README.md`).
    → `get-customer-facing-documents`.
 5. "What regulatory agreements do we have?"
    → `get-regulatory-agreements`.
-6. "what are the knowledge queries?" - the retriever reads the MCP server's
+6. "Show me the invoices" *(erp profile)* → **6 rows** - the invoices of
+   the customers support `SERVES` (alison, bob, charlie), pre-filtered by
+   AuthZEN `search/resource` before any SQL runs.
+7. "what are the knowledge queries?" - the retriever reads the MCP server's
    knowledge-queries resource and lists every query it may call.
 
 ## Act 2 - Trading desk: quotes and authorization (log in as millicent)
@@ -87,6 +97,10 @@ and recreates the stack; see `usecases/README.md`).
    "why can't I get a stock quote?"
    → decision `false` - their department has no `CAN_RETRIEVE` edge.
    Authorization working is best shown by a denial.
+6. "Show me the invoices" *(erp profile)* → millicent (support **and**
+   trading) sees **all 9**; re-run as leslie → **6** (support only) and as
+   roy → **3** (trading only: rebecca, ted). The exact same prompt, three
+   row counts - decided by `WORKS_IN`/`SERVES` edges, not by the database.
 
 Note: evaluations through the chatbot carry the logged-in user's token, and
 the platform binds them to that token's subject - asking about a *different*
@@ -137,6 +151,17 @@ Watch the audit terminal throughout: every hop shows the gateway decision
 (subject → actor, AUTHORIZED / NOT AUTHORIZED, reason) and the exchanged
 delegation token for that hop - a new token with the user as the subject and
 the agent as the actor, so the agent provably acts on the user's behalf.
+
+**The ERP stagecraft** (invoice prompts live in the acts: Act 1 #6 leslie,
+Act 2 #6 millicent/leslie/roy - the same-prompt-three-row-counts contrast):
+
+- **The contrast shot**: `docker exec iag-mcp-demo-erp-db-1 psql -U erp -d
+  erp -c "SELECT external_id, customer_name, amount, status FROM
+  invoices;"` shows every row unfiltered - the database hides nothing; the
+  graph (`Department-[SERVES]->Customer-[HAS_INVOICE]->Invoice`) decides
+  what each login sees, via AuthZEN `search/resource` BEFORE the SQL.
+- The first prompt per login is slower (the analyst opens its MCP backend
+  sessions); warm for `MCP_SESSION_TTL` afterwards.
 
 **The why? beat** (requires the explain queries provisioned -
 `EXPLAIN_STAFF_QUERY_ID` / `EXPLAIN_DIRECT_QUERY_ID` in `.env`): click

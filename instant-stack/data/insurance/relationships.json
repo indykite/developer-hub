@@ -3714,6 +3714,588 @@
       },
       "properties": [],
       "type": "PUBLISHES"
+    },
+    {
+      "source": {
+        "type": "HomeInsurance",
+        "external_id": "home-insurance-001"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-hi-001"
+      },
+      "properties": [],
+      "type": "BILLED_AS"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "james"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-hi-001"
+      },
+      "properties": [],
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "HomeInsurance",
+        "external_id": "home-insurance-002"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-hi-002"
+      },
+      "properties": [],
+      "type": "BILLED_AS"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "adult-011"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-hi-002"
+      },
+      "properties": [],
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "HomeInsurance",
+        "external_id": "home-insurance-003"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-hi-003"
+      },
+      "properties": [],
+      "type": "BILLED_AS"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "adult-003"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-hi-003"
+      },
+      "properties": [],
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "HomeInsurance",
+        "external_id": "home-insurance-004"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-hi-004"
+      },
+      "properties": [],
+      "type": "BILLED_AS"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "adult-013"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-hi-004"
+      },
+      "properties": [],
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "HomeInsurance",
+        "external_id": "home-insurance-005"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-hi-005"
+      },
+      "properties": [],
+      "type": "BILLED_AS"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "adult-005"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-hi-005"
+      },
+      "properties": [],
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "HomeInsurance",
+        "external_id": "home-insurance-006"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-hi-006"
+      },
+      "properties": [],
+      "type": "BILLED_AS"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "adult-015"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-hi-006"
+      },
+      "properties": [],
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "HomeInsurance",
+        "external_id": "home-insurance-007"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-hi-007"
+      },
+      "properties": [],
+      "type": "BILLED_AS"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "adult-007"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-hi-007"
+      },
+      "properties": [],
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "HomeInsurance",
+        "external_id": "home-insurance-008"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-hi-008"
+      },
+      "properties": [],
+      "type": "BILLED_AS"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "adult-017"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-hi-008"
+      },
+      "properties": [],
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "HomeInsurance",
+        "external_id": "home-insurance-009"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-hi-009"
+      },
+      "properties": [],
+      "type": "BILLED_AS"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "adult-009"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-hi-009"
+      },
+      "properties": [],
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "HomeInsurance",
+        "external_id": "home-insurance-010"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-hi-010"
+      },
+      "properties": [],
+      "type": "BILLED_AS"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "adult-019"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-hi-010"
+      },
+      "properties": [],
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "james"
+      },
+      "properties": [],
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "adult-011"
+      },
+      "properties": [],
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "adult-003"
+      },
+      "properties": [],
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "adult-013"
+      },
+      "properties": [],
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "adult-005"
+      },
+      "properties": [],
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "sales"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "adult-015"
+      },
+      "properties": [],
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "sales"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "adult-007"
+      },
+      "properties": [],
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "sales"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "adult-017"
+      },
+      "properties": [],
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "sales"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "adult-009"
+      },
+      "properties": [],
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "sales"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "adult-019"
+      },
+      "properties": [],
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-erp"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-erp"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-erp-analyst"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-4"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-analyst"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "indykiteagent-4"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-erp"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-analyst"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-erp-console"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "indykiteagent"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-4"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "indykiteagent-4"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-erp"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp-analyst"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp-console"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "sales"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "sales"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp-analyst"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "sales"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp-console"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "james"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "james"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp-analyst"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "james"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp-console"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
     }
   ]
 }

@@ -1619,6 +1619,237 @@
           "external_value": "weather-units"
         }
       ]
+    },
+    {
+      "external_id": "inv-cb-001",
+      "type": "Invoice",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "invoice_number",
+          "value": "INV-CB-001"
+        },
+        {
+          "type": "amount",
+          "value": "14.50"
+        },
+        {
+          "type": "due_date",
+          "value": "2025-01-31"
+        },
+        {
+          "type": "status",
+          "value": "open"
+        }
+      ]
+    },
+    {
+      "external_id": "inv-cb-002",
+      "type": "Invoice",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "invoice_number",
+          "value": "INV-CB-002"
+        },
+        {
+          "type": "amount",
+          "value": "923.10"
+        },
+        {
+          "type": "due_date",
+          "value": "2025-02-01"
+        },
+        {
+          "type": "status",
+          "value": "open"
+        }
+      ]
+    },
+    {
+      "external_id": "inv-cb-003",
+      "type": "Invoice",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "invoice_number",
+          "value": "INV-CB-003"
+        },
+        {
+          "type": "amount",
+          "value": "85.00"
+        },
+        {
+          "type": "due_date",
+          "value": "2025-01-15"
+        },
+        {
+          "type": "status",
+          "value": "paid"
+        }
+      ]
+    },
+    {
+      "external_id": "inv-cb-004",
+      "type": "Invoice",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "invoice_number",
+          "value": "INV-CB-004"
+        },
+        {
+          "type": "amount",
+          "value": "85.00"
+        },
+        {
+          "type": "due_date",
+          "value": "2025-04-15"
+        },
+        {
+          "type": "status",
+          "value": "open"
+        }
+      ]
+    },
+    {
+      "external_id": "inv-cb-005",
+      "type": "Invoice",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "invoice_number",
+          "value": "INV-CB-005"
+        },
+        {
+          "type": "amount",
+          "value": "312.40"
+        },
+        {
+          "type": "due_date",
+          "value": "2025-02-10"
+        },
+        {
+          "type": "status",
+          "value": "overdue"
+        }
+      ]
+    },
+    {
+      "external_id": "inv-cb-006",
+      "type": "Invoice",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "invoice_number",
+          "value": "INV-CB-006"
+        },
+        {
+          "type": "amount",
+          "value": "312.40"
+        },
+        {
+          "type": "due_date",
+          "value": "2025-03-10"
+        },
+        {
+          "type": "status",
+          "value": "open"
+        }
+      ]
+    },
+    {
+      "external_id": "inv-cb-007",
+      "type": "Invoice",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "invoice_number",
+          "value": "INV-CB-007"
+        },
+        {
+          "type": "amount",
+          "value": "129.99"
+        },
+        {
+          "type": "due_date",
+          "value": "2025-01-25"
+        },
+        {
+          "type": "status",
+          "value": "paid"
+        }
+      ]
+    },
+    {
+      "external_id": "inv-cb-008",
+      "type": "Invoice",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "invoice_number",
+          "value": "INV-CB-008"
+        },
+        {
+          "type": "amount",
+          "value": "220.00"
+        },
+        {
+          "type": "due_date",
+          "value": "2025-02-28"
+        },
+        {
+          "type": "status",
+          "value": "open"
+        }
+      ]
+    },
+    {
+      "external_id": "inv-cb-009",
+      "type": "Invoice",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "invoice_number",
+          "value": "INV-CB-009"
+        },
+        {
+          "type": "amount",
+          "value": "74.25"
+        },
+        {
+          "type": "due_date",
+          "value": "2025-02-20"
+        },
+        {
+          "type": "status",
+          "value": "open"
+        }
+      ]
+    },
+    {
+      "external_id": "wf-erp",
+      "type": "Workflow",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "wf-erp-analyst",
+      "type": "Workflow",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "wf-erp-console",
+      "type": "Workflow",
+      "is_identity": false,
+      "properties": []
+    },
+    {
+      "external_id": "indykiteagent-erp",
+      "type": "Agent",
+      "is_identity": false,
+      "properties": []
     }
   ]
 }

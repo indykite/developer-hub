@@ -69,6 +69,16 @@ subject/description deterministically. Its workflow (`wf-crm`) is
 staff-only - a customer's request ends in a red DENY. See
 [Salesforce cases (profile `crm`)](#salesforce-cases-profile-crm).
 
+## `erp_mcp`
+
+The graph-filtered "ERP" of the optional `erp` compose profile: a Python
+MCP server (streamable HTTP) in front of a Postgres invoices table. Before
+any SQL runs it asks AuthZEN **search/resource** which `Invoice` ids the
+calling subject may `CAN_VIEW` - the graph's `SERVES`/`HAS_INVOICE` edges
+decide the rows, the database knows nothing about authorization. Same
+prompt, different rows per login. See
+[Graph-filtered ERP rows (profile `erp`)](#graph-filtered-erp-rows-profile-erp).
+
 ## `bruno`
 
 Bruno collection of sample data, ciq queries and kbac queries, plus the
@@ -161,8 +171,9 @@ before step 5.
 - **Provider clients** for `console` (chatbot login), `indykiteagent`
   (orchestrator), `indykiteagent-2` (retriever), `indykiteagent-3`
   (weather), and `indykiteagent-4` (analyst): each with its secret.
-  The optional Drive MCP PoC additionally needs `indykiteagent-drive`, and
-  the optional CRM profile needs `indykiteagent-crm`.
+  The optional Drive MCP PoC additionally needs `indykiteagent-drive`, the
+  optional CRM profile `indykiteagent-crm`, and the optional ERP profile
+  `indykiteagent-erp`.
 - **(Optional) Gemini API key**, otherwise an **Ollama** instance reachable
   from Docker (default `http://host.docker.internal:11434`).
 
@@ -225,7 +236,16 @@ make new-retriever
 make new-weather
 make new-analyst
 make new-crm
+make new-drive-mcp   # optional, profile "drive" - outside the default build
+make new-erp-mcp     # optional, profile "erp"   - outside the default build
 ```
+
+> **Image-tag collision warning**: `iag-token-exchange` builds images with
+> the SAME tags (`chatbot:latest`, `retriever-agent:latest`, ...). Running
+> either app's `make` silently overwrites the other app's images - after
+> switching demo apps, always re-run THIS app's `make` before
+> `docker compose up -d`, or containers come up with the sibling app's code
+> (symptom here: console features like the why? cards silently disappear).
 
 ### 4. Pin the Agent Gateway image tag
 
@@ -524,6 +544,41 @@ AUTHORIZED reason text and falls back to a gateway->workflow map
 for DENY cards. Cytoscape is vendored at
 `chatbot/static/assets/js/cytoscape.min.js` (no CDN).
 
+### Graph-filtered ERP rows (profile `erp`)
+
+An ordinary Postgres "ERP" (one invoices table) whose rows are pre-filtered
+per caller by the knowledge graph - the so-far-unused **AuthZEN
+search/resource** API finally gets its showcase:
+
+```text
+console -> orchestrator --query_erp--> analyst --erp_list_invoices--> erp-mcp-iag -> erp-mcp
+                                                                                     |  POST /access/v1/search/resource (app-agent key)
+                                                                                     |  -> allowed invoice ids for the token's subject
+                                                                                     +-> SELECT ... WHERE external_id = ANY(ids)  @ erp-db
+```
+
+Before any SQL runs, the ERP MCP server asks AuthZEN which `Invoice` ids the
+calling subject may `CAN_VIEW`; the graph decides via
+`Department-[SERVES]->customer-[HAS_INVOICE]->Invoice` (staff) and the direct
+`HAS_INVOICE` edge (customer). **Same prompt, different rows**: insurance -
+millicent 5 households, rebecca the 5 others, james exactly his own invoice;
+canbank - millicent 9 (support+trading), leslie 6, roy 3. The database knows
+nothing about the graph, and search/resource (enumeration) complements the
+evaluation API (yes/no) used elsewhere in the demo.
+
+Setup: create the `indykiteagent-erp` IdP client; provision the dataset
+additions (Invoice nodes, SERVES/HAS_INVOICE edges, `staff-can-view-invoice`
+KBAC + the `wf-erp-*` workflow chains - in both datasets); then per usecase
+`.env`: add `erp` to `COMPOSE_PROFILES`, append
+`,erp=http://erp-mcp-iag:8889/mcp` to `ANALYST_MCP_SERVER_URLS`, set
+`ERP_TOOL_ENABLED=true` and the IdP secret; `make new-erp-mcp` and rebuild
+orchestrator/analyst for the new prompts.
+
+Trust boundary: like the CRM agent, `erp-mcp` (and `erp-db`) are **not**
+published to the host - only `erp-mcp-iag` reaches them. The server reads the
+subject from the gateway-minted delegation token; exposing it directly would
+let a self-crafted JWT read other subjects' rows.
+
 ### Parallel multi-agent MCP (WF4)
 
 Mirrors the jarvis-proto e2e suite *"12 IAG Tests / 06 WF4 - Parallel
@@ -664,11 +719,30 @@ Each one shows the full chain in the audit terminal: `orchestrator-iag` →
   means token refresh failed - re-run the auth bootstrap.
 - **Drive file reads answer "binary document"**: the file is an uploaded
   binary, not a Google-native doc - convert it (*Open with → Google Docs*).
+- **Console features silently missing (why? cards, table styling, ...)**
+  after switching demo apps: the sibling `iag-token-exchange` app builds
+  images with the same tags and has overwritten this app's - re-run this
+  app's `make` and `docker compose up -d` (see the warning in the build
+  section).
+- **`Bind for 0.0.0.0:88xx failed: port is already allocated`**: the
+  sibling `iag-token-exchange` stack shares the full port map - only one of
+  the two demos can run at a time. Stop the other first (if its `.env` is
+  broken and `compose down` fails:
+  `docker ps -a --filter name=iag-token-exchange -q | xargs docker stop`).
+- **A mounted file exists on the host but the container sees an empty
+  directory** (e.g. `crm_agent/keys/`): the host directory was deleted and
+  recreated while the container ran - a bind mount pins the old inode.
+  `docker compose up -d --force-recreate <service>` rebinds it.
+- **ERP answers "authorization search failed"**: check
+  `APP_AGENT_CREDENTIALS_TOKEN` / `INDYKITE_BASE_URL` in the erp-mcp
+  container; "no invoices are visible" with 0 rows for a staff login means
+  the `SERVES`/`HAS_INVOICE` edges or the invoice KBAC policies are not
+  provisioned.
 - **Tail gateway logs** to see the introspect / exchange / CIQ / AuthZen
   decisions:
 
   ```bash
-  docker compose logs -f orchestrator-iag retriever-iag mcp-iag analyst-iag drive-mcp-iag
+  docker compose logs -f orchestrator-iag retriever-iag mcp-iag analyst-iag drive-mcp-iag crm-iag erp-mcp-iag
   ```
 
 ### 8. Stop
