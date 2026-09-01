@@ -14,6 +14,14 @@ Contains some configuration yaml files for the open-source AgentGateway tool. Se
 
 A simple Web GUI app and  A2A client that enables Human-user prompting and interactions. The `chatbot` communicates directly with the `orchestrator_agent` (see below).
 
+The console header's **Architecture** link opens `/static/architecture.html`: a
+self-contained diagram of every container (console, gateways, agents, MCP
+servers, database), the IndyKite platform services, the IdP with its OAuth2
+token-exchange service, the external parties (Salesforce, Google Drive,
+Open-Meteo, the LLM) and the numbered request flow between them. It reads
+`/api/config` to badge the active usecase and grey out the `drive`/`crm`/`erp`
+groups when their compose profile is off.
+
 ## `orchestrator_agent`
 
 An A2A agent that manages the interactions with the end-users, and delegates the action to further agents down the workflow chain: `query_retriever` (data/IKG), `query_weather` (weather), and `query_drive` (Google Drive, via the `analyst_agent` - enabled when `ANALYST_HOST` is set).

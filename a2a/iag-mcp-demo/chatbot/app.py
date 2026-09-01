@@ -57,6 +57,10 @@ INDYKITE_BASE_URL = (os.getenv("INDYKITE_BASE_URL") or "").strip().rstrip("/")
 APP_AGENT_CREDENTIALS_TOKEN = (os.getenv("APP_AGENT_CREDENTIALS_TOKEN") or "").strip()
 EXPLAIN_STAFF_QUERY_ID = (os.getenv("EXPLAIN_STAFF_QUERY_ID") or "").strip()
 EXPLAIN_DIRECT_QUERY_ID = (os.getenv("EXPLAIN_DIRECT_QUERY_ID") or "").strip()
+# Architecture page: active usecase + compose profiles, used only to badge the
+# diagram and dim the optional (profile-gated) service groups.
+USECASE = (os.getenv("USECASE") or "").strip()
+COMPOSE_PROFILES = [p.strip() for p in (os.getenv("COMPOSE_PROFILES") or "").split(",") if p.strip()]
 EXPLAIN_ENABLED = all(
     (INDYKITE_BASE_URL, APP_AGENT_CREDENTIALS_TOKEN, EXPLAIN_STAFF_QUERY_ID, EXPLAIN_DIRECT_QUERY_ID),
 )
@@ -169,10 +173,22 @@ def health():
     )
 
 
+def _id_token_display_name() -> str:
+    """Best-effort display name from the session's id_token (unverified decode, cosmetic only)."""
+    token = session.get("id_token") or ""
+    try:
+        payload = token.split(".")[1]
+        claims = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
+    except Exception:  # opaque/absent token: no name to show
+        return ""
+    return str(claims.get("preferred_username") or claims.get("name") or claims.get("email") or claims.get("sub") or "")
+
+
 @app.route("/api/auth/status", methods=["GET"])
 def auth_status():
-    """Return whether the user is authenticated."""
-    return jsonify({"logged_in": bool(session.get("access_token"))})
+    """Return whether the user is authenticated (and who, for the header chip)."""
+    logged_in = bool(session.get("access_token"))
+    return jsonify({"logged_in": logged_in, "username": _id_token_display_name() if logged_in else ""})
 
 
 @app.route("/api/auth/login", methods=["GET"])
@@ -376,6 +392,9 @@ def get_config():
             # the map derives a DENY card's workflow id from its gateway name.
             "explain_enabled": EXPLAIN_ENABLED,
             "explain_workflow_map": EXPLAIN_WORKFLOW_MAP,
+            # architecture page: badge + dimming of profile-gated groups
+            "usecase": USECASE,
+            "profiles": COMPOSE_PROFILES,
         },
     )
 

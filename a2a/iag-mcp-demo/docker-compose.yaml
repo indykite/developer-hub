@@ -58,6 +58,10 @@ services:
         mcp-iag=${WORKFLOW_ID},weather-iag=${WEATHER_WORKFLOW_ID:-},
         analyst-iag=${ANALYST_WORKFLOW_ID:-},crm-iag=${CRM_WORKFLOW_ID:-},
         drive-mcp-iag=${DRIVE_WORKFLOW_ID:-},erp-mcp-iag=${ERP_WORKFLOW_ID:-}
+      # Architecture page (/static/architecture.html): badge the active
+      # usecase and dim the drive/crm/erp groups when their profile is off.
+      USECASE: ${USECASE:-canbank}
+      COMPOSE_PROFILES: ${COMPOSE_PROFILES:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     command: python app.py --host 0.0.0.0 --port ${CHATBOT_PORT}
