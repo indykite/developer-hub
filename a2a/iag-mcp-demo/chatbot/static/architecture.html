@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architecture – Indykite IAG demo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --accent: #FF6B35;
+            --bg-primary: #000000;
+            --bg-secondary: #0A0A0A;
+            --bg-tertiary: #1A1A1A;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B0B0B0;
+            --text-muted: #666666;
+            --border-color: #2A2A2A;
+            --agent: #4EA8DE;
+            --console: #9D8CFF;
+            --data: #45C486;
+            --external: #8A8A8A;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+        .page { max-width: 1440px; margin: 0 auto; padding: 20px 24px 60px; }
+        .page-header { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 6px; }
+        .page-header h1 { font-size: 20px; font-weight: 600; }
+        .page-header a { color: var(--text-secondary); font-size: 13px; text-decoration: none; }
+        .page-header a:hover { color: var(--accent); }
+        #contextBadge { font-size: 13px; color: var(--text-secondary); background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 8px; padding: 4px 10px; }
+        .subtitle { color: var(--text-secondary); font-size: 13px; margin-bottom: 14px; }
+        .diagram-wrap { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px; overflow-x: auto; }
+        svg { width: 100%; min-width: 1100px; height: auto; display: block; }
+
+        /* SVG element styles */
+        .box { fill: var(--bg-tertiary); stroke-width: 1.5; rx: 8; }
+        .b-gateway { stroke: var(--accent); }
+        .b-agent { stroke: var(--agent); }
+        .b-console { stroke: var(--console); }
+        .b-data { stroke: var(--data); }
+        .b-external { stroke: var(--external); stroke-dasharray: none; fill: #101010; }
+        .b-band { fill: #0D0D0D; stroke: var(--border-color); }
+        .b-chip { fill: #161616; stroke: var(--border-color); }
+        .boundary { fill: none; stroke: var(--text-muted); stroke-dasharray: 7 5; rx: 12; }
+        .t { fill: var(--text-primary); font-size: 13px; font-weight: 600; }
+        .t-sub { fill: var(--text-secondary); font-size: 10.5px; font-weight: 400; }
+        .t-band { fill: var(--text-secondary); font-size: 12px; font-weight: 600; letter-spacing: .04em; }
+        .t-boundary { fill: var(--text-muted); font-size: 11px; font-style: italic; }
+        .t-edge { fill: var(--text-secondary); font-size: 10.5px; }
+        .t-tag { fill: var(--accent); font-size: 9px; font-weight: 700; letter-spacing: .06em; }
+        .edge { stroke: var(--text-secondary); stroke-width: 1.5; fill: none; }
+        .edge-ctrl { stroke: var(--accent); stroke-width: 1.2; stroke-dasharray: 5 4; fill: none; opacity: .8; }
+        .edge-soft { stroke: var(--text-muted); stroke-width: 1.2; stroke-dasharray: 3 4; fill: none; }
+        .step circle { fill: var(--accent); }
+        .step text { fill: #000; font-size: 11px; font-weight: 700; text-anchor: middle; }
+        g.off { opacity: 0.22; }
+        g.off .t-tag { fill: var(--text-muted); }
+
+        .below { display: grid; grid-template-columns: 1.4fr 1fr; gap: 24px; margin-top: 20px; }
+        @media (max-width: 900px) { .below { grid-template-columns: 1fr; } }
+        .panel { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px 20px; }
+        .panel h2 { font-size: 14px; margin-bottom: 10px; color: var(--text-primary); }
+        .panel ol { padding-left: 22px; }
+        .panel li { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.45; }
+        .panel li b { color: var(--text-primary); font-weight: 600; }
+        .legend { list-style: none; }
+        .legend li { display: flex; align-items: center; gap: 10px; }
+        .swatch { width: 22px; height: 14px; border-radius: 4px; background: var(--bg-tertiary); border: 2px solid; flex: none; }
+        .sw-gateway { border-color: var(--accent); }
+        .sw-agent { border-color: var(--agent); }
+        .sw-console { border-color: var(--console); }
+        .sw-data { border-color: var(--data); }
+        .sw-external { border-color: var(--external); background: #101010; }
+        .sw-dash { border: none; height: 0; border-top: 2px dashed var(--accent); border-radius: 0; }
+        .sw-boundary { border: 1.5px dashed var(--text-muted); background: transparent; }
+    </style>
+</head>
+<body>
+<div class="page">
+    <div class="page-header">
+        <h1>Demo architecture</h1>
+        <span id="contextBadge" hidden></span>
+        <a href="/">&larr; back to the console</a>
+    </div>
+    <div class="subtitle">
+        Every hop between containers goes through an IndyKite Agent Gateway (orange): the caller's token is introspected,
+        the call is authorized against the knowledge graph, a fresh delegation token is minted for the next hop, and an
+        audit event is emitted. Greyed-out groups are optional compose profiles that are currently off.
+    </div>
+
+    <div class="diagram-wrap">
+    <svg viewBox="0 0 1400 1020" role="img" aria-label="Architecture diagram: console, gateways, agents, IndyKite platform, identity provider and external services">
+        <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0 0 L10 5 L0 10 z" fill="#B0B0B0"/>
+            </marker>
+            <marker id="arrAcc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0 0 L10 5 L0 10 z" fill="#FF6B35"/>
+            </marker>
+            <marker id="arrSoft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0 0 L10 5 L0 10 z" fill="#666666"/>
+            </marker>
+        </defs>
+
+        <!-- ===================== control plane band ===================== -->
+        <rect class="box b-band" x="40" y="20" width="360" height="160" rx="10"/>
+        <text class="t-band" x="56" y="44">IDENTITY PROVIDER &#183; OAuth2</text>
+        <text class="t-sub" x="56" y="60">Curity (idsvr) &#8212; users and agent clients</text>
+        <rect class="box b-chip" x="56" y="76" width="155" height="66" rx="7"/>
+        <text class="t-sub" x="66" y="96" style="fill:#FFFFFF">Authorization Code</text>
+        <text class="t-sub" x="66" y="110">console login &#8594;</text>
+        <text class="t-sub" x="66" y="123">user access token</text>
+        <rect class="box b-chip" x="228" y="76" width="155" height="66" rx="7"/>
+        <text class="t-sub" x="238" y="96" style="fill:#FFFFFF">Token Exchange</text>
+        <text class="t-sub" x="238" y="110">RFC 8693 &#8212; gateways</text>
+        <text class="t-sub" x="238" y="123">mint per-hop tokens</text>
+
+        <rect class="box b-band" x="430" y="20" width="640" height="160" rx="10"/>
+        <text class="t-band" x="446" y="44">INDYKITE PLATFORM &#183; &lt;region&gt;.api.indykite.com</text>
+        <rect class="box b-chip" x="446" y="60" width="115" height="82" rx="7"/>
+        <text class="t-sub" x="455" y="80" style="fill:#FFFFFF">Token</text>
+        <text class="t-sub" x="455" y="93" style="fill:#FFFFFF">Introspect</text>
+        <text class="t-sub" x="455" y="112">is the caller's</text>
+        <text class="t-sub" x="455" y="125">token valid?</text>
+        <rect class="box b-chip" x="571" y="60" width="115" height="82" rx="7"/>
+        <text class="t-sub" x="580" y="80" style="fill:#FFFFFF">AuthZEN PDP</text>
+        <text class="t-sub" x="580" y="97">evaluation +</text>
+        <text class="t-sub" x="580" y="110">search/resource</text>
+        <text class="t-sub" x="580" y="125">(row filtering)</text>
+        <rect class="box b-chip" x="696" y="60" width="115" height="82" rx="7"/>
+        <text class="t-sub" x="705" y="80" style="fill:#FFFFFF">ContX IQ</text>
+        <text class="t-sub" x="705" y="97">workflow match,</text>
+        <text class="t-sub" x="705" y="110">queries, explain</text>
+        <text class="t-sub" x="705" y="125">(why? cards)</text>
+        <rect class="box b-chip" x="821" y="60" width="115" height="82" rx="7"/>
+        <text class="t-sub" x="830" y="80" style="fill:#FFFFFF">Knowledge</text>
+        <text class="t-sub" x="830" y="93" style="fill:#FFFFFF">Graph (IKG)</text>
+        <text class="t-sub" x="830" y="112">users, agents,</text>
+        <text class="t-sub" x="830" y="125">workflows, data</text>
+        <rect class="box b-chip" x="946" y="60" width="108" height="82" rx="7"/>
+        <text class="t-sub" x="955" y="80" style="fill:#FFFFFF">Audit</text>
+        <text class="t-sub" x="955" y="97">every decision</text>
+        <text class="t-sub" x="955" y="110">&#8594; audit log</text>
+        <text class="t-sub" x="955" y="125">terminal</text>
+
+        <rect class="box b-band" x="1100" y="20" width="260" height="160" rx="10"/>
+        <text class="t-band" x="1116" y="44">INDYKITE MCP SERVER</text>
+        <text class="t-sub" x="1116" y="62">&lt;region&gt;.mcp.indykite.com</text>
+        <text class="t-sub" x="1116" y="86">Hosted MCP tools &amp; resources</text>
+        <text class="t-sub" x="1116" y="100">over the project's knowledge</text>
+        <text class="t-sub" x="1116" y="114">graph (CIQ queries, documents,</text>
+        <text class="t-sub" x="1116" y="128">AuthZEN checks).</text>
+
+        <!-- ===================== user ===================== -->
+        <rect class="box b-console" x="50" y="240" width="150" height="50"/>
+        <text class="t" x="66" y="262">User browser</text>
+        <text class="t-sub" x="66" y="278">millicent, james, &#8230;</text>
+
+        <!-- ===================== compose stack boundary ===================== -->
+        <rect class="boundary" x="30" y="310" width="1080" height="680" rx="12"/>
+        <text class="t-boundary" x="46" y="980">docker compose stack &#8212; iag-mcp-demo (one private network per gateway)</text>
+
+        <!-- console -->
+        <rect class="box b-console" x="50" y="350" width="160" height="70"/>
+        <text class="t" x="66" y="374">Console</text>
+        <text class="t-sub" x="66" y="390">chatbot (Flask + UI)</text>
+        <text class="t-sub" x="66" y="404">audit terminal, why? cards</text>
+
+        <!-- orchestrator pair -->
+        <rect class="box b-gateway" x="260" y="350" width="150" height="70"/>
+        <text class="t-tag" x="276" y="366">IAG</text>
+        <text class="t" x="276" y="382">orchestrator-iag</text>
+        <text class="t-sub" x="276" y="398">A2A proxy</text>
+        <rect class="box b-agent" x="490" y="350" width="160" height="70"/>
+        <text class="t" x="506" y="374">orchestrator</text>
+        <text class="t-sub" x="506" y="390">LLM picks the tool:</text>
+        <text class="t-sub" x="506" y="404">retriever / weather / crm / erp</text>
+
+        <!-- retriever pair -->
+        <rect class="box b-gateway" x="260" y="460" width="150" height="70"/>
+        <text class="t-tag" x="276" y="476">IAG</text>
+        <text class="t" x="276" y="492">retriever-iag</text>
+        <text class="t-sub" x="276" y="508">A2A proxy</text>
+        <rect class="box b-agent" x="490" y="460" width="160" height="70"/>
+        <text class="t" x="506" y="484">retriever</text>
+        <text class="t-sub" x="506" y="500">documents, employees,</text>
+        <text class="t-sub" x="506" y="514">AuthZEN, graph queries</text>
+
+        <!-- weather pair -->
+        <rect class="box b-gateway" x="260" y="570" width="150" height="70"/>
+        <text class="t-tag" x="276" y="586">IAG</text>
+        <text class="t" x="276" y="602">weather-iag</text>
+        <text class="t-sub" x="276" y="618">A2A proxy</text>
+        <rect class="box b-agent" x="490" y="570" width="160" height="70"/>
+        <text class="t" x="506" y="594">weather</text>
+        <text class="t-sub" x="506" y="610">HQ location from graph,</text>
+        <text class="t-sub" x="506" y="624">forecast from Open-Meteo</text>
+
+        <!-- crm pair (profile crm) -->
+        <g id="g-crm">
+            <rect class="box b-gateway" x="260" y="680" width="150" height="70"/>
+            <text class="t-tag" x="276" y="696">IAG &#183; profile crm</text>
+            <text class="t" x="276" y="712">crm-iag</text>
+            <text class="t-sub" x="276" y="728">A2A proxy</text>
+            <rect class="box b-agent" x="490" y="680" width="160" height="70"/>
+            <text class="t" x="506" y="704">crm</text>
+            <text class="t-sub" x="506" y="720">files Salesforce Cases</text>
+            <text class="t-sub" x="506" y="734">on behalf of the user</text>
+            <path class="edge" d="M650 715 L1143 715" marker-end="url(#arr)"/>
+            <text class="t-edge" x="800" y="708">RFC 7523 JWT Bearer &#8594; SF access token</text>
+        </g>
+
+        <!-- analyst pair -->
+        <rect class="box b-gateway" x="260" y="790" width="150" height="70"/>
+        <text class="t-tag" x="276" y="806">IAG</text>
+        <text class="t" x="276" y="822">analyst-iag</text>
+        <text class="t-sub" x="276" y="838">A2A proxy</text>
+        <rect class="box b-agent" x="490" y="790" width="160" height="70"/>
+        <text class="t" x="506" y="814">analyst</text>
+        <text class="t-sub" x="506" y="830">multi-backend MCP client:</text>
+        <text class="t-sub" x="506" y="844">graph + drive_* + erp_* tools</text>
+
+        <!-- downstream MCP gateways -->
+        <rect class="box b-gateway" x="730" y="460" width="150" height="70"/>
+        <text class="t-tag" x="746" y="476">IAG &#183; MCP proxy</text>
+        <text class="t" x="746" y="492">mcp-iag</text>
+        <text class="t-sub" x="746" y="508">fronts the hosted</text>
+        <text class="t-sub" x="746" y="522">IndyKite MCP server</text>
+
+        <g id="g-drive">
+            <rect class="box b-gateway" x="730" y="580" width="150" height="70"/>
+            <text class="t-tag" x="746" y="596">IAG &#183; profile drive</text>
+            <text class="t" x="746" y="612">drive-mcp-iag</text>
+            <text class="t-sub" x="746" y="628">MCP proxy</text>
+            <rect class="box b-data" x="915" y="580" width="160" height="70"/>
+            <text class="t" x="931" y="604">drive-mcp</text>
+            <text class="t-sub" x="931" y="620">Google Drive MCP server</text>
+            <text class="t-sub" x="931" y="634">(own Google OAuth identity)</text>
+            <path class="edge" d="M650 610 L722 610" marker-end="url(#arr)"/>
+            <path class="edge" d="M880 615 L907 615" marker-end="url(#arr)"/>
+            <path class="edge" d="M1075 610 L1143 590" marker-end="url(#arr)"/>
+        </g>
+
+        <g id="g-erp">
+            <rect class="box b-gateway" x="730" y="850" width="150" height="70"/>
+            <text class="t-tag" x="746" y="866">IAG &#183; profile erp</text>
+            <text class="t" x="746" y="882">erp-mcp-iag</text>
+            <text class="t-sub" x="746" y="898">MCP proxy &#8212; sole</text>
+            <text class="t-sub" x="746" y="912">bridge to the backend</text>
+            <rect class="boundary" x="905" y="835" width="345" height="120"/>
+            <text class="t-boundary" x="918" y="853">erp-backend-network (private)</text>
+            <rect class="box b-data" x="920" y="865" width="150" height="70"/>
+            <text class="t" x="934" y="889">erp-mcp</text>
+            <text class="t-sub" x="934" y="905">rows pre-filtered via</text>
+            <text class="t-sub" x="934" y="919">AuthZEN search/resource</text>
+            <rect class="box b-data" x="1090" y="865" width="145" height="70"/>
+            <text class="t" x="1104" y="889">erp-db</text>
+            <text class="t-sub" x="1104" y="905">Postgres</text>
+            <text class="t-sub" x="1104" y="919">invoices table</text>
+            <path class="edge" d="M650 835 L700 835 L700 885 L722 885" marker-end="url(#arr)"/>
+            <path class="edge" d="M880 890 L912 890" marker-end="url(#arr)"/>
+            <path class="edge" d="M1070 900 L1082 900" marker-end="url(#arr)"/>
+        </g>
+
+        <!-- ===================== externals (right column) ===================== -->
+        <g id="g-drive-ext">
+            <rect class="box b-external" x="1150" y="560" width="210" height="60"/>
+            <text class="t" x="1166" y="584">Google Drive API</text>
+            <text class="t-sub" x="1166" y="600">external &#183; server-side OAuth</text>
+        </g>
+        <g id="g-crm-ext">
+            <rect class="box b-external" x="1150" y="685" width="210" height="60"/>
+            <text class="t" x="1166" y="709">Salesforce</text>
+            <text class="t-sub" x="1166" y="725">external &#183; Cases (Service Cloud)</text>
+        </g>
+        <rect class="box b-external" x="1150" y="435" width="210" height="60"/>
+        <text class="t" x="1166" y="459">Open-Meteo API</text>
+        <text class="t-sub" x="1166" y="475">external &#183; public weather data</text>
+        <rect class="box b-external" x="1150" y="350" width="210" height="60"/>
+        <text class="t" x="1166" y="374">LLM</text>
+        <text class="t-sub" x="1166" y="390">Gemini API or local Ollama</text>
+
+        <!-- ===================== edges ===================== -->
+        <!-- user -> console -->
+        <path class="edge" d="M125 290 L125 342" marker-end="url(#arr)"/>
+        <!-- console -> IdP login -->
+        <path class="edge-ctrl" d="M190 350 L190 315 L230 315 L230 188" marker-end="url(#arrAcc)"/>
+        <text class="t-edge" x="238" y="240">OAuth2 login</text>
+        <!-- console -> orchestrator-iag -->
+        <path class="edge" d="M210 385 L252 385" marker-end="url(#arr)"/>
+        <text class="t-edge" x="214" y="376">user</text>
+        <text class="t-edge" x="214" y="404">token</text>
+        <!-- orchestrator-iag -> orchestrator -->
+        <path class="edge" d="M410 385 L482 385" marker-end="url(#arr)"/>
+        <!-- gateways -> control plane (drawn once, applies to all IAGs) -->
+        <path class="edge-ctrl" d="M335 350 L335 260 L500 260 L500 188" marker-end="url(#arrAcc)"/>
+        <text class="t-edge" x="345" y="252">every IAG: introspect &#183; AuthZEN &#183; workflow match &#183; audit</text>
+        <path class="edge-ctrl" d="M305 350 L305 188" marker-end="url(#arrAcc)"/>
+        <text class="t-edge" x="248" y="300">token</text>
+        <text class="t-edge" x="243" y="313">exchange</text>
+        <!-- orchestrator A2A bus to the agent gateways -->
+        <path class="edge" d="M565 420 L565 435 L450 435 L450 825"/>
+        <path class="edge" d="M450 495 L418 495" marker-end="url(#arr)"/>
+        <path class="edge" d="M450 605 L418 605" marker-end="url(#arr)"/>
+        <g id="g-crm-bus"><path class="edge" d="M450 715 L418 715" marker-end="url(#arr)"/></g>
+        <path class="edge" d="M450 825 L418 825" marker-end="url(#arr)"/>
+        <text class="t-edge" x="425" y="452">A2A + fresh delegation token per hop</text>
+        <!-- agents -> mcp-iag -->
+        <path class="edge" d="M650 485 L722 485" marker-end="url(#arr)"/>
+        <path class="edge" d="M650 595 L690 595 L690 505 L722 505" marker-end="url(#arr)"/>
+        <path class="edge" d="M650 815 L705 815 L705 520 L722 520" marker-end="url(#arr)"/>
+        <!-- mcp-iag -> hosted MCP server -->
+        <path class="edge" d="M805 460 L805 300 L1230 300 L1230 188" marker-end="url(#arr)"/>
+        <text class="t-edge" x="820" y="293">Streamable HTTP MCP (delegation token)</text>
+        <!-- weather -> open-meteo (routed above mcp-iag) -->
+        <path class="edge" d="M650 580 L680 580 L680 445 L1143 445" marker-end="url(#arr)"/>
+        <!-- agents -> LLM -->
+        <path class="edge-soft" d="M650 365 L1143 375" marker-end="url(#arrSoft)"/>
+        <text class="t-edge" x="800" y="360">all agents &#8250; chat completion</text>
+        <!-- webhooks back to console -->
+        <path class="edge-soft" d="M520 350 L520 330 L140 330 L140 348" marker-end="url(#arrSoft)"/>
+        <text class="t-edge" x="212" y="324">agents report exchanged tokens (TOKEN cards) + audit events</text>
+
+        <!-- ===================== numbered steps ===================== -->
+        <g class="step"><circle cx="105" cy="315" r="10"/><text x="105" y="319">1</text></g>
+        <g class="step"><circle cx="285" cy="288" r="10"/><text x="285" y="292">2</text></g>
+        <g class="step"><circle cx="232" cy="410" r="10"/><text x="232" y="414">3</text></g>
+        <g class="step"><circle cx="472" cy="267" r="10"/><text x="472" y="271">4</text></g>
+        <g class="step"><circle cx="450" cy="465" r="10"/><text x="450" y="469">5</text></g>
+        <g class="step"><circle cx="700" cy="470" r="10"/><text x="700" y="474">6</text></g>
+        <g class="step"><circle cx="1128" cy="600" r="10"/><text x="1128" y="604">7</text></g>
+        <g class="step"><circle cx="896" cy="872" r="10"/><text x="896" y="876">8</text></g>
+        <g class="step"><circle cx="95" cy="330" r="10"/><text x="95" y="334">9</text></g>
+    </svg>
+    </div>
+
+    <div class="below">
+        <div class="panel">
+            <h2>The flow</h2>
+            <ol>
+                <li><b>Login &amp; prompt</b>: the user logs in at the console through the IdP's OAuth2 Authorization Code flow, comes back with a user access token, and sends a prompt.</li>
+                <li><b>IdP token services</b>: the same IdP that authenticated the user also runs the <b>token-exchange service</b> (RFC 8693) that every gateway calls to mint a fresh delegation token &#8212; user as subject, agent chain in <code>act</code> - for the next hop.</li>
+                <li><b>Console &#8594; orchestrator</b>: each prompt is forwarded with the <i>user's</i> token to <b>orchestrator-iag</b>.</li>
+                <li><b>Gateway checks (every hop)</b>: the gateway introspects the token, matches the call's actor chain against a Workflow in the knowledge graph, runs the AuthZEN <code>CAN_TRIGGER</code> check, emits an audit event, and exchanges the token (step 2) before forwarding.</li>
+                <li><b>Orchestrator routes</b>: the LLM picks a tool; the A2A call goes to the chosen agent's gateway, where the same checks run again on the new chain.</li>
+                <li><b>Agents fetch data</b>: retriever/analyst/weather use MCP through <b>mcp-iag</b> to the hosted IndyKite MCP server; the analyst additionally reaches Google Drive via <b>drive-mcp-iag</b> and the ERP via <b>erp-mcp-iag</b>.</li>
+                <li><b>External parties</b>: Google Drive (server-side OAuth identity), Salesforce (the crm agent swaps its IndyKite delegation token for a Salesforce access token via RFC 7523 JWT Bearer — a second, independent trust domain), Open-Meteo, and the configured LLM.</li>
+                <li><b>Data-plane authorization</b>: downstream services can ask the platform what the calling user may see before answering - e.g. <b>erp-mcp</b> asks AuthZEN <code>search/resource</code> which resources the user may <code>CAN_VIEW</code> and returns only those rows. The backend lives on a private network whose sole bridge is its gateway.</li>
+                <li><b>Back to the console</b>: agents report every minted token as a TOKEN card and gateways' decisions appear in the audit-log terminal; deny cards offer a <i>why?</i> graph explanation (ContX IQ).</li>
+            </ol>
+        </div>
+        <div class="panel">
+            <h2>Legend</h2>
+            <ul class="legend">
+                <li><span class="swatch sw-gateway"></span><span>IndyKite Agent Gateway (IAG) container</span></li>
+                <li><span class="swatch sw-agent"></span><span>Agent container (A2A / LangChain)</span></li>
+                <li><span class="swatch sw-console"></span><span>Console / user</span></li>
+                <li><span class="swatch sw-data"></span><span>Data-plane service (MCP server, database)</span></li>
+                <li><span class="swatch sw-external"></span><span>External party (SaaS / public API)</span></li>
+                <li><span class="swatch sw-dash"></span><span>Control plane: OAuth2, introspection, AuthZEN, audit</span></li>
+                <li><span class="swatch sw-boundary"></span><span>Network boundary (compose stack / private backend)</span></li>
+            </ul>
+            <h2 style="margin-top:16px">Optional profiles</h2>
+            <ul class="legend">
+                <li id="lg-drive"><span class="swatch sw-gateway"></span><span><b>drive</b>: Google Drive MCP behind a gateway</span></li>
+                <li id="lg-crm"><span class="swatch sw-gateway"></span><span><b>crm</b>: Salesforce Cases on behalf of the user</span></li>
+                <li id="lg-erp"><span class="swatch sw-gateway"></span><span><b>erp</b>: Postgres invoices, graph-filtered rows</span></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Badge the active usecase and dim profile-gated groups. Purely cosmetic:
+    // if /api/config is unreachable everything stays fully drawn.
+    (async () => {
+        try {
+            const res = await fetch('/api/config', { credentials: 'include' });
+            if (!res.ok) return;
+            const cfg = await res.json();
+            const badge = document.getElementById('contextBadge');
+            const profiles = Array.isArray(cfg.profiles) ? cfg.profiles : [];
+            if (cfg.usecase || profiles.length) {
+                badge.textContent = 'usecase: ' + (cfg.usecase || '?')
+                    + (profiles.length ? ' · profiles: ' + profiles.join(', ') : '');
+                badge.hidden = false;
+            }
+            for (const p of ['drive', 'crm', 'erp']) {
+                if (profiles.includes(p)) continue;
+                for (const id of ['g-' + p, 'g-' + p + '-ext', 'g-' + p + '-bus']) {
+                    document.getElementById(id)?.classList.add('off');
+                }
+                const lg = document.getElementById('lg-' + p);
+                if (lg) { lg.style.opacity = '0.35'; lg.querySelector('span:last-child').textContent += ' (off)'; }
+            }
+        } catch { /* standalone viewing: keep the full diagram */ }
+    })();
+</script>
+</body>
+</html>

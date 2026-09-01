@@ -14,6 +14,8 @@
             <div class="header-title">Indykite Chatbot</div>
         </div>
         <div class="header-actions">
+            <a href="/static/architecture.html" target="_blank" rel="noopener" class="btn btn-arch" title="How the demo is wired: containers, gateways, platform, IdP and external parties">Architecture</a>
+            <span id="userChip" class="user-chip" style="display: none;"></span>
             <a href="/api/auth/login" id="loginButton" class="btn btn-login" style="display: none;">Login</a>
             <button id="logoutButton" class="btn btn-logout" style="display: none;">Logout</button>
             <div class="status" id="status">Connecting...</div>
@@ -38,7 +40,7 @@
     </div>
 
     <div class="input-container">
-        <input type="text" id="messageInput" placeholder="Type your message here..." autocomplete="off">
+        <textarea id="messageInput" placeholder="Type your message here... (Enter to send, Shift+Enter for a new line)" autocomplete="off" rows="1"></textarea>
         <button id="sendButton">Send</button>
     </div>
 </div>
@@ -105,6 +107,14 @@
         if (id) localStorage.setItem(CONTEXT_ID_KEY, id);
     }
 
+    function messageMeta(label) {
+        const meta = document.createElement('div');
+        meta.className = 'message-meta';
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        meta.textContent = `${label} · ${time}`;
+        return meta;
+    }
+
     function addMessage(content, isUser) {
         removeEmptyState();
         const messageDiv = document.createElement('div');
@@ -113,6 +123,7 @@
         contentDiv.className = 'message-content';
         if (isUser) contentDiv.textContent = content;
         else contentDiv.innerHTML = formatMessageContent(content);
+        messageDiv.appendChild(messageMeta(isUser ? (currentUser || 'you') : 'orchestrator'));
         messageDiv.appendChild(contentDiv);
         chatContainer.appendChild(messageDiv);
         chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -125,6 +136,8 @@
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content';
         contentDiv.dataset.streaming = 'true';
+        contentDiv.innerHTML = '<span class="working">orchestrator is working<span class="working-dots"></span></span>';
+        messageDiv.appendChild(messageMeta('orchestrator'));
         messageDiv.appendChild(contentDiv);
         chatContainer.appendChild(messageDiv);
         chatContainer.scrollTop = chatContainer.scrollHeight;
@@ -138,18 +151,28 @@
         const contentDiv = document.createElement('div');
         contentDiv.className = 'message-content error';
         contentDiv.textContent = `Error: ${message}`;
+        messageDiv.appendChild(messageMeta('orchestrator'));
         messageDiv.appendChild(contentDiv);
         chatContainer.appendChild(messageDiv);
         chatContainer.scrollTop = chatContainer.scrollHeight;
     }
 
     let isLoggedIn = false;
+    let currentUser = '';
+    const userChip = document.getElementById('userChip');
+
+    function showUserChip() {
+        userChip.textContent = currentUser;
+        userChip.style.display = currentUser ? 'inline-block' : 'none';
+    }
 
     async function checkAuth() {
         try {
             const response = await fetch(`${API_URL}/api/auth/status`, {credentials: 'include'});
             const data = await response.json();
             isLoggedIn = !!data.logged_in;
+            currentUser = isLoggedIn ? (data.username || '') : '';
+            showUserChip();
             if (isLoggedIn) {
                 loginButton.style.display = 'none';
                 logoutButton.style.display = 'inline-block';
@@ -190,6 +213,8 @@
             }
             if (updatesSource) updatesSource.close();
             isLoggedIn = false;
+            currentUser = '';
+            showUserChip();
             // 2) Redirect to IdP logout URL (clears identity provider session, then redirects back to chatbot).
             if (LOGOUT_URL) {
                 window.location.href = LOGOUT_URL;
@@ -202,6 +227,7 @@
     const terminalMessages = document.getElementById('terminalMessages');
 
     async function sendMessage() {
+        if (sendButton.disabled) return;  // a response is still streaming
         const message = messageInput.value.trim();
         if (!message) return;
 
@@ -219,6 +245,7 @@
         sendButton.innerHTML = '<div class="loading"></div>';
         addMessage(message, true);
         messageInput.value = '';
+        autosizeInput();
 
         const contentDiv = createStreamingMessage();
         let accumulated = '';
@@ -259,6 +286,7 @@
                             contentDiv.innerHTML = formatMessageContent(accumulated);
                         }
                         delete contentDiv.dataset.streaming;
+                        if (!accumulated) contentDiv.textContent = '(empty response)';
                     } else if (data.type === 'error') {
                         addError(data.error || 'Unknown error');
                         contentDiv.parentElement?.remove();
@@ -290,6 +318,13 @@
             messageInput.focus();
         }
     }
+
+    function autosizeInput() {
+        const maxH = parseFloat(getComputedStyle(messageInput).maxHeight) || 160;
+        messageInput.style.height = 'auto';
+        messageInput.style.height = Math.min(messageInput.scrollHeight, maxH) + 'px';
+    }
+    messageInput.addEventListener('input', autosizeInput);
 
     sendButton.addEventListener('click', sendMessage);
     messageInput.addEventListener('keypress', (e) => {

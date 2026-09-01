@@ -30,7 +30,7 @@ body {
 
 .container {
     width: 100%;
-    max-width: 1000px;
+    max-width: 1440px;
     height: 100vh;
     display: flex;
     flex-direction: column;
@@ -47,7 +47,8 @@ body {
     overflow-y: auto;
 }
 .terminal-container {
-    width: 33%;
+    width: clamp(280px, 30vw, 400px);
+    flex: none;
     display: flex;
     flex-direction: column;
     background-color: var(--bg-secondary);
@@ -251,6 +252,48 @@ body {
     border: 1px solid var(--border-color);
 }
 
+.btn-arch {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.user-chip {
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    background: transparent;
+}
+
+.working {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* fixed '...' at a FIXED width, revealed with clip-path: `content` is not
+   reliably animatable across browsers, and animating width makes the whole
+   bubble resize on every tick */
+.working-dots::after {
+    content: '...';
+    display: inline-block;
+    width: 1.2em;
+    vertical-align: bottom;
+    clip-path: inset(0 100% 0 0);
+    animation: workingDots 1.2s steps(4, end) infinite;
+}
+
+@keyframes workingDots {
+    to { clip-path: inset(0 -0.1em 0 0); }
+}
+
+.btn-arch:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+}
+
 .btn-logout:hover {
     color: var(--text-primary);
     border-color: var(--text-secondary);
@@ -295,7 +338,15 @@ body {
 .message {
     margin-bottom: 20px;
     display: flex;
+    flex-direction: column;
     animation: fadeIn 0.3s ease-in;
+}
+
+.message-meta {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: .04em;
+    margin: 0 6px 4px;
 }
 
 @keyframes fadeIn {
@@ -303,8 +354,8 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-.message.user { justify-content: flex-end; }
-.message.assistant { justify-content: flex-start; }
+.message.user { align-items: flex-end; }
+.message.assistant { align-items: flex-start; }
 
 .message-content {
     max-width: 75%;
@@ -324,10 +375,18 @@ body {
 }
 
 .message.assistant .message-content {
-    background: var(--assistant-bg);
-    border: 1px solid var(--border-color);
+    background: #DEDED8;
+    color: #222222;
+    border: 1px solid #B8B8B0;
     border-bottom-left-radius: 4px;
 }
+
+/* readable on the white assistant bubble */
+.message.assistant .message-content th,
+.message.assistant .message-content td { border-color: #C9C9C9; }
+.message.assistant .message-content th { background: rgba(0, 0, 0, 0.06); }
+.message.assistant .message-content tr:nth-child(even) td { background: rgba(0, 0, 0, 0.03); }
+.message.assistant .message-content .working { color: #8A8A8A; }
 
 .input-container {
     padding: 20px 24px;
@@ -341,15 +400,20 @@ body {
 #messageInput {
     flex: 1;
     padding: 14px 18px;
-    border: 1px solid var(--border-color);
-    border-radius: 24px;
+    border: 1px solid #B8B8B0;
+    border-radius: 8px;
     font-size: 14px;
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
+    font-family: inherit;
+    line-height: 1.4;
+    background: #FFFFFF;
+    color: #1A1A1A;
     outline: none;
+    resize: none;
+    max-height: 160px;
+    overflow-y: auto;
 }
 
-#messageInput::placeholder { color: var(--text-muted); }
+#messageInput::placeholder { color: #8A8A8A; }
 #messageInput:focus { border-color: var(--accent); }
 
 #sendButton {
@@ -357,7 +421,7 @@ body {
     background: var(--accent);
     color: white;
     border: none;
-    border-radius: 24px;
+    border-radius: 8px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
@@ -384,7 +448,7 @@ body {
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.message-content.error {
+.message.assistant .message-content.error {
     background: rgba(248, 113, 113, 0.1);
     color: #f87171;
     border-color: rgba(248, 113, 113, 0.3);
