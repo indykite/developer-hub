@@ -78,6 +78,10 @@
     // only when the backend has the explain queries configured.
     let EXPLAIN_ENABLED = false;
     let EXPLAIN_WF_MAP = {};
+    // Deny -> remediate -> allow: gateways whose DENY cards offer a one-click
+    // CAN_TRIGGER grant (workflow bundle per gateway, from /api/config).
+    let GRANT_ENABLED = false;
+    let GRANT_MAP = {};
 
     function removeEmptyState() {
         const emptyState = chatContainer.querySelector('.empty-state');
@@ -341,6 +345,8 @@
             if (data.logout_url) LOGOUT_URL = data.logout_url;
             EXPLAIN_ENABLED = !!data.explain_enabled;
             EXPLAIN_WF_MAP = data.explain_workflow_map || {};
+            GRANT_ENABLED = !!data.grant_enabled;
+            GRANT_MAP = data.grant_map || {};
         } catch (e) {
             console.warn('Failed to load config', e);
         }
@@ -418,17 +424,27 @@
         actor.textContent = event.actor || '?';
         const badge = document.createElement('span');
         badge.className = 'audit-badge';
+        // Gateway >= 2.5x emits more decisions than the classic three:
+        // ERROR (any >=500 failure - used to arrive as NOT_AUTHORIZED) and
+        // the token-service ones (INTROSPECTED*, *_REFUSED, EXCHANGE_*).
         badge.textContent = decision === 'authorized' ? 'AUTHORIZED'
             : decision === 'token_exchanged' ? 'TOKEN'
-            : 'NOT AUTHORIZED';
+            : decision === 'not_authorized' ? 'NOT AUTHORIZED'
+            : (decision || 'unknown').replace(/_/g, ' ').toUpperCase();
         flow.append(subject, arrow, actor, badge);
 
         card.append(head, flow);
         attachDetails(card, decision === 'token_exchanged' ? 'token' : 'reason', event.reason);
 
         // "why?": render the live authorization path behind this decision.
-        if (EXPLAIN_ENABLED && decision !== 'token_exchanged') {
-            const wf = parseWorkflow(event.reason) || EXPLAIN_WF_MAP[event.service] || '';
+        // Only for actual authorization outcomes - an ERROR / introspection
+        // card has no workflow decision for the graph to explain.
+        // For gateways with deliberately-unpinned workflow ids the grant map's
+        // -console workflow is the last-resort guess for DENY cards.
+        const grantBundle = (GRANT_MAP[event.service] || []);
+        if (EXPLAIN_ENABLED && (decision === 'authorized' || decision === 'not_authorized')) {
+            const wf = parseWorkflow(event.reason) || EXPLAIN_WF_MAP[event.service]
+                || grantBundle[grantBundle.length - 1] || '';
             if (wf && event.subject) {
                 const why = document.createElement('button');
                 why.type = 'button';
@@ -437,6 +453,56 @@
                 why.addEventListener('click', () => openExplain(event.subject, wf));
                 flow.appendChild(why);
             }
+        }
+
+        // Deny -> remediate -> allow: one-click CAN_TRIGGER grant. The
+        // backend re-checks WHO clicks (AuthZEN self-check) - a 403 here is
+        // part of the story, so the button shows for every logged-in user.
+        if (GRANT_ENABLED && isLoggedIn && decision === 'not_authorized'
+                && grantBundle.length && event.subject) {
+            const grant = document.createElement('button');
+            grant.type = 'button';
+            grant.className = 'audit-grant';
+            grant.textContent = 'grant access';
+            let granted = false;
+            const status = document.createElement('div');
+            status.className = 'audit-grant-status';
+            grant.addEventListener('click', async () => {
+                grant.disabled = true;
+                status.textContent = '';
+                try {
+                    const res = await fetch(`${API_URL}/api/grant`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({
+                            subject: event.subject,
+                            service: event.service,
+                            revoke: granted,
+                        }),
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok) {
+                        status.textContent = data.error || `HTTP ${res.status}`;
+                        return;
+                    }
+                    granted = !granted;
+                    grant.textContent = granted ? 'revoke access' : 'grant access';
+                    status.textContent = granted
+                        ? `granted: ${(data.granted || []).join(', ')}`
+                        : 'revoked - next run denies again';
+                    // the #3 pairing: show the fresh path (or its absence) live
+                    if (data.explain_workflow && EXPLAIN_ENABLED) {
+                        openExplain(event.subject, data.explain_workflow);
+                    }
+                } catch (e) {
+                    status.textContent = `grant failed: ${e.message}`;
+                } finally {
+                    grant.disabled = false;
+                }
+            });
+            flow.appendChild(grant);
+            card.appendChild(status);
         }
 
         terminalMessages.appendChild(card);

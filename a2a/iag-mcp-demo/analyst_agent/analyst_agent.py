@@ -440,6 +440,9 @@ _BASE_SYSTEM_PROMPT = (
     "Google Drive documents and files; erp_* for invoices and billing data (the rows those tools return are "
     "already pre-filtered by authorization - present exactly what comes back and never speculate about rows "
     "that might be hidden). With a single unaliased backend the names below appear without a prefix.\n"
+    "If the request targets a backend (Google Drive, ERP, knowledge graph) whose tools are NOT in your tool "
+    "list, that backend denied access or is unreachable - say exactly that and stop. NEVER answer such a "
+    "request with another backend's tools, and NEVER present one backend's data as if it came from another.\n"
     "Upon receiving a request, you must:\n"
     "1. Consider the combination of (a) your skills (authzen, ciq-execute) and (b) available MCP "
     "resources and MCP tools. Use list_resources to discover MCP resources (URIs, names, "
@@ -1524,12 +1527,47 @@ async def _run_tool_calls(tool_calls: list[dict], tools: list[StructuredTool]) -
     return results
 
 
+def _unavailable_backends(tools: list[StructuredTool]) -> list[str]:
+    """Return the configured backend aliases that contributed no tools this request.
+
+    Every connected backend contributes its namespaced list_resources tool, so
+    a configured alias without one was denied by its gateway or unreachable.
+    """
+    tool_names = {t.name for t in tools}
+    return [alias for alias, _ in _MCP_SERVERS if alias and f"{alias}_list_resources" not in tool_names]
+
+
 async def _run_llm_loop(llm: Any, tools: list[StructuredTool], prompt: str) -> str:  # noqa: ANN401
     """Run the LLM + tool-calling loop. Returns the final response text."""
     messages: list[Any] = [
         HumanMessage(content=_SYSTEM_PROMPT),
         HumanMessage(content=prompt),
     ]
+    unavailable = _unavailable_backends(tools)
+    # Deterministic deny: the orchestrator's carve-out prompts name the target
+    # backend literally ("answer ONLY with the drive_* tools"). If that backend
+    # contributed no tools, its gateway denied this caller - answer the denial
+    # instead of letting the LLM improvise with another backend's data.
+    for alias in unavailable:
+        if f"{alias}_*" in prompt:
+            return (
+                f"The '{alias}' backend is unavailable for this request - its gateway "
+                "denied the authorization for this user, or the backend is unreachable - "
+                "so no data was retrieved. No other data source was consulted."
+            )
+    if unavailable:
+        messages.insert(
+            1,
+            HumanMessage(
+                content=(
+                    "Runtime note: these configured backends are UNAVAILABLE for this request "
+                    f"(denied by authorization or unreachable): {', '.join(unavailable)}. "
+                    "If the user's request targets one of them, answer ONLY that the backend "
+                    "is unavailable (denied by authorization or unreachable) - make no tool "
+                    "calls and include no other data."
+                ),
+            ),
+        )
     for iteration in range(_TOOL_CALL_MAX_ITERATIONS):
         try:
             response = await llm.ainvoke(messages)

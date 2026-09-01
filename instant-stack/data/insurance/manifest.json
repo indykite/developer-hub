@@ -753,7 +753,7 @@
     "description": "Token introspect for SecureHome Insurance users authenticated via their IdP",
     "ikg_node_type": "Person",
     "jwt_matcher": {
-      "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous/",
+      "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous",
       "audience": "indykiteagent-mcp"
     },
     "claims_mapping": {

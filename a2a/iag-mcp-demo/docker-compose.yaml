@@ -62,6 +62,12 @@ services:
       # usecase and dim the drive/crm/erp groups when their profile is off.
       USECASE: ${USECASE:-canbank}
       COMPOSE_PROFILES: ${COMPOSE_PROFILES:-}
+      # Deny -> remediate -> allow: gateways whose DENY cards offer a
+      # one-click CAN_TRIGGER grant, and the workflow bundle one click writes
+      # (empty = feature off). The grant is guarded by a live AuthZEN
+      # self-check on the logged-in user.
+      AUTHZEN_SUBJECT_TYPES: ${AUTHZEN_SUBJECT_TYPES:-User}
+      GRANT_WORKFLOW_MAP: ${GRANT_WORKFLOW_MAP:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     command: python app.py --host 0.0.0.0 --port ${CHATBOT_PORT}

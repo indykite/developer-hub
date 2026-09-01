@@ -114,6 +114,13 @@ body {
 .audit-card.authorized { border-left-color: #4ade80; }
 .audit-card.not_authorized { border-left-color: #f87171; }
 .audit-card.token_exchanged { border-left-color: var(--accent); }
+/* gateway >= 2.5x decisions: ERROR (>=500 failures) amber; token-service
+   introspection outcomes blue (ok) / red-tinted (inactive/refused) */
+.audit-card.error { border-left-color: #fbbf24; }
+.audit-card.introspected { border-left-color: #60a5fa; }
+.audit-card.introspected_inactive,
+.audit-card.introspection_refused,
+.audit-card.exchange_refused { border-left-color: #f87171; }
 
 .audit-card-head {
     display: flex;
@@ -170,6 +177,20 @@ body {
 .audit-card.token_exchanged .audit-badge {
     color: var(--accent);
     background: rgba(255, 107, 53, 0.12);
+}
+.audit-card.error .audit-badge {
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.12);
+}
+.audit-card.introspected .audit-badge {
+    color: #60a5fa;
+    background: rgba(96, 165, 250, 0.12);
+}
+.audit-card.introspected_inactive .audit-badge,
+.audit-card.introspection_refused .audit-badge,
+.audit-card.exchange_refused .audit-badge {
+    color: #f87171;
+    background: rgba(248, 113, 113, 0.12);
 }
 
 .audit-reason { margin-top: 6px; }
@@ -480,6 +501,29 @@ body {
 .audit-why:hover {
     color: #e5e7eb;
     border-color: #6b7280;
+}
+
+/* deny -> remediate -> allow: grant/revoke button on DENY cards.
+   .audit-why already claims margin-left auto, so this one keeps a gap only. */
+.audit-grant {
+    margin-left: 6px;
+    padding: 1px 8px;
+    font-size: 10px;
+    color: var(--accent);
+    background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    cursor: pointer;
+}
+.audit-grant:hover:not(:disabled) {
+    color: #fff;
+    background: var(--accent);
+}
+.audit-grant:disabled { opacity: 0.5; cursor: wait; }
+.audit-grant-status {
+    margin-top: 4px;
+    font-size: 10px;
+    color: var(--text-secondary);
 }
 
 .explain-overlay {
