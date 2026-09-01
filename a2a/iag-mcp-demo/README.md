@@ -2,15 +2,36 @@
 
 Demonstrates the Indykite Agent Gateway, a smart, context-enabled gateway that secures A2A and MCP communication channels. This variant routes MCP traffic through a dedicated MCP-protecting gateway (`mcp-iag`); see [Protecting MCP traffic](#protecting-mcp-traffic-mcp-iag).
 
+## Contents
+
+- [Folders](#folders)
+- [Running the demo](#running-the-demo)
+    - [1. Prerequisites](#1-prerequisites)
+    - [2. Configure the usecase's env file](#2-configure-the-usecases-env-file)
+    - [3. Build the local service images](#3-build-the-local-service-images)
+    - [4. Pin the Agent Gateway image tag](#4-pin-the-agent-gateway-image-tag)
+    - [5. Start the stack](#5-start-the-stack)
+    - [6. Try the demo prompts](#6-try-the-demo-prompts)
+    - [7. Troubleshooting](#7-troubleshooting)
+    - [8. Stop](#8-stop)
+- Feature deep-dives
+    - [Protecting MCP traffic (mcp-iag)](#protecting-mcp-traffic-mcp-iag)
+    - [Google Drive behind the gateway (profile drive)](#proxying-a-non-indykite-mcp-server-google-drive-profile-drive)
+    - [Deny → remediate → allow (grant button)](#deny--remediate--allow-grant-button)
+    - [Salesforce cases (profile crm)](#salesforce-cases-profile-crm)
+    - [Explain the decision (why? cards)](#explain-the-decision-why-cards)
+    - [Graph-filtered ERP rows (profile erp)](#graph-filtered-erp-rows-profile-erp)
+    - [Parallel multi-agent MCP (WF4)](#parallel-multi-agent-mcp-wf4)
+
 ## Folders
 
 This repo contains the following folders, refer to the README files in each of the folders for additional information.
 
-## `agentgateway.dev`
+### `agentgateway.dev`
 
 Contains some configuration yaml files for the open-source AgentGateway tool. See [AgentGateway](https://github.com/agentgateway/agentgateway) for details.
 
-## `chatbot`
+### `chatbot`
 
 A simple Web GUI app and  A2A client that enables Human-user prompting and interactions. The `chatbot` communicates directly with the `orchestrator_agent` (see below).
 
@@ -22,15 +43,15 @@ Open-Meteo, the LLM) and the numbered request flow between them. It reads
 `/api/config` to badge the active usecase and grey out the `drive`/`crm`/`erp`
 groups when their compose profile is off.
 
-## `orchestrator_agent`
+### `orchestrator_agent`
 
 An A2A agent that manages the interactions with the end-users, and delegates the action to further agents down the workflow chain: `query_retriever` (data/IKG), `query_weather` (weather), and `query_drive` (Google Drive, via the `analyst_agent` - enabled when `ANALYST_HOST` is set).
 
-## `retriever_agent`
+### `retriever_agent`
 
 An A2A agent that manages all data or IKG requests. It acts as an MCP client to the Indykite MCP Server.
 
-## `weather_agent`
+### `weather_agent`
 
 An A2A agent that returns the current weather for a requested city. It calls the public
 [Open-Meteo](https://open-meteo.com) geocoding + forecast APIs (no API key required) and
@@ -49,7 +70,7 @@ Open-Meteo path. See
 [`canbank/README.md`](../../canbank/README.md#external-data-resolvers) for the
 canbank resolver setup.
 
-## `analyst_agent`
+### `analyst_agent`
 
 An A2A agent modeled on the `retriever_agent` but **multi-backend**: it
 connects to one or more MCP servers per request (`MCP_SERVER_URLS`, e.g. the
@@ -63,7 +84,7 @@ isolated MCP sessions through the same `mcp-iag` gateway, with per-user
 authorization bound to each Bearer token. See
 [Parallel multi-agent MCP (WF4)](#parallel-multi-agent-mcp-wf4).
 
-## `crm_agent`
+### `crm_agent`
 
 An A2A agent that files **Salesforce cases on behalf of a person** (optional
 `crm` compose profile, insurance usecase). It receives the gateway-minted
@@ -77,7 +98,7 @@ subject/description deterministically. Its workflow (`wf-crm`) is
 staff-only - a customer's request ends in a red DENY. See
 [Salesforce cases (profile `crm`)](#salesforce-cases-profile-crm).
 
-## `erp_mcp`
+### `erp_mcp`
 
 The graph-filtered "ERP" of the optional `erp` compose profile: a Python
 MCP server (streamable HTTP) in front of a Postgres invoices table. Before
@@ -87,13 +108,13 @@ decide the rows, the database knows nothing about authorization. Same
 prompt, different rows per login. See
 [Graph-filtered ERP rows (profile `erp`)](#graph-filtered-erp-rows-profile-erp).
 
-## `bruno`
+### `bruno`
 
 Bruno collection of sample data, ciq queries and kbac queries, plus the
 [`wf4-parallel-mcp`](bruno/iag-demo/wf4-parallel-mcp) suite mirroring the
 jarvis-proto "WF4 - Parallel Multi-Agent MCP" e2e tests.
 
-## `usecases`
+### `usecases`
 
 The demo's domain, packaged per usecase (`canbank`, `insurance`): a
 `usecase.env` with the domain vocabulary, the per-agent skill files mounted
@@ -102,7 +123,7 @@ narrative. The agents, gateways, and compose topology stay usecase-agnostic;
 see [`usecases/README.md`](usecases/README.md) for selecting and adding
 usecases.
 
-## `drive_mcp`
+### `drive_mcp`
 
 The Google Drive MCP server used by the optional `drive` compose profile
 (the reference stdio server wrapped into Streamable HTTP); see
@@ -120,12 +141,31 @@ server. See [Protecting MCP traffic](#protecting-mcp-traffic-mcp-iag) for the
 MCP gateway and the [Google Drive section](#proxying-a-non-indykite-mcp-server-google-drive-profile-drive)
 for Drive.
 
+The stack at a glance:
+
+| Gateway (host port) | Protects | Downstream / external | Profile |
+| --- | --- | --- | --- |
+| console `:3000` | - | the chatbot UI itself | base |
+| `orchestrator-iag` `:8881` | orchestrator agent | routes to the other agents | base |
+| `retriever-iag` `:8882` | retriever agent | IndyKite MCP via `mcp-iag` | base |
+| `weather-iag` `:8884` | weather agent | Open-Meteo + `mcp-iag` (HQ) | base |
+| `analyst-iag` `:8885` | analyst agent | `mcp-iag`, `drive-mcp-iag`, `erp-mcp-iag` | base |
+| `mcp-iag` `:8886` | IndyKite MCP server (hosted) | `*.mcp.indykite.com` | base |
+| `drive-mcp-iag` `:8887` | drive-mcp server | Google Drive API | `drive` |
+| `crm-iag` `:8888` | crm agent | Salesforce (RFC 7523) | `crm` |
+| `erp-mcp-iag` `:8889` | erp-mcp server | `erp-db` (Postgres) | `erp` |
+
 In short, the actual run sequence is:
-provision the IndyKite project (step 1) → `cp .example.env .env.<usecase>`,
-fill it, and `./switch-usecase.sh <usecase>` (step 2) → `make` (step 3) →
-check the gateway image tag (step 4) → `docker compose up -d` (step 5) →
-log in at `http://localhost:3000` and prompt (step 6). For Google Drive,
-additionally follow the
+
+1. Provision the IndyKite project ([Prerequisites](#1-prerequisites)).
+2. `cp .example.env .env.<usecase>`, fill it, then
+   `./switch-usecase.sh <usecase>`.
+3. `make`.
+4. Check the gateway image tag.
+5. `docker compose up -d`.
+6. Log in at `http://localhost:3000` and prompt.
+
+For Google Drive, additionally follow the
 [Drive section](#proxying-a-non-indykite-mcp-server-google-drive-profile-drive)
 before step 5.
 
@@ -262,10 +302,10 @@ make new-erp-mcp     # optional, profile "erp"   - outside the default build
 ```yaml
 services:
   iag-base:
-    image: indykite/agent-gateway:2.21.1   # or any newer tag from Docker Hub
+    image: indykite/agent-gateway:2.51.0   # or any newer tag from Docker Hub
 ```
 
-All gateways inherit this tag. `2.21.1` implements MCP proxying
+All gateways inherit this tag. `2.21.1` and newer implement MCP proxying
 (`JARVIS_PROTECTED_AGENT_PROTOCOL: mcp`), which the `mcp-iag` and
 `drive-mcp-iag` services need - the published `2.0.x` tags ignore the protocol
 and 404 every MCP method after the auth pipeline passes. Avoid floating tags
@@ -276,7 +316,7 @@ If you are on Apple Silicon, add a `platform` attribute:
 ```yaml
 services:
   iag-base:
-    image: indykite/agent-gateway:2.21.1
+    image: indykite/agent-gateway:2.51.0
     platform: linux/amd64
 ```
 
@@ -460,6 +500,35 @@ Parallel `INVOKES` edges between the same agent pair are discriminated by the
 unpinned (`ANALYST_WORKFLOW_ID=` / `DRIVE_WORKFLOW_ID=` empty, like `mcp-iag`)
 so all shapes authorize. Re-ingest the workflow data after upgrading
 (instant-stack, or bruno `ingest/agent-workflow`).
+
+#### Deny → remediate → allow (grant button)
+
+Authorization is data: when a drive prompt ends in a red DENY card, the card
+offers a **grant access** button. One click writes the missing
+`CAN_TRIGGER` edges (Capture API upsert to the three drive workflows), then
+opens the why? graph so the new path is visible immediately; re-running the
+prompt turns the chain green. The button flips to **revoke access** (Capture
+delete of the same edges) so the beat is repeatable.
+
+The grant itself is guarded by a live **AuthZEN self-check**: `/api/grant`
+only proceeds when the *logged-in* user can `CAN_TRIGGER` every workflow in
+the bundle themselves. millicent (staff, via her department) passes; james
+clicking his own button gets a clean 403 - which is part of the story.
+
+Configured by `GRANT_WORKFLOW_MAP` in the usecase env
+(`gateway=wf:wf:...,gateway=...`, empty = buttons off); the chatbot also
+needs `AUTHZEN_SUBJECT_TYPES` (insurance `Person`, canbank `User`). The
+gateway pins stay empty - only the chatbot reads this map.
+
+Timing: the gateway caches each subject's workflow set, and this stack MUST
+run the image defaults (`ttl 5m`, `update_after 5m` - see the warning in
+[`iag-base-docker.yaml`](iag-base-docker.yaml): every faster setting
+triggers a request-context race in the gateway's cache refresh, bug filed).
+So grants and revokes propagate once the cache expires - typically up to
+~5 minutes; restart the gateways
+(`docker compose restart orchestrator-iag analyst-iag drive-mcp-iag`) to
+clear the cache immediately. The platform itself is consistent at once;
+only the gateway cache lags.
 
 The chatbot console reaches Drive through the orchestrator's `query_drive`
 tool (enabled when `ANALYST_HOST` is set on the orchestrator, wired by
@@ -741,11 +810,21 @@ Each one shows the full chain in the audit terminal: `orchestrator-iag` →
   directory** (e.g. `crm_agent/keys/`): the host directory was deleted and
   recreated while the container ran - a bind mount pins the old inode.
   `docker compose up -d --force-recreate <service>` rebinds it.
+- **Grant button problems**: no `grant access` button on a DENY card = the
+  card's gateway has no `GRANT_WORKFLOW_MAP` entry, or you're not logged in.
+  A **403 on click** is usually the point (the logged-in user can't
+  `CAN_TRIGGER` those workflows themselves - the AuthZEN self-check); as
+  millicent it means the staff path isn't provisioned. A **502** means the
+  chatbot can't reach `INDYKITE_BASE_URL` / the app-agent key is invalid.
 - **ERP answers "authorization search failed"**: check
   `APP_AGENT_CREDENTIALS_TOKEN` / `INDYKITE_BASE_URL` in the erp-mcp
   container; "no invoices are visible" with 0 rows for a staff login means
   the `SERVES`/`HAS_INVOICE` edges or the invoice KBAC policies are not
   provisioned.
+- **Gateway metrics**: every gateway serves Prometheus metrics at
+  `:9090/metrics` inside its network (enabled via
+  `JARVIS_SERVICE_TRACING_DETECTOR: local` in `iag-base-docker.yaml`; no host
+  port is published - probe from a member container).
 - **Tail gateway logs** to see the introspect / exchange / CIQ / AuthZen
   decisions:
 

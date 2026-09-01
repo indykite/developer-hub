@@ -3,14 +3,19 @@ version: '3.9'
 
 services:
   iag-base:
-    # Pinned: 2.21.1 implements MCP proxying (JARVIS_PROTECTED_AGENT_PROTOCOL: mcp),
-    # required by the mcp-iag and drive-mcp-iag services. (The published 2.0.x
-    # tags ignore the protocol and 404 every MCP method.) All gateways share
-    # this tag. See https://hub.docker.com/r/indykite/agent-gateway/tags.
-    image: indykite/agent-gateway:2.21.1
+    # Pinned. Needs at least 2.21.x for MCP proxying (JARVIS_PROTECTED_AGENT_PROTOCOL:
+    # mcp), required by the mcp-iag and drive-mcp-iag services. (The published
+    # 2.0.x tags ignore the protocol and 404 every MCP method.) All gateways
+    # share this tag. See https://hub.docker.com/r/indykite/agent-gateway/tags.
+    image: indykite/agent-gateway:2.51.0
     environment:
       JARVIS_SERVICE_LOG_LEVEL: debug
       JARVIS_SERVICE_ENVIRONMENT: demo
+      # Without a resource detector the gateway skips its whole metrics
+      # pipeline ("skip starting metrics server, no registry available");
+      # "local" turns on Prometheus metrics at :9090/metrics (in-network only,
+      # no host port is published).
+      JARVIS_SERVICE_TRACING_DETECTOR: local
       JARVIS_IDENTITY_PROVIDER_BASE_URL: "${IDP_BASE_URL:-https://idsvr.indykite.one/oauth/v2/}"
       JARVIS_IDENTITY_PROVIDER_INTROSPECT_ENDPOINT: "oauth-introspect"
       JARVIS_IDENTITY_PROVIDER_CLIENT_CREDENTIAL_ENDPOINT: "oauth-token"
@@ -26,6 +31,14 @@ services:
       # insurance demo's roy, a Person) set AUTHZEN_SUBJECT_TYPES=User Person
       # in .env; each extra type needs a matching CAN_TRIGGER KBAC policy.
       JARVIS_AUTHZEN_SUBJECT_TYPES: ${AUTHZEN_SUBJECT_TYPES:-User}
+      # Subject workflow-set cache: MUST stay on the image defaults (ttl 5m,
+      # update_after 5m, update_after_error 10s). Setting update_after < ttl
+      # triggers a race in the gateway's LoadingCache (the async refresh runs
+      # on the request's context, gets "context canceled", and the ERROR is
+      # cached for the full TTL - permanent failure loop). Bug filed; retune
+      # only after the fix ships. Consequence: grant/revoke changes take up
+      # to ~5 min to reach gateway decisions (the platform is consistent
+      # immediately; restart the gateways to clear the cache instantly).
 
     extra_hosts:
       - "host.docker.internal:host-gateway"

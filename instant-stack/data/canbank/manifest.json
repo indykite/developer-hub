@@ -723,7 +723,7 @@
     "description": "Token introspect for CanBank users authenticated via their IdP",
     "ikg_node_type": "User",
     "jwt_matcher": {
-      "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous/",
+      "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous",
       "audience": "indykiteagent-mcp"
     },
     "claims_mapping": {

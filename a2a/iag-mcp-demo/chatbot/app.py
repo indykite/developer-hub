@@ -10,6 +10,7 @@ import json
 import logging
 import os
 import secrets
+import threading
 import urllib.parse
 from queue import Empty, Queue
 
@@ -69,6 +70,17 @@ EXPLAIN_WORKFLOW_MAP = {
     for svc, _, wf in (pair.partition("=") for pair in (os.getenv("EXPLAIN_WORKFLOW_MAP") or "").split(","))
     if svc.strip() and wf.strip()
 }
+# Deny -> remediate -> allow: which gateways' DENY cards offer a one-click
+# CAN_TRIGGER grant, and the workflow bundle one click writes
+# ("service=wf-a:wf-b,service2=..."). The write spends the app-agent key;
+# /api/grant guards it with a live AuthZEN self-check on the caller.
+AUTHZEN_SUBJECT_TYPE = ((os.getenv("AUTHZEN_SUBJECT_TYPES") or "User").replace(",", " ").split() or ["User"])[0]
+GRANT_WORKFLOW_MAP = {
+    svc.strip(): [wf.strip() for wf in wfs.split(":") if wf.strip()]
+    for svc, _, wfs in (pair.partition("=") for pair in (os.getenv("GRANT_WORKFLOW_MAP") or "").split(","))
+    if svc.strip() and wfs.strip()
+}
+GRANT_ENABLED = bool(INDYKITE_BASE_URL and APP_AGENT_CREDENTIALS_TOKEN and GRANT_WORKFLOW_MAP)
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
@@ -97,8 +109,20 @@ def _pkce_code_challenge(verifier: str) -> str:
     return base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
 
 
-# single global queue for demo
-update_queue = Queue()
+# One queue per connected console, so every audit event reaches EVERY open
+# console (a single shared queue hands each event to only one competing
+# reader - with two browsers the cards split randomly between them, and the
+# grant beat needs millicent to see james's DENY card in her own console).
+update_clients: set[Queue] = set()
+update_clients_lock = threading.Lock()
+
+
+def _broadcast_update(event: dict) -> None:
+    """Fan an audit event out to every connected SSE client."""
+    with update_clients_lock:
+        clients = list(update_clients)
+    for q in clients:
+        q.put(event)
 
 
 @app.route("/api/push-update", methods=["POST"])
@@ -123,7 +147,7 @@ def push_update():
         "timestamp": timestamp,
         "service": service,
     }
-    update_queue.put(event)
+    _broadcast_update(event)
     return jsonify({"ok": True})
 
 
@@ -132,24 +156,32 @@ def updates_sse():
     """Stream queued audit events to the browser as Server-Sent Events."""
 
     def event_stream():
+        # Per-client queue registered for the broadcast fan-out.
+        client_queue = Queue()
+        with update_clients_lock:
+            update_clients.add(client_queue)
         # Optional: Send a comment to keep the connection alive immediately
         yield ": connected\n\n"
 
-        while True:
-            try:
-                # Use a timeout so the loop can check for client disconnection
-                # and doesn't hang the thread forever
-                event = update_queue.get(timeout=20)
-                yield f"data: {json.dumps(event)}\n\n"
-            except Empty:
-                # Send a "keep-alive" heart beat every 20 seconds
-                yield ": ping\n\n"
-            except GeneratorExit:
-                # Clean up when the browser closes the connection
-                break
-            except Exception as e:
-                logger.error("SSE Error: %s", e)  # noqa: TRY400
-                break
+        try:
+            while True:
+                try:
+                    # Use a timeout so the loop can check for client disconnection
+                    # and doesn't hang the thread forever
+                    event = client_queue.get(timeout=20)
+                    yield f"data: {json.dumps(event)}\n\n"
+                except Empty:
+                    # Send a "keep-alive" heart beat every 20 seconds
+                    yield ": ping\n\n"
+                except GeneratorExit:
+                    # Clean up when the browser closes the connection
+                    break
+                except Exception as e:
+                    logger.error("SSE Error: %s", e)  # noqa: TRY400
+                    break
+        finally:
+            with update_clients_lock:
+                update_clients.discard(client_queue)
 
     return Response(
         event_stream(),
@@ -182,6 +214,17 @@ def _id_token_display_name() -> str:
     except Exception:  # opaque/absent token: no name to show
         return ""
     return str(claims.get("preferred_username") or claims.get("name") or claims.get("email") or claims.get("sub") or "")
+
+
+def _id_token_sub() -> str:
+    """Return the session user's subject external id (id_token ``sub``, unverified decode)."""
+    token = session.get("id_token") or ""
+    try:
+        payload = token.split(".")[1]
+        claims = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
+    except Exception:  # opaque/absent token: no subject available
+        return ""
+    return str(claims.get("sub") or "")
 
 
 @app.route("/api/auth/status", methods=["GET"])
@@ -293,6 +336,47 @@ def _ciq_execute(query_id, input_params):
     return (resp.json() or {}).get("data") or []
 
 
+def _authzen_can_trigger(subject_id, workflow_id):
+    """Ask AuthZEN (live) whether subject_id may CAN_TRIGGER workflow_id right now."""
+    resp = httpx.post(
+        f"{INDYKITE_BASE_URL}/access/v1/evaluation",
+        headers={"Content-Type": "application/json", "X-IK-ClientKey": APP_AGENT_CREDENTIALS_TOKEN},
+        json={
+            "subject": {"type": AUTHZEN_SUBJECT_TYPE, "id": subject_id},
+            "resource": {"type": "Workflow", "id": workflow_id},
+            "action": {"name": "CAN_TRIGGER"},
+        },
+        timeout=20.0,
+    )
+    resp.raise_for_status()
+    return bool((resp.json() or {}).get("decision"))
+
+
+def _capture_can_trigger(subject_id, workflow_ids, *, revoke=False):
+    """Upsert (or delete) ``subject -CAN_TRIGGER-> Workflow`` edges via the Capture API.
+
+    Authorization is data: this one write is what flips the next gateway
+    decision from DENY to ALLOW (and back). Upserts are idempotent.
+    """
+    edges = [
+        {
+            "source": {"type": AUTHZEN_SUBJECT_TYPE, "external_id": subject_id},
+            "target": {"type": "Workflow", "external_id": wf},
+            "type": "CAN_TRIGGER",
+            **({} if revoke else {"properties": []}),
+        }
+        for wf in workflow_ids
+    ]
+    path = "/capture/v1/relationships/delete" if revoke else "/capture/v1/relationships"
+    resp = httpx.post(
+        f"{INDYKITE_BASE_URL}{path}",
+        headers={"Content-Type": "application/json", "X-IK-ClientKey": APP_AGENT_CREDENTIALS_TOKEN},
+        json={"relationships": edges},
+        timeout=30.0,
+    )
+    resp.raise_for_status()
+
+
 def _row_node(row_nodes, alias, node_type):
     """Build one cytoscape node element from a CIQ row's alias.* keys, or None."""
     ext_id = row_nodes.get(f"{alias}.external_id")
@@ -373,6 +457,62 @@ def explain_decision():
         return jsonify({"error": "platform unreachable"}), 502
 
 
+def _grant_guard_error(caller, workflows):
+    """Return the 403 reason if the caller may not grant these workflows, else None.
+
+    The self-check is a live AuthZEN evaluation per workflow: only someone who
+    can CAN_TRIGGER a workflow themselves may grant it to someone else.
+    """
+    if not caller:
+        return "cannot identify the logged-in user"
+    for wf in workflows:
+        if not _authzen_can_trigger(caller, wf):
+            return f"{caller} is not allowed to grant {wf} (no CAN_TRIGGER path of their own)"
+    return None
+
+
+@app.route("/api/grant", methods=["POST"])
+def grant_access():
+    """One-click remediate/revoke: write CAN_TRIGGER edges for a denied subject.
+
+    The grant itself is authorization-guarded by a live AuthZEN self-check:
+    the caller may only grant workflows they can trigger themselves
+    (millicent passes via her department; james self-granting gets a 403).
+    """
+    if not GRANT_ENABLED:
+        return jsonify({"error": "grant is not configured"}), 404
+    # The route spends the app-agent credentials: when the console has a login
+    # flow, require a session so anonymous callers can't write to the graph.
+    if ID_SERVER_BASE_URL and not session.get("access_token"):
+        return jsonify({"error": "authentication required"}), 401
+    body = request.get_json(silent=True) or {}
+    subject_id = str(body.get("subject") or "").strip()
+    service = str(body.get("service") or "").strip()
+    revoke = bool(body.get("revoke"))
+    workflows = GRANT_WORKFLOW_MAP.get(service) or []
+    if not subject_id or not workflows:
+        return jsonify({"error": "subject and a grant-mapped service are required"}), 400
+    caller = _id_token_sub()
+    try:
+        denied = _grant_guard_error(caller, workflows)
+        if denied:
+            return jsonify({"error": denied}), 403
+        _capture_can_trigger(subject_id, workflows, revoke=revoke)
+    except httpx.HTTPError as e:
+        logger.warning("grant %s for %s failed: %s", "revoke" if revoke else "write", subject_id, e)
+        return jsonify({"error": "platform unreachable"}), 502
+    verb = "revoked" if revoke else "granted"
+    logger.info("%s CAN_TRIGGER %s -> %s (by %s)", verb, subject_id, workflows, caller)
+    return jsonify(
+        {
+            verb: workflows,
+            "subject": subject_id,
+            # the -console workflow: what the why? modal should re-query
+            "explain_workflow": workflows[-1],
+        },
+    )
+
+
 @app.route("/api/config", methods=["GET"])
 def get_config():
     """Public config for the frontend (e.g. logout URL from ID_SERVER_BASE_URL)."""
@@ -392,6 +532,9 @@ def get_config():
             # the map derives a DENY card's workflow id from its gateway name.
             "explain_enabled": EXPLAIN_ENABLED,
             "explain_workflow_map": EXPLAIN_WORKFLOW_MAP,
+            # grant buttons on DENY cards (deny -> remediate -> allow)
+            "grant_enabled": GRANT_ENABLED,
+            "grant_map": GRANT_WORKFLOW_MAP,
             # architecture page: badge + dimming of profile-gated groups
             "usecase": USECASE,
             "profiles": COMPOSE_PROFILES,
