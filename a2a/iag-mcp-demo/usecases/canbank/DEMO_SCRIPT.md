@@ -10,6 +10,9 @@ the original requester to the agent at every hop.
 Switch with `./switch-usecase.sh canbank` (relinks `.env` to `.env.canbank`
 and recreates the stack; see `usecases/README.md`).
 
+For a fully performable narrative version of this script - every
+prompt as a beat in one continuous story - see [SCENARIO.md](SCENARIO.md).
+
 ## At a glance
 
 | Act | Login | The beat |

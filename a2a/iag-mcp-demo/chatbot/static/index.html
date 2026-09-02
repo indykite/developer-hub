@@ -488,6 +488,7 @@
                     }
                     granted = !granted;
                     grant.textContent = granted ? 'revoke access' : 'grant access';
+                    grant.classList.toggle('revoke-state', granted);
                     status.textContent = granted
                         ? `granted: ${(data.granted || []).join(', ')}`
                         : 'revoked - next run denies again';
@@ -503,6 +504,7 @@
             });
             flow.appendChild(grant);
             card.appendChild(status);
+            card.classList.add('grantable');
         }
 
         terminalMessages.appendChild(card);

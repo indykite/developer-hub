@@ -8,6 +8,9 @@ household-insurance dataset (the Mitchell family and nine other households).
 Switch with `./switch-usecase.sh insurance` (relinks `.env` to
 `.env.insurance` and recreates the stack; see `usecases/README.md`).
 
+For a fully performable narrative version of this script - every
+prompt as a beat in one continuous story - see [SCENARIO.md](SCENARIO.md).
+
 ## At a glance
 
 | Act | Login | The beat |

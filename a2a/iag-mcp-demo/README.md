@@ -302,7 +302,7 @@ make new-erp-mcp     # optional, profile "erp"   - outside the default build
 ```yaml
 services:
   iag-base:
-    image: indykite/agent-gateway:2.51.0   # or any newer tag from Docker Hub
+    image: indykite/agent-gateway:2.52.1   # or any newer tag from Docker Hub
 ```
 
 All gateways inherit this tag. `2.21.1` and newer implement MCP proxying
@@ -316,7 +316,7 @@ If you are on Apple Silicon, add a `platform` attribute:
 ```yaml
 services:
   iag-base:
-    image: indykite/agent-gateway:2.51.0
+    image: indykite/agent-gateway:2.52.1
     platform: linux/amd64
 ```
 
