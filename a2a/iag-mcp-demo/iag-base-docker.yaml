@@ -7,7 +7,7 @@ services:
     # mcp), required by the mcp-iag and drive-mcp-iag services. (The published
     # 2.0.x tags ignore the protocol and 404 every MCP method.) All gateways
     # share this tag. See https://hub.docker.com/r/indykite/agent-gateway/tags.
-    image: indykite/agent-gateway:2.51.0
+    image: indykite/agent-gateway:2.52.1
     environment:
       JARVIS_SERVICE_LOG_LEVEL: debug
       JARVIS_SERVICE_ENVIRONMENT: demo

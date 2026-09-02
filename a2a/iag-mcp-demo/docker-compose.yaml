@@ -313,7 +313,7 @@ services:
       # Defaults keep `docker compose up` warning-free with a .env predating
       # the CRM pair - compose validates these specs even when the profile is
       # disabled (same convention as the drive PoC).
-      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${CRM_IDP_CLIENT_ID:-}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${CRM_IDP_CLIENT_ID:-indykiteagent-crm}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${CRM_IDP_CLIENT_SECRET:-}
       # The CRM agent runs its own workflow (wf-crm: staff -> orchestrator ->
       # crm), not the base ${WORKFLOW_ID}. allowed_workflow_id is one value per
