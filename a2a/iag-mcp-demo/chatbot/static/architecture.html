@@ -6,45 +6,60 @@
     <title>Architecture – Indykite IAG demo</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* Corporate "operations desk" frame, matching the console: warm
+           paper page, the proven dark diagram kept as an ink-navy plate. */
         :root {
             --accent: #FF6B35;
-            --bg-primary: #000000;
-            --bg-secondary: #0A0A0A;
-            --bg-tertiary: #1A1A1A;
-            --text-primary: #FFFFFF;
-            --text-secondary: #B0B0B0;
-            --text-muted: #666666;
-            --border-color: #2A2A2A;
+            --ink-900: #0C1B2A;
+            --ink-800: #14293F;
+            --ink-750: #1A3350;
+            --ink-700: #23405C;
+            --ink-text: #E8EDF2;
+            --ink-sub: #A5B5C4;
+            --ink-faint: #66798C;
+            --paper: #F5F4F0;
+            --surface: #FFFFFF;
+            --line: #E3E1DA;
+            --text-ink: #1E2A38;
+            --text-sub: #5C6B7A;
+            --text-faint: #939CA7;
             --agent: #4EA8DE;
             --console: #9D8CFF;
             --data: #45C486;
-            --external: #8A8A8A;
+            --external: #8A9BAC;
+            --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Times New Roman', serif;
+            /* aliases used inside the SVG styles (ink plate) */
+            --bg-tertiary: var(--ink-800);
+            --text-primary: var(--ink-text);
+            --text-secondary: var(--ink-sub);
+            --text-muted: var(--ink-faint);
+            --border-color: var(--ink-700);
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
+            background: var(--paper);
+            color: var(--text-ink);
         }
         .page { max-width: 1440px; margin: 0 auto; padding: 20px 24px 60px; }
         .page-header { display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap; margin-bottom: 6px; }
-        .page-header h1 { font-size: 20px; font-weight: 600; }
-        .page-header a { color: var(--text-secondary); font-size: 13px; text-decoration: none; }
+        .page-header h1 { font-family: var(--serif); font-size: 22px; font-weight: 600; color: var(--text-ink); }
+        .page-header a { color: var(--text-sub); font-size: 13px; text-decoration: none; }
         .page-header a:hover { color: var(--accent); }
-        #contextBadge { font-size: 13px; color: var(--text-secondary); background: var(--bg-tertiary); border: 1px solid var(--border-color); border-radius: 8px; padding: 4px 10px; }
-        .subtitle { color: var(--text-secondary); font-size: 13px; margin-bottom: 14px; }
-        .diagram-wrap { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px; overflow-x: auto; }
+        #contextBadge { font-size: 13px; color: var(--text-sub); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; }
+        .subtitle { color: var(--text-sub); font-size: 13px; margin-bottom: 14px; }
+        .diagram-wrap { background: var(--ink-900); border: 1px solid var(--ink-700); border-top: 3px solid var(--accent); border-radius: 12px; padding: 10px; overflow-x: auto; box-shadow: 0 2px 12px rgba(12, 27, 42, 0.12); }
         svg { width: 100%; min-width: 1100px; height: auto; display: block; }
 
-        /* SVG element styles */
-        .box { fill: var(--bg-tertiary); stroke-width: 1.5; rx: 8; }
+        /* SVG element styles (unchanged geometry; ink-navy plate palette) */
+        .box { fill: var(--ink-800); stroke-width: 1.5; rx: 8; }
         .b-gateway { stroke: var(--accent); }
         .b-agent { stroke: var(--agent); }
         .b-console { stroke: var(--console); }
         .b-data { stroke: var(--data); }
-        .b-external { stroke: var(--external); stroke-dasharray: none; fill: #101010; }
-        .b-band { fill: #0D0D0D; stroke: var(--border-color); }
-        .b-chip { fill: #161616; stroke: var(--border-color); }
-        .boundary { fill: none; stroke: var(--text-muted); stroke-dasharray: 7 5; rx: 12; }
+        .b-external { stroke: var(--external); stroke-dasharray: none; fill: #102134; }
+        .b-band { fill: #0F2236; stroke: var(--ink-700); }
+        .b-chip { fill: var(--ink-750); stroke: var(--ink-700); }
+        .boundary { fill: none; stroke: var(--ink-faint); stroke-dasharray: 7 5; rx: 12; }
         .t { fill: var(--text-primary); font-size: 13px; font-weight: 600; }
         .t-sub { fill: var(--text-secondary); font-size: 10.5px; font-weight: 400; }
         .t-band { fill: var(--text-secondary); font-size: 12px; font-weight: 600; letter-spacing: .04em; }
@@ -61,21 +76,22 @@
 
         .below { display: grid; grid-template-columns: 1.4fr 1fr; gap: 24px; margin-top: 20px; }
         @media (max-width: 900px) { .below { grid-template-columns: 1fr; } }
-        .panel { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px 20px; }
-        .panel h2 { font-size: 14px; margin-bottom: 10px; color: var(--text-primary); }
+        .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px; box-shadow: 0 1px 3px rgba(12, 27, 42, 0.06); }
+        .panel h2 { font-family: var(--serif); font-size: 15px; margin-bottom: 10px; color: var(--text-ink); }
         .panel ol { padding-left: 22px; }
-        .panel li { font-size: 13px; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.45; }
-        .panel li b { color: var(--text-primary); font-weight: 600; }
+        .panel li { font-size: 13px; color: var(--text-sub); margin-bottom: 8px; line-height: 1.5; }
+        .panel li b { color: var(--text-ink); font-weight: 600; }
         .legend { list-style: none; }
-        .legend li { display: flex; align-items: center; gap: 10px; }
-        .swatch { width: 22px; height: 14px; border-radius: 4px; background: var(--bg-tertiary); border: 2px solid; flex: none; }
+        .legend li { display: flex; align-items: center; gap: 10px; color: var(--text-sub); font-size: 13px; }
+        .legend li b { color: var(--text-ink); }
+        .swatch { width: 22px; height: 14px; border-radius: 4px; background: var(--ink-800); border: 2px solid; flex: none; }
         .sw-gateway { border-color: var(--accent); }
         .sw-agent { border-color: var(--agent); }
         .sw-console { border-color: var(--console); }
         .sw-data { border-color: var(--data); }
-        .sw-external { border-color: var(--external); background: #101010; }
+        .sw-external { border-color: var(--external); background: #102134; }
         .sw-dash { border: none; height: 0; border-top: 2px dashed var(--accent); border-radius: 0; }
-        .sw-boundary { border: 1.5px dashed var(--text-muted); background: transparent; }
+        .sw-boundary { border: 1.5px dashed var(--text-faint); background: transparent; }
     </style>
 </head>
 <body>
@@ -383,8 +399,8 @@
             const cfg = await res.json();
             const badge = document.getElementById('contextBadge');
             const profiles = Array.isArray(cfg.profiles) ? cfg.profiles : [];
-            if (cfg.usecase || profiles.length) {
-                badge.textContent = 'usecase: ' + (cfg.usecase || '?')
+            if (cfg.org_name || cfg.usecase || profiles.length) {
+                badge.textContent = (cfg.org_name || 'usecase: ' + (cfg.usecase || '?'))
                     + (profiles.length ? ' · profiles: ' + profiles.join(', ') : '');
                 badge.hidden = false;
             }
