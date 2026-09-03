@@ -16,6 +16,9 @@ services:
     #    build:
     #      context: .
     #      dockerfile: ./chatbot/Dockerfile
+    # Usecase branding (ORG_NAME/ORG_TAGLINE) so the console adapts per usecase.
+    env_file:
+      - ./usecases/${USECASE:-canbank}/usecase.env
     ports:
       - "${CHATBOT_PORT}:${CHATBOT_PORT}"
     networks:

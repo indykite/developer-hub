@@ -347,6 +347,18 @@
             EXPLAIN_WF_MAP = data.explain_workflow_map || {};
             GRANT_ENABLED = !!data.grant_enabled;
             GRANT_MAP = data.grant_map || {};
+            // Usecase branding: the console presents itself as the demo org.
+            if (data.org_name) {
+                document.title = `${data.org_name} · Agent Console`;
+                const t = document.querySelector('.header-title');
+                if (t) t.textContent = `${data.org_name} · Agent Console`;
+                const empty = document.querySelector('.empty-state');
+                if (empty) {
+                    const ps = empty.querySelectorAll('p');
+                    if (ps[0]) ps[0].textContent = `Welcome to ${data.org_name}`;
+                    if (ps[1] && data.org_tagline) ps[1].textContent = data.org_tagline;
+                }
+            }
         } catch (e) {
             console.warn('Failed to load config', e);
         }

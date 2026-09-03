@@ -62,6 +62,10 @@ EXPLAIN_DIRECT_QUERY_ID = (os.getenv("EXPLAIN_DIRECT_QUERY_ID") or "").strip()
 # diagram and dim the optional (profile-gated) service groups.
 USECASE = (os.getenv("USECASE") or "").strip()
 COMPOSE_PROFILES = [p.strip() for p in (os.getenv("COMPOSE_PROFILES") or "").split(",") if p.strip()]
+# Usecase branding (from the usecase bundle's usecase.env): the console
+# presents itself as the demo organization, e.g. "SecureHome Insurance".
+ORG_NAME = (os.getenv("ORG_NAME") or "").strip()
+ORG_TAGLINE = (os.getenv("ORG_TAGLINE") or "").strip()
 EXPLAIN_ENABLED = all(
     (INDYKITE_BASE_URL, APP_AGENT_CREDENTIALS_TOKEN, EXPLAIN_STAFF_QUERY_ID, EXPLAIN_DIRECT_QUERY_ID),
 )
@@ -538,6 +542,9 @@ def get_config():
             # architecture page: badge + dimming of profile-gated groups
             "usecase": USECASE,
             "profiles": COMPOSE_PROFILES,
+            # usecase branding for the console chrome
+            "org_name": ORG_NAME,
+            "org_tagline": ORG_TAGLINE,
         },
     )
 
