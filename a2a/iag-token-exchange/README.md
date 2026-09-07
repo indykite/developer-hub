@@ -284,13 +284,17 @@ gateways (the MCP gateways join once the platform's mcp-server `2.49.0` -
 which validates the `X-IK-Token` delegated token and accepts any Token
 Introspect config of the app space - is rolled out to the target
 environment; see the notes in `docker-compose.yaml`). Full
-build/config/run details live in
+config/run details live in
 [`token-service/README.md`](token-service/README.md); in short:
 
-1. **Build the image** from the jarvis repository
-   (`docker build -t token-service:local --build-arg SERVICE_NAME=token-service --build-arg SERVICE_PATH=agent-gateway/token-service .`).
+1. **Get the image**: published on Docker Hub as
+   [`indykite/token-service`](https://hub.docker.com/r/indykite/token-service);
+   `docker-compose.yaml` pins `indykite/token-service:1.0.0` (currently
+   `linux/amd64` only - the compose file requests the platform explicitly,
+   so arm64 hosts run it under emulation).
+   `docker compose pull token-service` fetches it.
 2. **Configure it**: copy `token-service/token-service.example.yaml` to
-   `token-service.yaml` (gitignored) and fill in a fresh RSA private JWK
+   `token-service/token-service.yaml` (gitignored) and fill in a fresh RSA private JWK
    (`idp.signing_keys`), the client credentials the gateways present
    (`idp.client_auth`, matching `TOKEN_SERVICE_CLIENT_ID/SECRET` in `.env`),
    `idp.audiences` (**every audience a subject token can carry**: the console

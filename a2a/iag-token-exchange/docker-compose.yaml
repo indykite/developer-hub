@@ -50,10 +50,18 @@ services:
   # the delegated token then travels in X-IK-Token beside the user's untouched
   # Authorization header (policies read it as $ik_token). See token-service/.
   token-service:
-    image: token-service:local
-    # The jarvis base image bakes a HEALTHCHECK on :9080/healthz, which only
-    # the gateway binary serves - the token-service binary does not register
-    # the healthcheck module, so probe the real endpoint instead.
+    # Official image (published 2026-09-03); pin the tag like the gateways
+    # pin agent-gateway in iag-base-docker.yaml.
+    # See https://hub.docker.com/r/indykite/token-service/tags.
+    image: indykite/token-service:1.0.0
+    # The image is linux/amd64 only - request it explicitly so arm64 hosts
+    # (Apple Silicon) pull it under emulation instead of failing with
+    # "no matching manifest".
+    platform: linux/amd64
+    # The image bakes a HEALTHCHECK on :9080/healthz, and since 1.0.0 the
+    # token-service binary does serve it - but probe the real OIDC endpoint
+    # instead: it proves the service actually loaded its config and serves
+    # traffic on 8102, not just that the healthcheck server is up.
     healthcheck:
       test: ["CMD", "/bin/http_health_probe", "http://localhost:8102/.well-known/openid-configuration"]
       interval: 10s
