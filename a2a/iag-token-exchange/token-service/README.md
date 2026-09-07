@@ -6,16 +6,18 @@ discovery, JWKS, introspection, and audited delegations). The gateways will
 exchange against it instead of the external IdP once the platform accepts
 its tokens (see [Status](#status)).
 
-## Build the image
+## Get the image
 
-No public image yet (service version 0.0.1). Build from the jarvis repo:
+Published on Docker Hub as
+[`indykite/token-service`](https://hub.docker.com/r/indykite/token-service)
+(since `1.0.0`, 2026-09-03; `linux/amd64` only):
 
 ```shell
-cd <jarvis-repo>
-docker build -t token-service:local \
-  --build-arg SERVICE_NAME=token-service \
-  --build-arg SERVICE_PATH=agent-gateway/token-service .
+docker pull indykite/token-service:1.0.0
 ```
+
+On arm64 hosts (Apple Silicon) add `--platform linux/amd64` to the pull and
+run commands - the image then runs under emulation (Rosetta/QEMU).
 
 ## Configure
 
@@ -36,7 +38,7 @@ client secret) is created from `token-service.example.yaml`:
 ```shell
 docker run --rm -d --name tx-token-service -p 8102:8102 \
   -v $(pwd)/token-service/token-service.yaml:/app/.configs/token-service.yaml:ro \
-  token-service:local --config=/app/.configs/token-service.yaml
+  indykite/token-service:1.0.0 --config=/app/.configs/token-service.yaml
 ```
 
 Endpoints: `/.well-known/openid-configuration`, `/.well-known/jwks.json`,
