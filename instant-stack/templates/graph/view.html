@@ -1,0 +1,1270 @@
+{% extends "layouts/base.html" %}
+{% block title %}Graph Explorer{% endblock %}
+
+{% block content %}
+<style>
+    /* Height is set from JS (viewport minus the shell's actual top offset), since
+       the legend rows above wrap to a different height per dataset. */
+    .graph-shell {
+        display: flex;
+        gap: 1rem;
+        align-items: stretch;
+        height: 600px;
+        min-height: 420px;
+    }
+    #graph-canvas {
+        flex: 1 1 auto;
+        min-width: 0;
+        border-radius: 0.5rem;
+        background-color: #1a1a1a;
+        background-image: radial-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+        background-size: 22px 22px;
+        border: 1px solid #2d2d2d;
+        position: relative;
+    }
+    /* Width is set from JS (drag handle / widen toggle, remembered per browser). */
+    #graph-info {
+        flex: 0 0 360px;
+        width: 360px;
+        min-width: 260px;
+        min-height: 0;
+    }
+    /* The grip between canvas and panel: drag to resize, double-click to reset. */
+    #graph-resizer {
+        flex: 0 0 10px;
+        margin: 0 -0.5rem;
+        cursor: col-resize;
+        position: relative;
+        z-index: 4;
+    }
+    #graph-resizer::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 4px;
+        height: 42px;
+        transform: translate(-50%, -50%);
+        border-radius: 2px;
+        background: #3a3a3a;
+        transition: background 0.15s ease;
+    }
+    #graph-resizer:hover::after,
+    #graph-resizer.active::after {
+        background: #8a8880;
+    }
+    .graph-shell.resizing {
+        user-select: none;
+        cursor: col-resize;
+    }
+    #graph-widen {
+        border: 1px solid #3a3a3a;
+        background: transparent;
+        color: #c3c2b7;
+        border-radius: 6px;
+        width: 26px;
+        height: 26px;
+        line-height: 1;
+        padding: 0;
+        font-size: 0.85rem;
+    }
+    #graph-widen:hover {
+        background: #333333;
+        border-color: #6b6b6b;
+    }
+    /* The card fills the panel; long property lists scroll inside its body
+       instead of being clipped at the panel's bottom edge. */
+    #graph-info .card-body {
+        overflow-y: auto;
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+    .graph-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    .graph-legend-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        align-items: center;
+    }
+    .graph-legend-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: #898781;
+        margin-right: 0.25rem;
+        flex: 0 0 auto;
+    }
+    .graph-type-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.2rem 0.55rem;
+        border-radius: 999px;
+        border: 1px solid #2d2d2d;
+        background: #242424;
+        color: #ffffff;
+        font-size: 0.78rem;
+        cursor: pointer;
+        transition: opacity 0.15s ease, border-color 0.15s ease;
+    }
+    .graph-type-chip:hover {
+        border-color: #6b6b6b;
+    }
+    .graph-type-chip.off {
+        opacity: 0.35;
+    }
+    /* A type kept out of the overview: dashed until it is loaded. */
+    .graph-type-chip.collapsed {
+        border-style: dashed;
+        border-color: #4a4a4a;
+        opacity: 0.7;
+    }
+    .graph-type-chip .graph-chip-hint {
+        font-size: 0.68rem;
+        color: #898781;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .graph-type-chip svg {
+        flex: 0 0 auto;
+    }
+    #graph-loading {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: center;
+        justify-content: center;
+        background: rgba(26, 26, 26, 0.85);
+        border-radius: 0.5rem;
+        z-index: 10;
+        color: #c3c2b7;
+    }
+    #graph-refining {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 5;
+        display: none;
+        font-size: 0.72rem;
+        color: #c3c2b7;
+        background: rgba(36, 36, 36, 0.85);
+        border: 1px solid #3a3a3a;
+        border-radius: 6px;
+        padding: 0.2rem 0.5rem;
+    }
+    /* Canvas overlays: zoom controls (top-right), visible counter (bottom-left). */
+    .graph-zoom {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 5;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .graph-zoom button {
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
+        border: 1px solid #3a3a3a;
+        background: rgba(36, 36, 36, 0.92);
+        color: #e6e5df;
+        font-size: 1rem;
+        line-height: 1;
+        padding: 0;
+        cursor: pointer;
+    }
+    .graph-zoom button:hover {
+        background: #333333;
+        border-color: #6b6b6b;
+    }
+    #graph-counter {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        z-index: 5;
+        font-size: 0.75rem;
+        color: #c3c2b7;
+        background: rgba(36, 36, 36, 0.85);
+        border: 1px solid #3a3a3a;
+        border-radius: 6px;
+        padding: 0.25rem 0.55rem;
+        pointer-events: none;
+    }
+    #graph-tooltip {
+        position: absolute;
+        z-index: 6;
+        pointer-events: none;
+        display: none;
+        max-width: 260px;
+        padding: 0.35rem 0.55rem;
+        border-radius: 6px;
+        background: rgba(20, 20, 20, 0.95);
+        border: 1px solid #3a3a3a;
+        color: #e6e5df;
+        font-size: 0.78rem;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    #graph-tooltip .tt-type {
+        color: #898781;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    /* The theme keeps table cells on one line; values and the provenance subline
+       must wrap inside the panel instead. Names get half the row and wrap at
+       underscores (a <wbr> is inserted after each); breaking inside a word is a
+       last resort. */
+    #graph-info table {
+        table-layout: fixed;
+        width: 100%;
+    }
+    #graph-info table td {
+        white-space: normal;
+        overflow-wrap: anywhere;
+        vertical-align: top;
+    }
+    #graph-info table td:first-child {
+        width: 50%;
+    }
+    .graph-prop-meta {
+        display: block;
+        color: #898781;
+        font-size: 0.68rem;
+        margin-top: 1px;
+    }
+    .graph-dir-legend {
+        display: flex;
+        gap: 0.75rem;
+        font-size: 0.72rem;
+        color: #898781;
+    }
+    .graph-dir-legend i {
+        display: inline-block;
+        width: 14px;
+        height: 3px;
+        border-radius: 2px;
+        vertical-align: middle;
+        margin-right: 4px;
+    }
+    .graph-node-badge {
+        display: inline-block;
+        padding: 0.1rem 0.45rem;
+        border-radius: 999px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: #1a1a1a;
+    }
+    /* The title sits on the light page background, not in a dark card, so the
+       theme's white-!important h3 rule would wash it out. */
+    .graph-page-title {
+        color: var(--ik-text-head, #1e1e1e) !important;
+    }
+</style>
+
+<main class="content">
+    <div class="py-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h3 class="mb-1 graph-page-title">Graph Explorer</h3>
+                <p class="text-muted mb-0 small">
+                    The <strong>{{ dataset_display_name }}</strong> dataset (<code>data/{{ dataset }}/</code>) exactly as Data Capture sends it to the IKG:
+                    {{ node_count }} nodes across {{ type_counts | length }} types, {{ edge_count }} relationships of {{ rel_counts | length }} kinds.
+                    {% if collapsed %}
+                    <br>The overview shows {{ node_count - collapsed_nodes }} of them: the largest types are collapsed to keep the first view under {{ budget }} nodes -
+                    {% for t in collapsed %}<code>{{ t }}</code> ({{ type_counts[t] }}){{ ", " if not loop.last }}{% endfor %}.
+                    Double-click a node to expand its hidden neighbors, search for any node, or load a whole type from its chip.
+                    {% endif %}
+                </p>
+            </div>
+            <a href="/" class="btn btn-sm btn-secondary">Back to Home</a>
+        </div>
+
+        {% if load_errors %}
+        <div class="alert alert-warning small py-2 mb-3" role="alert">
+            <strong>Dataset files could not be read</strong> - the graph below is missing that data.
+            {% for e in load_errors %}<div><code>{{ e }}</code></div>{% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="card mb-3">
+            <div class="card-body py-2">
+                <div class="graph-toolbar mb-2">
+                    <input id="graph-search" list="graph-node-names" class="form-control form-control-sm" style="max-width: 220px;"
+                           type="search" placeholder="Search by name or id…" aria-label="Search nodes by name or id" autocomplete="off">
+                    <datalist id="graph-node-names"></datalist>
+                    <button id="graph-fit" class="btn btn-sm btn-secondary" type="button">Fit</button>
+                    <button id="graph-relayout" class="btn btn-sm btn-secondary" type="button" title="Recompute the layout">Re-layout</button>
+                    <button id="graph-show-all" class="btn btn-sm btn-outline-secondary" type="button" title="Turn every loaded node type back on">Show all</button>
+                    <div class="form-check form-switch ms-2 mb-0 small">
+                        <input class="form-check-input" type="checkbox" id="graph-edge-labels">
+                        <label class="form-check-label" for="graph-edge-labels" title="Otherwise labels appear on hover, selection, or when zoomed in">Relationship labels</label>
+                    </div>
+                </div>
+                <div class="graph-legend-row" id="graph-legend-nodes" role="group" aria-label="Toggle node types">
+                    <span class="graph-legend-label">Nodes</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="graph-shell" id="graph-shell">
+            <div id="graph-canvas">
+                <div id="graph-loading"><div class="spinner-border" role="status"></div><span id="graph-loading-msg">Loading graph…</span></div>
+                <span id="graph-refining">Refining layout…</span>
+                <div class="graph-zoom" aria-label="Zoom controls">
+                    <button id="graph-zoom-in" type="button" title="Zoom in" aria-label="Zoom in">+</button>
+                    <button id="graph-zoom-out" type="button" title="Zoom out" aria-label="Zoom out">&minus;</button>
+                    <button id="graph-zoom-fit" type="button" title="Fit to view" aria-label="Fit to view">&#8982;</button>
+                </div>
+                <div id="graph-counter" aria-live="polite"></div>
+                <div id="graph-tooltip" role="tooltip"></div>
+            </div>
+            <div id="graph-resizer" role="separator" aria-orientation="vertical" aria-label="Resize details panel"
+                 title="Drag to resize · Double-click to reset"></div>
+            <div id="graph-info">
+                <div class="card h-100">
+                    <div class="card-header py-2 d-flex justify-content-between align-items-center">
+                        <strong>Details</strong>
+                        <button id="graph-widen" type="button" title="Widen / narrow the panel" aria-label="Widen or narrow the details panel" aria-pressed="false">&#x2194;</button>
+                    </div>
+                    <div class="card-body" id="graph-info-body"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="{{ url_for('static', filename='assets/js/cytoscape.min.js') }}"></script>
+<!-- fCoSE fast force layout + its deps (load order matters: layout-base → cose-base → fcose) -->
+<script src="{{ url_for('static', filename='assets/js/layout-base.js') }}"></script>
+<script src="{{ url_for('static', filename='assets/js/cose-base.js') }}"></script>
+<script src="{{ url_for('static', filename='assets/js/cytoscape-fcose.js') }}"></script>
+<script>
+(function () {
+    "use strict";
+
+    var DATASET = {{ dataset | tojson }};
+    var TYPE_COUNTS = {{ type_counts | tojson }};
+    var COLLAPSED = {{ collapsed | tojson }};   // types kept out of the overview, largest first
+    var TOTAL_NODES = {{ node_count }};
+    var TOTAL_EDGES = {{ edge_count }};
+    var BUDGET = {{ budget }};
+    var BIG_GRAPH_NODES = 5000;  // above this a force layout would block for minutes: concentric only
+    var SYNC_FCOSE_NODES = 600;  // up to this fCoSE runs directly (sub-second); above, progressively
+
+    var collapsedSet = new Set(COLLAPSED);
+    var loadedTypes = new Set();  // collapsed types that have since been loaded in full
+    var typeLoads = {};           // type -> in-flight load promise
+    var expanded = new Set();     // node ids whose hidden neighbors are shown
+    var pinned = new Set();       // nodes landed via search: never auto-removed by a collapse
+
+    // Node types differ per dataset, so colors are assigned by the type's
+    // position in the sorted type list rather than hardcoded per type - any
+    // dataset works without code changes. Muted mid-tones sit quietly on the
+    // dark surface (#1a1a1a) and stay distinguishable against each other.
+    var PALETTE = [
+        "#7fa6d9", "#c9865c", "#5fae8f", "#d1a94f", "#c98aa5", "#8d84c4",
+        "#6fb3b3", "#b8a36b", "#9db97a", "#c97b7b", "#8f9fd1", "#b992c9",
+        "#7fbf9f", "#d19b78", "#89b6cf", "#bdb26f", "#b58aa5", "#a4c48d",
+        "#cf9aa8", "#8ab0cf", "#c4a98a", "#84b3a3", "#cbb46a", "#a29bd1"
+    ];
+
+    // Mix a hex color toward white (t in 0..1) for the thin ring around nodes.
+    function lighten(hex, t) {
+        var n = parseInt(hex.slice(1), 16);
+        var r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+        r = Math.round(r + (255 - r) * t); g = Math.round(g + (255 - g) * t); b = Math.round(b + (255 - b) * t);
+        return "rgb(" + r + "," + g + "," + b + ")";
+    }
+
+    var TYPES = {};
+    Object.keys(TYPE_COUNTS).forEach(function (type, i) {
+        var color = PALETTE[i % PALETTE.length];
+        TYPES[type] = { color: color, ring: lighten(color, 0.28) };
+    });
+    var FALLBACK_TYPE = { color: "#898781", ring: "#b0aea6" };
+    function typeStyle(type) { return TYPES[type] || FALLBACK_TYPE; }
+
+    // Node diameter grows with the square root of degree, so hubs stand out
+    // without dwarfing everything else.
+    function nodeSize(degree) { return Math.min(52, 16 + 5.5 * Math.sqrt(degree || 0)); }
+
+    // Edge direction colors used while a node is focused (same muted family).
+    var OUT_COLOR = "#d1a94f";
+    var IN_COLOR = "#7fa6d9";
+    // Above this zoom every relationship label is legible, so show them all.
+    var LABEL_ZOOM = 1.6;
+    // Below this zoom, only nodes with a few connections keep their label; on a
+    // big canvas the bar rises so the hubs alone stay labelled.
+    var NODE_LABEL_ZOOM = 1.15;
+    function labelMinDegree() { return cy.nodes().length > BUDGET ? 6 : 2; }
+
+    var canvas = document.getElementById("graph-canvas");
+    var loading = document.getElementById("graph-loading");
+    var loadingMsg = document.getElementById("graph-loading-msg");
+    var refining = document.getElementById("graph-refining");
+    var infoBody = document.getElementById("graph-info-body");
+    var tooltip = document.getElementById("graph-tooltip");
+    var counter = document.getElementById("graph-counter");
+    var edgeLabelsToggle = document.getElementById("graph-edge-labels");
+    var searchInput = document.getElementById("graph-search");
+    var datalist = document.getElementById("graph-node-names");
+    var focused = null; // the node whose neighborhood is highlighted, if any
+
+    function showLoading(msg) { loadingMsg.textContent = msg; loading.style.display = "flex"; }
+    function hideLoading() { loading.style.display = "none"; }
+    function showError(msg) {
+        infoBody.innerHTML = '<div class="alert alert-danger small mb-0">' + esc(msg) + "</div>";
+    }
+    function enc(s) { return encodeURIComponent(s); }
+    function fetchJson(url) {
+        return fetch(url).then(function (r) {
+            if (!r.ok) { throw new Error("HTTP " + r.status + " for " + url); }
+            return r.json();
+        });
+    }
+
+    // Fill the viewport below the toolbar/legend, whatever height they wrapped to.
+    // (The window resize listener is registered after cy exists, further down.)
+    var shell = document.getElementById("graph-shell");
+    function sizeShell() {
+        var top = shell.getBoundingClientRect().top;
+        var h = Math.max(420, window.innerHeight - top - 24);
+        shell.style.height = h + "px";
+    }
+
+    function esc(s) {
+        return String(s).replace(/[&<>"]/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+        });
+    }
+
+    var cy = cytoscape({
+        container: canvas,
+        // Big datasets: skip edges while panning/zooming and render the
+        // viewport from a texture, so interaction stays smooth.
+        hideEdgesOnViewport: TOTAL_NODES > BUDGET,
+        textureOnViewport: TOTAL_NODES > BIG_GRAPH_NODES,
+        style: [
+            // Nodes: a flat muted disc with a thin ring one tint lighter. Size
+            // follows the square root of degree (data.size, set when added).
+            { selector: "node", style: {
+                "shape": "ellipse",
+                "background-color": function (n) { return typeStyle(n.data("type")).color; },
+                "width": "data(size)",
+                "height": "data(size)",
+                "border-width": 1.5,
+                "border-color": function (n) { return typeStyle(n.data("type")).ring; },
+                "label": "data(label)",
+                "font-family": "Inter, system-ui, sans-serif",
+                "font-size": 9,
+                "font-weight": 400,
+                // Labels stay until they shrink below ~5px on screen; the
+                // degree-based label-off class handles clutter above that.
+                "min-zoomed-font-size": 5,
+                "color": "#c9c8bf",
+                "text-valign": "bottom",
+                "text-margin-y": 5,
+                "text-wrap": "ellipsis",
+                "text-max-width": 110,
+                "text-background-color": "#1a1a1a",
+                "text-background-opacity": 0.6,
+                "text-background-padding": 2,
+                "text-background-shape": "round-rectangle",
+                "underlay-color": function (n) { return typeStyle(n.data("type")).color; },
+                "underlay-opacity": 0,
+                "underlay-padding": 5,
+                "underlay-shape": "ellipse",
+                "transition-property": "underlay-opacity, border-color, opacity",
+                "transition-duration": "0.15s"
+            }},
+            // Identity nodes carry a second, offset ring instead of a heavier border.
+            { selector: "node[?isIdentity]", style: {
+                "outline-width": 1, "outline-color": "rgba(230,229,223,0.55)", "outline-offset": 2
+            }},
+            // Low-degree labels step back at normal zoom; hover, selection and the
+            // focused neighborhood always show theirs.
+            { selector: "node.label-off", style: { "label": "" }},
+            { selector: "node.hover, node:selected, node.focus-hood", style: { "label": "data(label)" }},
+            { selector: "edge", style: {
+                "curve-style": "bezier",
+                "width": 1,
+                "line-color": "#3e3e3e",
+                "target-arrow-shape": "triangle",
+                "target-arrow-color": "#585858",
+                "arrow-scale": 0.7,
+                "label": "",
+                "font-family": "Inter, system-ui, sans-serif",
+                "font-size": 8,
+                "color": "#b5b4ab",
+                "text-rotation": "autorotate",
+                "text-background-color": "#1a1a1a",
+                "text-background-opacity": 0.85,
+                "text-background-padding": 2,
+                "text-background-shape": "round-rectangle",
+                "transition-property": "line-color, target-arrow-color, width, opacity",
+                "transition-duration": "0.15s"
+            }},
+            // Relationship labels are decluttered by default: they appear on hover,
+            // on selection, on the focused node's edges, when zoomed in, or when
+            // the toolbar toggle forces them on.
+            { selector: "edge.labels-on, edge.hover, edge:selected, edge.in, edge.out", style: { "label": "data(label)" }},
+            { selector: "node.hover", style: {
+                "underlay-opacity": 0.22, "border-color": "#f2f1ea", "z-index": 20
+            }},
+            { selector: "edge.hover", style: {
+                "line-color": "#a8a69d", "target-arrow-color": "#a8a69d", "width": 1.8, "z-index": 20
+            }},
+            { selector: "edge.out", style: {
+                "line-color": OUT_COLOR, "target-arrow-color": OUT_COLOR, "width": 1.6, "color": OUT_COLOR
+            }},
+            { selector: "edge.in", style: {
+                "line-color": IN_COLOR, "target-arrow-color": IN_COLOR, "width": 1.6, "color": IN_COLOR
+            }},
+            { selector: "node:selected", style: { "underlay-opacity": 0.3, "border-color": "#f2f1ea", "border-width": 2 }},
+            { selector: "edge:selected", style: { "line-color": "#e6e5df", "target-arrow-color": "#e6e5df", "width": 1.8 }},
+            { selector: ".dimmed", style: { "opacity": 0.12, "events": "no" }},
+            { selector: ".type-hidden", style: { "display": "none" }}
+        ]
+    });
+
+    // --- layout ---------------------------------------------------------------
+    // fCoSE is the force layout of choice (fast, readable); above a few hundred
+    // nodes it runs as a background refinement over an instant first paint.
+    // Past BIG_GRAPH_NODES it would block the tab for minutes, so a grid sorted
+    // by type and degree (colored bands, hubs first) takes over there.
+    // Concentric is deliberately not used: on degree-skewed graphs it puts most
+    // nodes on one enormous ring and the fitted view turns into dust.
+    function layoutOptions(name) {
+        var count = cy.nodes().length;
+        if (name === "fcose" && typeof window.cytoscapeFcose === "undefined") { name = "cose"; }
+        if ((name === "fcose" || name === "cose") && count > BIG_GRAPH_NODES) { name = "grid"; }
+        var opts = { name: name, animate: false, fit: true, padding: 30 };
+        var large = count > SYNC_FCOSE_NODES;
+        if (name === "fcose") {
+            opts.quality = "default";
+            opts.randomize = true;
+            opts.packComponents = true;
+            opts.idealEdgeLength = large ? 50 : 70;
+            opts.nodeRepulsion = large ? 4500 : 6000;
+        }
+        if (name === "cose") {
+            opts.nodeOverlap = 8;
+            opts.idealEdgeLength = 70;
+            opts.numIter = 800;
+        }
+        if (name === "grid") {
+            opts.avoidOverlapPadding = 6;
+            opts.condense = true;
+            opts.sort = function (a, b) {
+                var ta = a.data("type"), tb = b.data("type");
+                if (ta !== tb) { return ta < tb ? -1 : 1; }
+                return b.degree() - a.degree();
+            };
+        }
+        return opts;
+    }
+
+    // Refine the instant first-paint layout; the canvas stays interactive meanwhile.
+    function refineLayout() {
+        refining.style.display = "inline-block";
+        setTimeout(function () {
+            cy.layout(layoutOptions("fcose")).run();
+            cy.fit(undefined, 30);
+            savePositions();
+            refining.style.display = "none";
+        }, 50);
+    }
+
+    function initialLayout() {
+        if (applyCachedPositions()) {
+            // Positions from a previous visit - no layout needed at all.
+            cy.fit(undefined, 30);
+            return;
+        }
+        var count = cy.nodes().length;
+        if (!count) { return; }
+        if (count <= SYNC_FCOSE_NODES) {
+            cy.layout(layoutOptions("fcose")).run();
+            cy.fit(undefined, 30);
+            savePositions();
+            return;
+        }
+        // Instant structured first paint, then refine in the background.
+        cy.layout(layoutOptions("grid")).run();
+        cy.fit(undefined, 30);
+        if (count <= BIG_GRAPH_NODES) { refineLayout(); } else { savePositions(); }
+    }
+
+    function runLayout() {
+        var count = cy.nodes().length;
+        if (!count) { return; }
+        showLoading("Laying out " + count + " nodes…");
+        // setTimeout lets the overlay paint before the synchronous layout blocks.
+        setTimeout(function () {
+            var opts = layoutOptions("fcose");
+            if (count <= SYNC_FCOSE_NODES && opts.name === "fcose") {
+                opts.animate = "end";
+                opts.animationDuration = 600;
+                opts.animationEasing = "ease-out";
+            }
+            var layout = cy.layout(opts);
+            layout.one("layoutstop", function () {
+                savePositions();
+                hideLoading();
+            });
+            layout.run();
+        }, 30);
+    }
+
+    // --- position cache: repeat visits skip the layout entirely -----------------
+    function posKey() {
+        return "instantStackGraphPos:" + DATASET + ":" + cy.nodes().length + ":" + cy.edges().length;
+    }
+
+    function savePositions() {
+        var pos = {};
+        cy.nodes().forEach(function (n) {
+            var p = n.position();
+            pos[n.id()] = [Math.round(p.x * 10) / 10, Math.round(p.y * 10) / 10];
+        });
+        try { localStorage.setItem(posKey(), JSON.stringify(pos)); } catch (e) { /* quota exceeded - skip */ }
+    }
+
+    function applyCachedPositions() {
+        var raw = null;
+        try { raw = localStorage.getItem(posKey()); } catch (e) { /* private mode */ }
+        if (!raw) { return false; }
+        try {
+            var pos = JSON.parse(raw);
+            var hits = 0;
+            cy.batch(function () {
+                cy.nodes().forEach(function (n) {
+                    var p = pos[n.id()];
+                    if (p) { n.position({ x: p[0], y: p[1] }); hits++; }
+                });
+            });
+            return hits === cy.nodes().length;
+        } catch (e) { return false; }
+    }
+
+    // --- counter / labels --------------------------------------------------------
+    // Counted from the toggle classes rather than ":visible": cytoscape resolves
+    // display styles lazily, so right after a batch ":visible" is still stale.
+    function updateCounter() {
+        var visN = cy.nodes().filter(function (n) { return !n.hasClass("type-hidden"); }).length;
+        var visE = cy.edges().filter(function (e) {
+            return !e.source().hasClass("type-hidden") && !e.target().hasClass("type-hidden");
+        }).length;
+        counter.textContent = visN + " of " + TOTAL_NODES + " nodes · " +
+            visE + " of " + TOTAL_EDGES + " relationships";
+    }
+
+    function applyLabels() {
+        var z = cy.zoom();
+        var edgesOn = edgeLabelsToggle.checked || z >= LABEL_ZOOM;
+        var allNodes = z >= NODE_LABEL_ZOOM;
+        var minDegree = labelMinDegree();
+        cy.batch(function () {
+            cy.edges()[edgesOn ? "addClass" : "removeClass"]("labels-on");
+            cy.nodes().forEach(function (n) {
+                var off = !allNodes && n.data("degree") < minDegree;
+                n[off ? "addClass" : "removeClass"]("label-off");
+            });
+        });
+    }
+
+    // --- adding elements on demand -------------------------------------------
+    // Adds nodes not yet on the canvas and edges whose both endpoints are (or
+    // are being) added. `place(fresh, edges)` assigns positions to the new nodes.
+    function addElements(elements, place) {
+        var fresh = elements.nodes.filter(function (el) { return cy.getElementById(el.data.id).empty(); });
+        var freshIds = new Set(fresh.map(function (el) { return el.data.id; }));
+        function present(id) { return freshIds.has(id) || cy.getElementById(id).nonempty(); }
+        var edges = elements.edges.filter(function (el) {
+            return cy.getElementById(el.data.id).empty() && present(el.data.source) && present(el.data.target);
+        });
+        fresh.forEach(function (el) { el.data.size = nodeSize(el.data.degree); });
+        place(fresh, edges);
+        cy.add(fresh.concat(edges));
+        applyNodeTypeVisibility();
+        applyLabels();
+        updateCounter();
+        // The focused node's counts (hidden neighbors, visible edges) just changed.
+        if (focused && focused.inside()) { showNodeInfo(focused); }
+        return fresh;
+    }
+
+    // New nodes go next to the neighbors they already have on the canvas (a
+    // loaded type clusters around its hubs); orphans scatter over the current
+    // bounding box.
+    function placeNearNeighbors(fresh, edges) {
+        var freshIds = new Set(fresh.map(function (el) { return el.data.id; }));
+        var anchors = {};
+        edges.forEach(function (el) {
+            var s = el.data.source, t = el.data.target;
+            if (freshIds.has(s) && !freshIds.has(t)) { (anchors[s] = anchors[s] || []).push(cy.getElementById(t).position()); }
+            else if (freshIds.has(t) && !freshIds.has(s)) { (anchors[t] = anchors[t] || []).push(cy.getElementById(s).position()); }
+        });
+        var bb = cy.nodes().length ? cy.nodes().boundingBox() : { x1: 0, y1: 0, w: 800, h: 600 };
+        fresh.forEach(function (el) {
+            var a = anchors[el.data.id];
+            if (a && a.length) {
+                var x = 0, y = 0;
+                a.forEach(function (p) { x += p.x; y += p.y; });
+                x /= a.length; y /= a.length;
+                var ang = Math.random() * 2 * Math.PI, r = 30 + Math.random() * 40;
+                el.position = { x: x + r * Math.cos(ang), y: y + r * Math.sin(ang) };
+            } else {
+                el.position = { x: bb.x1 + Math.random() * (bb.w || 800), y: bb.y1 + Math.random() * (bb.h || 600) };
+            }
+        });
+    }
+
+    // A few nodes sit on one ring; many spiral outward (sunflower pattern) so
+    // they fill a disc without overlapping instead of piling onto one circle.
+    function placeRing(center, fresh) {
+        var n = fresh.length;
+        if (n <= 24) {
+            var r = 90 + Math.sqrt(n) * 14;
+            fresh.forEach(function (el, i) {
+                var a = (2 * Math.PI * i) / n;
+                el.position = { x: center.x + r * Math.cos(a), y: center.y + r * Math.sin(a) };
+            });
+            return;
+        }
+        var golden = Math.PI * (3 - Math.sqrt(5));
+        fresh.forEach(function (el, i) {
+            var rr = 70 + 11 * Math.sqrt(i + 1);
+            var a = i * golden;
+            el.position = { x: center.x + rr * Math.cos(a), y: center.y + rr * Math.sin(a) };
+        });
+    }
+
+    // Load every node of a collapsed type. Resolves to true when the type is on
+    // the canvas afterwards, false when declined or failed.
+    function loadType(type) {
+        if (loadedTypes.has(type)) { return Promise.resolve(true); }
+        if (typeLoads[type]) { return typeLoads[type]; }
+        var count = TYPE_COUNTS[type] || 0;
+        if (count > BUDGET && !window.confirm("Load all " + count + " " + type + " nodes? Layout and panning get slower above " + BUDGET + " nodes.")) {
+            return Promise.resolve(false);
+        }
+        showLoading("Loading " + count + " " + type + " nodes…");
+        typeLoads[type] = fetchJson("/graph/data?type=" + enc(type))
+            .then(function (payload) {
+                addElements(payload.elements, placeNearNeighbors);
+                loadedTypes.add(type);
+                var chip = nodeChips[type];
+                chip.classList.remove("collapsed");
+                chip.title = "Click: toggle · Double-click: show only this type";
+                var hint = chip.querySelector(".graph-chip-hint");
+                if (hint) { hint.remove(); }
+                setChip(chip, false);
+                hideLoading();
+                return true;
+            })
+            .catch(function (err) { hideLoading(); showError("Failed to load " + type + ": " + err); return false; })
+            .finally(function () { delete typeLoads[type]; });
+        return typeLoads[type];
+    }
+
+    // Neighbors of a node that live in collapsed types and are not on the canvas.
+    function missingNeighbors(n) {
+        var onCanvas = n.neighborhood("node").filter(function (m) { return collapsedSet.has(m.data("type")); }).length;
+        return Math.max(0, (n.data("hiddenCount") || 0) - onCanvas);
+    }
+
+    function expandNode(n) {
+        var id = n.id();
+        if (expanded.has(id)) { collapseNode(n); return; }
+        if (!missingNeighbors(n)) { return; }
+        fetchJson("/graph/data?expand=" + enc(id))
+            .then(function (payload) {
+                var p = n.position();
+                addElements(payload.elements, function (fresh) { placeRing(p, fresh); });
+                expanded.add(id);
+                showNodeInfo(n);
+                // Bring the whole ring into view; a big expansion reaches far out.
+                cy.animate({ fit: { eles: n.closedNeighborhood(), padding: 40 } }, { duration: 300 });
+            })
+            .catch(function (err) { showError("Expand failed: " + err); });
+    }
+
+    function collapseNode(n) {
+        expanded.delete(n.id());
+        cy.batch(function () {
+            n.neighborhood("node").forEach(function (t) {
+                var type = t.data("type");
+                if (!collapsedSet.has(type) || loadedTypes.has(type) || pinned.has(t.id())) { return; }
+                var keep = t.neighborhood("node").some(function (m) { return expanded.has(m.id()); });
+                if (!keep) { cy.remove(t); }
+            });
+        });
+        showNodeInfo(n);
+        updateCounter();
+    }
+
+    // --- legend / type toggles -------------------------------------------------
+    // The same ringed disc as the canvas, at chip size, for the legend and details.
+    function shapeSvg(type) {
+        var st = typeStyle(type);
+        return '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">' +
+            '<circle cx="7" cy="7" r="6" fill="' + st.color + '" stroke="' + st.ring + '" stroke-width="1"/></svg>';
+    }
+
+    var nodeChips = {};
+
+    function setChip(chip, off) {
+        chip.classList.toggle("off", off);
+        chip.setAttribute("aria-pressed", off ? "false" : "true");
+    }
+
+    function isUnloaded(type) { return collapsedSet.has(type) && !loadedTypes.has(type); }
+
+    function applyNodeTypeVisibility() {
+        cy.batch(function () {
+            Object.keys(nodeChips).forEach(function (type) {
+                var off = nodeChips[type].classList.contains("off") && !isUnloaded(type);
+                cy.nodes('[type = "' + type + '"]')[off ? "addClass" : "removeClass"]("type-hidden");
+            });
+        });
+        updateCounter();
+    }
+
+    function isolateType(type) {
+        Object.keys(nodeChips).forEach(function (t) { if (!isUnloaded(t)) { setChip(nodeChips[t], t !== type); } });
+        applyNodeTypeVisibility();
+    }
+
+    function buildLegend() {
+        var nodesRow = document.getElementById("graph-legend-nodes");
+        Object.keys(TYPES).forEach(function (type) {
+            var btn = document.createElement("button");
+            var unloaded = collapsedSet.has(type);
+            btn.type = "button";
+            btn.className = "graph-type-chip" + (unloaded ? " collapsed" : "");
+            btn.title = unloaded
+                ? "Not in the overview - click to load all " + (TYPE_COUNTS[type] || 0) + " nodes"
+                : "Click: toggle · Double-click: show only this type";
+            btn.setAttribute("aria-pressed", unloaded ? "false" : "true");
+            btn.innerHTML = shapeSvg(type) + esc(type) + ' <span class="text-muted">' + (TYPE_COUNTS[type] || 0) + "</span>" +
+                (unloaded ? '<span class="graph-chip-hint">load</span>' : "");
+            btn.addEventListener("click", function () {
+                if (isUnloaded(type)) { loadType(type); return; }
+                setChip(btn, !btn.classList.contains("off"));
+                applyNodeTypeVisibility();
+            });
+            btn.addEventListener("dblclick", function () {
+                // Isolate: the double-click's own click already toggled this chip,
+                // so force it on and every other loaded type off.
+                loadType(type).then(function (ok) { if (ok) { isolateType(type); } });
+            });
+            nodeChips[type] = btn;
+            nodesRow.appendChild(btn);
+        });
+    }
+
+    function showAll() {
+        Object.keys(nodeChips).forEach(function (t) { if (!isUnloaded(t)) { setChip(nodeChips[t], false); } });
+        applyNodeTypeVisibility();
+    }
+
+    // --- search (server-side, reaches nodes not on the canvas) -----------------
+    var lastMatches = [];
+    var searchTimer = null;
+
+    function runSearch(q) {
+        return fetchJson("/graph/search?q=" + enc(q)).then(function (d) {
+            lastMatches = d.matches || [];
+            return lastMatches;
+        });
+    }
+
+    // The datalist value carries the type (and external_id when it differs from
+    // the label) so same-name nodes - canbank's User and Customer "rebecca" -
+    // stay distinct and each can be picked.
+    function searchValue(m) {
+        return m.label + " · " + m.type + (m.externalId !== m.label ? " · " + m.externalId : "");
+    }
+
+    function fillDatalist(matches) {
+        datalist.innerHTML = "";
+        var frag = document.createDocumentFragment();
+        matches.forEach(function (m) {
+            var o = document.createElement("option");
+            o.value = searchValue(m);
+            frag.appendChild(o);
+        });
+        datalist.appendChild(frag);
+    }
+
+    searchInput.addEventListener("input", function () {
+        clearTimeout(searchTimer);
+        // Matches from an earlier term must never drive Enter for the new one.
+        lastMatches = [];
+        var q = this.value.trim();
+        if (q.length < 2) { return; }
+        searchTimer = setTimeout(function () { runSearch(q).then(fillDatalist).catch(function () { /* ignore */ }); }, 150);
+    });
+
+    searchInput.addEventListener("change", function () {
+        var q = this.value.trim();
+        if (!q) { return; }
+        // A datalist pick matches one option exactly; free text gets a fresh
+        // search for what was typed (minus any " · type" suffix) and lands on
+        // the exact label/id if there is one, else the best hit.
+        var picked = lastMatches.find(function (m) { return searchValue(m) === q; });
+        var term = q.split(" · ")[0].trim();
+        var p = picked ? Promise.resolve(picked) : runSearch(term).then(function (ms) {
+            var tl = term.toLowerCase();
+            return ms.find(function (m) {
+                return m.label.toLowerCase() === tl || m.externalId.toLowerCase() === tl;
+            }) || ms[0];
+        });
+        p.then(function (match) {
+            if (!match) { showError("No node matches “" + term + "”."); return; }
+            goToNode(match.id);
+        }).catch(function (err) { showError("Search failed: " + err); });
+    });
+
+    // Bring a node onto the canvas (with its neighborhood if needed) and focus it.
+    function goToNode(id) {
+        var n = cy.getElementById(id);
+        if (n.nonempty()) { landOn(n); return; }
+        showLoading("Loading neighborhood…");
+        fetchJson("/graph/data?node=" + enc(id))
+            .then(function (payload) {
+                var ext = cy.extent();
+                var c = { x: (ext.x1 + ext.x2) / 2, y: (ext.y1 + ext.y2) / 2 };
+                addElements(payload.elements, function (fresh) {
+                    var self = null;
+                    var others = [];
+                    fresh.forEach(function (el) { if (el.data.id === id) { self = el; } else { others.push(el); } });
+                    if (self) { self.position = c; }
+                    placeRing(c, others);
+                });
+                pinned.add(id);
+                hideLoading();
+                landOn(cy.getElementById(id));
+            })
+            .catch(function (err) { hideLoading(); showError("Could not load node: " + err); });
+    }
+
+    function landOn(n) {
+        // A type switched off in the legend would leave the target invisible.
+        var chip = nodeChips[n.data("type")];
+        if (chip && chip.classList.contains("off")) { setChip(chip, false); applyNodeTypeVisibility(); }
+        cy.elements().unselect();
+        n.select();
+        focusNode(n);
+        showNodeInfo(n);
+        cy.animate({ center: { eles: n }, zoom: Math.max(cy.zoom(), 1.2) }, { duration: 250 });
+    }
+
+    // --- info panel ------------------------------------------------------------
+    function metaLine(m) {
+        if (!m) { return ""; }
+        var bits = [];
+        if (m.source) { bits.push("source: " + esc(m.source)); }
+        if (m.assurance_level !== undefined && m.assurance_level !== null) { bits.push("assurance " + esc(m.assurance_level)); }
+        if (m.verified_time) { bits.push("verified " + esc(String(m.verified_time).replace("T", " ").replace("Z", " UTC"))); }
+        Object.keys(m).forEach(function (k) {
+            if (k !== "source" && k !== "assurance_level" && k !== "verified_time") {
+                var v = m[k];
+                bits.push(esc(k) + ": " + esc(typeof v === "object" ? JSON.stringify(v) : v));
+            }
+        });
+        return bits.length ? '<span class="graph-prop-meta">' + bits.join(" · ") + "</span>" : "";
+    }
+
+    function propsTable(props, meta) {
+        var keys = Object.keys(props || {});
+        if (!keys.length) { return '<p class="text-muted small mb-0">No properties.</p>'; }
+        var rows = keys.map(function (k) {
+            var v = props[k];
+            if (v !== null && typeof v === "object") { v = JSON.stringify(v); }
+            // <wbr> after underscores lets snake_case names and values wrap cleanly.
+            var name = esc(k).replace(/_/g, "_<wbr>");
+            var value = esc(v).replace(/_/g, "_<wbr>");
+            return "<tr><td class='text-muted pe-2'>" + name + "</td><td>" + value + metaLine((meta || {})[k]) + "</td></tr>";
+        });
+        return '<table class="table table-sm small mb-0"><tbody>' + rows.join("") + "</tbody></table>";
+    }
+
+    function showNodeInfo(n) {
+        var d = n.data();
+        var st = typeStyle(d.type);
+        var badges = '<span class="graph-node-badge" style="background:' + st.color + '">' + esc(d.type) + "</span>";
+        (d.labels || []).forEach(function (l) { badges += '<span class="badge bg-dark ms-1">' + esc(l) + "</span>"; });
+        if (d.isIdentity) { badges += '<span class="badge bg-primary ms-1">identity</span>'; }
+        var outN = n.outgoers("edge").filter(function (e) { return !e.target().hasClass("type-hidden"); }).length;
+        var inN = n.incomers("edge").filter(function (e) { return !e.source().hasClass("type-hidden"); }).length;
+        var hiddenNote = "";
+        var missing = missingNeighbors(n);
+        if (missing > 0) {
+            hiddenNote = '<p class="small mb-2">' + missing + " hidden neighbor(s) - double-click to expand</p>";
+        } else if (expanded.has(d.id)) {
+            hiddenNote = '<p class="small mb-2">Neighbors expanded - double-click to collapse</p>';
+        }
+        infoBody.innerHTML =
+            '<div class="d-flex align-items-center gap-2 mb-1">' + shapeSvg(d.type) +
+            "<strong>" + esc(d.label) + "</strong></div>" +
+            '<div class="mb-2">' + badges + "</div>" +
+            '<p class="text-muted small mb-1"><code>' + esc(d.externalId) + "</code> · " + d.degree + " connection(s)</p>" +
+            '<div class="graph-dir-legend mb-2">' +
+            '<span><i style="background:' + OUT_COLOR + '"></i>' + outN + " outgoing</span>" +
+            '<span><i style="background:' + IN_COLOR + '"></i>' + inN + " incoming</span>" +
+            "</div>" + hiddenNote +
+            propsTable(d.props, d.meta);
+    }
+
+    function showEdgeInfo(e) {
+        var d = e.data();
+        infoBody.innerHTML =
+            '<p class="mb-2"><strong>' + esc(d.label) + "</strong></p>" +
+            '<p class="small mb-2">' + shapeSvg(e.source().data("type")) + " " + esc(e.source().data("label")) +
+            ' <span class="text-muted">→</span> ' + shapeSvg(e.target().data("type")) + " " + esc(e.target().data("label")) + "</p>" +
+            propsTable(d.props, d.meta);
+    }
+
+    function resetInfo() {
+        var intro = cy.nodes().length
+            ? '<p class="text-muted small mb-2">Click a node or a relationship to inspect it.</p>'
+            : '<p class="text-muted small mb-2">Nothing in the overview: every type is collapsed. Search for a node above, or load a type from its chip.</p>';
+        infoBody.innerHTML = intro +
+            '<ul class="text-muted small mb-0 ps-3">' +
+            "<li>Click a node: highlight its neighbors - <span style=\"color:" + OUT_COLOR + "\">outgoing</span> and <span style=\"color:" + IN_COLOR + "\">incoming</span> edges</li>" +
+            (COLLAPSED.length ? "<li>Double-click a node: expand or collapse its hidden neighbors</li>" : "") +
+            "<li>Hover: preview a node and its edges</li>" +
+            "<li>Click the background or press Esc to reset</li>" +
+            "<li>Chips toggle types; double-click a chip to isolate it" + (COLLAPSED.length ? "; dashed chips load on click" : "") + "</li>" +
+            "<li>Relationship labels show on hover, focus, or zoom</li>" +
+            "<li>A second ring marks identity nodes</li>" +
+            "</ul>";
+    }
+
+    // --- highlight / fade ------------------------------------------------------
+    function focusNode(n) {
+        focused = n;
+        var hood = n.closedNeighborhood();
+        cy.batch(function () {
+            cy.elements().addClass("dimmed").removeClass("in out focus-hood");
+            hood.removeClass("dimmed");
+            hood.nodes().addClass("focus-hood");
+            n.outgoers("edge").addClass("out");
+            n.incomers("edge").addClass("in");
+        });
+        // Gently bring the node toward the middle without changing the zoom.
+        cy.animate({ center: { eles: n } }, { duration: 250, easing: "ease-out" });
+    }
+
+    function clearFocus() {
+        focused = null;
+        cy.elements().removeClass("dimmed in out focus-hood");
+        cy.elements().unselect();
+    }
+
+    // --- hover / tooltip -------------------------------------------------------
+    function moveTooltip(evt) {
+        var p = evt.renderedPosition || (evt.target && evt.target.renderedPosition && evt.target.renderedPosition());
+        if (!p) { return; }
+        var rect = canvas.getBoundingClientRect();
+        var x = p.x + 14, y = p.y + 14;
+        if (x + tooltip.offsetWidth > rect.width - 8) { x = p.x - tooltip.offsetWidth - 14; }
+        if (y + tooltip.offsetHeight > rect.height - 8) { y = p.y - tooltip.offsetHeight - 14; }
+        tooltip.style.left = Math.max(4, x) + "px";
+        tooltip.style.top = Math.max(4, y) + "px";
+    }
+
+    cy.on("mouseover", "node", function (evt) {
+        var n = evt.target;
+        canvas.style.cursor = "pointer";
+        n.addClass("hover");
+        n.connectedEdges().addClass("hover");
+        tooltip.innerHTML = '<div class="tt-type">' + esc(n.data("type")) + "</div>" + esc(n.data("label"));
+        tooltip.style.display = "block";
+        moveTooltip(evt);
+    });
+    cy.on("mouseout", "node", function (evt) {
+        var n = evt.target;
+        canvas.style.cursor = "default";
+        n.removeClass("hover");
+        n.connectedEdges().removeClass("hover");
+        tooltip.style.display = "none";
+    });
+    cy.on("mouseover", "edge", function (evt) {
+        var e = evt.target;
+        canvas.style.cursor = "pointer";
+        e.addClass("hover");
+        tooltip.innerHTML = '<div class="tt-type">' + esc(e.data("label")) + "</div>" +
+            esc(e.source().data("label")) + " → " + esc(e.target().data("label"));
+        tooltip.style.display = "block";
+        moveTooltip(evt);
+    });
+    cy.on("mouseout", "edge", function (evt) {
+        canvas.style.cursor = "default";
+        evt.target.removeClass("hover");
+        tooltip.style.display = "none";
+    });
+    cy.on("mousemove", function (evt) {
+        if (tooltip.style.display === "block") { moveTooltip(evt); }
+    });
+    cy.on("drag", "node", function () { tooltip.style.display = "none"; });
+
+    // --- events ----------------------------------------------------------------
+    cy.on("tap", "node", function (evt) {
+        focusNode(evt.target);
+        showNodeInfo(evt.target);
+    });
+    cy.on("dbltap", "node", function (evt) { expandNode(evt.target); });
+    cy.on("tap", "edge", function (evt) { showEdgeInfo(evt.target); });
+    cy.on("tap", function (evt) {
+        if (evt.target === cy) { clearFocus(); resetInfo(); }
+    });
+
+    var zoomTimer = null;
+    cy.on("zoom", function () {
+        clearTimeout(zoomTimer);
+        zoomTimer = setTimeout(applyLabels, 60);
+    });
+    edgeLabelsToggle.addEventListener("change", applyLabels);
+
+    document.addEventListener("keydown", function (evt) {
+        if (evt.key === "Escape") {
+            clearFocus();
+            resetInfo();
+            tooltip.style.display = "none";
+        }
+    });
+
+    function zoomBy(factor) {
+        var rect = canvas.getBoundingClientRect();
+        cy.animate(
+            { zoom: { level: cy.zoom() * factor, renderedPosition: { x: rect.width / 2, y: rect.height / 2 } } },
+            { duration: 150 }
+        );
+    }
+    function fitVisible() {
+        cy.animate({ fit: { eles: cy.elements(":visible"), padding: 30 } }, { duration: 250 });
+    }
+    document.getElementById("graph-zoom-in").addEventListener("click", function () { zoomBy(1.3); });
+    document.getElementById("graph-zoom-out").addEventListener("click", function () { zoomBy(1 / 1.3); });
+    document.getElementById("graph-zoom-fit").addEventListener("click", fitVisible);
+    document.getElementById("graph-fit").addEventListener("click", fitVisible);
+    document.getElementById("graph-relayout").addEventListener("click", runLayout);
+    document.getElementById("graph-show-all").addEventListener("click", showAll);
+
+    // --- initial load ----------------------------------------------------------
+    function loadGraph() {
+        showLoading("Loading graph…");
+        return fetchJson("/graph/data")
+            .then(function (payload) {
+                cy.elements().remove();
+                expanded.clear();
+                payload.elements.nodes.forEach(function (el) { el.data.size = nodeSize(el.data.degree); });
+                cy.add(payload.elements);
+                initialLayout();
+                applyLabels();
+                updateCounter();
+                resetInfo();
+                hideLoading();
+            })
+            .catch(function (err) {
+                hideLoading();
+                showError("Failed to load graph data: " + err);
+            });
+    }
+
+    // --- details panel width: drag handle + widen toggle -------------------------
+    var infoPanel = document.getElementById("graph-info");
+    var resizer = document.getElementById("graph-resizer");
+    var widenBtn = document.getElementById("graph-widen");
+    var PANEL_DEFAULT = 360;
+    var PANEL_MIN = 260;
+    var PANEL_KEY = "instantStackGraphPanelWidth";
+
+    function panelMax() { return Math.round(shell.getBoundingClientRect().width * 0.6); }
+
+    function setPanelWidth(w, persist) {
+        w = Math.round(Math.max(PANEL_MIN, Math.min(panelMax(), w)));
+        infoPanel.style.flexBasis = w + "px";
+        infoPanel.style.width = w + "px";
+        widenBtn.setAttribute("aria-pressed", w >= panelMax() * 0.8 ? "true" : "false");
+        if (persist) {
+            try { localStorage.setItem(PANEL_KEY, String(w)); } catch (e) { /* private mode */ }
+        }
+        cy.resize();
+    }
+
+    function restorePanelWidth() {
+        var saved = null;
+        try { saved = parseInt(localStorage.getItem(PANEL_KEY), 10); } catch (e) { /* private mode */ }
+        setPanelWidth(saved || PANEL_DEFAULT, false);
+    }
+
+    resizer.addEventListener("pointerdown", function (evt) {
+        evt.preventDefault();
+        resizer.setPointerCapture(evt.pointerId);
+        resizer.classList.add("active");
+        shell.classList.add("resizing");
+        var startX = evt.clientX;
+        var startW = infoPanel.getBoundingClientRect().width;
+        function onMove(e) { setPanelWidth(startW + (startX - e.clientX), false); }
+        function onUp(e) {
+            resizer.removeEventListener("pointermove", onMove);
+            resizer.removeEventListener("pointerup", onUp);
+            resizer.removeEventListener("pointercancel", onUp);
+            resizer.classList.remove("active");
+            shell.classList.remove("resizing");
+            setPanelWidth(startW + (startX - e.clientX), true);
+        }
+        resizer.addEventListener("pointermove", onMove);
+        resizer.addEventListener("pointerup", onUp);
+        resizer.addEventListener("pointercancel", onUp);
+    });
+    resizer.addEventListener("dblclick", function () { setPanelWidth(PANEL_DEFAULT, true); });
+
+    // One click between the default width and half the shell.
+    widenBtn.addEventListener("click", function () {
+        var half = Math.round(shell.getBoundingClientRect().width * 0.5);
+        var current = infoPanel.getBoundingClientRect().width;
+        setPanelWidth(current >= half - 10 ? PANEL_DEFAULT : half, true);
+    });
+
+    // One debounced window-resize handler: re-fit the shell height, keep the
+    // panel inside its allowed range, and let cytoscape pick up the new size.
+    var resizeTimer = null;
+    window.addEventListener("resize", function () {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function () {
+            sizeShell();
+            setPanelWidth(infoPanel.getBoundingClientRect().width, false);
+            cy.resize();
+        }, 80);
+    });
+
+    buildLegend();
+    resetInfo();
+    restorePanelWidth();
+    // Size after the legend chips exist (they push the canvas down), and again
+    // once fonts/styles have settled.
+    sizeShell();
+    cy.resize();
+    window.addEventListener("load", function () { sizeShell(); cy.resize(); });
+    loadGraph();
+    // Exposed for console debugging (e.g. instantStackGraph.nodes().length).
+    window.instantStackGraph = cy;
+})();
+</script>
+{% endblock %}

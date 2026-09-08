@@ -100,6 +100,19 @@ policies. Conventions worth following in a new manifest:
   `KBAC_POLICY_ID`, `KBAC_POLICY_ID_2`, ... in manifest order (append new
   policies at the end so existing `.env` keys keep their meaning).
 
+### Graph Explorer
+
+`/graph/` (sidebar link, or the "Visualize Graph" card on the landing page)
+renders the active dataset's `nodes.json` and `relationships.json` as an
+interactive graph - the data exactly as Data Capture sends it to the IKG, so it
+works before anything is captured and makes no platform call. Nothing in it is
+tied to a dataset: nodes are colored by type (legend chips toggle each type,
+double-click a chip to isolate it), labels come from `name` / `first_name` +
+`last_name` / `title` / an `*_id`-style property / the external_id, identity
+nodes get a second ring, and clicking a node or relationship shows its
+properties with any provenance metadata. Clicking a node highlights its
+outgoing (amber) and incoming (blue) edges.
+
 ## Install and run
 
 - install pipenv

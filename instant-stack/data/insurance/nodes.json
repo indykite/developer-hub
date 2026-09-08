@@ -2836,19 +2836,19 @@
         },
         {
           "type": "property_address",
-          "value": "456 Maple Street"
+          "value": "852 Hickory Lane"
         },
         {
           "type": "property_city",
-          "value": "New York"
+          "value": "Austin"
         },
         {
           "type": "property_state",
-          "value": "NY"
+          "value": "TX"
         },
         {
           "type": "property_zip_code",
-          "value": "10001"
+          "value": "78701"
         }
       ]
     },
@@ -2938,11 +2938,11 @@
         },
         {
           "type": "property_address",
-          "value": "321 Cedar Lane"
+          "value": "159 Magnolia Street"
         },
         {
           "type": "property_city",
-          "value": "Houston"
+          "value": "Fort Worth"
         },
         {
           "type": "property_state",
@@ -2950,7 +2950,7 @@
         },
         {
           "type": "property_zip_code",
-          "value": "77001"
+          "value": "76101"
         }
       ]
     },
@@ -3040,19 +3040,19 @@
         },
         {
           "type": "property_address",
-          "value": "987 Elm Court"
+          "value": "468 Sycamore Road"
         },
         {
           "type": "property_city",
-          "value": "Philadelphia"
+          "value": "Charlotte"
         },
         {
           "type": "property_state",
-          "value": "PA"
+          "value": "NC"
         },
         {
           "type": "property_zip_code",
-          "value": "19101"
+          "value": "28201"
         }
       ]
     },
@@ -3142,19 +3142,19 @@
         },
         {
           "type": "property_address",
-          "value": "258 Spruce Avenue"
+          "value": "681 Cypress Lane"
         },
         {
           "type": "property_city",
-          "value": "San Diego"
+          "value": "Indianapolis"
         },
         {
           "type": "property_state",
-          "value": "CA"
+          "value": "IN"
         },
         {
           "type": "property_zip_code",
-          "value": "92101"
+          "value": "46201"
         }
       ]
     },
@@ -3244,19 +3244,19 @@
         },
         {
           "type": "property_address",
-          "value": "741 Poplar Way"
+          "value": "903 Dogwood Street"
         },
         {
           "type": "property_city",
-          "value": "San Jose"
+          "value": "Denver"
         },
         {
           "type": "property_state",
-          "value": "CA"
+          "value": "CO"
         },
         {
           "type": "property_zip_code",
-          "value": "95101"
+          "value": "80201"
         }
       ]
     },
@@ -3736,19 +3736,19 @@
         },
         {
           "type": "property_address",
-          "value": "456 Maple Street"
+          "value": "852 Hickory Lane"
         },
         {
           "type": "property_city",
-          "value": "New York"
+          "value": "Austin"
         },
         {
           "type": "property_state",
-          "value": "NY"
+          "value": "TX"
         },
         {
           "type": "property_zip_code",
-          "value": "10001"
+          "value": "78701"
         }
       ]
     },
@@ -3838,11 +3838,11 @@
         },
         {
           "type": "property_address",
-          "value": "321 Cedar Lane"
+          "value": "159 Magnolia Street"
         },
         {
           "type": "property_city",
-          "value": "Houston"
+          "value": "Fort Worth"
         },
         {
           "type": "property_state",
@@ -3850,7 +3850,7 @@
         },
         {
           "type": "property_zip_code",
-          "value": "77001"
+          "value": "76101"
         }
       ]
     },
@@ -3940,19 +3940,19 @@
         },
         {
           "type": "property_address",
-          "value": "987 Elm Court"
+          "value": "468 Sycamore Road"
         },
         {
           "type": "property_city",
-          "value": "Philadelphia"
+          "value": "Charlotte"
         },
         {
           "type": "property_state",
-          "value": "PA"
+          "value": "NC"
         },
         {
           "type": "property_zip_code",
-          "value": "19101"
+          "value": "28201"
         }
       ]
     },
@@ -4042,19 +4042,19 @@
         },
         {
           "type": "property_address",
-          "value": "258 Spruce Avenue"
+          "value": "681 Cypress Lane"
         },
         {
           "type": "property_city",
-          "value": "San Diego"
+          "value": "Indianapolis"
         },
         {
           "type": "property_state",
-          "value": "CA"
+          "value": "IN"
         },
         {
           "type": "property_zip_code",
-          "value": "92101"
+          "value": "46201"
         }
       ]
     },
@@ -4144,19 +4144,19 @@
         },
         {
           "type": "property_address",
-          "value": "741 Poplar Way"
+          "value": "903 Dogwood Street"
         },
         {
           "type": "property_city",
-          "value": "San Jose"
+          "value": "Denver"
         },
         {
           "type": "property_state",
-          "value": "CA"
+          "value": "CO"
         },
         {
           "type": "property_zip_code",
-          "value": "95101"
+          "value": "80201"
         }
       ]
     },

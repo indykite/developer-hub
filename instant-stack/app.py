@@ -14,6 +14,7 @@ from api.ciq_knowledge_query import api_ciq_knowledge_query
 from api.ciq_policy import api_ciq_policy
 from api.data_schema import api_data_schema
 from api.external_data_resolver import api_external_data_resolver
+from api.graph_view import api_graph
 from api.mcp_server import api_mcp_server
 from api.project import api_project
 from api.provision import api_provision
@@ -51,6 +52,7 @@ logging.getLogger("api.external_data_resolver").setLevel(logging.DEBUG)
 logging.getLogger("api.mcp_server").setLevel(logging.DEBUG)
 logging.getLogger("api.provision").setLevel(logging.DEBUG)
 logging.getLogger("api.data_schema").setLevel(logging.DEBUG)
+logging.getLogger("api.graph_view").setLevel(logging.DEBUG)
 
 # Log that the app is starting
 logger.info("=" * 50)
@@ -89,6 +91,7 @@ app.register_api(api_ciq_execute)
 app.register_api(api_external_data_resolver)
 app.register_api(api_provision)
 app.register_api(api_data_schema)
+app.register_api(api_graph)
 
 
 @app.get("/")

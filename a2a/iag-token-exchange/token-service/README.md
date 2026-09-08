@@ -66,7 +66,7 @@ configuration (issuer + audience) and verify against its keys.
    `token-service` service in [`../docker-compose.yaml`](../docker-compose.yaml)
    joins every gateway network.
 2. ~~Bump the gateway image and point its exchange block at this service~~ -
-   done: gateways run `2.48.0`. `2.42.x` added the `JARVIS_TOKEN_SERVICE_*`
+   done: gateways run `2.55.1`. `2.42.x` added the `JARVIS_TOKEN_SERVICE_*`
    block; `2.47.0` made the gateway read the incoming `X-IK-Token`
    (introspected here, subject of the next exchange), so the **A2A gateways
    now run token-service mode with multi-hop chains** - the block is live on
