@@ -8,15 +8,11 @@ services:
     # multi-hop A2A delegation chains grow hop by hop. 2.42.x added the
     # token_service block (delegation minted by the IndyKite Token Service;
     # travels in X-IK-Token, policies read it as $ik_token); 2.21.1 was the
-    # first tag with MCP proxying. All gateways share this tag.
+    # first tag with MCP proxying. 2.52.0 logs the IdP response of a failed
+    # call; 2.52.1 made the gateway serve the baked :9080/healthz probe, so
+    # the healthcheck works out of the box. All gateways share this tag.
     # See https://hub.docker.com/r/indykite/agent-gateway/tags.
-    image: indykite/agent-gateway:2.48.0
-    # The image bakes a HEALTHCHECK on :9080/healthz, but the 2.48.0 gateway
-    # binary registers no healthcheck server and every service-port route
-    # needs auth (the probe insists on a 200), so every gateway would sit
-    # "unhealthy" forever. Disable it - a plain "Up" is the honest status.
-    healthcheck:
-      disable: true
+    image: indykite/agent-gateway:2.55.1
     environment:
       JARVIS_SERVICE_LOG_LEVEL: debug
       JARVIS_SERVICE_ENVIRONMENT: demo

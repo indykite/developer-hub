@@ -243,7 +243,7 @@ make new-analyst
 ```yaml
 services:
   iag-base:
-    image: indykite/agent-gateway:2.48.0   # or any newer tag from Docker Hub
+    image: indykite/agent-gateway:2.55.1   # or any newer tag from Docker Hub
 ```
 
 All gateways inherit this tag. `2.47.0` makes a gateway in token-service mode
@@ -262,7 +262,7 @@ If you are on Apple Silicon, add a `platform` attribute:
 ```yaml
 services:
   iag-base:
-    image: indykite/agent-gateway:2.48.0
+    image: indykite/agent-gateway:2.55.1
     platform: linux/amd64
 ```
 
@@ -630,8 +630,11 @@ Each one shows the full chain in the audit terminal: `orchestrator-iag` →
   lost between hops (both `Authorization` and `X-IK-Token` must be forwarded)
   or the workflow graph doesn't model this chain - re-ingest the
   agent-workflow data.
-- **Gateway / token-service containers show "unhealthy"**: cosmetic; probe
-  the service ports instead (`curl -s -o /dev/null -w '%{http_code}'
+- **Gateway / token-service containers show "unhealthy"**: only expected on
+  gateway tags below `2.52.1` / token-service below `1.0.0`, whose binaries
+  don't serve the baked `:9080/healthz` probe. On the pinned versions
+  "unhealthy" is a real signal; probe the service port to double-check
+  (`curl -s -o /dev/null -w '%{http_code}'
   http://localhost:8881/.well-known/agent-card.json` - 401 = serving with
   auth enforced).
 - **`manifest unknown` / `manifest for indykite/agent-gateway:<tag> not found`**:

@@ -205,3 +205,6 @@ gha-creds-*.json
 
 # Runtime log - contains API responses incl. credentials/private keys at DEBUG level
 flask_app.log
+
+# Node (vendored JS asset pipeline - see package.json)
+node_modules/

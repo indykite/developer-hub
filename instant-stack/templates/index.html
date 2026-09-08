@@ -140,7 +140,7 @@
                 <div class="card-body">
                     <p class="text-muted mb-3">Import the active dataset (<code>data/{{ dataset }}/nodes.json</code> and <code>data/{{ dataset }}/relationships.json</code>) into the IndyKite Knowledge Graph (IKG). Creates the dataset's full graph - its entities, relationships and documents, plus the agent-workflow graph (users, workflows <code>wf1</code>-<code>wf3</code>, the <code>indykiteagent*</code> agents with <code>workflow_name</code> / <code>discriminating_property</code> edges) used by the IndyKite Agent Gateway.</p>
                     <div class="row">
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <a href="/api_capture/create" class="card h-100 text-decoration-none">
                                 <div class="card-body">
                                     <h6 class="mb-2">Capture Nodes</h6>
@@ -148,11 +148,19 @@
                                 </div>
                             </a>
                         </div>
-                        <div class="col-md-6 mb-3">
+                        <div class="col-md-4 mb-3">
                             <a href="/api_relationships/create" class="card h-100 text-decoration-none">
                                 <div class="card-body">
                                     <h6 class="mb-2">Capture Relationships</h6>
                                     <p class="text-muted small mb-0">Import connections: <code>CONTAINS</code>, <code>WORKS_IN</code>, <code>REPORTS_TO</code>, <code>OWNS</code>, <code>CAN_ACCESS</code>, <code>CAN_RETRIEVE</code>, <code>IS_TYPE</code>, <code>IS_TIER</code>, <code>CLASSIFIED_AS</code>, <code>SUBJECT_TO</code>, <code>ENFORCED_IN</code>, <code>CREATED_BY</code>, <code>REGARDING</code>, <code>CLOSED_BY</code>, <code>MADE</code>, <code>EXCEPTION_TO</code></p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="/graph/" class="card h-100 text-decoration-none">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Visualize Graph</h6>
+                                    <p class="text-muted small mb-0">Explore the bundled <code>data/{{ dataset }}/</code> files as an interactive graph - nodes, directed relationships, and per-node details. Works before capture, straight from the files.</p>
                                 </div>
                             </a>
                         </div>

@@ -27,7 +27,7 @@
       "slot": "2",
       "name": "get-home-insurance-access",
       "display_name": "Get Home Insurance Access",
-      "description": "Home insurance visible to a household caller: full details of the caller's own policy, limited details (no financials) of the spouse's. Call tool 'ciq_execute' with input_params {\"caller_id\": \"<person external_id>\"}. Example: { \"id\": \"get-home-insurance-access\", \"input_params\": { \"caller_id\": \"james\" } }.",
+      "description": "Home insurance visible to a household caller: full details of the caller's own policy, limited details (no financials) of the spouse's. Staff (a Person in a Department) may pass any caller_id; a customer login may only pass their own external_id - any other caller_id returns empty data. Call tool 'ciq_execute' with input_params {\"caller_id\": \"<person external_id>\"}. Example: { \"id\": \"get-home-insurance-access\", \"input_params\": { \"caller_id\": \"james\" } }.",
       "query": {
         "nodes": [
           "caller.external_id",
@@ -62,7 +62,7 @@
       "slot": "3",
       "name": "get-family-overview",
       "display_name": "Get Family Overview",
-      "description": "Household overview for a caller: spouse, children with birth dates, and the family property. Call tool 'ciq_execute' with input_params {\"caller_id\": \"<person external_id>\"}. Example: { \"id\": \"get-family-overview\", \"input_params\": { \"caller_id\": \"james\" } }.",
+      "description": "Household overview for a caller: spouse, children with birth dates, and the family property. Staff (a Person in a Department) may pass any caller_id; a customer login may only pass their own external_id - any other caller_id returns empty data. Call tool 'ciq_execute' with input_params {\"caller_id\": \"<person external_id>\"}. Example: { \"id\": \"get-family-overview\", \"input_params\": { \"caller_id\": \"james\" } }.",
       "query": {
         "nodes": [
           "caller.external_id",
@@ -92,7 +92,7 @@
       "slot": "4",
       "name": "get-teens-driving-age",
       "display_name": "Get Teens Approaching Driving Age",
-      "description": "Find household children approaching driving age (roughly 15-17) with their parents' contact details - the cross-sell lead list. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-teens-driving-age\", \"input_params\": { } }.",
+      "description": "Find household children approaching driving age (roughly 15-17) with their parents' contact details. For staff (a Person in a Department) this is the cross-sell lead list across all households; a customer login sees only their own children. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-teens-driving-age\", \"input_params\": { } }.",
       "query": {
         "nodes": [
           "parent.external_id",
@@ -117,7 +117,7 @@
       "slot": "5",
       "name": "get-authorized-drivers",
       "display_name": "Get Authorized Drivers",
-      "description": "Who is authorized to drive a vehicle, by license plate. Call tool 'ciq_execute' with input_params {\"license_plate\": \"<plate>\"}. Example: { \"id\": \"get-authorized-drivers\", \"input_params\": { \"license_plate\": \"IL-ABC1234\" } }.",
+      "description": "Who is authorized to drive a vehicle, by license plate. Staff (a Person in a Department) may look up any plate; a customer login only sees vehicles they own or are themselves authorized to drive - other plates return empty data. Call tool 'ciq_execute' with input_params {\"license_plate\": \"<plate>\"}. Example: { \"id\": \"get-authorized-drivers\", \"input_params\": { \"license_plate\": \"IL-ABC1234\" } }.",
       "query": {
         "nodes": [
           "driver.external_id",
@@ -320,7 +320,7 @@
       "slot": "2",
       "name": "get-home-insurance-access",
       "display_name": "Get Home Insurance Access",
-      "description": "Home insurance visible to a household caller: full details of the caller's own policy, limited details (no financials) of the spouse's. Call tool 'ciq_execute' with input_params {\"caller_id\": \"<person external_id>\"}. Example: { \"id\": \"get-home-insurance-access\", \"input_params\": { \"caller_id\": \"james\" } }.",
+      "description": "Home insurance visible to a household caller: full details of the caller's own policy, limited details (no financials) of the spouse's. Staff (a Person in a Department) may pass any caller_id; a customer login may only pass their own external_id - any other caller_id returns empty data. Call tool 'ciq_execute' with input_params {\"caller_id\": \"<person external_id>\"}. Example: { \"id\": \"get-home-insurance-access\", \"input_params\": { \"caller_id\": \"james\" } }.",
       "policy": {
         "meta": {
           "policy_version": "1.0-ciq"
@@ -329,7 +329,7 @@
           "type": "Person"
         },
         "condition": {
-          "cypher": "MATCH (subject:Person {external_id: $token.sub}) WITH subject MATCH (caller:Person {external_id: $caller_id}) OPTIONAL MATCH (caller)-[r_married:MARRIED_TO]->(spouse:Person) OPTIONAL MATCH (caller)-[r_caller_policy:PRIMARY_POLICYHOLDER]->(callerInsurance:HomeInsurance) OPTIONAL MATCH (spouse)-[r_spouse_policy:PRIMARY_POLICYHOLDER]->(spouseInsurance:HomeInsurance)",
+          "cypher": "MATCH (subject:Person {external_id: $token.sub}) OPTIONAL MATCH (subject)-[:WORKS_IN]->(staffDept:Department) WITH subject, count(staffDept) > 0 AS isStaff MATCH (caller:Person {external_id: $caller_id}) WHERE isStaff OR caller = subject OPTIONAL MATCH (caller)-[r_married:MARRIED_TO]->(spouse:Person) OPTIONAL MATCH (caller)-[r_caller_policy:PRIMARY_POLICYHOLDER]->(callerInsurance:HomeInsurance) OPTIONAL MATCH (spouse)-[r_spouse_policy:PRIMARY_POLICYHOLDER]->(spouseInsurance:HomeInsurance)",
           "filter": []
         },
         "allowed_reads": {
@@ -363,7 +363,7 @@
       "slot": "3",
       "name": "get-family-overview",
       "display_name": "Get Family Overview",
-      "description": "Household overview for a caller: spouse, children with birth dates, and the family property. Call tool 'ciq_execute' with input_params {\"caller_id\": \"<person external_id>\"}. Example: { \"id\": \"get-family-overview\", \"input_params\": { \"caller_id\": \"james\" } }.",
+      "description": "Household overview for a caller: spouse, children with birth dates, and the family property. Staff (a Person in a Department) may pass any caller_id; a customer login may only pass their own external_id - any other caller_id returns empty data. Call tool 'ciq_execute' with input_params {\"caller_id\": \"<person external_id>\"}. Example: { \"id\": \"get-family-overview\", \"input_params\": { \"caller_id\": \"james\" } }.",
       "policy": {
         "meta": {
           "policy_version": "1.0-ciq"
@@ -372,7 +372,7 @@
           "type": "Person"
         },
         "condition": {
-          "cypher": "MATCH (subject:Person {external_id: $token.sub}) WITH subject MATCH (caller:Person {external_id: $caller_id}) OPTIONAL MATCH (caller)-[r_married:MARRIED_TO]->(spouse:Person) OPTIONAL MATCH (caller)-[r_parent:PARENT_OF]->(child:Person) OPTIONAL MATCH (caller)-[r_resides:RESIDES_AT]->(property:PropertyEstate)",
+          "cypher": "MATCH (subject:Person {external_id: $token.sub}) OPTIONAL MATCH (subject)-[:WORKS_IN]->(staffDept:Department) WITH subject, count(staffDept) > 0 AS isStaff MATCH (caller:Person {external_id: $caller_id}) WHERE isStaff OR caller = subject OPTIONAL MATCH (caller)-[r_married:MARRIED_TO]->(spouse:Person) OPTIONAL MATCH (caller)-[r_parent:PARENT_OF]->(child:Person) OPTIONAL MATCH (caller)-[r_resides:RESIDES_AT]->(property:PropertyEstate)",
           "filter": []
         },
         "allowed_reads": {
@@ -400,7 +400,7 @@
       "slot": "4",
       "name": "get-teens-driving-age",
       "display_name": "Get Teens Approaching Driving Age",
-      "description": "Find household children approaching driving age (roughly 15-17) with their parents' contact details - the cross-sell lead list. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-teens-driving-age\", \"input_params\": { } }.",
+      "description": "Find household children approaching driving age (roughly 15-17) with their parents' contact details. For staff (a Person in a Department) this is the cross-sell lead list across all households; a customer login sees only their own children. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-teens-driving-age\", \"input_params\": { } }.",
       "policy": {
         "meta": {
           "policy_version": "1.0-ciq"
@@ -409,7 +409,7 @@
           "type": "Person"
         },
         "condition": {
-          "cypher": "MATCH (subject:Person {external_id: $token.sub}) WITH subject MATCH (parent:Person)-[r_parent:PARENT_OF]->(child:Person) MATCH (child)-[r_resides:RESIDES_AT]->(property:PropertyEstate)",
+          "cypher": "MATCH (subject:Person {external_id: $token.sub}) OPTIONAL MATCH (subject)-[:WORKS_IN]->(staffDept:Department) WITH subject, count(staffDept) > 0 AS isStaff MATCH (parent:Person)-[r_parent:PARENT_OF]->(child:Person) MATCH (child)-[r_resides:RESIDES_AT]->(property:PropertyEstate) WHERE isStaff OR parent = subject",
           "filter": [
             {
               "operator": "AND",
@@ -451,7 +451,7 @@
       "slot": "5",
       "name": "get-authorized-drivers",
       "display_name": "Get Authorized Drivers",
-      "description": "Who is authorized to drive a vehicle, by license plate. Call tool 'ciq_execute' with input_params {\"license_plate\": \"<plate>\"}. Example: { \"id\": \"get-authorized-drivers\", \"input_params\": { \"license_plate\": \"IL-ABC1234\" } }.",
+      "description": "Who is authorized to drive a vehicle, by license plate. Staff (a Person in a Department) may look up any plate; a customer login only sees vehicles they own or are themselves authorized to drive - other plates return empty data. Call tool 'ciq_execute' with input_params {\"license_plate\": \"<plate>\"}. Example: { \"id\": \"get-authorized-drivers\", \"input_params\": { \"license_plate\": \"IL-ABC1234\" } }.",
       "policy": {
         "meta": {
           "policy_version": "1.0-ciq"
@@ -460,7 +460,7 @@
           "type": "Person"
         },
         "condition": {
-          "cypher": "MATCH (subject:Person {external_id: $token.sub}) WITH subject MATCH (driver:Person)-[r_auth:AUTHORIZED_DRIVER]->(vehicle:Vehicle)",
+          "cypher": "MATCH (subject:Person {external_id: $token.sub}) OPTIONAL MATCH (subject)-[:WORKS_IN]->(staffDept:Department) WITH subject, count(staffDept) > 0 AS isStaff MATCH (driver:Person)-[r_auth:AUTHORIZED_DRIVER]->(vehicle:Vehicle) WHERE isStaff OR (subject)-[:OWNS]->(vehicle) OR driver = subject",
           "filter": [
             {
               "attribute": "vehicle.property.license_plate",
