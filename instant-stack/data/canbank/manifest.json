@@ -742,7 +742,7 @@
       "status": "ACTIVE",
       "policy": {
         "meta": {
-          "policy_version": "1.0-indykite"
+          "policy_version": "2.0-kbac"
         },
         "subject": {
           "type": "User"
@@ -788,7 +788,7 @@
       "status": "ACTIVE",
       "policy": {
         "meta": {
-          "policy_version": "1.0-indykite"
+          "policy_version": "2.0-kbac"
         },
         "subject": {
           "type": "User"

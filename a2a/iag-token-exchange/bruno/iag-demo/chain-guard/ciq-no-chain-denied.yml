@@ -1,0 +1,48 @@
+---
+info:
+  name: CIQ no chain - DENIED
+  type: http
+  seq: 9
+
+http:
+  method: POST
+  url: "{{indykite_base_url}}/contx-iq/v1/execute"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json
+    - name: X-IK-ClientKey
+      value: "{{app_agent_token}}"
+  body:
+    type: json
+    data: |-
+      {
+        "id": "get-internal-documents-chained",
+        "input_params": {
+          "taxonomy_external_id": "policy"
+        }
+      }
+  auth:
+    type: bearer
+    token: "{{user_token_millicent}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        // No X-IK-Token at all: $ik_token is absent, the token_filter cannot
+        // hold, and the platform refuses with the filter's advice.
+        test("Status code is 401", function () {
+          expect(res.status).to.equal(401);
+        });
+        test("Www-Authenticate carries the invalid_delegation_chain advice", function () {
+          var wwwAuth = res.headers["www-authenticate"] || "";
+          expect(wwwAuth).to.include("invalid_delegation_chain");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

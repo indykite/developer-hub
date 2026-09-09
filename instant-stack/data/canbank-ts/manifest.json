@@ -249,6 +249,26 @@
         "relationships": [],
         "aggregate_values": []
       }
+    },
+    {
+      "slot": "13",
+      "name": "get-internal-documents-chained",
+      "display_name": "Get Internal Documents (chain-guarded)",
+      "description": "Retrieve internal documents by taxonomy over the fully delegated agent chain. Call tool 'ciq_execute' with input_params. Example: { \"id\": \"get-internal-documents-chained\", \"input_params\": { \"taxonomy_external_id\": \"policy\" } }. Refused unless the request traveled console->orchestrator->retriever->mcp with the ITS delegation intact.",
+      "query": {
+        "nodes": [
+          "subject.external_id",
+          "subject.property.name",
+          "subject.property.title",
+          "document.external_id",
+          "document.property.name",
+          "document.property.description",
+          "document.property.url",
+          "taxonomy.property.name"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
     }
   ],
   "ciq_policies": [
@@ -650,6 +670,48 @@
         "explain",
         "authorization"
       ]
+    },
+    {
+      "slot": "13",
+      "name": "get-internal-documents-chained",
+      "display_name": "Get Internal Documents (chain-guarded)",
+      "description": "Return internal documents filtered by taxonomy, but only when the request carries the full ITS delegation chain of the console->orchestrator->retriever->mcp route.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User {external_id: $token.sub})-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(document:Document)-[:IS_TYPE]->(taxonomy:Taxonomy {external_id: $taxonomy_external_id})",
+          "filter": [],
+          "token_filter": {
+            "attribute": "$ik_token.act.act.act.sub",
+            "operator": "=",
+            "value": "indykiteagent",
+            "advice": {
+              "error": "invalid_delegation_chain",
+              "error_description": "Expected a depth-3 delegation chain with indykiteagent as the innermost actor ($ik_token.act.act.act.sub)"
+            }
+          }
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "document.*",
+            "taxonomy.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "canbank",
+        "documents",
+        "delegation",
+        "chain"
+      ]
     }
   ],
   "resolvers": [
@@ -778,7 +840,7 @@
       "status": "ACTIVE",
       "policy": {
         "meta": {
-          "policy_version": "1.0-indykite"
+          "policy_version": "2.0-kbac"
         },
         "subject": {
           "type": "User"
@@ -814,6 +876,34 @@
         },
         "condition": {
           "cypher": "MATCH (subject:User)-[:WORKS_IN]->(department:Department)-[:CAN_RETRIEVE]->(resource:Quote)"
+        }
+      }
+    },
+    {
+      "name": "user-can-disclose-document-chained",
+      "display_name": "User can disclose document (chain-guarded)",
+      "description": "Allow a user to DISCLOSE a document they can reach through their department only when the full console->orchestrator->retriever->mcp ITS delegation chain is presented.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "CAN_DISCLOSE"
+        ],
+        "resource": {
+          "type": "Document"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(resource:Document)",
+          "filter": {
+            "attribute": "$ik_token.act.act.act.sub",
+            "operator": "=",
+            "value": "indykiteagent"
+          }
         }
       }
     }

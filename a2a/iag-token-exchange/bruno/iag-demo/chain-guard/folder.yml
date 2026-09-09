@@ -1,0 +1,51 @@
+---
+info:
+  name: Delegation Chain Guard
+  type: folder
+  seq: 7
+
+request:
+  auth: inherit
+
+docs: |-
+  Deterministic probes for the chain-guarded CIQ query
+  get-internal-documents-chained, ported from the jarvis-proto e2e suite
+  "14 Delegated Token Chain" and verified live on 2026-09-09.
+
+  The query's CIQ policy carries a token_filter on
+  $ik_token.act.act.act.sub = "indykiteagent": only a delegation chain of
+  depth 3 whose innermost actor is the orchestrator - the full
+  console -> orchestrator -> retriever -> mcp route - may read the
+  documents. token_filter is evaluated against the token claims in-process,
+  so a shorter or absent chain is refused before the graph is ever touched.
+
+  Rather than drive the live agents (whose gateway also enforces a separate
+  workflow-authorization check, and whose LLM tool choice is nondeterministic),
+  these requests mint the delegation directly at the Token Service - exactly
+  how the gateways do it, hop by hop - and present it to the platform CIQ REST
+  endpoint. That isolates the data-policy chain guard cleanly.
+
+  Flow:
+  - seq 1: actor token for the orchestrator (client-credentials, indykiteagent).
+  - seq 2: actor token for the retriever (indykiteagent-2).
+  - seq 3: actor token for the mcp agent (indykiteagent-mcp).
+  - seq 4-6: build the chain hop by hop at the Token Service:
+    user -> +orchestrator (seq 4, depth-1) -> +retriever (seq 5, depth-2)
+    -> +mcp (seq 6, depth-3, act.act.act.sub = indykiteagent). The depth-1
+    token from seq 4 is kept for the short-chain negative below.
+  - seq 7: CIQ execute WITH the full depth-3 X-IK-Token -> 200 (ALLOWED).
+  - seq 8: CIQ execute WITH the depth-1 X-IK-Token (short chain) -> 401
+    invalid_delegation_chain (DENIED).
+  - seq 9: CIQ execute WITHOUT any X-IK-Token -> 401 invalid_delegation_chain
+    (DENIED).
+  - seq 10: CIQ execute WITH a malformed X-IK-Token -> refused (DENIED).
+
+  Prerequisites: compose stack up in token-service mode (Token Service on
+  localhost:8102); the canbank-ts dataset provisioned (slot-13 chained
+  query/policy). Environment vars, all sourced from the stack's .env:
+  user_token_millicent (fresh chatbot login), app_agent_token
+  (APP_AGENT_CREDENTIALS_TOKEN), orchestrator_client_secret
+  (ORCHESTRATOR_IDP_CLIENT_SECRET), retriever_client_secret
+  (RETRIEVER_IDP_CLIENT_SECRET), mcp_client_secret (MCP_IDP_CLIENT_SECRET),
+  token_service_client_secret (TOKEN_SERVICE_CLIENT_SECRET). idp_base_url,
+  token_service_url and indykite_base_url are preset.

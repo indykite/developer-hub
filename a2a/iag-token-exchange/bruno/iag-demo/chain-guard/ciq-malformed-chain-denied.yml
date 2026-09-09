@@ -1,0 +1,49 @@
+---
+info:
+  name: CIQ malformed chain - DENIED
+  type: http
+  seq: 10
+
+http:
+  method: POST
+  url: "{{indykite_base_url}}/contx-iq/v1/execute"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json
+    - name: X-IK-ClientKey
+      value: "{{app_agent_token}}"
+    - name: X-IK-Token
+      value: "not-a-valid-jwt"
+  body:
+    type: json
+    data: |-
+      {
+        "id": "get-internal-documents-chained",
+        "input_params": {
+          "taxonomy_external_id": "policy"
+        }
+      }
+  auth:
+    type: bearer
+    token: "{{user_token_millicent}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        // A garbage delegated token is rejected outright at introspection.
+        test("Status code is 4xx", function () {
+          expect(res.status).to.be.within(400, 499);
+        });
+        test("No documents leaked", function () {
+          var text = JSON.stringify(res.body);
+          expect(text).to.not.match(/"data":\s*\[\s*{/);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

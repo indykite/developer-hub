@@ -1,0 +1,51 @@
+---
+info:
+  name: CIQ full chain - ALLOWED
+  type: http
+  seq: 7
+
+http:
+  method: POST
+  url: "{{indykite_base_url}}/contx-iq/v1/execute"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json
+    - name: X-IK-ClientKey
+      value: "{{app_agent_token}}"
+    - name: X-IK-Token
+      value: "{{delegated_depth3}}"
+  body:
+    type: json
+    data: |-
+      {
+        "id": "get-internal-documents-chained",
+        "input_params": {
+          "taxonomy_external_id": "policy"
+        }
+      }
+  auth:
+    type: bearer
+    token: "{{user_token_millicent}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        // Full depth-3 chain: the token_filter holds, so the guard permits the
+        // query. millicent is a real graph User, so rows come back.
+        test("Status code is 200", function () {
+          expect(res.status).to.equal(200);
+        });
+        test("Documents are returned over the full chain", function () {
+          expect(res.body).to.have.property("data");
+          expect(res.body.data).to.be.an("array");
+          expect(res.body.data.length).to.be.greaterThan(0);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

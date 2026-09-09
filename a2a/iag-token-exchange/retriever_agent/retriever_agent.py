@@ -415,11 +415,14 @@ _BASE_SYSTEM_PROMPT = (
     '  {"id": "get-stock-trade-threshold", "input_params": {"customer_external_id": "rebecca"}}\n'
     '  {"id": "get-self", "input_params": {}}\n'
     '  {"id": "get-internal-documents", "input_params": {"taxonomy_external_id": "policy"}}\n'
+    '  {"id": "get-internal-documents-chained", "input_params": {"taxonomy_external_id": "policy"}}\n'
     '  {"id": "get-decisions", "input_params": {"document_external_id": "refund_policy"}}\n'
     '  {"id": "get-customer-facing-documents", "input_params": {}}\n'
     '  {"id": "get-regulatory-agreements", "input_params": {}}\n'
     "Substitute the real ticker / customer / document / taxonomy from the user question; "
-    "if unsure which id fits, call list_resources first.\n"
+    "if unsure which id fits, call list_resources first. Use get-internal-documents-chained "
+    "(not get-internal-documents) whenever the user names it or asks for the chain-guarded / "
+    "delegated variant.\n"
     "AuthZEN (evaluation, evaluations, resource_search, subject_search, action_search): example "
     '{"subject":{"type":"user","id":"alice"},"action":{"name":"view"},"resource":{"type":"record","id":"109"}}; '
     'response {"decision":true} or {"decision":false}. Return data only when evaluation is '
