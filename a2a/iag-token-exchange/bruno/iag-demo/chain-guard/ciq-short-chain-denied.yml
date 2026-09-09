@@ -1,0 +1,50 @@
+---
+info:
+  name: CIQ short chain - DENIED
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{indykite_base_url}}/contx-iq/v1/execute"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json
+    - name: X-IK-ClientKey
+      value: "{{app_agent_token}}"
+    - name: X-IK-Token
+      value: "{{delegated_depth1}}"
+  body:
+    type: json
+    data: |-
+      {
+        "id": "get-internal-documents-chained",
+        "input_params": {
+          "taxonomy_external_id": "policy"
+        }
+      }
+  auth:
+    type: bearer
+    token: "{{user_token_millicent}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        // Depth-1 chain: act.act.act.sub does not exist, so the token_filter
+        // cannot hold and the platform refuses with the filter's advice.
+        test("Status code is 401", function () {
+          expect(res.status).to.equal(401);
+        });
+        test("Www-Authenticate carries the invalid_delegation_chain advice", function () {
+          var wwwAuth = res.headers["www-authenticate"] || "";
+          expect(wwwAuth).to.include("invalid_delegation_chain");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

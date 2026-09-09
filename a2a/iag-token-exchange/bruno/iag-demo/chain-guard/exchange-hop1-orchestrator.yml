@@ -1,0 +1,54 @@
+---
+info:
+  name: Exchange hop 1 - user + orchestrator
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{token_service_url}}/oauth2/token"
+  headers:
+    - name: Content-Type
+      value: application/x-www-form-urlencoded
+  body:
+    type: form-urlencoded
+    data:
+      - name: grant_type
+        value: "urn:ietf:params:oauth:grant-type:token-exchange"
+      - name: subject_token
+        value: "{{user_token_millicent}}"
+      - name: subject_token_type
+        value: "urn:ietf:params:oauth:token-type:access_token"
+      - name: actor_token
+        value: "{{actor_orchestrator}}"
+      - name: actor_token_type
+        value: "urn:ietf:params:oauth:token-type:access_token"
+      - name: requested_token_type
+        value: "urn:ietf:params:oauth:token-type:access_token"
+  auth:
+    type: basic
+    username: agent-gateway
+    password: "{{token_service_client_secret}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        var jsonData = res.body;
+
+        test("Status code is 200", function () {
+          expect(res.status).to.equal(200);
+        });
+        test("Token Service minted a delegated token", function () {
+          expect(jsonData).to.have.property("access_token");
+        });
+
+        // Depth-1 chain: act.sub = orchestrator, no deeper act. Kept for the
+        // short-chain negative below.
+        bru.setVar("delegated_depth1", jsonData.access_token);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

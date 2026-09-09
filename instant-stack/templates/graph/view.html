@@ -807,7 +807,10 @@
             n.neighborhood("node").forEach(function (t) {
                 var type = t.data("type");
                 if (!collapsedSet.has(type) || loadedTypes.has(type) || pinned.has(t.id())) { return; }
-                var keep = t.neighborhood("node").some(function (m) { return expanded.has(m.id()); });
+                // Keep the neighbor if it was itself expanded (removing it would
+                // orphan its own subtree) or if any of its other neighbors are.
+                var keep = expanded.has(t.id()) ||
+                    t.neighborhood("node").some(function (m) { return expanded.has(m.id()); });
                 if (!keep) { cy.remove(t); }
             });
         });

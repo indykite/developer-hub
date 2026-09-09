@@ -6,7 +6,7 @@ variables:
   - secret: true
     name: agent_token
   - name: project_id
-    value: gid:AAAAApo7TvCs_0TQt-WFbP5KxMM
+    value: gid:AAAAAvZCNvePN0Dll5QHuJFgTHo
   - name: get_agent_workflows_policy
     value: gid:AAAAFn8x970x80CPrzeCXVe_eYU
   - name: get_agent_workflows_query
@@ -57,7 +57,29 @@ variables:
   - name: iag_analyst_url
     value: http://localhost:8885
   - name: iag_mcp_url
-    value: http://localhost:8886/mcp/v1/gid:AAAAApo7TvCs_0TQt-WFbP5KxMM
+    value: http://localhost:8886/mcp/v1/gid:AAAAAvZCNvePN0Dll5QHuJFgTHo
   # Drive MCP PoC: the IAG forwards the /mcp path to the wrapped Drive server
   - name: iag_drive_mcp_url
     value: http://localhost:8887/mcp
+  # Delegation Chain Guard: platform REST base + the app agent credentials
+  # token (X-IK-ClientKey; same value as APP_AGENT_CREDENTIALS_TOKEN in the
+  # stack's .env)
+  - name: indykite_base_url
+    value: https://api.rc.indykite.xyz
+  - secret: true
+    name: app_agent_token
+  # Delegation Chain Guard: IdP token endpoint base and the self-hosted Token
+  # Service; the agent IdP client secrets and the token-service client secret
+  # (all from the stack's .env) used to mint the delegation chain hop by hop.
+  - name: idp_base_url
+    value: https://idsvr.indykite.one/oauth/v2/
+  - name: token_service_url
+    value: http://localhost:8102
+  - secret: true
+    name: orchestrator_client_secret
+  - secret: true
+    name: retriever_client_secret
+  - secret: true
+    name: mcp_client_secret
+  - secret: true
+    name: token_service_client_secret

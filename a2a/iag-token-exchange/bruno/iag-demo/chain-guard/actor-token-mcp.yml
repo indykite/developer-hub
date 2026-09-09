@@ -1,0 +1,43 @@
+---
+info:
+  name: Actor token - mcp
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{idp_base_url}}oauth-token"
+  headers:
+    - name: Content-Type
+      value: application/x-www-form-urlencoded
+  body:
+    type: form-urlencoded
+    data:
+      - name: grant_type
+        value: client_credentials
+  auth:
+    type: basic
+    username: indykiteagent-mcp
+    password: "{{mcp_client_secret}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        var jsonData = res.body;
+
+        test("Status code is 200", function () {
+          expect(res.status).to.equal(200);
+        });
+        test("IdP issued an actor token", function () {
+          expect(jsonData).to.have.property("access_token");
+          expect(jsonData.access_token).to.be.a("string").and.not.to.be.empty;
+        });
+
+        bru.setVar("actor_mcp", jsonData.access_token);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
