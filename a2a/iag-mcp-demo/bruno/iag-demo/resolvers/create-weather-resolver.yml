@@ -1,0 +1,35 @@
+---
+info:
+  name: Create Weather Resolver
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/external-data-resolvers"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "project_id": "{{project_id}}",
+          "name": "weather",
+          "display_name": "Current Weather",
+          "description": "Fetches the current weather block (temperature, apparent temperature, wind speed and weather code) for the latitude/longitude passed via input_params. Defaults to CanBank's London HQ (51.5072, -0.1276) when input_params are absent. Use this as the `external_value` on a Weather node property. Pair with the `weather-units` resolver to also retrieve the unit labels.",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude={$latitude || 51.5072}&longitude={$longitude || -0.1276}&current=temperature_2m,apparent_temperature,wind_speed_10m,weather_code&timezone=auto",
+          "method": "GET",
+          "headers": {},
+          "request_payload": "",
+          "request_content_type": "JSON",
+          "response_content_type": "JSON",
+          "response_selector": ".current"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

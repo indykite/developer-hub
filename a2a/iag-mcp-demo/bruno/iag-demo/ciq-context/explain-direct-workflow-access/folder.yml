@@ -1,0 +1,8 @@
+---
+info:
+  name: explain-direct-workflow-access
+  type: folder
+  seq: 12
+
+request:
+  auth: inherit

@@ -1,0 +1,35 @@
+---
+info:
+  name: Create Weather Units Resolver
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/external-data-resolvers"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "project_id": "{{project_id}}",
+          "name": "weather-units",
+          "display_name": "Current Weather Units",
+          "description": "Fetches the unit labels (e.g. °C, km/h) for the current weather block at the latitude/longitude passed via input_params (defaults to London HQ).",
+          "url": "https://api.open-meteo.com/v1/forecast?latitude={$latitude || 51.5072}&longitude={$longitude || -0.1276}&current=temperature_2m,apparent_temperature,wind_speed_10m,weather_code&timezone=auto",
+          "method": "GET",
+          "headers": {},
+          "request_payload": "",
+          "request_content_type": "JSON",
+          "response_content_type": "JSON",
+          "response_selector": ".current_units"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
