@@ -45,6 +45,15 @@ variables:
   # "Create Store Decision Policy"; consumed by "Create Store Decision Query")
   - name: store_decision_policy
     value: ""
+  # GIDs of the policies added for parity with instant-stack data/canbank
+  # (set after running the matching "Create ... Policy" request; consumed by
+  # the "Create ... Query" request in the same folder)
+  - name: get_hq_weather_policy
+    value: ""
+  - name: explain_staff_workflow_access_policy
+    value: ""
+  - name: explain_direct_workflow_access_policy
+    value: ""
   # WF4 Parallel Multi-Agent MCP: user access tokens (log in to the chatbot as
   # each user and copy the token, or mint one from the IdP)
   - secret: true

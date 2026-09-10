@@ -18,9 +18,6 @@ http:
           { "source": { "type": "System", "external_id": "sys_canbank_core" }, "target": { "type": "Customer", "external_id": "charlie" }, "type": "CONTAINS" },
           { "source": { "type": "System", "external_id": "sys_canbank_core" }, "target": { "type": "Customer", "external_id": "rebecca" }, "type": "CONTAINS" },
           { "source": { "type": "System", "external_id": "sys_canbank_core" }, "target": { "type": "Customer", "external_id": "ted" }, "type": "CONTAINS" },
-          { "source": { "type": "System", "external_id": "sys_canbank_core" }, "target": { "type": "Customer", "external_id": "keely" }, "type": "CONTAINS" },
-          { "source": { "type": "System", "external_id": "sys_canbank_core" }, "target": { "type": "Customer", "external_id": "jamie" }, "type": "CONTAINS" },
-      /*    { "source": { "type": "System", "external_id": "sys_canbank_core" }, "target": { "type": "Customer", "external_id": "willis" }, "type": "CONTAINS" },*/
 
           /* ALISON'S HOLDINGS */
           { "source": { "type": "Customer", "external_id": "alison" }, "target": { "type": "Account", "external_id": "acc_alison_chequing" }, "type": "OWNS" },
@@ -30,7 +27,7 @@ http:
           { "source": { "type": "Customer", "external_id": "bob" }, "target": { "type": "Account", "external_id": "acc_bob_401k" }, "type": "OWNS" },
 
           /* CHARLIE'S HOLDINGS */
-          { "source": { "type": "Customer", "external_id": "charlie" }, "target": { "type": "Account", "external_id": "acc_charlie-loan" }, "type": "OWNS" },
+          { "source": { "type": "Customer", "external_id": "charlie" }, "target": { "type": "Account", "external_id": "acc_charlie_loan" }, "type": "OWNS" },
 
           /* REBECCA'S HOLDINGS */
           { "source": { "type": "Customer", "external_id": "rebecca" }, "target": { "type": "Account", "external_id": "acc_rebecca_chequing" }, "type": "OWNS" },
@@ -38,22 +35,12 @@ http:
           { "source": { "type": "Customer", "external_id": "rebecca" }, "target": { "type": "Account", "external_id": "acc_rebecca_cc" }, "type": "OWNS" },
 
           /* TED'S HOLDINGS */
-          { "source": { "type": "Customer", "external_id": "ted" }, "target": { "type": "Account", "external_id": "acc_ted_chequing" }, "type": "OWNS" },
           { "source": { "type": "Customer", "external_id": "ted" }, "target": { "type": "Account", "external_id": "acc_ted_investing" }, "type": "OWNS" },
           { "source": { "type": "Customer", "external_id": "ted" }, "target": { "type": "Account", "external_id": "acc_ted_cc" }, "type": "OWNS" },
 
-          /* KEELY'S HOLDINGS */
-          { "source": { "type": "Customer", "external_id": "keely" }, "target": { "type": "Account", "external_id": "acc_keely_cc" }, "type": "OWNS" },
-
-          /* JAMIE'S HOLDINGS */
-          { "source": { "type": "Customer", "external_id": "jamie" }, "target": { "type": "Account", "external_id": "acc_jamie_cc" }, "type": "OWNS" },
-
-          /* WILLIS'S HOLDINGS */
-      /*    { "source": { "type": "Customer", "external_id": "willis" }, "target": { "type": "Account", "external_id": "acc_willis_cc" }, "type": "OWNS" },*/
-
           /* Connects account to the "InvestmentCategory" */
-          { "source": { "type": "Account", "external_id": "acc_charlie_loan" }, "target": { "type": "InvestmentCategory", "external_id": "cat_lending" }, "type": "IS_TYPE" },
-          { "source": { "type": "Account", "external_id": "acc_bob_401k" }, "target": { "type": "InvestmentCategory", "external_id": "cat_mutual_fund" }, "type": "IS_TYPE" },
+          { "source": { "type": "Account", "external_id": "acc_charlie_loan" }, "target": { "type": "InvestmentCategory", "external_id": "cat-lending" }, "type": "IS_TYPE" },
+          { "source": { "type": "Account", "external_id": "acc_bob_401k" }, "target": { "type": "InvestmentCategory", "external_id": "cat-mutual-fund" }, "type": "IS_TYPE" },
           { "source": { "type": "Account", "external_id": "acc_rebecca_investing" }, "target": { "type": "InvestmentCategory", "external_id": "cat_stocks" }, "type": "IS_TYPE" },
           { "source": { "type": "Account", "external_id": "acc_ted_investing" }, "target": { "type": "InvestmentCategory", "external_id": "cat_stocks" }, "type": "IS_TYPE" },
 
@@ -64,9 +51,24 @@ http:
           { "source": { "type": "Account", "external_id": "acc_ted_investing" }, "target": { "type": "AccountTier", "external_id": "tier_3" }, "type": "IS_TIER" },
           { "source": { "type": "Account", "external_id": "acc_rebecca_cc" }, "target": { "type": "AccountTier", "external_id": "tier_3" }, "type": "IS_TIER" },
           { "source": { "type": "Account", "external_id": "acc_ted_cc" }, "target": { "type": "AccountTier", "external_id": "tier_3" }, "type": "IS_TIER" },
-          { "source": { "type": "Account", "external_id": "acc_keely_cc" }, "target": { "type": "AccountTier", "external_id": "tier_2" }, "type": "IS_TIER" },
-          { "source": { "type": "Account", "external_id": "acc_jamie_cc" }, "target": { "type": "AccountTier", "external_id": "tier_2" }, "type": "IS_TIER" },
-          { "source": { "type": "Account", "external_id": "acc_jamie_cc" }, "target": { "type": "AccountTier", "external_id": "tier_4" }, "type": "IS_TIER" }
+
+          /* Invoices */
+          { "source": { "type": "Customer", "external_id": "alison" }, "target": { "type": "Invoice", "external_id": "inv-cb-001" }, "type": "HAS_INVOICE" },
+          { "source": { "type": "Customer", "external_id": "alison" }, "target": { "type": "Invoice", "external_id": "inv-cb-002" }, "type": "HAS_INVOICE" },
+          { "source": { "type": "Customer", "external_id": "bob" }, "target": { "type": "Invoice", "external_id": "inv-cb-003" }, "type": "HAS_INVOICE" },
+          { "source": { "type": "Customer", "external_id": "bob" }, "target": { "type": "Invoice", "external_id": "inv-cb-004" }, "type": "HAS_INVOICE" },
+          { "source": { "type": "Customer", "external_id": "charlie" }, "target": { "type": "Invoice", "external_id": "inv-cb-005" }, "type": "HAS_INVOICE" },
+          { "source": { "type": "Customer", "external_id": "charlie" }, "target": { "type": "Invoice", "external_id": "inv-cb-006" }, "type": "HAS_INVOICE" },
+          { "source": { "type": "Customer", "external_id": "rebecca" }, "target": { "type": "Invoice", "external_id": "inv-cb-007" }, "type": "HAS_INVOICE" },
+          { "source": { "type": "Customer", "external_id": "rebecca" }, "target": { "type": "Invoice", "external_id": "inv-cb-008" }, "type": "HAS_INVOICE" },
+          { "source": { "type": "Customer", "external_id": "ted" }, "target": { "type": "Invoice", "external_id": "inv-cb-009" }, "type": "HAS_INVOICE" },
+
+          /* Which department serves which customer (staff-can-view-invoice KBAC path) */
+          { "source": { "type": "Department", "external_id": "support" }, "target": { "type": "Customer", "external_id": "alison" }, "type": "SERVES" },
+          { "source": { "type": "Department", "external_id": "support" }, "target": { "type": "Customer", "external_id": "bob" }, "type": "SERVES" },
+          { "source": { "type": "Department", "external_id": "support" }, "target": { "type": "Customer", "external_id": "charlie" }, "type": "SERVES" },
+          { "source": { "type": "Department", "external_id": "trading" }, "target": { "type": "Customer", "external_id": "rebecca" }, "type": "SERVES" },
+          { "source": { "type": "Department", "external_id": "trading" }, "target": { "type": "Customer", "external_id": "ted" }, "type": "SERVES" }
 
         ]
       }

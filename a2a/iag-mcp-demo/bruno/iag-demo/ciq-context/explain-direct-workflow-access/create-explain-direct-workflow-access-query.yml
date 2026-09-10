@@ -1,0 +1,31 @@
+---
+info:
+  name: Create Explain Direct Workflow Access Query
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/knowledge-queries"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "explain-direct-workflow-access",
+          "display_name": "Explain Direct Workflow Access",
+          "description": "Authorization-path explainer for the console's why? cards: returns the direct User -CAN_TRIGGER-> Workflow edge when it exists in the graph (empty data = no such path). Example: { \"id\": \"explain-direct-workflow-access\", \"input_params\": { \"subject_id\": \"james\", \"workflow_id\": \"wf1\" } }.",
+          "project_id": "{{project_id}}",
+          "policy_id": "{{explain_direct_workflow_access_policy}}",
+          "query": "{ \"nodes\": [ \"u.external_id\", \"u.property.name\", \"u.property.first_name\", \"wf.external_id\" ], \"relationships\": [  ], \"aggregate_values\": [ ] }",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

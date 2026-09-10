@@ -1,0 +1,35 @@
+---
+info:
+  name: Create Stock Quote Resolver
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/external-data-resolvers"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "project_id": "{{project_id}}",
+          "name": "stock-quote",
+          "display_name": "Stock Quote",
+          "description": "Returns the current market price for the ticker symbol passed via the knowledge query's `ticker` input parameter. Bound to the price property of the stock_quote Quote node and consumed by the iag-demo retriever_agent's max-purchase-amount tool. Backed by Yahoo Finance's public chart endpoint; no API key required.",
+          "url": "https://query1.finance.yahoo.com/v8/finance/chart/{$ticker}?interval=1d",
+          "method": "GET",
+          "headers": {},
+          "request_payload": "",
+          "request_content_type": "JSON",
+          "response_content_type": "JSON",
+          "response_selector": ".chart.result[0].meta.regularMarketPrice"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
