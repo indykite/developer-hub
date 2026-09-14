@@ -53,7 +53,7 @@ services:
     # Official image (published 2026-09-03); pin the tag like the gateways
     # pin agent-gateway in iag-base-docker.yaml.
     # See https://hub.docker.com/r/indykite/token-service/tags.
-    image: indykite/token-service:1.0.0
+    image: indykite/token-service:1.0.0@sha256:a1248b73ab22fb939e533455a89468b7112b2b938486d8feca818e17776a97e2
     # The image is linux/amd64 only - request it explicitly so arm64 hosts
     # (Apple Silicon) pull it under emulation instead of failing with
     # "no matching manifest".
