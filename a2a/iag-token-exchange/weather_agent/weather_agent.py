@@ -43,10 +43,10 @@ from a2a.utils.constants import DEFAULT_RPC_URL
 from dotenv import load_dotenv
 from mcp import ClientSession
 from mcp.client.streamable_http import (
-    StreamableHTTPTransport,
     streamable_http_client,
 )
 from mcp.shared._httpx_utils import create_mcp_http_client
+from mcp.shared.exceptions import MCPError
 from mcp.types import CallToolResult, TextContent
 from starlette.applications import Starlette
 from starlette.exceptions import HTTPException
@@ -54,59 +54,23 @@ from starlette.exceptions import HTTPException
 load_dotenv()
 
 # ---------------------------------------------------------------------------
-# MCP transport workaround for Indykite (same patch retriever_agent uses)
+# MCP handshake
 # ---------------------------------------------------------------------------
-# Indykite MCP returns 202 Accepted with Mcp-Session-Id in headers. The Python MCP
-# SDK returns early on 202 without extracting the session ID, causing the next GET
-# to fail with 404. Patch to extract session ID from 202 responses.
-import mcp.client.streamable_http as _mcp_streamable_http  # noqa: E402
+# Newest protocol first: server/discover (stateless revision 2026-07-28 - no
+# session id, every request self-contained). When the server, or a gateway
+# in front of it, does not speak it, fall back to the legacy initialize
+# handshake. The former 202/session-id transport patch went away with the
+# session itself.
 
 
-async def _patched_handle_post_request(self, ctx):
-    """Patched _handle_post_request that extracts session ID from 202 responses."""
-    headers = self._prepare_headers()  # skipcq: PYL-W0212
-    message = ctx.session_message.message
-    is_initialization = self._is_initialization_request(message)  # skipcq: PYL-W0212
+async def _mcp_handshake(session: ClientSession) -> None:
+    """Negotiate the protocol with the MCP server: discover first, initialize as the fallback."""
+    try:
+        await session.discover()
+    except MCPError as e:
+        logging.getLogger(__name__).info("MCP server/discover not accepted (%s); using the initialize handshake", e)
+        await session.initialize()
 
-    async with ctx.client.stream(
-        "POST",
-        self.url,
-        json=message.model_dump(by_alias=True, mode="json", exclude_none=True),
-        headers=headers,
-    ) as response:
-        if response.status_code == 202:  # noqa: PLR2004
-            _mcp_streamable_http.logger.debug("Received 202 Accepted")
-            if is_initialization:
-                self._maybe_extract_session_id_from_response(response)  # skipcq: PYL-W0212
-            return
-
-        if response.status_code == 404:  # noqa: PLR2004
-            if isinstance(message.root, _mcp_streamable_http.JSONRPCRequest):
-                await self._send_session_terminated_error(  # skipcq: PYL-W0212
-                    ctx.read_stream_writer,
-                    message.root.id,
-                )
-            return
-
-        response.raise_for_status()
-        if is_initialization:
-            self._maybe_extract_session_id_from_response(response)  # skipcq: PYL-W0212
-
-        if isinstance(message.root, _mcp_streamable_http.JSONRPCRequest):
-            content_type = response.headers.get(_mcp_streamable_http.CONTENT_TYPE, "").lower()
-            if content_type.startswith(_mcp_streamable_http.JSON):
-                await self._handle_json_response(  # skipcq: PYL-W0212
-                    response,
-                    ctx.read_stream_writer,
-                    is_initialization,
-                )
-            elif content_type.startswith(_mcp_streamable_http.SSE):
-                await self._handle_sse_response(response, ctx, is_initialization)  # skipcq: PYL-W0212
-            else:
-                await self._handle_unexpected_content_type(content_type, ctx.read_stream_writer)  # skipcq: PYL-W0212
-
-
-StreamableHTTPTransport._handle_post_request = _patched_handle_post_request  # noqa: SLF001  # skipcq: PYL-W0212
 
 WEATHER_PORT = int(os.getenv("WEATHER_PORT", "6004"))
 ADVERTISED_HOST = os.getenv("ADVERTISED_HOST", "weather")
@@ -339,11 +303,11 @@ def _format_call_tool_result(result: CallToolResult) -> str:
         if isinstance(block, TextContent):
             parts.append(block.text)  # noqa: PERF401
     text = "\n".join(parts) if parts else ""
-    if result.structuredContent:
+    if result.structured_content:
         if text:
             text += "\n\n"
-        text += json.dumps(result.structuredContent, indent=2)
-    if result.isError and not text:
+        text += json.dumps(result.structured_content, indent=2)
+    if result.is_error and not text:
         text = "Tool error (no details returned)"
     return text or "(empty)"
 
@@ -356,8 +320,8 @@ def _extract_node_props(result: CallToolResult) -> dict[str, Any]:
     Tries structuredContent first, then each text block individually (JSON-parsed).
     """
     candidates: list[Any] = []
-    if isinstance(result.structuredContent, dict):
-        candidates.append(result.structuredContent)
+    if isinstance(result.structured_content, dict):
+        candidates.append(result.structured_content)
     for block in result.content or []:
         if isinstance(block, TextContent) and block.text:
             try:
@@ -472,7 +436,7 @@ class _McpConn:
         try:
             async with AsyncExitStack() as stack:
                 self.client = await stack.enter_async_context(create_mcp_http_client(headers=headers))
-                read, write, _ = await stack.enter_async_context(
+                read, write = await stack.enter_async_context(  # 2.x yields (read, write) only
                     streamable_http_client(
                         MCP_SERVER_URL,
                         http_client=self.client,
@@ -481,7 +445,7 @@ class _McpConn:
                 )
                 session = await stack.enter_async_context(ClientSession(read, write))
                 async with asyncio.timeout(MCP_SETUP_TIMEOUT):
-                    await session.initialize()
+                    await _mcp_handshake(session)
                 self.result = session
                 self.ready.set()
                 await self._close.wait()
@@ -546,12 +510,13 @@ class _McpSessionEntry:
             return False
         try:
             async with asyncio.timeout(_MCP_PING_TIMEOUT):
-                await self.conn.result.send_ping()
+                # tools/list, not ping: stateless (2026-07-28) servers have no ping method.
+                await self.conn.result.list_tools()
         except BaseException as e:
             if isinstance(e, (KeyboardInterrupt, SystemExit)):
                 raise
             _logger.warning(
-                "Cached MCP session failed ping - rebuilding: %s",
+                "Cached MCP session failed probe - rebuilding: %s",
                 _format_exception_chain(e)[:120],
             )
             return False
@@ -657,7 +622,7 @@ async def _release_session_entry(entry: _McpSessionEntry) -> None:
 
 @asynccontextmanager
 async def _mcp_session(access_token: str):
-    """Yield a per-user cached MCP session (ping-validated before reuse).
+    """Yield a per-user cached MCP session (probe-validated before reuse).
 
     Repeat HQ-weather prompts skip the expensive session setup. A connect
     failure raises, as before.

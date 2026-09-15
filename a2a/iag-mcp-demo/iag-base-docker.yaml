@@ -7,7 +7,7 @@ services:
     # mcp), required by the mcp-iag and drive-mcp-iag services. (The published
     # 2.0.x tags ignore the protocol and 404 every MCP method.) All gateways
     # share this tag. See https://hub.docker.com/r/indykite/agent-gateway/tags.
-    image: indykite/agent-gateway:2.52.1
+    image: indykite/agent-gateway:2.57.0
     environment:
       JARVIS_SERVICE_LOG_LEVEL: debug
       JARVIS_SERVICE_ENVIRONMENT: demo
@@ -31,14 +31,11 @@ services:
       # insurance demo's roy, a Person) set AUTHZEN_SUBJECT_TYPES=User Person
       # in .env; each extra type needs a matching CAN_TRIGGER KBAC policy.
       JARVIS_AUTHZEN_SUBJECT_TYPES: ${AUTHZEN_SUBJECT_TYPES:-User}
-      # Subject workflow-set cache: MUST stay on the image defaults (ttl 5m,
-      # update_after 5m, update_after_error 10s). Setting update_after < ttl
-      # triggers a race in the gateway's LoadingCache (the async refresh runs
-      # on the request's context, gets "context canceled", and the ERROR is
-      # cached for the full TTL - permanent failure loop). Bug filed; retune
-      # only after the fix ships. Consequence: grant/revoke changes take up
-      # to ~5 min to reach gateway decisions (the platform is consistent
-      # immediately; restart the gateways to clear the cache instantly).
+      # Subject workflow-set cache: how long a gateway keeps a subject's
+      # CAN_TRIGGER decisions before asking the platform again, i.e. how fast
+      # a grant or revoke reaches gateway decisions. Keep both values equal.
+      JARVIS_AUTHZEN_CACHE_TTL: ${IAG_AUTHZEN_CACHE_TTL:-30s}
+      JARVIS_AUTHZEN_CACHE_UPDATE_AFTER: ${IAG_AUTHZEN_CACHE_TTL:-30s}
 
     extra_hosts:
       - "host.docker.internal:host-gateway"

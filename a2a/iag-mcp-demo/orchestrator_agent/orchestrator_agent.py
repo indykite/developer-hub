@@ -571,8 +571,12 @@ async def query_erp(query: str) -> str:
     """Forward an invoice/billing question to the analyst's ERP backend.
 
     Use this for: invoices, billing, premiums due, account fees, payment
-    status. The rows come back pre-filtered by authorization for the calling
-    user.
+    status - questions about what is owed or was paid. The rows come back
+    pre-filtered by authorization for the calling user.
+
+    NOT for coverage, policies, household/family data, property, vehicles,
+    documents or "what can X see" - those are knowledge-graph questions for
+    query_retriever, even when a premium or a policy number is mentioned.
     """
     # The analyst holds several MCP backends; make the ERP intent explicit so
     # a rephrased query cannot be routed to the knowledge-graph tools instead.

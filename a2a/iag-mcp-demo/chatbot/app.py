@@ -12,6 +12,7 @@ import os
 import secrets
 import threading
 import urllib.parse
+from datetime import UTC, datetime
 from queue import Empty, Queue
 
 import httpx
@@ -66,6 +67,31 @@ COMPOSE_PROFILES = [p.strip() for p in (os.getenv("COMPOSE_PROFILES") or "").spl
 # presents itself as the demo organization, e.g. "SecureHome Insurance".
 ORG_NAME = (os.getenv("ORG_NAME") or "").strip()
 ORG_TAGLINE = (os.getenv("ORG_TAGLINE") or "").strip()
+# App layer ("what the customer sees"): the console has a second face styled
+# as the organization's own web app - sections behind a nav, action cards that
+# send the demo prompts, an access-request inbox. All of it is usecase data:
+# usecases/<usecase>/app.json, mounted at USECASE_APP_FILE by docker-compose.
+USECASE_APP_FILE = (os.getenv("USECASE_APP_FILE") or "/app/usecase-app.json").strip()
+# The platform's MCP server: the app layer's staff check runs a knowledge
+# query there as the logged-in user (their bearer token), like the agents do.
+MCP_SERVER_URL = (os.getenv("MCP_SERVER_URL") or "").strip()
+
+
+def _load_app_config() -> dict:
+    """Read the usecase's app.json; an absent or broken file means 'no sections' (Home only)."""
+    try:
+        with open(USECASE_APP_FILE, encoding="utf-8") as f:  # noqa: PTH123
+            data = json.load(f)
+    except FileNotFoundError:
+        logger.info("No app layer config at %s - the app view shows Home only", USECASE_APP_FILE)
+        return {}
+    except (OSError, json.JSONDecodeError) as e:
+        logger.warning("Could not read app layer config %s: %s", USECASE_APP_FILE, e)
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+APP_CONFIG = _load_app_config()
 EXPLAIN_ENABLED = all(
     (INDYKITE_BASE_URL, APP_AGENT_CREDENTIALS_TOKEN, EXPLAIN_STAFF_QUERY_ID, EXPLAIN_DIRECT_QUERY_ID),
 )
@@ -85,6 +111,9 @@ GRANT_WORKFLOW_MAP = {
     if svc.strip() and wfs.strip()
 }
 GRANT_ENABLED = bool(INDYKITE_BASE_URL and APP_AGENT_CREDENTIALS_TOKEN and GRANT_WORKFLOW_MAP)
+# Cached grant rights (/api/auth/status) are invalid once the map changes.
+GRANT_MAP_FINGERPRINT = os.getenv("GRANT_WORKFLOW_MAP") or ""
+CAN_GRANT_TTL_S = 60
 
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
@@ -231,11 +260,228 @@ def _id_token_sub() -> str:
     return str(claims.get("sub") or "")
 
 
+_MCP_PROTOCOL = "2026-07-28"
+_MCP_LEGACY_PROTOCOL = "2025-11-25"
+
+
+def _mcp_headers(token, method, name=None, session_id=None):
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json, text/event-stream",
+        "Authorization": f"Bearer {token}",
+        "Mcp-Method": method,
+    }
+    # Stateless calls carry the current revision; the legacy session handshake
+    # (initialize and every call bound to its session id) carries the legacy one.
+    if session_id:
+        headers["Mcp-Session-Id"] = session_id
+        headers["Mcp-Protocol-Version"] = _MCP_LEGACY_PROTOCOL
+    else:
+        headers["Mcp-Protocol-Version"] = _MCP_LEGACY_PROTOCOL if method == "initialize" else _MCP_PROTOCOL
+    if name:
+        headers["Mcp-Name"] = name
+    return headers
+
+
+def _mcp_message(resp):
+    """JSON-RPC message from an MCP response body (plain JSON or an SSE stream)."""
+    if resp.headers.get("content-type", "").startswith("text/event-stream"):
+        for line in resp.text.splitlines():
+            if line.startswith("data:"):
+                return json.loads(line[5:].strip())
+        return {}
+    return resp.json() if resp.content else {}
+
+
+def _mcp_ciq_rows(query_id, token):
+    """Run a knowledge query on the IndyKite MCP server AS THE USER; return its rows.
+
+    Stateless protocol first (self-contained tools/call); if the server only
+    speaks the session style, fall back to initialize -> Mcp-Session-Id ->
+    tools/call. The Bearer token is the console's user token - the same way
+    the agents reach the platform through their MCP gateway.
+    """
+    call = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "tools/call",
+        "params": {
+            "name": "ciq_execute",
+            "arguments": {"id": query_id, "input_params": {}},
+            "_meta": {
+                "io.modelcontextprotocol/protocolVersion": _MCP_PROTOCOL,
+                "io.modelcontextprotocol/clientCapabilities": {},
+                "io.modelcontextprotocol/clientInfo": {"name": "chatbot", "version": "1.0"},
+            },
+        },
+    }
+    with httpx.Client(timeout=20.0) as client:
+        resp = client.post(MCP_SERVER_URL, headers=_mcp_headers(token, "tools/call", "ciq_execute"), json=call)
+        if resp.status_code in (400, 404):
+            # Legacy server: open a session, then call.
+            init = client.post(
+                MCP_SERVER_URL,
+                headers=_mcp_headers(token, "initialize"),
+                json={
+                    "jsonrpc": "2.0",
+                    "id": 0,
+                    "method": "initialize",
+                    "params": {
+                        "protocolVersion": _MCP_LEGACY_PROTOCOL,
+                        "capabilities": {},
+                        "clientInfo": {"name": "chatbot", "version": "1.0"},
+                    },
+                },
+            )
+            init.raise_for_status()
+            sid = init.headers.get("mcp-session-id")
+            if not sid:
+                msg = "MCP initialize returned no session id"
+                raise RuntimeError(msg)
+            client.post(
+                MCP_SERVER_URL,
+                headers=_mcp_headers(token, "notifications/initialized", session_id=sid),
+                json={"jsonrpc": "2.0", "method": "notifications/initialized"},
+            )
+            legacy_call = {**call, "params": {"name": "ciq_execute", "arguments": call["params"]["arguments"]}}
+            resp = client.post(
+                MCP_SERVER_URL,
+                headers=_mcp_headers(token, "tools/call", "ciq_execute", session_id=sid),
+                json=legacy_call,
+            )
+        resp.raise_for_status()
+    message = _mcp_message(resp)
+    if message.get("error"):
+        msg = f"MCP error: {message['error']}"
+        raise RuntimeError(msg)
+    content = (message.get("result") or {}).get("content") or []
+    text = next((c.get("text") for c in content if c.get("type") == "text"), "") or ""
+    try:
+        payload = json.loads(text) if text else {}
+    except json.JSONDecodeError:
+        return []
+    if isinstance(payload, dict):
+        return payload.get("data") or payload.get("rows") or []
+    return payload if isinstance(payload, list) else []
+
+
+def _role_by_explain(explain: dict) -> str:
+    """Staff leg of the explain queries, run with the app key.
+
+    Rows exist iff the person WORKS_IN a department that CAN_TRIGGER the
+    given workflow - the dataset's definition of staff. No user token involved.
+    """
+    subject = _id_token_sub()
+    workflow = str(explain.get("workflow") or "").strip()
+    if not (subject and workflow and EXPLAIN_ENABLED):
+        if not EXPLAIN_ENABLED:
+            logger.warning("staff check needs the explain queries configured (EXPLAIN_*_QUERY_ID)")
+        return "unknown"
+    try:
+        rows = _ciq_execute(EXPLAIN_STAFF_QUERY_ID, {"subject_id": subject, "workflow_id": workflow})
+    except httpx.HTTPError as e:
+        logger.warning("staff check (explain %s on %s) failed: %s", subject, workflow, e)
+        return "unknown"
+    return "staff" if rows else "customer"
+
+
+def _role_by_mcp_query(check: dict) -> str:
+    """Knowledge query run AS THE USER on the IndyKite MCP server.
+
+    A non-empty value in ``field`` of any returned row means staff. Only works
+    where the MCP server accepts the console's user token directly.
+    """
+    query_id = str(check.get("query") or "").strip()
+    field = str(check.get("field") or "").strip()
+    token = session.get("access_token")
+    if not (query_id and field and token and MCP_SERVER_URL):
+        if query_id and not MCP_SERVER_URL:
+            logger.warning("staff check configured but MCP_SERVER_URL is not set")
+        return "unknown"
+    try:
+        rows = _mcp_ciq_rows(query_id, token)
+    except (httpx.HTTPError, RuntimeError, ValueError) as e:
+        logger.warning("staff check (%s via MCP) failed: %s", query_id, e)
+        return "unknown"
+    for row in rows:
+        nodes = row.get("nodes") if isinstance(row, dict) else None
+        if (nodes or {}).get(field) not in (None, ""):
+            return "staff"
+    return "customer"
+
+
+def _resolve_role() -> str:
+    """Tell staff from customers by the user's own graph relationships, not by a list.
+
+    app.json's ``staff_check`` is one of:
+      - ``{"explain": {"workflow": "wf1"}}`` - the explain queries' staff leg
+        with the app key (preferred, already provisioned for the why? cards).
+      - ``{"query": "get-self", "field": "department.property.name"}`` - a
+        knowledge query as the user on the IndyKite MCP server.
+    When the check is not configured or fails: "unknown" (every group shows).
+    """
+    check = APP_CONFIG.get("staff_check") or {}
+    explain = check.get("explain") or {}
+    if explain:
+        return _role_by_explain(explain)
+    return _role_by_mcp_query(check)
+
+
 @app.route("/api/auth/status", methods=["GET"])
 def auth_status():
-    """Return whether the user is authenticated (and who, for the header chip)."""
+    """Return whether the user is authenticated, who (header chip), and their role for the app layer."""
     logged_in = bool(session.get("access_token"))
-    return jsonify({"logged_in": logged_in, "username": _id_token_display_name() if logged_in else ""})
+    if not logged_in:
+        return jsonify({"logged_in": False, "username": "", "role": "unknown"})
+    role = session.get("role")
+    if role not in ("staff", "customer"):
+        role = _resolve_role()
+        if role != "unknown":
+            session["role"] = role
+    # Grant rights follow the graph and the grant map, both of which change
+    # during a demo: keep them for a minute, keyed to the current map.
+    cached = session.get("can_grant")
+    fresh = (
+        isinstance(cached, dict)
+        and cached.get("map") == GRANT_MAP_FINGERPRINT
+        and datetime.now(UTC).timestamp() - float(cached.get("at") or 0) < CAN_GRANT_TTL_S
+    )
+    can_grant = cached["services"] if fresh else _grantable_services()
+    if not fresh and can_grant is not None:
+        session["can_grant"] = {
+            "services": can_grant,
+            "map": GRANT_MAP_FINGERPRINT,
+            "at": datetime.now(UTC).timestamp(),
+        }
+    return jsonify(
+        {
+            "logged_in": True,
+            "username": _id_token_display_name(),
+            "subject": _id_token_sub(),
+            "role": role,
+            "can_grant": can_grant or [],
+        },
+    )
+
+
+def _grantable_services() -> list[str] | None:
+    """Return the grant-mapped services whose whole workflow bundle the user can trigger.
+
+    Same AuthZEN self-check as /api/grant, run once per login so the app can
+    show the staff inbox and grant buttons only to people whose clicks would
+    succeed. None when the check could not run (not configured, platform
+    unreachable), so it is retried on the next status call.
+    """
+    if not GRANT_ENABLED:
+        return []
+    caller = _id_token_sub()
+    if not caller:
+        return None
+    try:
+        return [svc for svc, wfs in GRANT_WORKFLOW_MAP.items() if wfs and _grant_guard_error(caller, wfs) is None]
+    except httpx.HTTPError as e:
+        logger.warning("grant self-check for %s failed: %s", caller, e)
+        return None
 
 
 @app.route("/api/auth/login", methods=["GET"])
@@ -507,6 +753,18 @@ def grant_access():
         return jsonify({"error": "platform unreachable"}), 502
     verb = "revoked" if revoke else "granted"
     logger.info("%s CAN_TRIGGER %s -> %s (by %s)", verb, subject_id, workflows, caller)
+    # Tell every open console (the requester's app page included) that the
+    # grant happened; the audit terminal ignores these non-gateway events.
+    _broadcast_update(
+        {
+            "decision": "ACCESS_REVOKED" if revoke else "ACCESS_GRANTED",
+            "subject": subject_id,
+            "actor": caller,
+            "service": service,
+            "reason": ", ".join(workflows),
+            "timestamp": _now_iso(),
+        },
+    )
     return jsonify(
         {
             verb: workflows,
@@ -515,6 +773,42 @@ def grant_access():
             "explain_workflow": workflows[-1],
         },
     )
+
+
+def _now_iso() -> str:
+    return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+@app.route("/api/access-request", methods=["POST"])
+def access_request():
+    """Fan a denied user's access request out to every open console.
+
+    Staff see it in their app's Support inbox and grant it there (which goes
+    through /api/grant and its AuthZEN self-check). Nothing is written to the
+    graph here - this is only the message.
+    """
+    if ID_SERVER_BASE_URL and not session.get("access_token"):
+        return jsonify({"error": "authentication required"}), 401
+    body = request.get_json(silent=True) or {}
+    service = str(body.get("service") or "").strip()
+    resource = str(body.get("resource") or "").strip()
+    if not service:
+        return jsonify({"error": "service is required"}), 400
+    subject = _id_token_sub()
+    if not subject:
+        return jsonify({"error": "cannot identify the logged-in user"}), 400
+    event = {
+        "decision": "ACCESS_REQUESTED",
+        "subject": subject,
+        "requester": _id_token_display_name() or subject,
+        "service": service,
+        "resource": resource,
+        "reason": f"{subject} asked for access to {resource or service}",
+        "timestamp": _now_iso(),
+    }
+    _broadcast_update(event)
+    logger.info("access request from %s for %s (%s)", subject, resource or service, service)
+    return jsonify({"ok": True, "grantable": bool(GRANT_ENABLED and GRANT_WORKFLOW_MAP.get(service))})
 
 
 @app.route("/api/config", methods=["GET"])
@@ -545,6 +839,8 @@ def get_config():
             # usecase branding for the console chrome
             "org_name": ORG_NAME,
             "org_tagline": ORG_TAGLINE,
+            # app layer: sections, action cards, prompts (usecases/<usecase>/app.json)
+            "app": APP_CONFIG,
         },
     )
 

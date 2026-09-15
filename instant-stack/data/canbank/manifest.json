@@ -803,6 +803,29 @@
           "cypher": "MATCH (subject:User)-[:WORKS_IN]->(:Department)-[:SERVES]->(:Customer)-[:HAS_INVOICE]->(resource:Invoice)"
         }
       }
+    },
+    {
+      "name": "customer-own-invoice",
+      "display_name": "Customer sees own invoice",
+      "description": "A logged-in user may view the invoices of the customer record they own.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "CAN_VIEW"
+        ],
+        "resource": {
+          "type": "Invoice"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:IS_CUSTOMER]->(:Customer)-[:HAS_INVOICE]->(resource:Invoice)"
+        }
+      }
     }
   ],
   "application": {

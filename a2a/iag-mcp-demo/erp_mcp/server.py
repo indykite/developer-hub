@@ -28,7 +28,7 @@ import os
 
 import httpx
 import psycopg
-from mcp.server.fastmcp import Context, FastMCP
+from mcp.server.mcpserver import Context, MCPServer
 
 ERP_MCP_PORT = int(os.getenv("ERP_MCP_PORT", "8010"))
 ERP_DB_DSN = os.getenv("ERP_DB_DSN", "postgresql://erp:erp@erp-db:5432/erp")
@@ -48,7 +48,7 @@ logging.basicConfig(
 )
 _logger = logging.getLogger(__name__)
 
-mcp = FastMCP("erp-invoices", host="0.0.0.0", port=ERP_MCP_PORT)  # nosec B104  # noqa: S104
+mcp = MCPServer("erp-invoices")
 
 _COLUMNS = (
     "external_id",
@@ -218,4 +218,4 @@ if __name__ == "__main__":
         ERP_ACTION,
         ERP_RESOURCE_TYPE,
     )
-    mcp.run(transport="streamable-http")
+    mcp.run(transport="streamable-http", host="0.0.0.0", port=ERP_MCP_PORT)  # nosec B104  # noqa: S104

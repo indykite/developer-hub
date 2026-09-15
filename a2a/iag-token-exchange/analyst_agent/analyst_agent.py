@@ -74,12 +74,12 @@ from langchain_google_genai import (  # noqa: E402
 from langchain_ollama.chat_models import ChatOllama  # noqa: E402
 from mcp import ClientSession  # noqa: E402
 from mcp.client.streamable_http import (  # noqa: E402
-    StreamableHTTPTransport,
     streamable_http_client,
 )
 from mcp.shared._httpx_utils import (  # noqa: E402
     create_mcp_http_client,
 )
+from mcp.shared.exceptions import MCPError  # noqa: E402
 from mcp.types import (  # noqa: E402
     CallToolResult,
     PaginatedRequestParams,
@@ -98,64 +98,23 @@ from starlette.exceptions import HTTPException  # noqa: E402
 load_dotenv()
 
 # ---------------------------------------------------------------------------
-# MCP transport workaround for Indykite
+# MCP handshake
 # ---------------------------------------------------------------------------
-# Indykite MCP returns 202 Accepted with Mcp-Session-Id in headers. The Python MCP SDK
-# returns early on 202 without extracting the session ID, causing the subsequent GET
-# to fail with 404. Patch to extract session ID from 202 responses.
-
-import mcp.client.streamable_http as _mcp_streamable_http  # noqa: E402
-
-
-async def _patched_handle_post_request(self, ctx):
-    """Patched _handle_post_request that extracts session ID from 202 responses."""
-    headers = self._prepare_headers()  # skipcq: PYL-W0212
-    message = ctx.session_message.message
-    is_initialization = self._is_initialization_request(message)  # skipcq: PYL-W0212
-
-    async with ctx.client.stream(
-        "POST",
-        self.url,
-        json=message.model_dump(by_alias=True, mode="json", exclude_none=True),
-        headers=headers,
-    ) as response:
-        if response.status_code == 202:  # noqa: PLR2004
-            _mcp_streamable_http.logger.debug("Received 202 Accepted")
-            if is_initialization:
-                self._maybe_extract_session_id_from_response(response)  # skipcq: PYL-W0212
-            return
-
-        if response.status_code == 404:  # noqa: PLR2004
-            if isinstance(message.root, _mcp_streamable_http.JSONRPCRequest):
-                await self._send_session_terminated_error(  # skipcq: PYL-W0212
-                    ctx.read_stream_writer,
-                    message.root.id,
-                )
-            return
-
-        if response.status_code >= 400:  # noqa: PLR2004
-            # best-effort: buffer error body so it survives stream close
-            with suppress(Exception):
-                await response.aread()
-        response.raise_for_status()
-        if is_initialization:
-            self._maybe_extract_session_id_from_response(response)  # skipcq: PYL-W0212
-
-        if isinstance(message.root, _mcp_streamable_http.JSONRPCRequest):
-            content_type = response.headers.get(_mcp_streamable_http.CONTENT_TYPE, "").lower()
-            if content_type.startswith(_mcp_streamable_http.JSON):
-                await self._handle_json_response(  # skipcq: PYL-W0212
-                    response,
-                    ctx.read_stream_writer,
-                    is_initialization,
-                )
-            elif content_type.startswith(_mcp_streamable_http.SSE):
-                await self._handle_sse_response(response, ctx, is_initialization)  # skipcq: PYL-W0212
-            else:
-                await self._handle_unexpected_content_type(content_type, ctx.read_stream_writer)  # skipcq: PYL-W0212
+# Newest protocol first: server/discover (stateless revision 2026-07-28 - no
+# session id, every request self-contained). When the server, or a gateway
+# in front of it, does not speak it, fall back to the legacy initialize
+# handshake. The former 202/session-id transport patch went away with the
+# session itself.
 
 
-StreamableHTTPTransport._handle_post_request = _patched_handle_post_request  # noqa: SLF001  # skipcq: PYL-W0212
+async def _mcp_handshake(session: ClientSession) -> None:
+    """Negotiate the protocol with the MCP server: discover first, initialize as the fallback."""
+    try:
+        await session.discover()
+    except MCPError as e:
+        logging.getLogger(__name__).info("MCP server/discover not accepted (%s); using the initialize handshake", e)
+        await session.initialize()
+
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -511,11 +470,11 @@ def _format_call_tool_result(result: CallToolResult) -> str:
         if isinstance(block, TextContent):
             parts.append(block.text)  # noqa: PERF401
     text = "\n".join(parts) if parts else ""
-    if result.structuredContent:
+    if result.structured_content:
         if text:
             text += "\n\n"
-        text += json.dumps(result.structuredContent, indent=2)
-    if result.isError and not text:
+        text += json.dumps(result.structured_content, indent=2)
+    if result.is_error and not text:
         text = "Tool error (no details returned)"
     return text or "(empty)"
 
@@ -592,9 +551,9 @@ async def _list_all_mcp_tools(session: ClientSession) -> list[Tool]:
         )
         result = await session.list_tools(params=params)
         all_tools.extend(result.tools)
-        if not result.nextCursor:
+        if not result.next_cursor:
             break
-        cursor = result.nextCursor
+        cursor = result.next_cursor
     return all_tools
 
 
@@ -613,9 +572,9 @@ async def _list_all_mcp_resources(session: ClientSession) -> list[Any]:
         )
         result = await session.list_resources(params=params)
         all_resources.extend(result.resources)
-        if not result.nextCursor:
+        if not result.next_cursor:
             break
-        cursor = result.nextCursor
+        cursor = result.next_cursor
     return all_resources
 
 
@@ -969,7 +928,7 @@ def _make_langchain_tool(  # skipcq: PY-R1000
     """
     tool_name = mcp_tool.name
     tool_desc = mcp_tool.description or ""
-    input_schema = mcp_tool.inputSchema or {}
+    input_schema = mcp_tool.input_schema or {}
     properties = input_schema.get("properties") or {}
     required = input_schema.get("required") or []
 
@@ -1105,7 +1064,7 @@ async def _connect_mcp_server(stack: AsyncExitStack, alias: str, url: str, clien
     BaseExceptionGroup, which `except Exception` misses - hence BaseException.
     """
     try:
-        read, write, _ = await stack.enter_async_context(
+        read, write = await stack.enter_async_context(  # 2.x yields (read, write) only
             streamable_http_client(
                 url,
                 http_client=client,
@@ -1114,7 +1073,7 @@ async def _connect_mcp_server(stack: AsyncExitStack, alias: str, url: str, clien
         )
         session = await stack.enter_async_context(ClientSession(read, write))
         async with asyncio.timeout(MCP_SETUP_TIMEOUT):
-            await session.initialize()
+            await _mcp_handshake(session)
             mcp_tools = await _list_all_mcp_tools(session)
     except BaseException as e:
         if isinstance(e, (KeyboardInterrupt, SystemExit)):
@@ -1333,7 +1292,8 @@ class _McpToolsEntry:
 
         async def _probe(conn: _ServerConn) -> None:
             async with asyncio.timeout(_MCP_PING_TIMEOUT):
-                await conn.result[0].send_ping()
+                # tools/list, not ping: stateless (2026-07-28) servers have no ping method.
+                await conn.result[0].list_tools()
 
         results = await asyncio.gather(*(_probe(conn) for conn in live), return_exceptions=True)
         for res in results:
@@ -1343,7 +1303,7 @@ class _McpToolsEntry:
         for conn, res in zip(live, results, strict=True):
             if isinstance(res, BaseException):
                 _logger.warning(
-                    "Cached MCP session %s failed ping - dropping: %s",
+                    "Cached MCP session %s failed probe - dropping: %s",
                     conn.alias or "default",
                     _format_mcp_error(res)[:120],
                 )
@@ -1455,7 +1415,7 @@ async def _release_tools_entry(entry: _McpToolsEntry) -> None:
 async def _mcp_sessions(access_token: str = ""):
     """Yield the combined LangChain tools for every configured MCP server.
 
-    Sessions are cached per user token for MCP_SESSION_TTL seconds (ping-
+    Sessions are cached per user token for MCP_SESSION_TTL seconds (probe-
     validated before reuse), so repeat prompts skip the expensive session
     setup. A server that fails to connect is skipped with a warning so the
     remaining backends keep serving tools.

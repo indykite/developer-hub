@@ -428,7 +428,9 @@ services:
     command: ["--config=/app/.configs/audit-config.yaml"]
 
   drive-mcp:
-    image: drive-mcp:latest
+    # Distinct tag: iag-mcp-demo builds its own drive-mcp:latest (with PDF
+    # extraction); sharing the tag made the last `make` win for both stacks.
+    image: drive-mcp:token-exchange
     #    build:
     #      context: .
     #      dockerfile: ./drive_mcp/Dockerfile

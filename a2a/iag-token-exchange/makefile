@@ -34,5 +34,5 @@ new-analyst:
 
 # Google Drive MCP PoC (compose profile "drive"); not part of the default build.
 new-drive-mcp:
-	-@docker rmi drive-mcp
-	@docker build -t drive-mcp ./drive_mcp
+	-@docker rmi drive-mcp:token-exchange
+	@docker build -t drive-mcp:token-exchange ./drive_mcp
