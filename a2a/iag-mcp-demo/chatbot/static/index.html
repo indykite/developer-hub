@@ -14,6 +14,14 @@
             <div class="header-title">Indykite Chatbot</div>
         </div>
         <div class="header-actions">
+            <!-- Two faces of the same conversation: the organization's app, or this console. -->
+            <div class="layer-switch" role="group" aria-label="View">
+                <button type="button" class="layer-btn" data-layer="app" aria-pressed="true">App</button>
+                <button type="button" class="layer-btn" data-layer="console" aria-pressed="false">Console</button>
+            </div>
+            <label class="auto-switch" title="Sending from the app shows the console while the agents work, then returns to the app with the answer">
+                <input type="checkbox" id="autoSwitch" checked> Auto-switch
+            </label>
             <a href="/static/architecture.html" target="_blank" rel="noopener" class="btn btn-arch" title="How the demo is wired: containers, gateways, platform, IdP and external parties">Architecture</a>
             <span id="userChip" class="user-chip" style="display: none;"></span>
             <a href="/api/auth/login" id="loginButton" class="btn btn-login" style="display: none;">Login</a>
@@ -23,25 +31,62 @@
     </div>
 
     <div class="main-content" style="display: flex;">
-        <!-- Chat area -->
-        <div class="chat-container" id="chatContainer">
-            <div class="empty-state">
-                <p>Chat with the Orchestrator Agent</p>
-                <p>Your prompts are sent as A2A messages and the orchestrator's LLM response is displayed here.</p>
-            </div>
+        <div class="layers">
+            <!-- App layer: what a customer of the demo organization would see -->
+            <section id="appLayer" class="layer app-layer active" aria-label="Application view">
+                <header class="app-topbar">
+                    <div class="app-brand"><span class="app-logo" id="appLogo">IK</span><span id="appBrandName">Agent Console</span></div>
+                    <nav class="app-nav" id="appNav" aria-label="Application sections"></nav>
+                    <div class="app-user" id="appUser" hidden></div>
+                </header>
+                <div class="app-body" id="appBody">
+                    <!-- Home: free-text assistant + latest answer + tiles to the sections -->
+                    <section class="app-page active" data-page="home" id="appPageHome">
+                        <div class="app-hero">
+                            <h1 class="app-hero-title" id="appHeroTitle">Welcome</h1>
+                            <p class="app-hero-sub" id="appHeroSub"></p>
+                        </div>
+                        <div class="app-card">
+                            <div class="app-card-label">Assistant</div>
+                            <div class="app-prompt">
+                                <textarea id="appPromptInput" rows="1" placeholder="Ask a question…" autocomplete="off"></textarea>
+                                <button id="appSendButton" type="button">Ask</button>
+                            </div>
+                        </div>
+                        <div class="app-card app-result" id="appResult" hidden>
+                            <div class="app-result-head">
+                                <span class="app-result-q" id="appResultQuestion"></span>
+                                <button type="button" class="app-result-console" id="appResultConsole">See how this was decided →</button>
+                            </div>
+                            <div id="appResultBody"></div>
+                        </div>
+                        <div class="app-tiles" id="appTiles"></div>
+                    </section>
+                    <!-- section pages are generated from /api/config app.sections -->
+                </div>
+            </section>
+
+            <!-- Console layer: the conversation with the orchestrator, unchanged -->
+            <section id="consoleLayer" class="layer console-layer" aria-label="Console view">
+                <div class="chat-container" id="chatContainer">
+                    <div class="empty-state">
+                        <p>Chat with the Orchestrator Agent</p>
+                        <p>Your prompts are sent as A2A messages and the orchestrator's LLM response is displayed here.</p>
+                    </div>
+                </div>
+                <div class="input-container">
+                    <textarea id="messageInput" placeholder="Type your message here... (Enter to send, Shift+Enter for a new line)" autocomplete="off" rows="1"></textarea>
+                    <button id="sendButton">Send</button>
+                </div>
+            </section>
         </div>
 
-        <!-- Terminal sidebar -->
+        <!-- Terminal sidebar: outside the layers, visible in both -->
         <div class="terminal-container" id="terminalContainer">
             <div class="terminal-title"><span class="terminal-dot"></span>Audit Log Terminal</div>
             <div class="terminal-messages" id="terminalMessages"></div>
         </div>
 
-    </div>
-
-    <div class="input-container">
-        <textarea id="messageInput" placeholder="Type your message here... (Enter to send, Shift+Enter for a new line)" autocomplete="off" rows="1"></textarea>
-        <button id="sendButton">Send</button>
     </div>
 </div>
 
@@ -159,15 +204,24 @@
         messageDiv.appendChild(contentDiv);
         chatContainer.appendChild(messageDiv);
         chatContainer.scrollTop = chatContainer.scrollHeight;
+        presentAppError(message);
     }
 
     let isLoggedIn = false;
     let currentUser = '';
+    let currentSubject = '';  // the id-token sub, the name audit cards carry as `subject`
+    let canGrant = [];        // grant-mapped services the logged-in user may grant (AuthZEN self-check)
+    // Access requests seen on this console: key -> { event, state, ok, granted }.
+    const inboxRequests = new Map();
+    // 'staff' | 'customer' | 'unknown' - decided server-side from the user's
+    // own rights (app.json staff_check); groups in the app carry an audience.
+    let currentRole = 'unknown';
     const userChip = document.getElementById('userChip');
 
     function showUserChip() {
         userChip.textContent = currentUser;
         userChip.style.display = currentUser ? 'inline-block' : 'none';
+        renderAppUser();
     }
 
     async function checkAuth() {
@@ -176,11 +230,19 @@
             const data = await response.json();
             isLoggedIn = !!data.logged_in;
             currentUser = isLoggedIn ? (data.username || '') : '';
+            currentSubject = isLoggedIn ? (data.subject || '') : '';
+            const role = isLoggedIn && (data.role === 'staff' || data.role === 'customer') ? data.role : 'unknown';
+            const grants = isLoggedIn && Array.isArray(data.can_grant) ? data.can_grant : [];
+            const grantsChanged = grants.join(',') !== canGrant.join(',');
+            canGrant = grants;
+            if (role !== currentRole || grantsChanged) { currentRole = role; buildPages(); }
             showUserChip();
             if (isLoggedIn) {
                 loginButton.style.display = 'none';
                 logoutButton.style.display = 'inline-block';
-                startUpdatesStream()
+                // Only when no stream is open: a restart would drop whatever
+                // is broadcast while the browser reconnects.
+                if (!updatesSource || updatesSource.readyState === EventSource.CLOSED) startUpdatesStream();
             } else {
                 loginButton.style.display = 'inline-block';
                 logoutButton.style.display = 'none';
@@ -218,6 +280,24 @@
             if (updatesSource) updatesSource.close();
             isLoggedIn = false;
             currentUser = '';
+            currentSubject = '';
+            canGrant = [];
+            currentRole = 'unknown';
+            // Nothing of this person survives for the next login in this tab:
+            // the A2A context id would continue their conversation, and the
+            // rendered answers, audit cards and requests are theirs.
+            try { localStorage.removeItem(CONTEXT_ID_KEY); } catch (e) { /* storage unavailable */ }
+            chatContainer.innerHTML = '';
+            terminalMessages.innerHTML = '';
+            clearAuditState();
+            inboxRequests.clear();
+            pendingAccess.clear();
+            chatGeneration++;
+            if (chatAbort) chatAbort.abort();
+            activeRequest = null;
+            appResultBody.innerHTML = '';
+            appResult.hidden = true;
+            buildPages();
             showUserChip();
             // 2) Redirect to IdP logout URL (clears identity provider session, then redirects back to chatbot).
             if (LOGOUT_URL) {
@@ -230,9 +310,742 @@
 
     const terminalMessages = document.getElementById('terminalMessages');
 
-    async function sendMessage() {
+    // ------------------------------------------------------------------
+    // Layers: the same conversation seen as the organization's app or as
+    // this console. The audit ledger is outside both and always visible.
+    // ------------------------------------------------------------------
+    const LAYER_KEY = 'chatbot_layer';
+    const AUTOSWITCH_KEY = 'chatbot_autoswitch';
+    // How long the console stays on screen after the answer lands, so the
+    // last audit card is seen before the app view returns.
+    const RETURN_DELAY_MS = 1400;
+    const appLayer = document.getElementById('appLayer');
+    const consoleLayer = document.getElementById('consoleLayer');
+    const layerButtons = Array.from(document.querySelectorAll('.layer-btn'));
+    const autoSwitch = document.getElementById('autoSwitch');
+    const appPromptInput = document.getElementById('appPromptInput');
+    const appSendButton = document.getElementById('appSendButton');
+    const appResult = document.getElementById('appResult');
+    const appResultQuestion = document.getElementById('appResultQuestion');
+    const appResultBody = document.getElementById('appResultBody');
+    let currentLayer = 'app';
+    let layerChosen = false;   // a URL hash or a stored choice beats the usecase default
+    let activeRequest = null;  // the in-flight prompt: origin, target card, denials seen, user toggled?
+    let chatGeneration = 0;    // bumped per prompt and on logout; stale stream callbacks check it
+    let chatAbort = null;      // AbortController of the in-flight /api/chat/stream
+
+    function setLayer(name, opts = {}) {
+        name = name === 'console' ? 'console' : 'app';
+        currentLayer = name;
+        appLayer.classList.toggle('active', name === 'app');
+        consoleLayer.classList.toggle('active', name === 'console');
+        layerButtons.forEach(b => b.setAttribute('aria-pressed', b.dataset.layer === name ? 'true' : 'false'));
+        // The layer that just appeared can measure its prompt box now.
+        if (typeof autosizeInput === 'function') { autosizeInput(); autosizeAppInput(); }
+        if (opts.persist !== false) {
+            layerChosen = true;
+            try { localStorage.setItem(LAYER_KEY, name); } catch (_) { /* private mode */ }
+            if (window.location.hash !== '#' + name) history.replaceState({}, '', '#' + name);
+        }
+    }
+
+    layerButtons.forEach(b => b.addEventListener('click', () => {
+        // A manual flip mid-request cancels the automatic return.
+        if (activeRequest) activeRequest.userToggled = true;
+        setLayer(b.dataset.layer);
+    }));
+    window.addEventListener('hashchange', () => {
+        const h = window.location.hash.replace('#', '');
+        if (h === 'app' || h === 'console') setLayer(h);
+    });
+    try {
+        autoSwitch.checked = localStorage.getItem(AUTOSWITCH_KEY) !== 'false';
+    } catch (_) { /* private mode */ }
+    autoSwitch.addEventListener('change', () => {
+        try { localStorage.setItem(AUTOSWITCH_KEY, autoSwitch.checked ? 'true' : 'false'); } catch (_) { /* private mode */ }
+    });
+    (function initialLayer() {
+        const h = window.location.hash.replace('#', '');
+        let stored = null;
+        try { stored = localStorage.getItem(LAYER_KEY); } catch (_) { /* private mode */ }
+        if (h === 'app' || h === 'console') { setLayer(h); return; }
+        if (stored === 'app' || stored === 'console') { setLayer(stored, { persist: false }); layerChosen = true; return; }
+        setLayer('app', { persist: false });
+    })();
+
+    // ------------------------------------------------------------------
+    // App chrome: pages built from /api/config app.sections (usecase data)
+    // ------------------------------------------------------------------
+    const ICONS = {
+        home: 'M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z',
+        shield: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z',
+        doc: 'M7 3h7l5 5v13H7zM14 3v5h5M10 13h5M10 17h5',
+        claim: 'M9 12l2 2 4-4M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z',
+        billing: 'M3 7a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1zM3 11h18M7 15h3',
+        support: 'M12 3a9 9 0 0 0-9 9v4a2 2 0 0 0 2 2h2v-6H5a7 7 0 0 1 14 0h-2v6h2a2 2 0 0 0 2-2v-4a9 9 0 0 0-9-9z',
+        chart: 'M4 19h16M6 16l4-5 3 3 5-7',
+        user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM5 20a7 7 0 0 1 14 0'
+    };
+    function iconSvg(name, size) {
+        const d = ICONS[name] || ICONS.doc;
+        return `<svg width="${size || 18}" height="${size || 18}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+    }
+
+    let APP = { sections: [] };
+    let currentPage = 'home';
+    const appBody = document.getElementById('appBody');
+    const appNav = document.getElementById('appNav');
+
+    function initials(name) {
+        return (name || '').split(/[\s._-]+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('') || '?';
+    }
+
+    function showPage(id) {
+        currentPage = id;
+        appBody.querySelectorAll('.app-page').forEach(p => p.classList.toggle('active', p.dataset.page === id));
+        appNav.querySelectorAll('a').forEach(a => a.classList.toggle('current', a.dataset.page === id));
+        appBody.scrollTop = 0;
+    }
+
+    function navLink(id, label, icon) {
+        const a = document.createElement('a');
+        a.href = '#app';
+        a.dataset.page = id;
+        a.innerHTML = iconSvg(icon, 16) + '<span></span>';
+        a.querySelector('span').textContent = label;
+        a.addEventListener('click', (e) => { e.preventDefault(); showPage(id); });
+        return a;
+    }
+
+    function buildActionCard(action, section) {
+        const card = document.createElement('div');
+        card.className = 'app-action';
+        card.dataset.action = action.id;
+        const head = document.createElement('div');
+        head.className = 'app-action-head';
+        const title = document.createElement('div');
+        title.className = 'app-action-title';
+        title.textContent = action.title;
+        head.appendChild(title);
+        card.appendChild(head);
+        if (action.description) {
+            const desc = document.createElement('p');
+            desc.className = 'app-action-desc';
+            desc.textContent = action.description;
+            card.appendChild(desc);
+        }
+        const row = document.createElement('div');
+        row.className = 'app-action-row';
+        let input = null;
+        if (action.input) {
+            input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'app-action-input';
+            input.placeholder = action.input.placeholder || '';
+            input.setAttribute('aria-label', action.input.label || action.title);
+            row.appendChild(input);
+        }
+        const run = document.createElement('button');
+        run.type = 'button';
+        run.className = 'app-action-run';
+        run.textContent = action.input ? 'Go' : 'Show';
+        row.appendChild(run);
+        card.appendChild(row);
+        const result = document.createElement('div');
+        result.className = 'app-action-result';
+        result.hidden = true;
+        card.appendChild(result);
+
+        const runAction = () => {
+            let prompt = action.prompt || '';
+            if (input) {
+                const v = input.value.trim() || input.placeholder || '';
+                if (!v) { input.focus(); return; }
+                prompt = prompt.replace('{input}', v);
+            }
+            sendMessage(prompt, 'app', { card, result, action, section });
+        };
+        run.addEventListener('click', runAction);
+        if (input) input.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); runAction(); } });
+        return card;
+    }
+
+    function buildInbox() {
+        const card = document.createElement('div');
+        card.className = 'app-card app-inbox';
+        card.innerHTML = '<div class="app-card-label">Access requests</div>' +
+            '<p class="app-inbox-empty">No pending requests. When a customer asks for access to something they were denied, it appears here.</p>' +
+            '<div class="app-inbox-list"></div>';
+        // The requests live in inboxRequests, so a page rebuild redraws them
+        // (newest on top) with buttons matching the current grant rights.
+        const list = card.querySelector('.app-inbox-list');
+        if (inboxRequests.size) card.querySelector('.app-inbox-empty').hidden = true;
+        inboxRequests.forEach(rec => list.prepend(renderInboxItem(rec)));
+        return card;
+    }
+
+    // A group (or the inbox) is shown when it has no audience, or its audience
+    // matches the role; an unknown role sees everything.
+    function forRole(thing) {
+        const audience = thing && typeof thing === 'object' ? thing.audience : null;
+        return !audience || currentRole === 'unknown' || audience === currentRole;
+    }
+
+    function buildPages() {
+        appBody.querySelectorAll('.app-page[data-page]:not([data-page="home"])').forEach(p => p.remove());
+        appNav.innerHTML = '';
+        appNav.appendChild(navLink('home', 'Home', 'home'));
+        const tiles = document.getElementById('appTiles');
+        tiles.innerHTML = '';
+        (APP.sections || []).forEach(section => {
+            appNav.appendChild(navLink(section.id, section.label || section.title || section.id, section.icon));
+
+            const tile = document.createElement('button');
+            tile.type = 'button';
+            tile.className = 'app-tile';
+            tile.innerHTML = `<span class="app-tile-icon">${iconSvg(section.icon, 22)}</span><span class="app-tile-title"></span><span class="app-tile-sub"></span>`;
+            tile.querySelector('.app-tile-title').textContent = section.label || section.title || section.id;
+            tile.querySelector('.app-tile-sub').textContent = section.intro || '';
+            tile.addEventListener('click', () => showPage(section.id));
+            tiles.appendChild(tile);
+
+            const page = document.createElement('section');
+            page.className = 'app-page';
+            page.dataset.page = section.id;
+            const head = document.createElement('div');
+            head.className = 'app-page-head';
+            head.innerHTML = `<span class="app-page-icon">${iconSvg(section.icon, 22)}</span><div><h2 class="app-page-title"></h2><p class="app-page-intro"></p></div>`;
+            head.querySelector('.app-page-title').textContent = section.title || section.label || section.id;
+            head.querySelector('.app-page-intro').textContent = section.intro || '';
+            page.appendChild(head);
+            (section.groups || []).filter(forRole).forEach(group => {
+                const g = document.createElement('div');
+                g.className = 'app-group';
+                if (group.title) {
+                    const t = document.createElement('div');
+                    t.className = 'app-group-title';
+                    t.textContent = group.title;
+                    g.appendChild(t);
+                }
+                if (group.note) {
+                    const n = document.createElement('p');
+                    n.className = 'app-group-note';
+                    n.textContent = group.note;
+                    g.appendChild(n);
+                }
+                const grid = document.createElement('div');
+                grid.className = 'app-actions';
+                (group.actions || []).forEach(action => grid.appendChild(buildActionCard(action, section)));
+                g.appendChild(grid);
+                page.appendChild(g);
+            });
+            // The inbox is for people who can act on it: staff whose own
+            // CAN_TRIGGER paths let them grant at least one mapped service.
+            if (section.inbox && (section.inbox === true || forRole(section.inbox)) && canGrant.length) page.appendChild(buildInbox());
+            appBody.appendChild(page);
+        });
+        showPage(currentPage === 'home' || APP.sections.some(s => s.id === currentPage) ? currentPage : 'home');
+    }
+
+    function applyAppBranding(data) {
+        APP = data.app && typeof data.app === 'object' ? data.app : { sections: [] };
+        if (!Array.isArray(APP.sections)) APP.sections = [];
+        if (APP.accent) appLayer.style.setProperty('--app-accent', APP.accent);
+        if (APP.placeholder) appPromptInput.placeholder = APP.placeholder;
+        if (data.org_name) {
+            document.getElementById('appBrandName').textContent = data.org_name;
+            document.getElementById('appLogo').textContent = initials(data.org_name);
+        }
+        document.getElementById('appHeroSub').textContent = data.org_tagline || '';
+        buildPages();
+        if (!layerChosen && APP.default_layer) setLayer(APP.default_layer, { persist: false });
+    }
+
+    // Login lives in the page header only; the app just reflects who is in.
+    function renderAppUser() {
+        const user = document.getElementById('appUser');
+        const title = document.getElementById('appHeroTitle');
+        if (currentUser) {
+            user.innerHTML = '';
+            const avatar = document.createElement('span');
+            avatar.className = 'app-avatar';
+            avatar.textContent = initials(currentUser);
+            user.append(avatar, document.createTextNode(currentUser));
+            user.hidden = false;
+            title.textContent = `Welcome back, ${currentUser}`;
+        } else {
+            user.hidden = true;
+            title.textContent = 'Welcome';
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Presenting an answer as app content. The orchestrator answers in
+    // free-form markdown; the card's render hint plus these heuristics pick
+    // a rendering and fall back to plain text, so nothing is lost.
+    // ------------------------------------------------------------------
+    const DOC_RE = /\.pdf\b|\bdocuments?\b|\bpolic(y|ies)\b|\bguidelines?\b|\bterms\b|\bagreements?\b|\bproduct (sheet|guide)\b|\bprospectus\b|\bdisclosure\b|\bhandbook\b|\bfiles?\b|\bnotes?\b|\bsummary\b/i;
+    const DENY_RE = /not authori[sz]ed|access (is )?denied|\bdenied\b|not allowed|not permitted|no permission|unauthori[sz]ed|\bforbidden\b|cannot access|can't access|do not have access|don't have access/i;
+    const GRANT_RE = /\bgranted\b|now (has|have) access|access (enabled|restored|updated)/i;
+    const KV_RE = /^([^:\n]{2,48}):\s*(.+)$/s;
+    // Salesforce case numbers are 8 digits; in textContent the number may be
+    // glued to the next line ("00001042Subject"), so no word boundary here.
+    const CASE_NUM_RE = /(?<!\d)(\d{8})(?!\d)/;
+    const URL_RE = /https?:\/\/[^\s)"'<>]+/;
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    }
+
+    function splitNameDesc(text) {
+        const m = text.match(/^(.{2,120}?)(?:\s+[-–—]\s+|:\s+)(.+)$/s);
+        return m ? { name: m[1].trim(), desc: m[2].trim() } : { name: text.trim(), desc: '' };
+    }
+
+    function consoleButton(label) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'app-banner-why';
+        b.textContent = label || 'See why';
+        b.addEventListener('click', () => setLayer('console'));
+        return b;
+    }
+
+    function banner(kind, text, buttons) {
+        const el = document.createElement('div');
+        el.className = `app-banner ${kind}`;
+        const span = document.createElement('span');
+        span.textContent = text;
+        el.appendChild(span);
+        (buttons || []).forEach(b => el.appendChild(b));
+        return el;
+    }
+
+    function skeleton() {
+        const s = document.createElement('div');
+        s.className = 'app-skeleton';
+        s.innerHTML = '<span></span><span></span><span></span>';
+        return s;
+    }
+
+    function renderDocs(items, lockedAll) {
+        const grid = document.createElement('div');
+        grid.className = 'app-docs';
+        items.forEach(li => {
+            const text = li.textContent.trim();
+            const strong = li.querySelector('strong, b, a');
+            let name, desc;
+            if (strong) {
+                name = strong.textContent.trim();
+                desc = text.replace(strong.textContent, '').replace(/^[\s:–—-]+/, '').trim();
+            } else {
+                ({ name, desc } = splitNameDesc(text));
+            }
+            const locked = lockedAll || DENY_RE.test(text);
+            const doc = document.createElement('div');
+            doc.className = 'app-doc' + (locked ? ' locked' : '');
+            const icon = document.createElement('span');
+            icon.className = 'app-doc-icon';
+            icon.textContent = /\.pdf\b/i.test(text) ? 'PDF' : 'DOC';
+            const body = document.createElement('div');
+            const n = document.createElement('div');
+            n.className = 'app-doc-name';
+            n.textContent = name;
+            body.appendChild(n);
+            if (desc) {
+                const d = document.createElement('div');
+                d.className = 'app-doc-desc';
+                d.textContent = desc;
+                body.appendChild(d);
+            }
+            const state = document.createElement('div');
+            state.className = 'app-doc-state';
+            state.textContent = locked ? 'Not available' : 'Available to you';
+            body.appendChild(state);
+            doc.append(icon, body);
+            grid.appendChild(doc);
+        });
+        return grid;
+    }
+
+    function renderKv(lines) {
+        const dl = document.createElement('dl');
+        dl.className = 'app-kv';
+        lines.forEach(line => {
+            const m = line.match(KV_RE);
+            const dt = document.createElement('dt');
+            dt.textContent = m ? m[1].trim() : '';
+            const dd = document.createElement('dd');
+            dd.textContent = m ? m[2].trim() : line.trim();
+            dl.append(dt, dd);
+        });
+        return dl;
+    }
+
+    function renderList(items) {
+        const ul = document.createElement('ul');
+        ul.className = 'app-list';
+        items.forEach(li => {
+            const item = document.createElement('li');
+            item.innerHTML = li.innerHTML; // already sanitized by DOMPurify
+            ul.appendChild(item);
+        });
+        return ul;
+    }
+
+    function textBlock(el) {
+        const p = document.createElement('div');
+        p.className = 'app-text';
+        p.innerHTML = el.outerHTML; // sanitized subtree
+        return p;
+    }
+
+    function linesOf(el) {
+        return el.innerHTML.split(/<br\s*\/?>/i).map(h => {
+            const tmp = document.createElement('div');
+            tmp.innerHTML = h;
+            return tmp.textContent.trim();
+        }).filter(Boolean);
+    }
+
+    function renderBlock(el, hint, deniedAll) {
+        const tag = el.tagName;
+        if (/^H[1-4]$/.test(tag)) {
+            const t = document.createElement('div');
+            t.className = 'app-section-title';
+            t.textContent = el.textContent.trim();
+            return t;
+        }
+        if (tag === 'UL' || tag === 'OL') {
+            const items = Array.from(el.children).filter(c => c.tagName === 'LI');
+            if (!items.length) return null;
+            const docLike = items.filter(li => DOC_RE.test(li.textContent)).length;
+            const kvLike = items.filter(li => KV_RE.test(li.textContent.trim()) && !li.querySelector('ul, ol')).length;
+            if (hint === 'docs' || (hint !== 'details' && docLike / items.length >= 0.5)) return renderDocs(items, deniedAll);
+            if (hint === 'details' && kvLike) return renderKv(items.map(li => li.textContent.trim()));
+            if (items.length >= 2 && kvLike / items.length >= 0.6) return renderKv(items.map(li => li.textContent.trim()));
+            return renderList(items);
+        }
+        if (tag === 'TABLE') {
+            const t = el.cloneNode(true);
+            t.className = 'app-table';
+            return t;
+        }
+        if (tag === 'P') {
+            // "**Coverage amount:** $450,000" lines separated by <br> read as a details card.
+            const lines = linesOf(el);
+            const kvLike = lines.filter(l => KV_RE.test(l)).length;
+            if ((hint === 'details' || hint === 'weather') && kvLike && kvLike / lines.length >= 0.5) return renderKv(lines);
+            if (lines.length >= 2 && kvLike / lines.length >= 0.6) return renderKv(lines);
+        }
+        return textBlock(el);
+    }
+
+    // A Salesforce case confirmation: number + link if the answer names them.
+    function renderCase(text, tmp) {
+        const num = (text.match(CASE_NUM_RE) || [])[1];
+        const link = tmp.querySelector('a[href^="http"]');
+        const url = link ? link.getAttribute('href') : (text.match(URL_RE) || [])[0];
+        if (!num && !url) return null;
+        const c = document.createElement('div');
+        c.className = 'app-case';
+        c.innerHTML = `<span class="app-case-icon">${iconSvg('claim', 22)}</span><div><div class="app-case-title"></div><div class="app-case-sub">Filed on your behalf by the agent chain.</div></div>`;
+        c.querySelector('.app-case-title').textContent = num ? `Case ${num} created` : 'Case created';
+        if (url) {
+            const a = document.createElement('a');
+            a.className = 'app-case-link';
+            a.href = url;
+            a.target = '_blank';
+            a.rel = 'noopener';
+            a.textContent = 'Open in Salesforce →';
+            c.appendChild(a);
+        }
+        return c;
+    }
+
+    // Only denials from the gateways a card depends on (its `services` list in
+    // app.json) count for that card: the analyst probes every backend it has,
+    // so a Drive request by a customer also produces a graph-gateway denial
+    // that has nothing to do with Drive. Cards without a list keep every denial.
+    function relevantDenials(req) {
+        const a = req.action || {};
+        const services = Array.isArray(a.services) ? a.services : (a.service ? [a.service] : null);
+        return services ? req.denied.filter(e => services.includes(e.service)) : req.denied;
+    }
+
+    function presentInto(container, markdown, req) {
+        const hint = (req.action && req.action.render) || 'auto';
+        const tmp = document.createElement('div');
+        tmp.innerHTML = formatMessageContent(markdown || '');
+        const text = tmp.textContent || '';
+        container.innerHTML = '';
+        const denied = relevantDenials(req);
+        const deniedByGateway = denied.length > 0;
+        const deniedInText = DENY_RE.test(text);
+        // A denied hop with structured content underneath (another backend
+        // answered) reads differently from a request that was denied
+        // outright; an apology paragraph is not an answer.
+        const deniedAll = deniedByGateway && !tmp.querySelector('ul, ol, table');
+        const action = req.action || {};
+        // The card's own wording for an outright denial (`denied` in app.json)
+        // replaces both the generic line and the agent's apology.
+        const ownMessage = (deniedAll || (!deniedByGateway && deniedInText)) && action.denied ? String(action.denied) : '';
+        if (deniedByGateway || deniedInText) {
+            const services = [...new Set(denied.map(e => e.service).filter(Boolean))];
+            const buttons = [];
+            // Whoever was denied may ask, whatever their role: the denial is
+            // the proof they cannot grant it themselves. The request names the
+            // last gateway of the card's chain (`services`, first to last):
+            // its grant bundle covers every hop, and which hop said no first
+            // depends on timing.
+            if (action.access === 'request' && services.length) {
+                const chain = Array.isArray(action.services) ? action.services : [];
+                const target = chain.length ? chain[chain.length - 1] : services[services.length - 1];
+                buttons.push(requestAccessButton(req, target, container));
+            }
+            buttons.push(consoleButton('See why'));
+            container.appendChild(banner('deny', ownMessage || (deniedByGateway
+                ? (deniedAll
+                    ? `This is not available on your account${services.length ? ` (${services.join(', ')})` : ''}.`
+                    : `Part of this request was not authorized on your account${services.length ? ` (${services.join(', ')})` : ''} - the answer below may be incomplete.`)
+                : 'This is not available on your account.'), buttons));
+            if (ownMessage) { container.hidden = false; return; }
+        } else if (GRANT_RE.test(text) && hint !== 'case') {
+            container.appendChild(banner('ok', 'Access updated - your account now has this capability.', [consoleButton('See how')]));
+        }
+        if (hint === 'case' && !deniedByGateway) {
+            const c = renderCase(text, tmp);
+            if (c) container.appendChild(c);
+        }
+        if (hint === 'weather' && !deniedByGateway) {
+            const w = document.createElement('div');
+            w.className = 'app-section-title';
+            w.textContent = 'Live now';
+            container.appendChild(w);
+        }
+        Array.from(tmp.children).forEach(el => {
+            const block = renderBlock(el, hint, deniedAll);
+            if (block) container.appendChild(block);
+        });
+        if (!container.querySelector('.app-text, .app-docs, .app-kv, .app-list, .app-table, .app-section-title, .app-case')) {
+            const p = document.createElement('div');
+            p.className = 'app-text';
+            p.textContent = text.trim() || '(empty response)';
+            container.appendChild(p);
+        }
+        container.hidden = false;
+    }
+
+    function beginAppRequest(question, origin, target) {
+        activeRequest = { question, origin, target: target || null, action: target ? target.action : null, denied: [], userToggled: false, page: currentPage };
+        if (target) {
+            target.result.innerHTML = '';
+            target.result.appendChild(skeleton());
+            target.result.hidden = false;
+            target.card.classList.add('running');
+        } else {
+            appResultQuestion.innerHTML = `You asked: <strong>${escapeHtml(question)}</strong>`;
+            appResultBody.innerHTML = '';
+            appResultBody.appendChild(skeleton());
+            appResult.hidden = false;
+        }
+        if (origin === 'app' && autoSwitch.checked) setLayer('console', { persist: false });
+    }
+
+    function presentAppAnswer(markdown) {
+        const req = activeRequest || { denied: [], action: null };
+        if (req.target) {
+            presentInto(req.target.result, markdown, req);
+            req.target.card.classList.remove('running');
+        } else {
+            presentInto(appResultBody, markdown, req);
+            appResult.hidden = false;
+        }
+    }
+
+    function presentAppError(message) {
+        if (!activeRequest) return;
+        const container = activeRequest.target ? activeRequest.target.result : appResultBody;
+        container.innerHTML = '';
+        container.appendChild(banner('error', `Something went wrong: ${message}`, [consoleButton('Open console')]));
+        container.hidden = false;
+        if (activeRequest.target) activeRequest.target.card.classList.remove('running');
+        if (!activeRequest.target) appResult.hidden = false;
+    }
+
+    // A NOT AUTHORIZED card during the request: remember it for the presenter.
+    function noteAppDenial(event) {
+        if (!activeRequest) return;
+        activeRequest.denied.push(event);
+    }
+
+    function finishAppRequest() {
+        const req = activeRequest;
+        activeRequest = null;
+        if (req && req.origin === 'app' && autoSwitch.checked && !req.userToggled && currentLayer === 'console') {
+            setTimeout(() => { if (!activeRequest) setLayer('app', { persist: false }); }, RETURN_DELAY_MS);
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Request access -> staff inbox -> grant -> "try again"
+    // ------------------------------------------------------------------
+    const pendingAccess = new Map(); // service -> [{ container, req }] : every card on this console that asked
+
+    function requestAccessButton(req, service, container) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'app-banner-action';
+        b.textContent = 'Request access';
+        b.addEventListener('click', async () => {
+            b.disabled = true;
+            try {
+                const res = await fetch(`${API_URL}/api/access-request`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ service, resource: req.action ? req.action.title : req.question }),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) { b.textContent = data.error || `request failed (${res.status})`; return; }
+                const waiting = pendingAccess.get(service) || [];
+                waiting.push({ container, req });
+                pendingAccess.set(service, waiting);
+                const note = banner('info', 'Request sent to support. This page updates when it is granted.');
+                container.prepend(note);
+                b.remove();
+            } catch (e) {
+                b.textContent = `request failed: ${e.message}`;
+            }
+        });
+        return b;
+    }
+
+    function inboxList() { return document.querySelector('.app-inbox .app-inbox-list'); }
+
+    function addInboxItem(event) {
+        const key = `${event.subject}:${event.service}`;
+        inboxRequests.delete(key);  // a repeat request moves to the top
+        const rec = { key, event, state: '', ok: false, granted: false };
+        inboxRequests.set(key, rec);
+        const list = inboxList();
+        if (!list) return;
+        const empty = document.querySelector('.app-inbox .app-inbox-empty');
+        if (empty) empty.hidden = true;
+        const existing = list.querySelector(`[data-key="${CSS.escape(key)}"]`);
+        if (existing) existing.remove();
+        list.prepend(renderInboxItem(rec));
+    }
+
+    function refreshInboxItem(rec) {
+        const list = inboxList();
+        const item = list && list.querySelector(`[data-key="${CSS.escape(rec.key)}"]`);
+        if (item) item.replaceWith(renderInboxItem(rec));
+    }
+
+    function renderInboxItem(rec) {
+        const event = rec.event;
+        const item = document.createElement('div');
+        item.className = 'app-inbox-item';
+        item.dataset.key = rec.key;
+        const who = document.createElement('div');
+        who.className = 'app-inbox-who';
+        who.innerHTML = `<span class="app-avatar"></span><strong></strong> <span class="app-inbox-what"></span>`;
+        who.querySelector('.app-avatar').textContent = initials(event.requester || event.subject);
+        who.querySelector('strong').textContent = event.requester || event.subject;
+        who.querySelector('.app-inbox-what').textContent = `asks for access to ${event.resource || event.service}`;
+        const meta = document.createElement('div');
+        meta.className = 'app-inbox-meta';
+        meta.textContent = `${event.service} · ${new Date(event.timestamp || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+        const actions = document.createElement('div');
+        actions.className = 'app-inbox-actions';
+        const state = document.createElement('span');
+        state.className = 'app-inbox-state' + (rec.ok ? ' ok' : '');
+        state.textContent = rec.state;
+        const grantable = GRANT_ENABLED && canGrant.includes(event.service);
+        if (grantable) {
+            const grant = document.createElement('button');
+            grant.type = 'button';
+            grant.className = 'app-action-run';
+            grant.textContent = rec.granted ? 'Revoke' : 'Grant';
+            grant.addEventListener('click', async () => {
+                grant.disabled = true;
+                state.textContent = '';
+                try {
+                    const res = await fetch(`${API_URL}/api/grant`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ subject: event.subject, service: event.service, revoke: rec.granted }),
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok) { state.textContent = data.error || `HTTP ${res.status}`; state.className = 'app-inbox-state deny'; return; }
+                    rec.granted = !rec.granted;
+                    rec.ok = rec.granted;
+                    rec.state = rec.granted ? `granted: ${(data.granted || []).join(', ')}` : 'revoked';
+                    grant.textContent = rec.granted ? 'Revoke' : 'Grant';
+                    state.textContent = rec.state;
+                    state.className = 'app-inbox-state ' + (rec.ok ? 'ok' : '');
+                } catch (e) {
+                    state.textContent = `failed: ${e.message}`;
+                } finally {
+                    grant.disabled = false;
+                }
+            });
+            actions.appendChild(grant);
+        } else if (!rec.state) {
+            state.textContent = canGrant.length ? 'you cannot grant this service' : 'no grant configured for this service';
+        }
+        actions.appendChild(state);
+        item.append(who, meta, actions);
+        return item;
+    }
+
+    async function handleAccessEvent(event) {
+        const decision = (event.decision || '').toLowerCase();
+        // Rights move with these events: refresh role and grant rights first,
+        // so what gets rendered matches the graph as it is now.
+        await checkAuth();
+        if (decision === 'access_requested') {
+            addInboxItem(event);
+            return;
+        }
+        // granted / revoked: update the inbox entry and, if this console made
+        // the request, the card that was denied.
+        const rec = inboxRequests.get(`${event.subject}:${event.service}`);
+        if (rec) {
+            rec.ok = decision === 'access_granted';
+            rec.granted = rec.ok;
+            rec.state = rec.ok ? `granted by ${event.actor || 'staff'}` : 'revoked';
+            refreshInboxItem(rec);
+        }
+        // The audit subject is the id-token sub; the display name is only a fallback.
+        const me = (currentSubject || currentUser || '').toLowerCase();
+        const mine = !!me && (event.subject || '').toLowerCase() === me;
+        const waiting = pendingAccess.get(event.service) || [];
+        if (mine && waiting.length && decision === 'access_granted') {
+            // Every card on this console that asked for the service gets its retry.
+            waiting.forEach(pending => {
+                pending.container.querySelectorAll('.app-banner').forEach(b => b.remove());
+                const again = document.createElement('button');
+                again.type = 'button';
+                again.className = 'app-banner-action';
+                again.textContent = 'Try again';
+                again.addEventListener('click', () => {
+                    const t = pending.req.target;
+                    if (t) { t.card.querySelector('.app-action-run').click(); } else { sendMessage(pending.req.question, 'app'); }
+                });
+                pending.container.prepend(banner('ok', `Access granted by ${event.actor || 'support'}. It takes effect within about half a minute.`, [again]));
+            });
+            pendingAccess.delete(event.service);
+        }
+    }
+
+    document.getElementById('appResultConsole').addEventListener('click', () => setLayer('console'));
+
+    async function sendMessage(text, origin = 'console', target = null) {
         if (sendButton.disabled) return;  // a response is still streaming
-        const message = messageInput.value.trim();
+        const message = (text ?? messageInput.value).trim();
         if (!message) return;
 
         terminalMessages.innerHTML = '';
@@ -246,13 +1059,21 @@
         });
 
         sendButton.disabled = true;
+        appSendButton.disabled = true;
         sendButton.innerHTML = '<div class="loading"></div>';
         addMessage(message, true);
         messageInput.value = '';
+        if (!target) appPromptInput.value = '';
         autosizeInput();
+        autosizeAppInput();
+        beginAppRequest(message, origin, target);
 
         const contentDiv = createStreamingMessage();
         let accumulated = '';
+        // Logout aborts the stream and bumps the generation, so a response
+        // that lands afterwards never paints for the next person.
+        const generation = ++chatGeneration;
+        chatAbort = new AbortController();
 
         try {
             const response = await fetch(`${API_URL}/api/chat/stream`, {
@@ -260,6 +1081,7 @@
                 headers: {'Content-Type': 'application/json'},
                 credentials: 'include',
                 body: JSON.stringify({message, context_id: getContextId()}),
+                signal: chatAbort.signal,
             });
             if (!response.ok) {
                 const err = await response.json().catch(() => ({}));
@@ -273,7 +1095,7 @@
             let hasError = false;
 
             function processChunk(line) {
-                if (hasError) return;
+                if (hasError || generation !== chatGeneration) return;
                 const trimmed = line.trim();
                 if (!trimmed.startsWith('data: ')) return;
                 try {
@@ -291,6 +1113,7 @@
                         }
                         delete contentDiv.dataset.streaming;
                         if (!accumulated) contentDiv.textContent = '(empty response)';
+                        presentAppAnswer(accumulated);
                     } else if (data.type === 'error') {
                         addError(data.error || 'Unknown error');
                         contentDiv.parentElement?.remove();
@@ -313,28 +1136,47 @@
                 }
             }
             chatContainer.scrollTop = chatContainer.scrollHeight;
+            // A stream that ended without a 'done' event still leaves an answer to show.
+            const stillWorking = activeRequest && (activeRequest.target ? activeRequest.target.result : appResultBody).querySelector('.app-skeleton');
+            if (!hasError && stillWorking && generation === chatGeneration) presentAppAnswer(accumulated);
         } catch (error) {
             contentDiv.parentElement?.remove();
-            addError(`Failed to send: ${error.message}`);
+            // An aborted stream (logout) is not an error to show anyone.
+            if (generation === chatGeneration) addError(`Failed to send: ${error.message}`);
         } finally {
             sendButton.disabled = false;
+            appSendButton.disabled = false;
             sendButton.textContent = 'Send';
-            messageInput.focus();
+            finishAppRequest();
+            if (currentLayer === 'console') messageInput.focus();
         }
     }
 
-    function autosizeInput() {
-        const maxH = parseFloat(getComputedStyle(messageInput).maxHeight) || 160;
-        messageInput.style.height = 'auto';
-        messageInput.style.height = Math.min(messageInput.scrollHeight, maxH) + 'px';
+    // Grow a textarea with its content. A box inside the hidden layer measures
+    // zero, so leave it alone there; it is re-measured when its layer shows.
+    function autosize(el, fallbackMax) {
+        if (!el.offsetParent) { el.style.height = ''; return; }
+        const maxH = parseFloat(getComputedStyle(el).maxHeight) || fallbackMax;
+        el.style.height = 'auto';
+        el.style.height = Math.min(el.scrollHeight, maxH) + 'px';
     }
+    function autosizeInput() { autosize(messageInput, 160); }
+    function autosizeAppInput() { autosize(appPromptInput, 140); }
     messageInput.addEventListener('input', autosizeInput);
+    appPromptInput.addEventListener('input', autosizeAppInput);
 
-    sendButton.addEventListener('click', sendMessage);
+    sendButton.addEventListener('click', () => sendMessage(messageInput.value, 'console'));
     messageInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            sendMessage();
+            sendMessage(messageInput.value, 'console');
+        }
+    });
+    appSendButton.addEventListener('click', () => sendMessage(appPromptInput.value, 'app'));
+    appPromptInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage(appPromptInput.value, 'app');
         }
     });
 
@@ -359,6 +1201,7 @@
                     if (ps[1] && data.org_tagline) ps[1].textContent = data.org_tagline;
                 }
             }
+            applyAppBranding(data);
         } catch (e) {
             console.warn('Failed to load config', e);
         }
@@ -367,14 +1210,16 @@
     loadConfig();
     checkAuth();
     checkHealth();
-    messageInput.focus();
+    renderAppUser();
+    buildPages();
+    (currentLayer === 'app' ? appPromptInput : messageInput).focus();
 
     // Parse ?error= from URL (e.g. auth callback errors)
     const params = new URLSearchParams(window.location.search);
     const urlError = params.get('error');
     if (urlError) {
         addError(decodeURIComponent(urlError));
-        window.history.replaceState({}, '', window.location.pathname);
+        window.history.replaceState({}, '', window.location.pathname + window.location.hash);
     }
 
     let seenMessages = new Set();
@@ -467,11 +1312,41 @@
             }
         }
 
-        // Deny -> remediate -> allow: one-click CAN_TRIGGER grant. The
-        // backend re-checks WHO clicks (AuthZEN self-check) - a 403 here is
-        // part of the story, so the button shows for every logged-in user.
-        if (GRANT_ENABLED && isLoggedIn && decision === 'not_authorized'
-                && grantBundle.length && event.subject) {
+        // Deny -> remediate -> allow. The denied person's own card offers
+        // "request access" (the same request as the app banner, landing in
+        // the staff inbox); someone else's card offers the one-click
+        // CAN_TRIGGER grant to a viewer who can grant that service. The
+        // backend re-checks WHO clicks (AuthZEN self-check).
+        const ownCard = !!event.subject && event.subject === currentSubject;
+        if (isLoggedIn && decision === 'not_authorized' && ownCard && grantBundle.length) {
+            const ask = document.createElement('button');
+            ask.type = 'button';
+            ask.className = 'audit-grant';
+            ask.textContent = 'request access';
+            const status = document.createElement('div');
+            status.className = 'audit-grant-status';
+            ask.addEventListener('click', async () => {
+                ask.disabled = true;
+                try {
+                    const res = await fetch(`${API_URL}/api/access-request`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ service: event.service, resource: event.service }),
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok) { status.textContent = data.error || `HTTP ${res.status}`; ask.disabled = false; return; }
+                    status.textContent = 'request sent to support';
+                } catch (e) {
+                    status.textContent = `request failed: ${e.message}`;
+                    ask.disabled = false;
+                }
+            });
+            flow.appendChild(ask);
+            card.appendChild(status);
+            card.classList.add('grantable');
+        } else if (GRANT_ENABLED && isLoggedIn && decision === 'not_authorized'
+                && grantBundle.length && event.subject && !ownCard && canGrant.includes(event.service)) {
             const grant = document.createElement('button');
             grant.type = 'button';
             grant.className = 'audit-grant';
@@ -625,14 +1500,22 @@
     });
 
     function addTerminalMessage(event) {
+        const decision = (event.decision || '').toLowerCase();
+        // Access-request traffic is app-layer business, not a gateway decision:
+        // it never touches the audit ledger.
+        if (decision === 'access_requested' || decision === 'access_granted' || decision === 'access_revoked') {
+            handleAccessEvent(event);
+            return;
+        }
+
         const messageKey = `${event.service}:${event.reason}`;
         if (seenMessages.has(messageKey)) {
             return;
         }
         seenMessages.add(messageKey);
 
-        const decision = (event.decision || '').toLowerCase();
         const pairKey = `${event.subject}:${event.actor}`;
+        if (decision === 'not_authorized') noteAppDenial(event);
 
         if (decision === 'token_exchanged') {
             const target = tokenTargets.get(pairKey);

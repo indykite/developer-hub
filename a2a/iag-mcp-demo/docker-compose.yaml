@@ -35,6 +35,8 @@ services:
       - erp-mcp-iag-network
     volumes:
       - flask_session_data:/tmp/flask_session
+      # App layer of the console (sections, action cards, prompts) - usecase data.
+      - ./usecases/${USECASE:-canbank}/app.json:/app/usecase-app.json:ro
     environment:
       CHATBOT_PORT: ${CHATBOT_PORT}
       ORCHESTRATOR_HOST: ${IAG_ORCHESTRATOR_HOST}
@@ -54,6 +56,9 @@ services:
       # card's workflow id from its gateway name (deny reasons don't carry it).
       INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
       APP_AGENT_CREDENTIALS_TOKEN: ${APP_AGENT_CREDENTIALS_TOKEN}
+      # App layer staff check: a knowledge query run on the platform's MCP
+      # server as the logged-in user (app.json staff_check).
+      MCP_SERVER_URL: ${MCP_SERVER_URL}
       EXPLAIN_STAFF_QUERY_ID: ${EXPLAIN_STAFF_QUERY_ID:-}
       EXPLAIN_DIRECT_QUERY_ID: ${EXPLAIN_DIRECT_QUERY_ID:-}
       EXPLAIN_WORKFLOW_MAP: >-
@@ -550,7 +555,9 @@ services:
       POSTGRES_DB: erp
     volumes:
       - ./erp_mcp/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-      - erp_db_data:/var/lib/postgresql/data
+      # postgres 18+ keeps its data in a version-specific subdirectory, so the
+      # volume mounts one level up from the data directory.
+      - erp_db_data:/var/lib/postgresql
 
 networks:
   console-network:

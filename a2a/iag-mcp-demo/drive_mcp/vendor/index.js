@@ -15,12 +15,15 @@ const drive = google.drive("v3");
 // analyst able to answer over real PDF documents. verbosity: 0 keeps pdfjs
 // silent - any stdout write would corrupt the stdio JSON-RPC stream.
 async function extractPdfText(arrayBuffer) {
-    const doc = await getDocument({
+    // Cleanup goes through the loading task: pdfjs-dist 6 dropped
+    // PDFDocumentProxy.destroy(), loadingTask.destroy() works on 4.x and 6.x.
+    const loadingTask = getDocument({
         data: new Uint8Array(arrayBuffer),
         useSystemFonts: true,
         verbosity: 0,
-    }).promise;
+    });
     try {
+        const doc = await loadingTask.promise;
         const pages = [];
         for (let pageNum = 1; pageNum <= doc.numPages; pageNum++) {
             const page = await doc.getPage(pageNum);
@@ -30,7 +33,7 @@ async function extractPdfText(arrayBuffer) {
         return pages.join("\n\n").trim();
     }
     finally {
-        await doc.destroy();
+        await loadingTask.destroy();
     }
 }
 const server = new Server({

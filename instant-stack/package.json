@@ -4,7 +4,7 @@
   "description": "Pinned versions of the browser JS vendored into static/assets/js (used by the Graph Explorer). After Renovate bumps a version here, run `npm install && npm run vendor` to refresh the vendored files and their MIT license notices (LICENSE-<package>.txt).",
   "dependencies": {
     "cose-base": "2.2.0",
-    "cytoscape": "3.34.1",
+    "cytoscape": "3.34.3",
     "cytoscape-fcose": "2.2.0",
     "layout-base": "2.0.1"
   },

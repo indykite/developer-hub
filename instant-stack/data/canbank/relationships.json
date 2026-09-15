@@ -242,6 +242,18 @@
     },
     {
       "source": {
+        "type": "User",
+        "external_id": "rebecca"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "rebecca"
+      },
+      "properties": [],
+      "type": "IS_CUSTOMER"
+    },
+    {
+      "source": {
         "type": "Department",
         "external_id": "support"
       },

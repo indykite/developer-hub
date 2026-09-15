@@ -50,15 +50,23 @@ It will then listen for incoming A2A messages on the specified port. Incoming me
 
 ## Indykite MCP Server
 
-When using the Indykite MCP server (`us.mcp.indykite.com`), the agent applies two workarounds:
+When using the Indykite MCP server (`us.mcp.indykite.com`), the agent (MCP
+Python SDK 2.x) behaves as follows:
 
-1. **Session ID from 202 response**: Indykite returns `202 Accepted` with
-   `Mcp-Session-Id` in response headers. The Python MCP SDK normally skips
-   extracting the session ID for 202 responses; without it, the subsequent GET
-   request fails with 404. The agent patches the SDK to extract the session ID
-   from 202 responses.
+1. **Protocol negotiation**: the agent first sends `server/discover` - the
+   stateless protocol (revision `2026-07-28`: no session id, every request
+   self-contained, `Mcp-Method` / `Mcp-Name` headers). The Indykite MCP server
+   speaks it, so this is what runs in production. When a server, or a gateway
+   in front of it, rejects `server/discover` (e.g. the Google Drive reference
+   server), the agent falls back to the legacy `initialize` handshake with a
+   session id. The former SDK patch that extracted the session id from `202`
+   responses is gone with the session itself.
 
 2. **No session termination**: Indykite returns `403 Forbidden` on `DELETE` (session termination). The agent uses `terminate_on_close=False` to skip the termination request.
+
+3. **Cached-session probe**: cached MCP sessions are validated with
+   `tools/list` before reuse, not `ping` - stateless-era servers do not
+   implement `ping`.
 
 **Access token**: The MCP `Authorization: Bearer <token>` header is taken from the incoming A2A request's `Authorization` header. Callers (e.g. the orchestrator) must forward the user's token when invoking the retriever.
 

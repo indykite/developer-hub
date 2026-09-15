@@ -28,6 +28,20 @@ Watch the audit terminal throughout: every hop shows the gateway decision
 delegation TOKEN card - a new token with the user as the subject and the
 agent as the actor, so the agent provably acts on the user's behalf.
 
+The console opens on its **App** layer - the CanBank web app. **Home** has
+a free-text assistant; the nav opens Accounts, Investments, Documents and
+Support, each with action cards that send the prompts below behind the
+scenes (see `app.json`). Run a card and, with **Auto-switch** on, the page
+flips to the **Console** layer while the agents work (prompt, streaming
+answer, audit cards), then returns to the same page showing the answer as
+app content: a details card, document tiles, a table, or a red "not
+available" notice with **See why** on a denial. Log in as different people
+and the same cards show different things. On the Drive cards a denied user
+can click **Request access**; staff see the request in their Support inbox
+and **Grant** it there (the deny → remediate → allow beat, inside the app).
+The **App | Console** toggle in the header flips at any time; the audit
+terminal stays visible in both.
+
 ## The story - one customer, one morning at CanBank
 
 The acts play as a single narrative around **rebecca**, a customer who
@@ -79,7 +93,9 @@ different answer.
    Google Drive section).
 4. *(Optional)* the `erp` compose profile for the invoice beats: dataset
    additions provisioned (Invoice nodes, `SERVES`/`HAS_INVOICE` edges, the
-   `staff-can-view-invoice` policy, `wf-erp-*` chains), the
+   `staff-can-view-invoice` and `customer-own-invoice` policies - the latter
+   follows the `IS_CUSTOMER` edge from rebecca's login to her customer
+   record - and the `wf-erp-*` chains), the
    `indykiteagent-erp` IdP client, and in `.env`: `erp` in
    `COMPOSE_PROFILES`, `,erp=http://erp-mcp-iag:8889/mcp` appended to
    `ANALYST_MCP_SERVER_URLS`, `ERP_TOOL_ENABLED=true`,
@@ -193,25 +209,25 @@ receives every audit card, so roy's red card appears in millicent's
 terminal too.
 
 1. roy: **"List the files in my Google Drive."**
-   → red **NOT AUTHORIZED** card (from `drive-mcp-iag`) in both consoles,
-   with **why?** and **grant access** buttons.
-2. roy clicks **grant access** on his card
-   → **403**: "roy is not allowed to grant wf-drive (no CAN_TRIGGER path
-   of their own)" - the grant is AuthZEN-guarded, he can't self-serve.
+   → red **NOT AUTHORIZED** card (from `drive-mcp-iag`) in both consoles.
+   roy sees **why?** and **request access** on his own card; millicent
+   (staff) sees **why?** and **grant access** on the same card in her console.
+2. roy clicks **request access** on his card
+   → the request lands in millicent's **Access requests** inbox on the
+   Support page. He cannot self-serve: the grant endpoint is AuthZEN-guarded
+   and answers 403 to anyone without a CAN_TRIGGER path of their own.
 3. millicent clicks **grant access** on the same red card in HER console
-   (she holds the drive workflows directly)
+   (or **Grant** on the inbox item; she holds the drive workflows directly)
    → the Capture write adds `roy -CAN_TRIGGER-> wf-drive*` and the why?
    graph shows the new edge.
 4. roy: **"List the files in my Google Drive."** (same prompt again,
-   after the gateway cache clears - the same ~5-min/restart note as step 6)
+   about 30 seconds later - the gateways cache each subject's workflow set
+   for `IAG_AUTHZEN_CACHE_TTL`, 30 s by default; see iag-base-docker.yaml)
    → **green**, the real Drive listing. *Authorization is data - change
    the graph, behavior changes now.*
 5. millicent clicks **revoke access** to reset the beat.
-6. roy: **"List the files in my Google Drive."** once more, after ~5
-   minutes - or restart the gateways to clear the cache immediately
-   (`docker compose restart orchestrator-iag analyst-iag drive-mcp-iag`)
-   → red again (the gateways cache each subject's workflow set ~5 min;
-   see iag-base-docker.yaml).
+6. roy: **"List the files in my Google Drive."** once more, about 30
+   seconds later → red again.
 
 ## Act 5 - Parallel multi-agent MCP (WF4)
 

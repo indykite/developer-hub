@@ -504,31 +504,48 @@ so all shapes authorize. Re-ingest the workflow data after upgrading
 #### Deny → remediate → allow (grant button)
 
 Authorization is data: when a drive prompt ends in a red DENY card, the card
-offers a **grant access** button. One click writes the missing
-`CAN_TRIGGER` edges (Capture API upsert to the three drive workflows), then
-opens the why? graph so the new path is visible immediately; re-running the
-prompt turns the chain green. The button flips to **revoke access** (Capture
-delete of the same edges) so the beat is repeatable.
+offers a button that depends on who is looking (`/api/auth/status` returns
+the subject and the role):
 
-The grant itself is guarded by a live **AuthZEN self-check**: `/api/grant`
-only proceeds when the *logged-in* user can `CAN_TRIGGER` every workflow in
-the bundle themselves. millicent (staff, via her department) passes; james
-clicking his own button gets a clean 403 - which is part of the story.
+- **the denied person** sees **request access** on their own card, whatever
+  their role - the denial is the proof they cannot grant it themselves. It
+  files an access request (`/api/access-request`) that appears in the staff
+  inbox on the Support page, where staff grant it.
+- **people who can grant** see **grant access** on other people's cards.
+  One click writes the missing `CAN_TRIGGER` edges (Capture API upsert to
+  the three drive workflows), then opens the why? graph so the new path is
+  visible immediately; re-running the prompt turns the chain green. The
+  button flips to **revoke access** (Capture delete of the same edges) so
+  the beat is repeatable.
+
+Who can grant is decided by a live **AuthZEN self-check**: only someone who
+can `CAN_TRIGGER` every workflow in a service's bundle themselves may grant
+it. `/api/auth/status` runs the check once per login and returns the
+services that pass as `can_grant`; the app shows the Support inbox and the
+grant buttons only for those. `/api/grant` repeats the check on every call,
+so millicent (trading, holds the drive workflows) passes while roy (also
+staff, no drive path) or a customer calling it directly gets a clean 403.
 
 Configured by `GRANT_WORKFLOW_MAP` in the usecase env
-(`gateway=wf:wf:...,gateway=...`, empty = buttons off); the chatbot also
+(`gateway=wf:wf:...,gateway=...`, empty = buttons off). The example maps
+`drive-mcp-iag` to the `wf-drive*` bundle and `erp-mcp-iag` to `wf-erp*`, so
+invoice requests (the `access: "request"` invoice cards) can be granted the
+same way. `analyst-iag` is deliberately not mapped: it fronts both backends,
+so its DENY cards have no single bundle; grants happen on the backend
+gateway's card. A gateway missing from the map still takes requests, they
+just show in the inbox without a Grant button. Grant rights are re-checked
+by `/api/auth/status` at most once a minute and whenever a grant, revoke or
+request event arrives. The chatbot also
 needs `AUTHZEN_SUBJECT_TYPES` (insurance `Person`, canbank `User`). The
 gateway pins stay empty - only the chatbot reads this map.
 
-Timing: the gateway caches each subject's workflow set, and this stack MUST
-run the image defaults (`ttl 5m`, `update_after 5m` - see the warning in
-[`iag-base-docker.yaml`](iag-base-docker.yaml): every faster setting
-triggers a request-context race in the gateway's cache refresh, bug filed).
-So grants and revokes propagate once the cache expires - typically up to
-~5 minutes; restart the gateways
-(`docker compose restart orchestrator-iag analyst-iag drive-mcp-iag`) to
-clear the cache immediately. The platform itself is consistent at once;
-only the gateway cache lags.
+Timing: each gateway caches a subject's workflow set for
+`IAG_AUTHZEN_CACHE_TTL` (30 s by default, set in `.env`; see
+[`iag-base-docker.yaml`](iag-base-docker.yaml)), so a grant or revoke reaches
+gateway decisions within that window. The platform itself is consistent at
+once. Restarting the gateways
+(`docker compose restart orchestrator-iag analyst-iag drive-mcp-iag`) clears
+the cache immediately.
 
 The chatbot console reaches Drive through the orchestrator's `query_drive`
 tool (enabled when `ANALYST_HOST` is set on the orchestrator, wired by
@@ -811,11 +828,21 @@ Each one shows the full chain in the audit terminal: `orchestrator-iag` →
   recreated while the container ran - a bind mount pins the old inode.
   `docker compose up -d --force-recreate <service>` rebinds it.
 - **Grant button problems**: no `grant access` button on a DENY card = the
-  card's gateway has no `GRANT_WORKFLOW_MAP` entry, or you're not logged in.
-  A **403 on click** is usually the point (the logged-in user can't
-  `CAN_TRIGGER` those workflows themselves - the AuthZEN self-check); as
-  millicent it means the staff path isn't provisioned. A **502** means the
+  card's gateway has no `GRANT_WORKFLOW_MAP` entry, you're not logged in,
+  the card is your own denial (you get `request access` instead), or the
+  AuthZEN self-check found no `CAN_TRIGGER` path of your own to that
+  service's workflows (`can_grant` in `/api/auth/status`, re-checked within
+  a minute or on the next grant/request event). As millicent it means the
+  staff path isn't provisioned. A **403 on click** means the same check
+  failed on the write. A **502** means the
   chatbot can't reach `INDYKITE_BASE_URL` / the app-agent key is invalid.
+- **Invoices empty or `erp-db` exits after a postgres major upgrade**: the
+  `erp_db_data` volume holds a cluster from the previous major version, which
+  the new image will not open (it refuses to start, or initialises an empty
+  cluster next to the old files). The volume only holds the seed rows from
+  `erp_mcp/init.sql`, so reset it once:
+  `docker compose rm -sf erp-db && docker volume rm iag-mcp-demo_erp_db_data`,
+  then `docker compose up -d erp-db erp-mcp` re-seeds it.
 - **ERP answers "authorization search failed"**: check
   `APP_AGENT_CREDENTIALS_TOKEN` / `INDYKITE_BASE_URL` in the erp-mcp
   container; "no invoices are visible" with 0 rows for a staff login means

@@ -1,0 +1,313 @@
+{
+  "_comment": "App layer of the console for the SecureHome usecase: the sections behind the nav, and the action cards on each. Every action sends its prompt through the normal orchestrator pipeline; '{input}' is replaced by the card's input field. render hints the presenter: details | docs | table | case | weather | text | auto. access: 'request' offers a Request-access button when a gateway denies the action. A group's audience (customer | staff; absent = everyone) selects who sees it; the role comes from staff_check - here the explain queries' staff leg: staff are the people who WORKS_IN a department that CAN_TRIGGER the workflow. services: the gateways a card depends on - only their NOT AUTHORIZED decisions show on the card.",
+  "default_layer": "app",
+  "accent": "#0F766E",
+  "staff_check": {
+    "explain": {
+      "workflow": "wf1"
+    }
+  },
+  "placeholder": "Ask about your policies, documents, claims or invoices\u2026",
+  "sections": [
+    {
+      "id": "policies",
+      "label": "Policies",
+      "icon": "shield",
+      "title": "Policies",
+      "intro": "Your coverage as the knowledge graph relates it: household, property, vehicles and who may see what.",
+      "groups": [
+        {
+          "title": "My coverage",
+          "audience": "customer",
+          "actions": [
+            {
+              "id": "household",
+              "title": "My household coverage",
+              "description": "Family, property, vehicle with its authorized drivers, and the home policies. Financial details show only for the primary policyholder.",
+              "prompt": "Show my household coverage",
+              "render": "details",
+              "services": [
+                "retriever-iag",
+                "mcp-iag"
+              ]
+            },
+            {
+              "id": "drivers",
+              "title": "Who can drive the family car",
+              "description": "The vehicle's authorized drivers.",
+              "prompt": "Who can drive the family car?",
+              "render": "details",
+              "services": [
+                "retriever-iag",
+                "mcp-iag"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Customer service",
+          "audience": "staff",
+          "note": "What a customer sees about their own policy, and who to call next.",
+          "actions": [
+            {
+              "id": "customer-view",
+              "title": "What can a customer see about their home insurance?",
+              "description": "Answers the household blind spot: the caller sees the policy exists, financials only if they are the primary policyholder.",
+              "input": {
+                "label": "Customer id",
+                "placeholder": "james"
+              },
+              "prompt": "{input} is calling about the home insurance for their household. What can they see about the policy?",
+              "render": "details",
+              "services": [
+                "retriever-iag",
+                "mcp-iag"
+              ]
+            },
+            {
+              "id": "teen-leads",
+              "title": "Teen-driver leads",
+              "description": "Children in client households approaching driving age, with their parents' contact details.",
+              "prompt": "Which children in our clients' households are approaching driving age?",
+              "render": "details",
+              "services": [
+                "retriever-iag",
+                "mcp-iag"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documents",
+      "label": "Documents",
+      "icon": "doc",
+      "title": "Documents",
+      "intro": "The policy library lives in the knowledge graph; product guides live in Google Drive. Access to each is decided separately.",
+      "groups": [
+        {
+          "title": "Policy library",
+          "actions": [
+            {
+              "id": "policy-docs",
+              "title": "Policy documents I can view",
+              "description": "Staff see the whole library; customers see the published terms only.",
+              "prompt": "Which policy documents am I allowed to see?",
+              "render": "docs",
+              "services": [
+                "retriever-iag",
+                "mcp-iag"
+              ]
+            },
+            {
+              "id": "policy-terms",
+              "title": "Why only the primary policyholder sees the premium",
+              "description": "Quotes the Home Policy Standard Terms from the graph.",
+              "prompt": "Why can't James see the premium? Quote our policy terms.",
+              "render": "text",
+              "services": [
+                "retriever-iag",
+                "mcp-iag"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Product guides (Google Drive)",
+          "actions": [
+            {
+              "id": "drive-list",
+              "title": "Product guides",
+              "description": "The customer-facing PDFs behind the Drive gateway.",
+              "prompt": "List the files in the Google Drive",
+              "render": "docs",
+              "access": "request",
+              "services": [
+                "analyst-iag",
+                "drive-mcp-iag"
+              ]
+            },
+            {
+              "id": "teen-discount",
+              "title": "Teen-driver discount",
+              "description": "From the auto and teen driver product guide.",
+              "prompt": "In the auto and teen driver product guide in Google Drive, summarize the teen-driver discount.",
+              "render": "text",
+              "access": "request",
+              "services": [
+                "analyst-iag",
+                "drive-mcp-iag"
+              ]
+            },
+            {
+              "id": "flood-waiting",
+              "title": "Flood endorsement waiting period",
+              "description": "From the water backup and flood endorsement guide.",
+              "prompt": "In the water backup and flood endorsement guide in Google Drive, what is the flood endorsement waiting period and which flood zone gets the preferred rate?",
+              "render": "text",
+              "access": "request",
+              "services": [
+                "analyst-iag",
+                "drive-mcp-iag"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "claims",
+      "label": "Claims",
+      "icon": "claim",
+      "title": "Claims",
+      "intro": "Claims and follow-ups are filed as Salesforce cases by the CRM agent, on your behalf.",
+      "groups": [
+        {
+          "title": "My claims",
+          "audience": "customer",
+          "actions": [
+            {
+              "id": "claim-case",
+              "title": "Open a claim case",
+              "description": "Describe the claim; a Salesforce case is created on your behalf, with the delegation chain recorded.",
+              "input": {
+                "label": "What is the claim about?",
+                "placeholder": "my water-backup claim"
+              },
+              "prompt": "Open a Salesforce case about {input}",
+              "render": "case",
+              "access": "request",
+              "services": [
+                "crm-iag"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Cases for customers",
+          "audience": "staff",
+          "note": "Filed in Salesforce by the CRM agent; the case description records who acted on whose behalf.",
+          "actions": [
+            {
+              "id": "claim-case-for",
+              "title": "Open a claim case for a customer",
+              "description": "Name the customer and what the claim is about.",
+              "input": {
+                "label": "Customer and claim",
+                "placeholder": "James Mitchell about his water-backup claim"
+              },
+              "prompt": "Open a Salesforce case for {input}.",
+              "render": "case",
+              "access": "request",
+              "services": [
+                "crm-iag"
+              ]
+            },
+            {
+              "id": "teen-quote-followup",
+              "title": "Follow up on the teen-driver quote",
+              "description": "Sales: a follow-up case for Olivia Mitchell's quote.",
+              "prompt": "File a CRM case to follow up on the teen-driver quote for Olivia Mitchell.",
+              "render": "case",
+              "access": "request",
+              "services": [
+                "crm-iag"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "billing",
+      "label": "Billing",
+      "icon": "billing",
+      "title": "Billing",
+      "intro": "Premium invoices from the ERP. The rows are filtered by the graph before any SQL runs: each person sees their slice.",
+      "groups": [
+        {
+          "title": "Invoices",
+          "actions": [
+            {
+              "id": "invoices",
+              "title": "My invoices",
+              "description": "Customers: their own invoice. Staff: the households their department serves.",
+              "prompt": "Show me the invoices",
+              "render": "table",
+              "services": [
+                "analyst-iag",
+                "erp-mcp-iag"
+              ]
+            },
+            {
+              "id": "open-invoices",
+              "title": "Open invoices",
+              "description": "The same set, narrowed to what is still due.",
+              "prompt": "Which invoices are still open?",
+              "render": "table",
+              "services": [
+                "analyst-iag",
+                "erp-mcp-iag"
+              ]
+            },
+            {
+              "id": "invoice-detail",
+              "title": "Open an invoice",
+              "description": "By invoice id. Naming an id is not enough: the graph must connect you to it.",
+              "input": {
+                "label": "Invoice id",
+                "placeholder": "inv-hi-001"
+              },
+              "prompt": "Show me invoice {input}",
+              "render": "details",
+              "services": [
+                "analyst-iag",
+                "erp-mcp-iag"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "support",
+      "label": "Support",
+      "icon": "support",
+      "title": "Support",
+      "intro": "Your profile, our office, and access requests.",
+      "inbox": {
+        "audience": "staff"
+      },
+      "groups": [
+        {
+          "title": "Profile and office",
+          "actions": [
+            {
+              "id": "who-am-i",
+              "title": "My profile",
+              "description": "How the platform sees you: department and manager, if any.",
+              "prompt": "who am I",
+              "render": "details",
+              "services": [
+                "retriever-iag",
+                "mcp-iag"
+              ]
+            },
+            {
+              "id": "hq-weather",
+              "title": "Weather at SecureHome HQ",
+              "description": "Chicago, live from the graph's weather node and its resolvers.",
+              "prompt": "What's the weather at SecureHome HQ?",
+              "render": "weather",
+              "services": [
+                "weather-iag",
+                "mcp-iag"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
