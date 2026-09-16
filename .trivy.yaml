@@ -54,4 +54,10 @@ misconfiguration:
   terraform:
     exclude-downloaded-modules: true
 
-# TODO: add licensing restrictions, https://trivy.dev/latest/docs/references/configuration/config-file/#license-options
+pkg:
+  include-dev-deps: false
+
+license:
+  confidenceLevel: 0.9
+  full: true
+  ignored: []

@@ -19,3 +19,4 @@
 .trivy*.                @indykite/devx @indykite/ops
 .yamlfmt.yml            @indykite/devx @indykite/ops
 .yamllint.yml           @indykite/devx @indykite/ops
+LICENSES.*              @indykite/devx @indykite/ops
