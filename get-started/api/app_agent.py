@@ -81,7 +81,14 @@ def show_create_form():
     application_id = os.getenv("APPLICATION_ID", "")
 
     default_data = {
-        "api_permissions": ["Authorization", "Capture", "ContXIQ", "IKGRead", "EntityMatching", "ReadDataSchema"],
+        "api_permissions": [
+            "Authorization",
+            "Capture",
+            "ContXIQ",
+            "ReadAuthZConfigs",
+            "EntityMatching",
+            "ReadDataSchema",
+        ],
         "application_id": application_id,
         "description": "",
         "display_name": "",

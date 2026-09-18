@@ -1,0 +1,24 @@
+{
+  "name": "user-can-trigger-workflow",
+  "display_name": "User can trigger workflow",
+  "description": "Allow a user to trigger an agentic workflow when their department can trigger it or they were assigned to it directly.",
+  "status": "ACTIVE",
+  "tags": [],
+  "policy": {
+    "meta": {
+      "policy_version": "2.0-kbac"
+    },
+    "subject": {
+      "type": "User"
+    },
+    "actions": [
+      "CAN_TRIGGER"
+    ],
+    "resource": {
+      "type": "Workflow"
+    },
+    "condition": {
+      "cypher": "MATCH (subject:User)-[:WORKS_IN|CAN_TRIGGER*..3]->(resource:Workflow)"
+    }
+  }
+}

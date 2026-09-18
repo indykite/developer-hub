@@ -606,7 +606,7 @@
       "Authorization",
       "Capture",
       "ContXIQ",
-      "IKGRead",
+      "ReadAuthZConfigs",
       "EntityMatching",
       "ReadDataSchema"
     ],

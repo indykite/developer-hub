@@ -1,0 +1,20 @@
+{
+  "name": "get-self",
+  "display_name": "Get Self",
+  "description": "Retrieve the authenticated user's profile, department and manager. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-self\", \"input_params\": { } }.",
+  "status": "ACTIVE",
+  "query": {
+    "nodes": [
+      "subject.external_id",
+      "subject.property.name",
+      "subject.property.email",
+      "subject.property.title",
+      "department.property.name",
+      "manager.property.name"
+    ],
+    "relationships": [],
+    "aggregate_values": [
+      "agent"
+    ]
+  }
+}

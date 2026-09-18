@@ -1,0 +1,17 @@
+{
+  "name": "elements-token-introspect",
+  "display_name": "Elements Token Introspect",
+  "description": "Validates ID tokens from the demo identity provider and maps them to User nodes",
+  "ikg_node_type": "User",
+  "jwt_matcher": {
+    "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous",
+    "audience": "indykiteagent-mcp"
+  },
+  "claims_mapping": {
+    "email": {
+      "selector": "email"
+    }
+  },
+  "offline_validation": {},
+  "perform_upsert": true
+}

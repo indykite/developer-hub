@@ -1,0 +1,13 @@
+{
+  "name": "elements-agent",
+  "display_name": "Elements Agent",
+  "description": "App agent created by the elements mini app",
+  "api_permissions": [
+    "Authorization",
+    "Capture",
+    "ContXIQ",
+    "ReadAuthZConfigs",
+    "EntityMatching",
+    "ReadDataSchema"
+  ]
+}
