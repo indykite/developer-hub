@@ -1,0 +1,13 @@
+{
+  "subject": {
+    "type": "User",
+    "id": "joe"
+  },
+  "resource": {
+    "type": "Workflow",
+    "id": "wf1"
+  },
+  "action": {
+    "name": "CAN_TRIGGER"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "elements-mcp-server",
+  "display_name": "Elements MCP Server",
+  "description": "Binds the app agent and token introspect used to authenticate inbound MCP traffic",
+  "enabled": true,
+  "scopes_supported": [
+    "name",
+    "email"
+  ]
+}

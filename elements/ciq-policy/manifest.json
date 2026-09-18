@@ -1,0 +1,34 @@
+{
+  "name": "get-self",
+  "display_name": "Get Self",
+  "description": "Return the authenticated user, their department and their manager.",
+  "status": "ACTIVE",
+  "tags": [
+    "elements",
+    "self",
+    "profile"
+  ],
+  "policy": {
+    "meta": {
+      "policy_version": "1.0-ciq"
+    },
+    "subject": {
+      "type": "User"
+    },
+    "condition": {
+      "cypher": "MATCH (subject:User {external_id: $token.sub}) WITH subject OPTIONAL MATCH (subject)-[:WORKS_IN]->(department:Department) WITH subject, department OPTIONAL MATCH (subject)-[:REPORTS_TO]->(manager:User) WITH subject, department, manager, $token.act.sub AS agent",
+      "filter": []
+    },
+    "allowed_reads": {
+      "nodes": [
+        "subject.*",
+        "department.*",
+        "manager.*"
+      ],
+      "relationships": [],
+      "aggregate_values": [
+        "agent"
+      ]
+    }
+  }
+}

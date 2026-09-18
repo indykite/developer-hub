@@ -3,11 +3,11 @@ version: '3.9'
 
 services:
   iag-base:
-    # Pinned. Needs at least 2.21.x for MCP proxying (JARVIS_PROTECTED_AGENT_PROTOCOL:
-    # mcp), required by the mcp-iag and drive-mcp-iag services. (The published
-    # 2.0.x tags ignore the protocol and 404 every MCP method.) All gateways
-    # share this tag. See https://hub.docker.com/r/indykite/agent-gateway/tags.
-    image: indykite/agent-gateway:2.57.0
+    # Pinned to a version tag: the `latest` tag on Docker Hub lags behind the
+    # newest release. MCP proxying (JARVIS_PROTECTED_AGENT_PROTOCOL: mcp, used
+    # by mcp-iag, drive-mcp-iag and erp-mcp-iag) needs 2.21 or newer. All
+    # gateways share this tag. See https://hub.docker.com/r/indykite/agent-gateway/tags.
+    image: indykite/agent-gateway:2.58.0
     environment:
       JARVIS_SERVICE_LOG_LEVEL: debug
       JARVIS_SERVICE_ENVIRONMENT: demo

@@ -1,0 +1,12 @@
+{
+  "name": "weather",
+  "display_name": "Current Weather",
+  "description": "Fetches the current weather (temperature, apparent temperature, wind speed and weather code) for the latitude and longitude passed as input params, defaulting to London.",
+  "url": "https://api.open-meteo.com/v1/forecast?latitude={$latitude || 51.5072}&longitude={$longitude || -0.1276}&current=temperature_2m,apparent_temperature,wind_speed_10m,weather_code&timezone=auto",
+  "method": "GET",
+  "headers": {},
+  "request_payload": "",
+  "request_content_type": "JSON",
+  "response_content_type": "JSON",
+  "response_selector": ".current"
+}
