@@ -42,5 +42,3 @@ jobs:
     steps:
       - name: trivy
         uses: indykite/.github/.github/actions/trivy@master
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
