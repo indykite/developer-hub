@@ -1,8 +1,0 @@
----
-info:
-  name: get-customer-facing-documents
-  type: folder
-  seq: 2
-
-request:
-  auth: inherit

@@ -7,7 +7,7 @@ services:
     # newest release. MCP proxying (JARVIS_PROTECTED_AGENT_PROTOCOL: mcp, used
     # by mcp-iag, drive-mcp-iag and erp-mcp-iag) needs 2.21 or newer. All
     # gateways share this tag. See https://hub.docker.com/r/indykite/agent-gateway/tags.
-    image: indykite/agent-gateway:2.58.0
+    image: indykite/agent-gateway:2.65.1
     environment:
       JARVIS_SERVICE_LOG_LEVEL: debug
       JARVIS_SERVICE_ENVIRONMENT: demo

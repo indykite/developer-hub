@@ -1,8 +1,0 @@
----
-info:
-  name: get-decisions
-  type: folder
-  seq: 7
-
-request:
-  auth: inherit

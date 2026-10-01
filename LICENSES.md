@@ -2,7 +2,7 @@
 
 Working codes used in the library
 
-Generated at: 2026-09-18T01:25:45Z
+Generated at: 2026-10-01T08:03:26Z
 
 DO NOT EDIT!!
 
@@ -15,7 +15,7 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 | License | Classification | Severity | Count |
 | --- | --- | --- | ---: |
 | MIT | notice | LOW | 38 |
-| Apache-2.0 | notice | LOW | 16 |
+| Apache-2.0 | notice | LOW | 14 |
 | BSD-3-Clause | notice | LOW | 11 |
 | BSD-2-Clause | notice | LOW | 2 |
 | BeOpen | unknown | UNKNOWN | 2 |
@@ -25,28 +25,26 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 | Python-2.0 | notice | LOW | 2 |
 | BSD-0-Clause | unknown | UNKNOWN | 1 |
 
-**Total packages scanned:** 78
+**Total packages scanned:** 76
 
 ## Report Summary (by target)
 
 | Target | Type | Licenses |
 | --- | --- | ---: |
-| Loose File License(s) | - | 70 |
+| Loose File License(s) | - | 68 |
 | instant-stack/package-lock.json | npm | 4 |
 | music/package-lock.json | npm | 4 |
 
 ## Details
 
-### `Loose File License(s)` (-) -- 70 licenses
+### `Loose File License(s)` (-) -- 68 licenses
 
 | Package | License | Classification | Severity |
 | --- | --- | --- | --- |
 | LICENSE | Apache-2.0 | notice | LOW |
-| a2a/iag-demo/LICENSE | Apache-2.0 | notice | LOW |
 | a2a/iag-mcp-demo/LICENSE | Apache-2.0 | notice | LOW |
 | a2a/iag-token-exchange/LICENSE | Apache-2.0 | notice | LOW |
 | banking/LICENSE | Apache-2.0 | notice | LOW |
-| canbank-iag/LICENSE | Apache-2.0 | notice | LOW |
 | canbank/LICENSE | Apache-2.0 | notice | LOW |
 | capture/LICENSE | Apache-2.0 | notice | LOW |
 | get-started/LICENSE | Apache-2.0 | notice | LOW |
