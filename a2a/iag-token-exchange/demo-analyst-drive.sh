@@ -75,9 +75,12 @@ fi
 
 bold "3. DRIVE: full-text search through drive-mcp-iag (:8887, workflow wf-drive)"
 DRIVE="http://localhost:8887/mcp"
-H=(-H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream")
+# The gateway forwards only MCP revisions 2025-06-18, 2025-11-25 and 2026-07-28 and
+# requires the header on every request after initialize.
+MCP_PROTOCOL="2025-11-25"
+H=(-H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" -H "Mcp-Protocol-Version: $MCP_PROTOCOL")
 SID=$(curl -s -D - -o /dev/null "${H[@]}" -X POST "$DRIVE" \
-    -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"demo-script","version":"1.0"}}}' |
+    -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"$MCP_PROTOCOL\",\"capabilities\":{},\"clientInfo\":{\"name\":\"demo-script\",\"version\":\"1.0\"}}}" |
     grep -i mcp-session-id | tr -d '\r' | awk '{print $2}')
 if [ -z "$SID" ]; then
     echo "✗ MCP initialize failed — check: docker compose logs drive-mcp-iag drive-mcp"
@@ -85,7 +88,7 @@ if [ -z "$SID" ]; then
 fi
 echo "✓ MCP session: $SID"
 curl -s -o /dev/null "${H[@]}" -H "Mcp-Session-Id: $SID" -X POST "$DRIVE" \
-    -d '{"jsonrpc":"2.0","method":"initialized","params":{}}'
+    -d '{"jsonrpc":"2.0","method":"notifications/initialized","params":{}}'
 echo "✓ searching Google Drive for '$DRIVE_QUERY'..."
 curl -s -m 45 "${H[@]}" -H "Mcp-Session-Id: $SID" -X POST "$DRIVE" \
     -d "{\"jsonrpc\":\"2.0\",\"id\":3,\"method\":\"tools/call\",\"params\":{\"name\":\"search\",\"arguments\":{\"query\":\"$DRIVE_QUERY\"}}}" |

@@ -43,7 +43,10 @@ print(max(cands)[1] if cands else '')")
 }
 echo "✓ acquired (${#TOKEN} chars)"
 
-H=(-H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream")
+# The gateway forwards only MCP revisions 2025-06-18, 2025-11-25 and 2026-07-28 and
+# requires the header on every request after initialize.
+MCP_PROTOCOL="2025-11-25"
+H=(-H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" -H "Mcp-Protocol-Version: $MCP_PROTOCOL")
 
 parse() { python3 -c "
 import sys, json, re
@@ -54,7 +57,7 @@ $1"; }
 
 echo "- initialize"
 SID=$(curl -s -D - -o /dev/null "${H[@]}" -X POST "$DRIVE" \
-    -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"test-drive","version":"1.0"}}}' |
+    -d "{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"$MCP_PROTOCOL\",\"capabilities\":{},\"clientInfo\":{\"name\":\"test-drive\",\"version\":\"1.0\"}}}" |
     grep -i mcp-session-id | tr -d '\r' | awk '{print $2}')
 [ -z "$SID" ] && {
     echo "✗ initialize failed — docker compose logs drive-mcp-iag drive-mcp"
@@ -62,7 +65,7 @@ SID=$(curl -s -D - -o /dev/null "${H[@]}" -X POST "$DRIVE" \
 }
 echo "✓ session $SID"
 curl -s -o /dev/null "${H[@]}" -H "Mcp-Session-Id: $SID" -X POST "$DRIVE" \
-    -d '{"jsonrpc":"2.0","method":"initialized","params":{}}'
+    -d '{"jsonrpc":"2.0","method":"notifications/initialized","params":{}}'
 
 echo "- tools"
 curl -s -m 25 "${H[@]}" -H "Mcp-Session-Id: $SID" -X POST "$DRIVE" \

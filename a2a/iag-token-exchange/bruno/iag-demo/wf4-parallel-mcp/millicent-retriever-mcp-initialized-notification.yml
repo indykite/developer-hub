@@ -14,12 +14,14 @@ http:
       value: application/json
     - name: Mcp-Session-Id
       value: "{{wf4_millicent_retriever_session_id}}"
+    - name: Mcp-Protocol-Version
+      value: "2025-11-25"
   body:
     type: json
     data: |-
       {
         "jsonrpc": "2.0",
-        "method": "initialized",
+        "method": "notifications/initialized",
         "params": {}
       }
   auth:

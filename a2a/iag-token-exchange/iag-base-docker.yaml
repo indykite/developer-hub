@@ -12,7 +12,7 @@ services:
     # call; 2.52.1 made the gateway serve the baked :9080/healthz probe, so
     # the healthcheck works out of the box. All gateways share this tag.
     # See https://hub.docker.com/r/indykite/agent-gateway/tags.
-    image: indykite/agent-gateway:2.55.1
+    image: indykite/agent-gateway:2.65.1
     environment:
       JARVIS_SERVICE_LOG_LEVEL: debug
       JARVIS_SERVICE_ENVIRONMENT: demo

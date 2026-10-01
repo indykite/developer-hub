@@ -243,7 +243,7 @@ make new-analyst
 ```yaml
 services:
   iag-base:
-    image: indykite/agent-gateway:2.55.1   # or any newer tag from Docker Hub
+    image: indykite/agent-gateway:2.65.1   # or any newer tag from Docker Hub
 ```
 
 All gateways inherit this tag. `2.47.0` makes a gateway in token-service mode
@@ -262,7 +262,7 @@ If you are on Apple Silicon, add a `platform` attribute:
 ```yaml
 services:
   iag-base:
-    image: indykite/agent-gateway:2.55.1
+    image: indykite/agent-gateway:2.65.1
     platform: linux/amd64
 ```
 

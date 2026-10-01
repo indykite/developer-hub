@@ -7,7 +7,7 @@ WORKDIR /app
 # archived @modelcontextprotocol/server-gdrive reference server) so the build
 # depends only on its non-deprecated runtime deps, not the deprecated package.
 # supergateway is pinned; bump deliberately.
-RUN npm install -g supergateway@3.4.3 && npm cache clean --force
+RUN npm install -g supergateway@4.0.0 && npm cache clean --force
 
 # Install the vendored Drive server and its runtime dependencies.
 COPY vendor/ /app/vendor/

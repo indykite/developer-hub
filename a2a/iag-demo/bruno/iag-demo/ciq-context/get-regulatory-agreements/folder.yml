@@ -1,8 +1,0 @@
----
-info:
-  name: get-regulatory-agreements
-  type: folder
-  seq: 1
-
-request:
-  auth: inherit
