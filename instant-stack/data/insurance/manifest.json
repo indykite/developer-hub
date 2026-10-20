@@ -733,9 +733,41 @@
       "ContXIQ",
       "ReadAuthZConfigs",
       "EntityMatching",
-      "ReadDataSchema"
+      "ReadDataSchema",
+      "Audit"
     ],
     "credentials_expire_days": 180
+  },
+  "audit_signing": {
+    "name": "audit-signing-default",
+    "display_name": "Audit Signing",
+    "description": "Platform-managed key signs the project's tamper-proof audit chain",
+    "provider": "PLATFORM_MANAGED"
+  },
+  "event_sink": {
+    "name": "audit-events-pubsub",
+    "display_name": "Audit Events to Pub/Sub",
+    "description": "Delivers the project's audit events to Google Cloud Pub/Sub; delivered events are chained",
+    "include_cdc_events": false,
+    "providers": {
+      "pubsub-provider": {
+        "pubsub": {
+          "project_id": "${PUBSUB_GCP_PROJECT}",
+          "topic_name": "${PUBSUB_TOPIC}"
+        }
+      }
+    },
+    "routes": [
+      {
+        "provider_id": "pubsub-provider",
+        "route_id": "all-audit-events",
+        "display_name": "All Audit Events",
+        "stop_processing": true,
+        "event_type_key_values_filter": {
+          "event_type": "indykite.audit.*"
+        }
+      }
+    ]
   },
   "mcp_server": {
     "name": "securehome-mcp-server",

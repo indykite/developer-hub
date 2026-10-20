@@ -132,6 +132,42 @@
                 </div>
             </div>
 
+            <!-- Tamper-proof Audit Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Tamper-proof Audit</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Sign the project's audit events into a hash chain and verify it with IndyKite's public keys. Set both up <strong>before</strong> capturing: only events delivered by the event sink while audit signing is configured are chained. The App Agent needs the <code>Audit</code> API permission to read the chain.</p>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <a href="/api_audit_signing/create" class="card h-100 text-decoration-none">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Audit Signing</h6>
+                                    <p class="text-muted small mb-0">Switch the signed chain on with the platform-managed key.</p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="/api_event_sink/create" class="card h-100 text-decoration-none">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Event Sink</h6>
+                                    <p class="text-muted small mb-0">Deliver audit events to Google Cloud Pub/Sub; delivered events are chained.</p>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="/audit/" class="card h-100 text-decoration-none">
+                                <div class="card-body">
+                                    <h6 class="mb-2">Audit Trail</h6>
+                                    <p class="text-muted small mb-0">Load, verify and try to tamper with the chain; export it for the public verifier.</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Data Capture Card -->
             <div class="card mb-4">
                 <div class="card-header">

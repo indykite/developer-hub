@@ -5,9 +5,9 @@ The whole stack is provisioned from the manifest, so a run needs only an
 existing organization to create the project in - nothing else is assumed to
 exist except the run inputs (URL_ENDPOINTS, SA_TOKEN, ORGANIZATION_ID, and
 optionally DATASET to pick the data/<name>/ bundle). Steps run in dependency order:
-Project -> Application -> App Agent (+ credentials) -> Token Introspect ->
-MCP Server, then both captures (nodes + relationships), the KBAC policies,
-the external data resolvers, and each CIQ policy immediately followed by its
+Project -> Application -> App Agent (+ credentials) -> Audit Signing -> Event
+Sink (+ delivery check) -> Token Introspect -> MCP Server, then both captures
+(nodes + relationships), the KBAC policies, the external data resolvers, and each CIQ policy immediately followed by its
 knowledge query. Each payload reads the prior step's saved id from the
 environment (lazily, per step), so the create-chain threads through in one
 run. Each step POSTs the exact form payload the corresponding create form
@@ -36,11 +36,13 @@ from pathlib import Path
 
 import requests
 from api import _dataset
+from api.audit_signing import form_default as audit_signing_form_default
 from api.capture import _load_default_nodes
 from api.ciq_knowledge_query import _QUERY_DEFS
 from api.ciq_knowledge_query import _default_for_slot as _query_default_for_slot
 from api.ciq_policy import _POLICY_DEFS
 from api.ciq_policy import _default_for_slot as _policy_default_for_slot
+from api.event_sink import read_sink_health
 from api.external_data_resolver import _RESOLVER_DEFS
 from api.external_data_resolver import _default_for_slot as _resolver_default_for_slot
 from api.project import update_env_variable
@@ -79,6 +81,11 @@ IKG_POLL_DELAY_SECONDS = 5
 # The agent's permissions are written in the same transaction as the create, so
 # a short fixed pause before the first capture is enough.
 AGENT_SETTLE_SECONDS = 2
+# The platform checks a new sink's destination asynchronously and records a
+# failure as the provider's last_error. Watch for one this long before the
+# captures run; a clean window means no delivery error was reported.
+SINK_WATCH_SECONDS = 30
+SINK_POLL_DELAY_SECONDS = 5
 
 # Environment values the run cannot create itself, in checklist order.
 PREREQUISITES = [
@@ -86,9 +93,22 @@ PREREQUISITES = [
     ("SA_TOKEN", "Service-account token"),
     ("ORGANIZATION_ID", "Organization ID the project is created under"),
 ]
+# The event sink's destination lives in GCP and is created outside the run.
+# Without all three, the audit-signing and event-sink steps are left out: a
+# signing config without a sink chains nothing.
+AUDIT_KEYS = ["PUBSUB_GCP_PROJECT", "PUBSUB_TOPIC", "PUBSUB_CREDENTIALS_FILE"]
 OPTIONAL_KEYS = [
     ("DATASET", "Which data/<name>/ bundle to provision (default: canbank)"),
+    ("PUBSUB_GCP_PROJECT", "GCP project that owns the Pub/Sub topic - set all three to add audit signing + event sink"),
+    ("PUBSUB_TOPIC", "Pub/Sub topic the event sink publishes to"),
+    ("PUBSUB_CREDENTIALS_FILE", "Path to the publisher service-account key file"),
 ]
+
+
+def _audit_enabled():
+    """Whether the run adds audit signing + event sink: all PUBSUB_* keys set in .env."""
+    saved = dotenv_values(ENV_FILE) or {}
+    return all(saved.get(key) for key in AUDIT_KEYS)
 
 
 class Unauthorized(BaseModel):
@@ -203,6 +223,14 @@ def _mcp_server_payload():
     }
 
 
+def _audit_signing_payload():
+    return audit_signing_form_default()
+
+
+def _event_sink_payload():
+    return _dataset.event_sink_form_default(os.getenv("PROJECT_ID", ""))
+
+
 def _token_introspect_payload(index: int = 0):
     # Mirrors the /api_token_introspect/create form: JSON-valued fields are
     # posted as JSON strings, perform_upsert as a "true"/"false" string. Values
@@ -231,22 +259,30 @@ def _token_introspect_payload(index: int = 0):
 
 
 def _step(label, path, payload, env_keys, kind="create"):
-    return {"label": label, "path": path, "payload": payload, "env_keys": env_keys, "kind": kind}
+    return {"label": label, "path": path, "payload": payload, "env_keys": env_keys, "kind": kind, "critical": False}
 
 
-def build_steps():
-    """Return the ordered steps: token introspect, captures, KBAC, resolvers, then CIQ policy+query pairs."""
+def _critical(step):
+    """Mark a step whose failure stops the run instead of moving on to the next step."""
+    step["critical"] = True
+    return step
+
+
+def _label(cfg, prefix):
+    return f"{prefix}: {cfg.get('display_name') or cfg.get('name', '')}"
+
+
+# Getting-Started configs, in dependency order, so a run can start from an
+# empty project: project -> application -> app agent (+credentials) -> audit
+# signing + event sink -> token introspect -> mcp server. Each payload reads the
+# prior step's saved id from the environment (lazily, per step), so the chain
+# threads through. Each is added only when the manifest declares that section,
+# and is skip_existing-gated on the id it records.
+
+
+def _setup_steps():
+    """Project (+ IKG wait), application and app agent."""
     steps = []
-    # Getting-Started configs, in dependency order, so a run can start from an
-    # empty project: project -> application -> app agent (+credentials) ->
-    # token introspect -> mcp server. Each payload reads the prior step's saved
-    # id from the environment (lazily, per step), so the chain threads through.
-    # Each is added only when the manifest declares that section, and is
-    # skip_existing-gated on the id it records.
-
-    def _label(cfg, prefix):
-        return f"{prefix}: {cfg.get('display_name') or cfg.get('name', '')}"
-
     if _dataset.PROJECT:
         steps.append(
             _step(_label(_dataset.PROJECT, "Create project"), "/api_project/create", _project_payload, ["PROJECT_ID"]),
@@ -274,11 +310,48 @@ def build_steps():
                 ["APP_AGENT_ID", "APP_TOKEN"],
             ),
         )
+    return steps
+
+
+def _audit_steps():
+    """Audit signing, event sink and its delivery check - or none.
+
+    They come before anything that emits the events the audit chain should
+    show: only events produced while both exist, and that the sink's
+    destination accepted, are chained. Both are skipped unless the Pub/Sub
+    destination is configured (see AUDIT_KEYS). A failure here stops the run
+    (critical): continuing would capture data whose events can never be chained.
+    """
+    if not (_dataset.AUDIT_SIGNING and _dataset.EVENT_SINK and _audit_enabled()):
+        return []
+    return [
+        _critical(
+            _step(
+                _label(_dataset.AUDIT_SIGNING, "Create audit signing"),
+                "/api_audit_signing/create",
+                _audit_signing_payload,
+                ["AUDIT_SIGNING_ID"],
+            ),
+        ),
+        _critical(
+            _step(
+                _label(_dataset.EVENT_SINK, "Create event sink"),
+                "/api_event_sink/create",
+                _event_sink_payload,
+                ["EVENT_SINK_ID"],
+            ),
+        ),
+        _critical(_step("Check event sink delivery", None, None, ["EVENT_SINK_READY"], kind="sink")),
+    ]
+
+
+def _integration_steps():
+    """Token introspects, MCP server, then the App Agent settle pause before the first capture."""
     # One step per token-introspect config in the manifest (a list; a bare
     # object is treated as one entry). The first config's ID keeps the
     # TOKEN_INTROSPECT_ID name - the MCP server step binds to it - and later
     # ones record TOKEN_INTROSPECT_ID_<n> (see _dataset.token_introspect_env_key).
-    steps.extend(
+    steps = [
         _step(
             _label(
                 ti,
@@ -291,7 +364,7 @@ def build_steps():
             [_dataset.token_introspect_env_key(i)],
         )
         for i, ti in enumerate(_dataset.TOKEN_INTROSPECTS)
-    )
+    ]
     if _dataset.MCP_SERVER:
         steps.append(
             _step(
@@ -312,7 +385,12 @@ def build_steps():
                 kind="settle",
             ),
         )
-    steps += [
+    return steps
+
+
+def _data_steps():
+    """Both captures, the KBAC policies, the external data resolvers, then each CIQ policy + its query."""
+    steps = [
         _step(
             "Capture nodes",
             "/api_capture/create",
@@ -370,6 +448,11 @@ def build_steps():
             if query["slot"] == slot
         )
     return steps
+
+
+def build_steps():
+    """Return the ordered steps: setup, audit, integration (token introspect, MCP), then the data steps."""
+    return _setup_steps() + _audit_steps() + _integration_steps() + _data_steps()
 
 
 def missing_prerequisites():
@@ -508,23 +591,52 @@ def _settle_iter():
     yield "result", (True, f"waited {AGENT_SETTLE_SECONDS}s - agent permissions are assigned with the create")
 
 
+def _sink_iter():
+    """Watch the new event sink for a delivery error before anything is captured.
+
+    Yields ("progress", msg) while watching, then one ("result", (ok, detail)).
+    """
+    start = time.monotonic()
+    while True:
+        health = read_sink_health()
+        elapsed = int(time.monotonic() - start)
+        if not health["exists"]:
+            yield "result", (False, health["message"] or "event sink not found")
+            return
+        if health["errors"]:
+            first = health["errors"][0]
+            yield "result", (False, f"{first['provider']} ({first['kind']}): {first['last_error']}")
+            return
+        if elapsed >= SINK_WATCH_SECONDS:
+            update_env_variable("EVENT_SINK_READY", "true")
+            yield "result", (True, f"no delivery error reported in {elapsed}s")
+            return
+        yield "progress", f"watching the event sink for delivery errors ({elapsed}s/{SINK_WATCH_SECONDS}s)"
+        time.sleep(SINK_POLL_DELAY_SECONDS)
+
+
+def _create_iter(client, step):
+    """Create step: POST the form payload through the route handler, then judge the saved IDs."""
+    response = client.post(step["path"], data=step["payload"]())
+    yield "result", _assess_create(step, response.get_data(as_text=True))
+
+
+# Step kind -> runner(client, step). Each runner yields ("progress", detail)
+# while it works and exactly one ("result", (ok, detail)).
+_STEP_RUNNERS = {
+    "create": _create_iter,
+    "capture": _capture_iter,
+    "ikg": lambda _client, _step: _ikg_iter(),
+    "settle": lambda _client, _step: _settle_iter(),
+    "sink": lambda _client, _step: _sink_iter(),
+}
+
+
 def _execute_step(client, step):
     """Run one step, yielding ("substep", detail) progress and exactly one final ("result", (ok, detail))."""
     try:
-        if step["kind"] == "capture":
-            for kind, payload in _capture_iter(client, step):
-                yield ("substep", payload) if kind == "progress" else ("result", payload)
-            return
-        if step["kind"] == "ikg":
-            for kind, payload in _ikg_iter():
-                yield ("substep", payload) if kind == "progress" else ("result", payload)
-            return
-        if step["kind"] == "settle":
-            for kind, payload in _settle_iter():
-                yield ("substep", payload) if kind == "progress" else ("result", payload)
-            return
-        response = client.post(step["path"], data=step["payload"]())
-        yield "result", _assess_create(step, response.get_data(as_text=True))
+        for kind, payload in _STEP_RUNNERS[step["kind"]](client, step):
+            yield ("substep", payload) if kind == "progress" else ("result", payload)
     except Exception as exc:
         logger.exception("Provisioning step failed: %s", step["label"])
         yield "result", (False, str(exc))
@@ -577,7 +689,9 @@ def run_provisioning():
         counts = {"ok": 0, "failed": 0, "skipped": 0}
         for index, step in enumerate(steps, 1):
             event = {"type": "step", "index": index, "total": len(steps), "label": step["label"], "path": step["path"]}
-            if skip_existing and all(key in saved_ids for key in step["env_keys"]):
+            # The sink delivery check is never skipped: a saved EVENT_SINK_READY
+            # says the sink worked once, not that it still delivers.
+            if skip_existing and step["kind"] != "sink" and all(key in saved_ids for key in step["env_keys"]):
                 counts["skipped"] += 1
                 keys = ", ".join(step["env_keys"])
                 yield _format_event({**event, "status": "skipped", "detail": f"{keys} already set"})
@@ -591,6 +705,9 @@ def run_provisioning():
                     ok, detail = payload
             counts["ok" if ok else "failed"] += 1
             yield _format_event({**event, "status": "ok" if ok else "failed", "detail": detail})
+            if not ok and step["critical"]:
+                yield _format_event({"type": "done", "aborted": True, **counts})
+                return
         yield _format_event({"type": "done", "aborted": False, **counts})
 
     return Response(

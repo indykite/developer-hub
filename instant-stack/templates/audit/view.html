@@ -1,0 +1,381 @@
+{% extends "layouts/base.html" %}
+{% block title %}Audit Trail{% endblock %}
+
+{% block content %}
+<style>
+    .chain-strip {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+        overflow-x: auto;
+        padding: 0.5rem 0 1rem;
+    }
+    .chain-card {
+        flex: 0 0 250px;
+        border: 2px solid var(--ik-accent-success);
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        background: var(--ik-bg-tertiary);
+        color: var(--ik-text-primary);
+        font-size: 0.8rem;
+    }
+    .chain-card.bad { border-color: var(--ik-accent-danger); background: rgba(239, 68, 68, 0.12); }
+    .chain-link {
+        flex: 0 0 44px;
+        align-self: center;
+        text-align: center;
+        font-size: 1.4rem;
+        color: var(--ik-accent-success);
+    }
+    .chain-link.bad { color: var(--ik-accent-danger); }
+    .hash { font-family: var(--bs-font-monospace, monospace); font-size: 0.75rem; word-break: break-all; }
+    .check-row { display: flex; justify-content: space-between; gap: 0.5rem; }
+    .check-ok { color: var(--ik-accent-success); }
+    .check-bad { color: var(--ik-accent-danger); font-weight: 600; }
+    .verdict { font-size: 1.05rem; }
+    .pill { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 1rem; font-size: 0.8rem; margin-right: 0.35rem; }
+    .pill-ok { background: #d1fae5; color: #065f46; }
+    .pill-bad { background: #ffe4e6; color: #9f1239; }
+    .pill-wait { background: #e5e7eb; color: #374151; }
+</style>
+
+<main class="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                        <div>
+                            <h3 class="mb-1">Tamper-proof Audit Trail</h3>
+                            <p class="text-muted mb-2">Project <code>{{ project_id or "not provisioned" }}</code>. Every batch of audit events is hashed, linked to the batch before it, and signed by IndyKite. This page reads the chain through the Audit Log API and verifies it <strong>here</strong>, with the public keys only.</p>
+                            <div id="status-pills">
+                                <span class="pill {{ 'pill-ok' if has_audit_signing else 'pill-bad' }}">Audit signing {{ "configured" if has_audit_signing else "missing" }}</span>
+                                <span class="pill {{ 'pill-ok' if has_event_sink else 'pill-bad' }}" id="pill-sink">Event sink {{ "configured" if has_event_sink else "missing" }}</span>
+                                <span class="pill {{ 'pill-ok' if has_app_token else 'pill-bad' }}">App Agent {{ "credential set" if has_app_token else "credential missing" }}</span>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button class="btn btn-primary" id="btn-reload">Load &amp; verify</button>
+                            <button class="btn btn-secondary" id="btn-poke" title="Upserts one AuditProbe node through Capture">Add activity</button>
+                            <a class="btn btn-secondary disabled" id="btn-export" href="#" aria-disabled="true">Download export</a>
+                        </div>
+                    </div>
+                    {% if not has_audit_signing or not has_event_sink %}
+                        <div class="alert alert-warning mt-3 mb-0">
+                            Nothing is chained until the project has both an <a href="/api_audit_signing/create">audit signing</a> configuration and an <a href="/api_event_sink/create">event sink</a> whose destination accepts the events. Events from before that are never added.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <div id="verdict" class="verdict text-muted">Not loaded yet.</div>
+                    <div id="summary" class="small text-muted mt-1"></div>
+                    <div id="tamper-note" class="alert alert-info mt-3 mb-0 d-none"></div>
+                    <ul id="failures" class="small mt-2 mb-0 text-danger"></ul>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Chain</h5>
+                    <small class="text-muted">sequence 1 on the left; each <span class="check-ok">&#x2192;</span> is a <code>prev_hash</code> = previous <code>head_hash</code> link</small>
+                </div>
+                <div class="card-body">
+                    <div class="chain-strip" id="chain-strip"><span class="text-muted">-</span></div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow mb-4">
+                        <div class="card-header"><h5 class="mb-0">Try to tamper with it</h5></div>
+                        <div class="card-body">
+                            <p class="small text-muted">These change a <em>copy</em> of what was just loaded and re-run the same checks. The chain held by IndyKite cannot be changed from here, which is the point.</p>
+                            <div class="row g-2 align-items-end">
+                                <div class="col-sm-7">
+                                    <label class="form-label small" for="tamper-action">Change</label>
+                                    <select class="form-select" id="tamper-action">
+                                        <option value="edit-event">Edit one event</option>
+                                        <option value="edit-and-rehash">Edit one event and recompute every hash</option>
+                                        <option value="delete-batch">Delete a batch</option>
+                                        <option value="truncate-tail">Cut off the newest batches</option>
+                                        <option value="forge-checkpoint">Move a checkpoint</option>
+                                    </select>
+                                </div>
+                                <div class="col-sm-2">
+                                    <label class="form-label small" for="tamper-seq">At seq.</label>
+                                    <input class="form-control" id="tamper-seq" type="number" min="1" value="1">
+                                </div>
+                                <div class="col-sm-3 d-grid">
+                                    <button class="btn btn-danger" id="btn-tamper" disabled title="Load a consistent chain first">Tamper</button>
+                                </div>
+                            </div>
+                            <p class="small text-muted mt-3 mb-1" id="tamper-help"></p>
+                            <button class="btn btn-sm btn-secondary" id="btn-reset">Back to the verified chain</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow mb-4">
+                        <div class="card-header"><h5 class="mb-0">Checkpoints &amp; keys</h5></div>
+                        <div class="card-body">
+                            <div id="checkpoints" class="small text-muted">-</div>
+                            <div id="kids" class="small mt-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow mb-4">
+                <div class="card-header"><h5 class="mb-0">What this proves, and what it does not</h5></div>
+                <div class="card-body small">
+                    <ul class="mb-2">
+                        <li><strong>Any change</strong> to an event, a hash, the order, or a checkpoint is detected: hashes no longer link, or a signature no longer verifies under IndyKite's public key.</li>
+                        <li><strong>Re-hashing does not help a forger:</strong> SHA-256 can be recomputed by anyone, the ECDSA P-256 signatures cannot without the private key.</li>
+                        <li><strong>Completeness is yours to anchor:</strong> a chain with its newest batches cut off still verifies. Keep a checkpoint or the newest head you saw (this page remembers it in your browser) and compare.</li>
+                        <li><strong>Scope:</strong> platform events delivered by the project's event sink while audit signing is configured. Agent Gateway and Token Service audit records go to their own file or webhook and are not in this chain.</li>
+                        <li><strong>Keys:</strong> IndyKite's platform key signs today; customer-managed keys are not used for signing yet. Keep the JWKS with each export, since rotated keys leave the published set.</li>
+                    </ul>
+                    <p class="mb-0">Check an export yourself, without this app: unzip it and run the public <a href="https://developer.indykite.com/assets/downloads/audit-verify.py" target="_blank" rel="noopener">audit-verify.py</a> on the folder. See the Audit Log API, Audit Signing and Outbound Events guides on the IndyKite developer site.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+(function () {
+    "use strict";
+    var PROJECT = {{ project_id | tojson }};
+    var KEPT_HEAD_KEY = "audit-kept-head:" + PROJECT;
+    var CHECK_LABELS = {
+        sequence: "sequence",
+        link: "link to previous",
+        head_hash: "head hash",
+        manifest_signature: "manifest signature",
+        batch: "batch matches manifest",
+        data_hash: "events hash",
+        chain_hash: "chain hash",
+        batch_signature: "batch signature"
+    };
+    var TAMPER_HELP = {
+        "edit-event": "Changes one digit in an event timestamp. Expect: the events no longer hash to the signed value, so the events hash check fails.",
+        "edit-and-rehash": "A forger who recomputes every hash after the edit. Expect: hashes and links pass, every signature from there on fails.",
+        "delete-batch": "Removes one batch and its manifest. Expect: a sequence gap and a broken link.",
+        "truncate-tail": "Removes this batch and all newer ones. Expect: the chain still verifies - only the head you kept reveals it.",
+        "forge-checkpoint": "Points the newest checkpoint at another sequence. Expect: the checkpoint signature fails."
+    };
+
+    var el = function (id) { return document.getElementById(id); };
+    var verified = null;
+
+    function short(h) { return h ? h.slice(0, 10) + "…" + h.slice(-6) : "(empty)"; }
+    function esc(s) {
+        return String(s).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+    }
+    function keptHead() { try { return JSON.parse(localStorage.getItem(KEPT_HEAD_KEY) || "null"); } catch (e) { return null; } }
+    // The head this chain has at the kept sequence, when it differs from the kept one: a fork.
+    function forkedHead(r, kept) {
+        if (!kept) { return null; }
+        var entry = r.entries.find(function (e) { return e.sequence === kept.sequence; });
+        return entry && entry.head_hash !== kept.head ? entry.head_hash : null;
+    }
+    function keepHead(r) {
+        var kept = keptHead();
+        // Never replace the anchor with a chain that does not extend it.
+        if (forkedHead(r, kept)) { return; }
+        if (!kept || r.newest_sequence >= kept.sequence) {
+            try { localStorage.setItem(KEPT_HEAD_KEY, JSON.stringify({ sequence: r.newest_sequence, head: r.newest_head })); } catch (e) { /* storage unavailable */ }
+        }
+    }
+
+    function render(r) {
+        var kept = keptHead();
+        var behind = kept && r.newest_sequence < kept.sequence;
+        var fork = forkedHead(r, kept);
+        var verdict = el("verdict");
+        if (!r.ok) {
+            verdict.className = "verdict text-danger fw-bold";
+            verdict.textContent = "✗ Verification failed: " + r.failures.length + " check(s).";
+        } else if (fork) {
+            verdict.className = "verdict text-danger fw-bold";
+            verdict.textContent = "✗ Every signature checks out, but the head at sequence " + kept.sequence + " is " +
+                short(fork) + " while you kept " + short(kept.head) + ". This is a different chain (a fork).";
+        } else if (behind) {
+            verdict.className = "verdict text-warning fw-bold";
+            verdict.textContent = "⚠ Every check passes, but the chain ends at sequence " + r.newest_sequence +
+                " while you already saw sequence " + kept.sequence + ". Newer batches are missing.";
+        } else if (r.entries.length === 0) {
+            verdict.className = "verdict text-muted";
+            verdict.textContent = "The chain is empty - no events have been chained yet. Use “Add activity” and load again in a few seconds.";
+        } else {
+            verdict.className = "verdict text-success fw-bold";
+            verdict.textContent = "✓ Every hash, link and signature verified.";
+        }
+        el("summary").textContent = r.entries.length
+            ? r.entries.length + " batches · " + r.events + " events · " + r.checkpoints.length +
+              " checkpoints · newest head " + short(r.newest_head) +
+              (kept ? " · head you kept: seq " + kept.sequence + " " + short(kept.head) : "") +
+              (r.fetched_at ? " · loaded " + r.fetched_at : "")
+            : "";
+        el("failures").innerHTML = r.failures.map(function (f) { return "<li>" + esc(f) + "</li>"; }).join("");
+
+        var strip = el("chain-strip");
+        strip.innerHTML = "";
+        r.entries.forEach(function (e, i) {
+            if (i > 0) {
+                var link = document.createElement("div");
+                var linkBad = e.checks.link || e.checks.sequence;
+                link.className = "chain-link" + (linkBad ? " bad" : "");
+                link.textContent = linkBad ? "✖" : "→";
+                strip.appendChild(link);
+            }
+            var card = document.createElement("div");
+            card.className = "chain-card" + (e.ok ? "" : " bad");
+            var checks = Object.keys(CHECK_LABELS).filter(function (k) { return k in e.checks; }).map(function (k) {
+                var bad = e.checks[k];
+                return '<div class="check-row" title="' + esc(bad || "passed") + '"><span>' + CHECK_LABELS[k] +
+                    '</span><span class="' + (bad ? "check-bad" : "check-ok") + '">' + (bad ? "✗" : "✓") + "</span></div>";
+            }).join("");
+            card.innerHTML =
+                '<div class="d-flex justify-content-between"><strong>#' + e.sequence + "</strong><span class=\"text-muted\">" +
+                esc((e.created_at || "").replace("T", " ").slice(0, 19)) + "</span></div>" +
+                '<div class="mb-1">' + e.events + " event(s)</div>" +
+                '<div class="text-muted mb-2" style="min-height:2.2em">' + e.event_types.map(function (t) { return esc(t.replace("indykite.audit.", "")); }).join(", ") + "</div>" +
+                '<div class="hash" title="' + esc(e.prev_hash) + '">prev ' + short(e.prev_hash) + "</div>" +
+                '<div class="hash mb-2" title="' + esc(e.head_hash) + '">head ' + short(e.head_hash) + "</div>" + checks;
+            strip.appendChild(card);
+        });
+        if (!r.entries.length) { strip.innerHTML = '<span class="text-muted">-</span>'; }
+
+        el("checkpoints").innerHTML = r.checkpoints.length
+            ? '<table class="table table-sm mb-0"><thead><tr><th>Seq.</th><th>Head</th><th>Created</th><th></th></tr></thead><tbody>' +
+              r.checkpoints.map(function (c) {
+                  return "<tr><td>" + c.sequence + '</td><td class="hash">' + short(c.head_hash) + "</td><td>" +
+                      esc(c.created_at.replace("T", " ").slice(0, 19)) + "</td><td class=\"" + (c.error ? "check-bad" : "check-ok") +
+                      '" title="' + esc(c.error || "passed") + '">' + (c.error ? "✗" : "✓") + "</td></tr>";
+              }).join("") + "</tbody></table>"
+            : "No checkpoints yet - they are signed periodically over the newest head.";
+        el("kids").innerHTML = "Signing keys (JWKS <code>kid</code>): " + (r.kids.map(function (k) { return "<code>" + esc(k) + "</code>"; }).join(", ") || "-");
+
+        var seq = el("tamper-seq");
+        seq.max = Math.max(1, r.newest_sequence);
+        if (+seq.value > +seq.max) { seq.value = seq.max; }
+    }
+
+    function sinkPill(sink) {
+        if (!sink) { return; }
+        var pill = el("pill-sink");
+        if (!sink.exists) { pill.className = "pill pill-bad"; pill.textContent = "Event sink: " + (sink.message || "missing"); return; }
+        if (sink.errors.length) {
+            pill.className = "pill pill-bad";
+            pill.textContent = "Event sink error: " + sink.errors[0].last_error;
+            return;
+        }
+        pill.className = "pill pill-ok";
+        pill.textContent = "Event sink delivering";
+    }
+
+    // Tamper and export act on the snapshot this page displayed; a read that never
+    // settled has none, so both are disabled until a consistent load.
+    function setSnapshot(snapshotId) {
+        var exportLink = el("btn-export");
+        el("btn-tamper").disabled = !snapshotId;
+        el("btn-tamper").title = snapshotId ? "" : "Load a consistent chain first";
+        exportLink.classList.toggle("disabled", !snapshotId);
+        exportLink.setAttribute("aria-disabled", snapshotId ? "false" : "true");
+        exportLink.href = snapshotId ? "/audit/export?snapshot=" + encodeURIComponent(snapshotId) : "#";
+    }
+
+    function showError(msg) {
+        el("verdict").className = "verdict text-danger";
+        el("verdict").textContent = msg;
+    }
+
+    function load() {
+        el("btn-reload").disabled = true;
+        el("tamper-note").classList.add("d-none");
+        el("verdict").className = "verdict text-muted";
+        el("verdict").textContent = "Loading and verifying…";
+        return fetch("/audit/chain")
+            .then(function (resp) { return resp.json(); })
+            .then(function (r) {
+                if (r.error) { showError(r.error); return null; }
+                verified = r;
+                setSnapshot(r.snapshot_id);
+                render(r);
+                if (r.ok) { keepHead(r); }
+                return r;
+            })
+            .catch(function (e) { showError("Load failed: " + e); })
+            .finally(function () { el("btn-reload").disabled = false; });
+    }
+
+    function tamper() {
+        var action = el("tamper-action").value;
+        fetch("/audit/tamper", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: action, sequence: +el("tamper-seq").value, snapshot_id: verified && verified.snapshot_id })
+        })
+            .then(function (resp) { return resp.json(); })
+            .then(function (r) {
+                if (r.error) { showError(r.error); return; }
+                render(r);
+                var note = el("tamper-note");
+                note.textContent = "Tampered copy: " + r.tamper + ". Nothing was sent to IndyKite.";
+                note.classList.remove("d-none");
+            });
+    }
+
+    function poke() {
+        var btn = el("btn-poke");
+        btn.disabled = true;
+        var before = verified ? verified.newest_sequence : 0;
+        btn.textContent = "Writing…";
+        fetch("/audit/poke", { method: "POST" })
+            .then(function (resp) { return resp.json(); })
+            .then(function (p) {
+                if (p.status >= 300) { throw new Error("capture returned " + p.status); }
+                var tries = 0;
+                btn.textContent = "Waiting for the next batch…";
+                (function wait() {
+                    tries += 1;
+                    load().then(function (r) {
+                        if (r && r.newest_sequence > before) { btn.disabled = false; btn.textContent = "Add activity"; return; }
+                        if (tries >= 12) {
+                            btn.disabled = false;
+                            btn.textContent = "Add activity";
+                            showError("No new batch after 60s. Check the event sink pill above - only delivered events are chained.");
+                            return;
+                        }
+                        setTimeout(wait, 5000);
+                    });
+                })();
+            })
+            .catch(function (e) {
+                btn.disabled = false;
+                btn.textContent = "Add activity";
+                showError("Add activity failed: " + e.message);
+            });
+    }
+
+    el("btn-reload").addEventListener("click", load);
+    el("btn-tamper").addEventListener("click", tamper);
+    el("btn-poke").addEventListener("click", poke);
+    el("btn-reset").addEventListener("click", function () {
+        el("tamper-note").classList.add("d-none");
+        if (verified) { render(verified); }
+    });
+    el("tamper-action").addEventListener("change", function () { el("tamper-help").textContent = TAMPER_HELP[this.value]; });
+    el("tamper-help").textContent = TAMPER_HELP[el("tamper-action").value];
+    // Once per page open: the sink read is itself audited, so it is not repeated on every load.
+    {% if has_event_sink %}fetch("/api_event_sink/status").then(function (resp) { return resp.json(); }).then(sinkPill).catch(function () { /* pill keeps its server-rendered state */ });{% endif %}
+    {% if project_id and has_app_token %}load();{% endif %}
+})();
+</script>
+{% endblock %}
