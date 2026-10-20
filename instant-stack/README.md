@@ -113,6 +113,51 @@ nodes get a second ring, and clicking a node or relationship shows its
 properties with any provenance metadata. Clicking a node highlights its
 outgoing (amber) and incoming (blue) edges.
 
+### Audit Trail (tamper-proof audit)
+
+`/audit/` reads the project's signed audit chain through the Audit Log API and
+verifies it locally with IndyKite's public keys (JWKS):
+
+- the events hash of each batch;
+- each batch's link to the batch before it;
+- every signature, on batches, manifests and checkpoints.
+
+"Try to tamper with it" re-runs the same checks on an edited copy, to show which
+check catches which change. Nothing is sent to IndyKite. "Download export" saves
+the raw pages plus the JWKS in the layout the public
+[`audit-verify.py`](https://developer.indykite.com/assets/downloads/audit-verify.py)
+checks.
+
+Only platform events are chained, and only when:
+
+- the project has an **audit signing** configuration (`PLATFORM_MANAGED`);
+- an **event sink** delivered the event.
+
+Both are manifest sections (`audit_signing`, `event_sink`). When the three
+`PUBSUB_*` keys below are set, provisioning creates them right after the App
+Agent, before any capture. Otherwise both are skipped. Agent Gateway and Token
+Service audit records are not in the chain.
+
+The App Agent needs the `Audit` API permission, which is listed in every
+manifest. An agent created before it was added needs the permission added in
+the Hub, or a new agent.
+
+Prerequisites: a Pub/Sub topic and a publisher key. Set `PUBSUB_GCP_PROJECT`,
+`PUBSUB_TOPIC` and `PUBSUB_CREDENTIALS_FILE` in `.env` (see `.env.example`).
+
+```shell
+gcloud pubsub topics create indykite-audit-events --project=<gcp-project>
+gcloud iam service-accounts create ik-event-sink --project=<gcp-project>
+gcloud pubsub topics add-iam-policy-binding indykite-audit-events --project=<gcp-project> \
+  --member=serviceAccount:ik-event-sink@<gcp-project>.iam.gserviceaccount.com \
+  --role=roles/pubsub.publisher
+gcloud iam service-accounts keys create ~/secrets/ik-event-sink.json \
+  --iam-account=ik-event-sink@<gcp-project>.iam.gserviceaccount.com
+```
+
+See the Audit Log API, Audit Signing and Outbound Events guides on
+[developer.indykite.com](https://developer.indykite.com).
+
 ## Install and run
 
 - install pipenv

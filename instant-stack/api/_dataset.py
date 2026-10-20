@@ -13,7 +13,8 @@ Select the active dataset with the ``DATASET`` env var (default ``"canbank"``)::
 Sourced from the manifest (each migrated from the matching ``api/*.py`` module):
 CIQ knowledge queries, CIQ policies, external data resolvers, and the create-form
 defaults for project, application, app agent, token introspect, MCP server and
-the KBAC authorization policy. New sections follow the same pattern.
+the KBAC authorization policy, plus the audit-signing and event-sink configs.
+New sections follow the same pattern.
 """
 
 from __future__ import annotations
@@ -229,3 +230,51 @@ APPLICATION: dict = _MANIFEST.get("application", {})
 # --- Project (migrated from api/project.py) ---------------------------------
 # Static project form defaults; organization_id is supplied at runtime from env.
 PROJECT: dict = _MANIFEST.get("project", {})
+
+# --- Audit signing ----------------------------------------------------------
+# Static audit-signing form defaults; project_id is supplied at runtime from env.
+# The configuration is what switches the project's signed audit chain on.
+AUDIT_SIGNING: dict = _MANIFEST.get("audit_signing", {})
+
+# --- Event sink -------------------------------------------------------------
+# Static event-sink defaults (providers + routes). ${ENV_VAR} placeholders name
+# the destination (e.g. the Pub/Sub project and topic); the provider secret is
+# never in the manifest or the form - see attach_event_sink_secrets().
+EVENT_SINK: dict = _MANIFEST.get("event_sink", {})
+
+
+def event_sink_form_default(project_id: str = "") -> dict:
+    """Build the event-sink create-form defaults, placeholders resolved, secrets left out.
+
+    providers and routes are serialized as the JSON strings the create form
+    expects.
+    """
+    return {
+        "project_id": project_id,
+        "name": EVENT_SINK.get("name", ""),
+        "display_name": EVENT_SINK.get("display_name", ""),
+        "description": EVENT_SINK.get("description", ""),
+        "include_cdc_events": "true" if EVENT_SINK.get("include_cdc_events") else "false",
+        "providers": json.dumps(_resolve_env_placeholders(EVENT_SINK.get("providers", {})), indent=2),
+        "routes": json.dumps(EVENT_SINK.get("routes", []), indent=2),
+    }
+
+
+def attach_event_sink_secrets(providers: dict) -> list[str]:
+    """Add each provider's secret to *providers* in place; return what could not be attached.
+
+    A ``pubsub`` provider gets ``credentials_json`` from the service-account key
+    file named by PUBSUB_CREDENTIALS_FILE, read at call time so the key never
+    sits in .env, the manifest or the rendered form.
+    """
+    missing = []
+    key_file = os.getenv("PUBSUB_CREDENTIALS_FILE", "")
+    for provider_id, provider in providers.items():
+        if "pubsub" not in provider or provider["pubsub"].get("credentials_json"):
+            continue
+        key_path = Path(key_file).expanduser() if key_file else None
+        if key_path and key_path.is_file():
+            provider["pubsub"]["credentials_json"] = key_path.read_text()
+        else:
+            missing.append(f"{provider_id}: PUBSUB_CREDENTIALS_FILE is unset or not a file")
+    return missing

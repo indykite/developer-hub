@@ -1,8 +1,8 @@
 # Third-Party License Report
 
-Working codes used in the library
+This repository serves as a collection of independent code examples and small applications. It is designed to be a place where different projects can be hosted without being part of a single, unified codebase.
 
-Generated at: 2026-10-01T08:03:26Z
+Generated at: 2026-10-20T16:58:55Z
 
 DO NOT EDIT!!
 
@@ -14,9 +14,9 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 
 | License | Classification | Severity | Count |
 | --- | --- | --- | ---: |
-| MIT | notice | LOW | 38 |
+| MIT | notice | LOW | 39 |
 | Apache-2.0 | notice | LOW | 14 |
-| BSD-3-Clause | notice | LOW | 11 |
+| BSD-3-Clause | notice | LOW | 12 |
 | BSD-2-Clause | notice | LOW | 2 |
 | BeOpen | unknown | UNKNOWN | 2 |
 | CNRI-Python-GPL-Compatible | unknown | UNKNOWN | 2 |
@@ -25,19 +25,19 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 | Python-2.0 | notice | LOW | 2 |
 | BSD-0-Clause | unknown | UNKNOWN | 1 |
 
-**Total packages scanned:** 76
+**Total packages scanned:** 78
 
 ## Report Summary (by target)
 
 | Target | Type | Licenses |
 | --- | --- | ---: |
-| Loose File License(s) | - | 68 |
+| Loose File License(s) | - | 70 |
 | instant-stack/package-lock.json | npm | 4 |
 | music/package-lock.json | npm | 4 |
 
 ## Details
 
-### `Loose File License(s)` (-) -- 68 licenses
+### `Loose File License(s)` (-) -- 70 licenses
 
 | Package | License | Classification | Severity |
 | --- | --- | --- | --- |
@@ -66,6 +66,7 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 | jinja2 | BSD-3-Clause | notice | LOW |
 | markupsafe | BSD-3-Clause | notice | LOW |
 | pip | BSD-3-Clause | notice | LOW |
+| pycparser | BSD-3-Clause | notice | LOW |
 | python\_dateutil | BSD-3-Clause | notice | LOW |
 | python\_dotenv | BSD-3-Clause | notice | LOW |
 | werkzeug | BSD-3-Clause | notice | LOW |
@@ -80,6 +81,7 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 | alembic | MIT | notice | LOW |
 | annotated\_types | MIT | notice | LOW |
 | blinker | MIT | notice | LOW |
+| cffi | MIT | notice | LOW |
 | charset\_normalizer | MIT | notice | LOW |
 | croniter | MIT | notice | LOW |
 | dotenv | MIT | notice | LOW |

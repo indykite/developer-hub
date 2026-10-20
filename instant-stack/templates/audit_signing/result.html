@@ -1,0 +1,53 @@
+{% extends "layouts/base.html" %}
+{% block title %}Audit Signing Result{% endblock %}
+
+{% block content %}
+<main class="content">
+    <div class="row">
+        <div class="col-12 col-xl-10">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-body">
+                    <h3 class="mb-4">Audit Signing Result</h3>
+
+                    {% if status_code >= 200 and status_code < 300 %}
+                        <div class="alert alert-success" role="alert">
+                            <strong>Success!</strong> Audit signing created (Status Code: {{ status_code }})
+                            {% if audit_signing_id %}
+                                <hr>
+                                <p class="mb-0"><strong>Audit Signing ID:</strong> <code>{{ audit_signing_id }}</code></p>
+                                <p class="mb-0"><small class="text-muted">Saved to your .env file as AUDIT_SIGNING_ID</small></p>
+                            {% endif %}
+                        </div>
+                    {% elif status_code >= 400 and status_code < 500 %}
+                        <div class="alert alert-warning" role="alert">
+                            <strong>Client Error</strong> - Status Code: {{ status_code }}
+                        </div>
+                    {% elif status_code >= 500 %}
+                        <div class="alert alert-danger" role="alert">
+                            <strong>Server Error</strong> - Status Code: {{ status_code }}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info" role="alert">
+                            Status Code: {{ status_code }}
+                        </div>
+                    {% endif %}
+
+                    <div class="card">
+                        <div class="card-header">
+                            <strong>API Response</strong>
+                        </div>
+                        <div class="card-body">
+                            <pre style="max-height: 600px; overflow-y: auto;">{{ response_json | tojson(indent=4) }}</pre>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <a href="/api_event_sink/create" class="btn btn-primary">Next: Event Sink</a>
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

@@ -6,6 +6,8 @@ import os
 from api import _dataset
 from api.app_agent import api_app_agent
 from api.application import api_application
+from api.audit_signing import api_audit_signing
+from api.audit_view import api_audit
 from api.authorization_policy import api_authorization_policy
 from api.authzen import api_authzen
 from api.capture import api_capture
@@ -13,6 +15,7 @@ from api.ciq_execute import api_ciq_execute
 from api.ciq_knowledge_query import api_ciq_knowledge_query
 from api.ciq_policy import api_ciq_policy
 from api.data_schema import api_data_schema
+from api.event_sink import api_event_sink
 from api.external_data_resolver import api_external_data_resolver
 from api.graph_view import api_graph
 from api.mcp_server import api_mcp_server
@@ -53,6 +56,9 @@ logging.getLogger("api.mcp_server").setLevel(logging.DEBUG)
 logging.getLogger("api.provision").setLevel(logging.DEBUG)
 logging.getLogger("api.data_schema").setLevel(logging.DEBUG)
 logging.getLogger("api.graph_view").setLevel(logging.DEBUG)
+logging.getLogger("api.audit_signing").setLevel(logging.DEBUG)
+logging.getLogger("api.event_sink").setLevel(logging.DEBUG)
+logging.getLogger("api.audit_view").setLevel(logging.DEBUG)
 
 # Log that the app is starting
 logger.info("=" * 50)
@@ -92,6 +98,9 @@ app.register_api(api_external_data_resolver)
 app.register_api(api_provision)
 app.register_api(api_data_schema)
 app.register_api(api_graph)
+app.register_api(api_audit_signing)
+app.register_api(api_event_sink)
+app.register_api(api_audit)
 
 
 @app.get("/")
