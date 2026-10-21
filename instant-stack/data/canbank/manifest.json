@@ -866,7 +866,7 @@
     "description": "Banking application that consumes the IndyKite Knowledge Graph"
   },
   "project": {
-    "name": "banking-demo3",
+    "name": "banking-demo",
     "display_name": "Banking Demo",
     "description": "Banking demo project for IndyKite KBAC and ContX IQ",
     "region": "europe-west1",

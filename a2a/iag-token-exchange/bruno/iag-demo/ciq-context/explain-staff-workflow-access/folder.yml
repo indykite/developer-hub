@@ -1,0 +1,8 @@
+---
+info:
+  name: explain-staff-workflow-access
+  type: folder
+  seq: 11
+
+request:
+  auth: inherit

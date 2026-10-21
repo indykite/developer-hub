@@ -19,9 +19,20 @@ service:
   base_url: https://token-service.demo.local
 
 idp:
-  # Allow-list of what a token may be issued for (`aud` claim).
+  # Allow-list of what a token may be issued for (`aud` claim): every
+  # audience a subject token can carry plus every protected agent the
+  # gateways exchange for. A missing one is refused with invalid_target.
   audiences:
     - agent-gateway
+    - chatbot-mcp
+    - indykiteagent
+    - indykiteagent-2
+    - indykiteagent-3
+    - indykiteagent-4
+    - indykiteagent-mcp
+    - indykiteagent-drive
+    - indykiteagent-crm
+    - indykiteagent-erp
   # Delegation tokens are short-lived on purpose - nothing revokes them.
   token_ttl: 5m
   # act.type written into issued tokens; the IndyKite backend resolves the
@@ -31,31 +42,127 @@ idp:
   client_auth:
     type: client_secret_basic
     client_id: agent-gateway
-    client_secret: "" # generate a secret and mirror it as TOKEN_SERVICE_CLIENT_SECRET in .env
-  # First key signs; the rest stay published for rotation.
+    client_secret: "" # generate a secret and mirror it as TOKEN_SERVICE_CLIENT_SECRET in .env.<usecase>
+  # First key signs; the rest stay published for rotation. The PUBLIC half
+  # (kty/n/e/alg/kid/use) goes into instant-stack's TOKEN_SERVICE_PUBLIC_JWK
+  # so the platform's Token Introspect validates the delegations offline.
   signing_keys:
     - '{"alg":"RS256","kid":"<kid>","kty":"RSA","use":"sig","n":"<...>","e":"AQAB","d":"<PRIVATE - generate your own>"}'
 
 # Which incoming subject/actor tokens are accepted, and how they are verified.
-# Phase 1: tokens signed by the local demo IdP key (see mint.py in the session
-# scratchpad). Phase 2 adds the real IdP (idsvr) issuer with its jwks_uri.
-# NOTE: since jarvis c722ed066, `configurations` is a MAP keyed by the
-# configuration name (a `- name: x` list entry fails startup with
-# "'configurations[0][name]' expected a map or struct, got \"string\"").
+# `configurations` is a MAP keyed by the configuration name.
 token_introspection:
   configurations:
-    demo-idp:
+    # --- IdP (idsvr): one offline matcher per gateway actor audience ---
+    # The actor token is the gateway's own client-credentials token; the
+    # audience is the protected agent's IdP client id.
+    idsvr-actor-orchestrator:
       token_types:
-        - subject_token
         - actor_token
       matcher:
         type: jwt
-        issuer: https://demo-idp.local
-        audience: agent-gateway
+        issuer: https://idsvr.indykite.one/oauth/v2/oauth-anonymous
+        audience: indykiteagent
       validation:
         offline:
-          keys:
-            - '{"alg":"RS256","kid":"<idp-kid>","kty":"RSA","use":"sig","n":"<...>","e":"AQAB"}'
+          jwks_uri: https://idsvr.indykite.one/oauth/v2/oauth-anonymous/jwks
+    idsvr-actor-retriever:
+      token_types:
+        - actor_token
+      matcher:
+        type: jwt
+        issuer: https://idsvr.indykite.one/oauth/v2/oauth-anonymous
+        audience: indykiteagent-2
+      validation:
+        offline:
+          jwks_uri: https://idsvr.indykite.one/oauth/v2/oauth-anonymous/jwks
+    idsvr-actor-weather:
+      token_types:
+        - actor_token
+      matcher:
+        type: jwt
+        issuer: https://idsvr.indykite.one/oauth/v2/oauth-anonymous
+        audience: indykiteagent-3
+      validation:
+        offline:
+          jwks_uri: https://idsvr.indykite.one/oauth/v2/oauth-anonymous/jwks
+    idsvr-actor-analyst:
+      token_types:
+        - actor_token
+      matcher:
+        type: jwt
+        issuer: https://idsvr.indykite.one/oauth/v2/oauth-anonymous
+        audience: indykiteagent-4
+      validation:
+        offline:
+          jwks_uri: https://idsvr.indykite.one/oauth/v2/oauth-anonymous/jwks
+    idsvr-actor-mcp:
+      token_types:
+        - actor_token
+      matcher:
+        type: jwt
+        issuer: https://idsvr.indykite.one/oauth/v2/oauth-anonymous
+        audience: indykiteagent-mcp
+      validation:
+        offline:
+          jwks_uri: https://idsvr.indykite.one/oauth/v2/oauth-anonymous/jwks
+    idsvr-actor-drive:
+      token_types:
+        - actor_token
+      matcher:
+        type: jwt
+        issuer: https://idsvr.indykite.one/oauth/v2/oauth-anonymous
+        audience: indykiteagent-drive
+      validation:
+        offline:
+          jwks_uri: https://idsvr.indykite.one/oauth/v2/oauth-anonymous/jwks
+    idsvr-actor-crm:
+      token_types:
+        - actor_token
+      matcher:
+        type: jwt
+        issuer: https://idsvr.indykite.one/oauth/v2/oauth-anonymous
+        audience: indykiteagent-crm
+      validation:
+        offline:
+          jwks_uri: https://idsvr.indykite.one/oauth/v2/oauth-anonymous/jwks
+    idsvr-actor-erp:
+      token_types:
+        - actor_token
+      matcher:
+        type: jwt
+        issuer: https://idsvr.indykite.one/oauth/v2/oauth-anonymous
+        audience: indykiteagent-erp
+      validation:
+        offline:
+          jwks_uri: https://idsvr.indykite.one/oauth/v2/oauth-anonymous/jwks
+    # --- Fallback: any other IdP token (user logins, any audience) ---
+    # Opaque matchers catch what no jwt matcher above matched; validated
+    # online at the IdP introspection endpoint with the orchestrator client.
+    idsvr-online-subject:
+      token_types:
+        - subject_token
+      matcher:
+        type: opaque
+      validation:
+        online_oauth2:
+          introspection_endpoint: https://idsvr.indykite.one/oauth/v2/oauth-introspect
+          client_auth:
+            type: client_secret_basic
+            client_id: indykiteagent
+            client_secret: "" # ORCHESTRATOR_IDP_CLIENT_SECRET
+    idsvr-online-actor:
+      token_types:
+        - actor_token
+      matcher:
+        type: opaque
+      validation:
+        online_oauth2:
+          introspection_endpoint: https://idsvr.indykite.one/oauth/v2/oauth-introspect
+          client_auth:
+            type: client_secret_basic
+            client_id: indykiteagent
+            client_secret: "" # ORCHESTRATOR_IDP_CLIENT_SECRET
 
 # Audit: every exchange attempt (authorized or not) is delivered to the demo's
 # audit terminal - the same webhook the gateways use - so minting a delegation

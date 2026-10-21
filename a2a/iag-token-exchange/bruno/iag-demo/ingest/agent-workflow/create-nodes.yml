@@ -177,6 +177,27 @@ http:
             ]
           },
           {
+            "external_id": "wf-erp",
+            "type": "Workflow",
+            "is_identity": false,
+            "properties": [
+            ]
+          },
+          {
+            "external_id": "wf-erp-analyst",
+            "type": "Workflow",
+            "is_identity": false,
+            "properties": [
+            ]
+          },
+          {
+            "external_id": "wf-erp-console",
+            "type": "Workflow",
+            "is_identity": false,
+            "properties": [
+            ]
+          },
+          {
             "external_id": "indykiteagent",
             "type": "Agent",
             "is_identity": false,
@@ -213,6 +234,13 @@ http:
           },
           {
             "external_id": "indykiteagent-drive",
+            "type": "Agent",
+            "is_identity": false,
+            "properties": [
+            ]
+          },
+          {
+            "external_id": "indykiteagent-erp",
             "type": "Agent",
             "is_identity": false,
             "properties": [

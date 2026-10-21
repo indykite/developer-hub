@@ -1,0 +1,31 @@
+---
+info:
+  name: Create Explain Staff Workflow Access Query
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/knowledge-queries"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "explain-staff-workflow-access",
+          "display_name": "Explain Staff Workflow Access",
+          "description": "Authorization-path explainer for the console's why? cards: returns the staff path User -WORKS_IN-> Department -CAN_TRIGGER-> Workflow when it exists in the graph (empty data = no such path). Example: { \"id\": \"explain-staff-workflow-access\", \"input_params\": { \"subject_id\": \"millicent\", \"workflow_id\": \"wf1\" } }.",
+          "project_id": "{{project_id}}",
+          "policy_id": "{{explain_staff_workflow_access_policy}}",
+          "query": "{ \"nodes\": [ \"u.external_id\", \"u.property.name\", \"u.property.first_name\", \"d.external_id\", \"d.property.name\", \"wf.external_id\" ], \"relationships\": [  ], \"aggregate_values\": [ ] }",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

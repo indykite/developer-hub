@@ -19,15 +19,6 @@ logger = logging.getLogger(__name__)
 # LLM responses can take a long time; use 5 min default, configurable via env
 ORCHESTRATOR_TIMEOUT = float(os.getenv("ORCHESTRATOR_TIMEOUT", "300"))
 
-# Task-poll cadence. Fast by default so a ready answer is returned promptly;
-# env-tunable, falling back to the default on a non-numeric value, with a 0.1s
-# floor so a misconfigured value can't yield a zero/negative interval.
-try:
-    ORCHESTRATOR_POLL_INTERVAL = float(os.getenv("ORCHESTRATOR_POLL_INTERVAL", "0.5"))
-except ValueError:
-    ORCHESTRATOR_POLL_INTERVAL = 0.5
-ORCHESTRATOR_POLL_INTERVAL = max(0.1, ORCHESTRATOR_POLL_INTERVAL)
-
 
 def _extract_text_from_response(result: dict) -> str:  # noqa: C901
     """Extract plain text from a JSON-RPC result dict (Task or Message shape)."""
@@ -162,12 +153,10 @@ async def _send_text_async(  # noqa: C901,PLR0911,PLR0912  # skipcq: PY-R1000
             return "I was unable to process your request, check the audit trace"
 
         logger.info("Polling task: %s", task_id)
-        # Cap the interval at the timeout so a single sleep can't overshoot the
-        # budget when the interval is misconfigured larger than the timeout, but
-        # keep the 0.1s floor so the divisor stays positive (e.g. timeout 0);
-        # max_retries floored at 1 so a small timeout still polls at least once.
-        poll_interval = max(0.1, min(ORCHESTRATOR_POLL_INTERVAL, ORCHESTRATOR_TIMEOUT))
-        max_retries = max(1, int(ORCHESTRATOR_TIMEOUT / poll_interval))
+        # Poll fast: the orchestrator's answer is often ready within seconds,
+        # and a coarse interval adds straight latency to every user prompt.
+        poll_interval = 0.5
+        max_retries = int(ORCHESTRATOR_TIMEOUT / poll_interval)
 
         for _ in range(max_retries):
             await asyncio.sleep(poll_interval)
@@ -209,11 +198,7 @@ async def stream_to_orchestrator(
     context_id: str | None = None,
     access_token: str | None = None,
 ):
-    """Send the user's text to the orchestrator gateway and yield progress events.
-
-    Yields dicts of shape {"type": "done"|"error", "text": ..., "context_id": ...}
-    for the chat SSE stream to forward to the browser.
-    """
+    """Send a prompt to the orchestrator gateway and yield the result as a single 'done' event."""
     url = f"http://{host}:{port}"
     ctx_id = context_id or str(uuid.uuid4())
 

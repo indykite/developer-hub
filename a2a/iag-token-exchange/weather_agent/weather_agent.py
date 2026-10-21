@@ -1,11 +1,13 @@
 # Copyright (c) 2026 IndyKite
 """Weather agent - A2A-compliant agent that returns current weather by city.
 
-For requests targeting CanBank's headquarters ("HQ", "headquarters", "office") the
-agent calls the canbank `get-hq-weather` knowledge query through the IndyKite MCP
-server. The query reads the `hq_weather` Weather node, which carries `latitude` and
-`longitude` properties feeding the `weather` and `weather-units` external data
-resolvers. For any other city the agent falls back to a direct open-meteo call.
+For requests targeting the organization's headquarters (phrases listed in
+WEATHER_HQ_KEYWORDS, e.g. "HQ", "headquarters", "office") the agent calls the
+subject dataset's HQ-weather knowledge query (CIQ_QUERY_HQ_WEATHER) through
+the IndyKite MCP server. The query reads the `hq_weather` Weather node, which
+carries `latitude` and `longitude` properties feeding the `weather` and
+`weather-units` external data resolvers. For any other city the agent falls
+back to a direct open-meteo call.
 """
 
 import asyncio
@@ -87,7 +89,15 @@ MCP_SETUP_TIMEOUT = float(os.getenv("MCP_SETUP_TIMEOUT", "20"))
 # the old behavior of a fresh session per request.
 MCP_SESSION_TTL = float(os.getenv("MCP_SESSION_TTL", "300"))
 CIQ_QUERY_HQ_WEATHER = os.getenv("CIQ_QUERY_HQ_WEATHER", "").strip() or "get-hq-weather"
-_HQ_KEYWORDS = ("hq", "headquarters", "head office", "head-office", "canbank office", "the office")
+# Subject-specific vocabulary (see usecases/<subject>/usecase.env): phrases
+# that route to the HQ knowledge-query path, and the display name used when
+# the graph does not supply a location.
+WEATHER_HQ_NAME = os.getenv("WEATHER_HQ_NAME", "").strip() or "HQ"
+_HQ_KEYWORDS = tuple(
+    kw.strip().lower()
+    for kw in (os.getenv("WEATHER_HQ_KEYWORDS", "") or "hq,headquarters,head office,head-office,the office").split(",")
+    if kw.strip()
+)
 _LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
 logging.basicConfig(
@@ -160,16 +170,16 @@ weather_card = AgentCard(
             id="current-weather",
             name="Current Weather",
             description=(
-                "Get current weather conditions for a city. CanBank HQ requests "
+                f"Get current weather conditions for a city. {WEATHER_HQ_NAME} requests "
                 "(prompts mentioning HQ, headquarters or office) are resolved through "
-                "the IndyKite knowledge graph via the get-hq-weather query."
+                f"the IndyKite knowledge graph via the {CIQ_QUERY_HQ_WEATHER} query."
             ),
             tags=["weather", "forecast", "temperature", "hq", "ciq"],
             examples=[
                 "What's the weather in London?",
                 "Current weather in New York",
                 "How warm is it in Oslo right now?",
-                "What's the weather at CanBank HQ?",
+                f"What's the weather at {WEATHER_HQ_NAME}?",
                 "Current conditions at the office",
             ],
             input_modes=["text/plain"],
@@ -289,7 +299,7 @@ def _extract_city(prompt: str) -> str:
 
 
 def _is_hq_request(prompt: str) -> bool:
-    """Return True if the user is asking about CanBank's headquarters weather."""
+    """Return True if the user is asking about the organization's headquarters weather."""
     if not prompt:
         return False
     lowered = prompt.lower()
@@ -504,7 +514,7 @@ class _McpSessionEntry:
         if self.conn is not None and self.conn.client is not None:
             self.conn.client.headers.update(headers)
 
-    async def ping(self) -> bool:  # skipcq: PY-R1000
+    async def ping(self) -> bool:
         """Probe the cached session before reuse; False means rebuild."""
         if self.conn is None or self.conn.result is None:
             return False
@@ -676,7 +686,7 @@ def _format_exception_chain(exc: BaseException) -> str:
 
 
 async def _fetch_hq_weather_via_ciq(access_token: str) -> str:
-    """Run the canbank get-hq-weather query and format the standard weather sentence."""
+    """Run the subject's HQ-weather query and format the standard weather sentence."""
     async with _mcp_session(access_token) as session:
         result = await session.call_tool(
             "ciq_execute",
@@ -688,7 +698,7 @@ async def _fetch_hq_weather_via_ciq(access_token: str) -> str:
         msg = f"ciq_execute({CIQ_QUERY_HQ_WEATHER}) returned no rows: {_format_call_tool_result(result)[:300]}"
         raise RuntimeError(msg)
 
-    location = nodes.get("weather.property.location") or "CanBank HQ"
+    location = nodes.get("weather.property.location") or WEATHER_HQ_NAME
     current = nodes.get("weather.property.current")
     units = nodes.get("weather.property.units")
     if not isinstance(current, dict) or not isinstance(units, dict):
@@ -751,16 +761,11 @@ async def _fetch_current_weather(city: str) -> str:
 
 
 class WeatherExecutor(AgentExecutor):
-    async def execute(  # noqa: D102  # skipcq: PYL-R0201
-        self,
-        context: RequestContext,
-        event_queue: EventQueue,
-    ) -> None:
+    async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:  # noqa: D102
         access_token = _get_access_token_from_context(context)
         _current_ik_token.set(_get_ik_token_from_context(context))
         if not access_token:
             raise HTTPException(status_code=401, detail="Authorization required")
-
         # Demo feature: the short-lived delegation token is intentionally
         # surfaced in the console audit terminal to show the exchange chain;
         # logs carry only a redacted fingerprint to avoid credential leaks.
@@ -785,9 +790,10 @@ class WeatherExecutor(AgentExecutor):
         )
 
         is_hq = _is_hq_request(prompt)
-        # When the user asked about HQ, _extract_city would yield e.g. "CanBank HQ"
-        # which the geocoder can't resolve. Use DEFAULT_CITY for the HQ fallback so
-        # the user still gets weather data when the CIQ path is unavailable.
+        # When the user asked about HQ, _extract_city would yield e.g. the HQ
+        # display name, which the geocoder can't resolve. Use DEFAULT_CITY for
+        # the HQ fallback so the user still gets weather data when the CIQ
+        # path is unavailable.
         city = DEFAULT_CITY if is_hq else _extract_city(prompt)
         use_ciq = is_hq and bool(MCP_SERVER_URL)
         try:
@@ -826,12 +832,7 @@ class WeatherExecutor(AgentExecutor):
         )
         _logger.info("Weather response: %s", result_text[:200])
 
-    # skipcq: PYL-R0201 - AgentExecutor interface override; must stay an instance method
-    async def cancel(  # noqa: D102  # skipcq: PYL-R0201
-        self,
-        context: RequestContext,
-        event_queue: EventQueue,
-    ) -> None:
+    async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:  # noqa: D102
         await event_queue.enqueue_event(
             TaskStatusUpdateEvent(
                 task_id=context.task_id,

@@ -1,0 +1,30 @@
+---
+info:
+  name: Create Staff CAN_VIEW Invoice Policy
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "staff-can-view-invoice",
+          "display_name": "Staff can view invoice",
+          "description": "A staff user may view the invoices of customers their department serves.",
+          "project_id": "{{project_id}}",
+          "policy": "{ \"meta\": { \"policy_version\": \"2.0-kbac\" }, \"subject\": { \"type\": \"User\" }, \"actions\": [ \"CAN_VIEW\" ], \"resource\": { \"type\": \"Invoice\" }, \"condition\": { \"cypher\": \"MATCH (subject:User)-[:WORKS_IN]->(:Department)-[:SERVES]->(:Customer)-[:HAS_INVOICE]->(resource:Invoice)\" } }",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,31 @@
+---
+info:
+  name: Execute Get HQ Weather Query
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/contx-iq/v1/execute"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: X-IK-ClientKey
+      value: "{{agent_token}}"
+  body:
+    type: json
+    data: |-
+      {
+          "id": "get-hq-weather",
+          "input_params": {
+          }
+      }
+  auth:
+    type: bearer
+    token: "{{user_token}}"
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,33 @@
+---
+info:
+  name: Execute Explain Direct Workflow Access Query
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/contx-iq/v1/execute"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "id": "explain-direct-workflow-access",
+          "input_params": {
+            "subject_id": "millicent",
+            "workflow_id": "wf1"
+          }
+      }
+  auth:
+    type: apikey
+    key: X-IK-ClientKey
+    value: "{{agent_token}}"
+    placement: header
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

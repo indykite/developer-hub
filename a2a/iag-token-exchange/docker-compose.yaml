@@ -1,21 +1,25 @@
 ---
 
 # Build images with
-#   docker build -t chatbot ./chatbot
-#   docker build -t orchestrator-agent ./orchestrator_agent
-#   docker build -t retriever-agent ./retriever_agent
-#   docker build -t weather-agent ./weather_agent
+#   docker build -t chatbot:token-exchange ./chatbot
+#   docker build -t orchestrator-agent:token-exchange ./orchestrator_agent
+#   docker build -t retriever-agent:token-exchange ./retriever_agent
+#   docker build -t weather-agent:token-exchange ./weather_agent
 #
-# or use the make command
+# or use the make command. The token-exchange tag keeps these images apart
+# from iag-mcp-demo's :latest builds of the same service names.
 
 services:
   # Web UI
   chatbot:
-    image: chatbot:latest
+    image: chatbot:token-exchange
     #    platform: linux/amd64
     #    build:
     #      context: .
     #      dockerfile: ./chatbot/Dockerfile
+    # Usecase branding (ORG_NAME/ORG_TAGLINE) so the console adapts per usecase.
+    env_file:
+      - ./usecases/${USECASE:-canbank}/usecase.env
     ports:
       - "${CHATBOT_PORT}:${CHATBOT_PORT}"
     networks:
@@ -26,8 +30,14 @@ services:
       - mcp-iag-network
       - analyst-iag-network
       - drive-mcp-iag-network
+      # Membership in every agent network lets the agents' exchanged-token
+      # webhooks reach http://chatbot:3000 (harmless when a profile is off).
+      - crm-iag-network
+      - erp-mcp-iag-network
     volumes:
       - flask_session_data:/tmp/flask_session
+      # App layer of the console (sections, action cards, prompts) - usecase data.
+      - ./usecases/${USECASE:-canbank}/app.json:/app/usecase-app.json:ro
     environment:
       CHATBOT_PORT: ${CHATBOT_PORT}
       ORCHESTRATOR_HOST: ${IAG_ORCHESTRATOR_HOST}
@@ -41,26 +51,51 @@ services:
       CHATBOT_REDIRECT_URL: http://${CHATBOT_HOST}:${CHATBOT_PORT}/auth/callback
       FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
       LOG_LEVEL: ${LOG_LEVEL}
+      # "Explain the decision" (why? cards): the chatbot runs the two explain
+      # CIQ queries against the platform with the app-agent credentials.
+      # Feature hidden when the query ids are unset. The map derives a DENY
+      # card's workflow id from its gateway name (deny reasons don't carry it).
+      INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
+      APP_AGENT_CREDENTIALS_TOKEN: ${APP_AGENT_CREDENTIALS_TOKEN}
+      # App layer staff check: a knowledge query run on the platform's MCP
+      # server as the logged-in user (app.json staff_check).
+      MCP_SERVER_URL: ${MCP_SERVER_URL}
+      EXPLAIN_STAFF_QUERY_ID: ${EXPLAIN_STAFF_QUERY_ID:-}
+      EXPLAIN_DIRECT_QUERY_ID: ${EXPLAIN_DIRECT_QUERY_ID:-}
+      EXPLAIN_WORKFLOW_MAP: >-
+        orchestrator-iag=${WORKFLOW_ID},retriever-iag=${WORKFLOW_ID},
+        mcp-iag=${WORKFLOW_ID},weather-iag=${WEATHER_WORKFLOW_ID:-},
+        analyst-iag=${ANALYST_WORKFLOW_ID:-},crm-iag=${CRM_WORKFLOW_ID:-},
+        drive-mcp-iag=${DRIVE_WORKFLOW_ID:-},erp-mcp-iag=${ERP_WORKFLOW_ID:-}
+      # Architecture page (/static/architecture.html): badge the active
+      # usecase and dim the drive/crm/erp groups when their profile is off.
+      USECASE: ${USECASE:-canbank}
+      COMPOSE_PROFILES: ${COMPOSE_PROFILES:-}
+      # Deny -> remediate -> allow: gateways whose DENY cards offer a
+      # one-click CAN_TRIGGER grant, and the workflow bundle one click writes
+      # (empty = feature off). The grant is guarded by a live AuthZEN
+      # self-check on the logged-in user.
+      AUTHZEN_SUBJECT_TYPES: ${AUTHZEN_SUBJECT_TYPES:-User}
+      GRANT_WORKFLOW_MAP: ${GRANT_WORKFLOW_MAP:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     command: python app.py --host 0.0.0.0 --port ${CHATBOT_PORT}
 
-  # IndyKite Token Service - the issuer of exchanged (delegation) tokens. The
-  # gateways call its /oauth2/token instead of exchanging at the external IdP;
-  # the delegated token then travels in X-IK-Token beside the user's untouched
-  # Authorization header (policies read it as $ik_token). See token-service/.
+  # IndyKite Token Service - the issuer of exchanged (delegation) tokens. Every
+  # gateway calls its /oauth2/token instead of exchanging at the external IdP
+  # (JARVIS_TOKEN_SERVICE_* in iag-base-docker.yaml); the delegated token then
+  # travels in X-IK-Token beside the user's untouched Authorization header
+  # (policies read it as $ik_token). See token-service/.
   token-service:
-    # Official image (published 2026-09-03); pin the tag like the gateways
-    # pin agent-gateway in iag-base-docker.yaml.
-    # See https://hub.docker.com/r/indykite/token-service/tags.
+    # Official image; pin the tag like the gateways pin agent-gateway in
+    # iag-base-docker.yaml. See https://hub.docker.com/r/indykite/token-service/tags.
     image: indykite/token-service:1.0.0@sha256:a1248b73ab22fb939e533455a89468b7112b2b938486d8feca818e17776a97e2
     # The image is linux/amd64 only - request it explicitly so arm64 hosts
     # (Apple Silicon) pull it under emulation instead of failing with
     # "no matching manifest".
     platform: linux/amd64
-    # The image bakes a HEALTHCHECK on :9080/healthz, and since 1.0.0 the
-    # token-service binary does serve it - but probe the real OIDC endpoint
-    # instead: it proves the service actually loaded its config and serves
+    # The image bakes a HEALTHCHECK on :9080/healthz; probe the real OIDC
+    # endpoint instead: it proves the service loaded its config and serves
     # traffic on 8102, not just that the healthcheck server is up.
     healthcheck:
       test: ["CMD", "/bin/http_health_probe", "http://localhost:8102/.well-known/openid-configuration"]
@@ -69,6 +104,9 @@ services:
       start_period: 10s
     ports:
       - "${TOKEN_SERVICE_PORT:-8102}:8102"
+    # Member of every gateway network: each gateway exchanges and introspects
+    # here (the profile-gated crm/erp networks exist even when their profile
+    # is off).
     networks:
       - orchestrator-iag-network
       - retriever-iag-network
@@ -76,6 +114,8 @@ services:
       - analyst-iag-network
       - mcp-iag-network
       - drive-mcp-iag-network
+      - crm-iag-network
+      - erp-mcp-iag-network
     volumes:
       # Holds the private signing key + client secret - gitignored; create it
       # from token-service/token-service.example.yaml.
@@ -98,26 +138,22 @@ services:
       JARVIS_PROTECTED_AGENT_BASE_URL: http://${ORCHESTRATOR_HOST}:${ORCHESTRATOR_PORT}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${ORCHESTRATOR_IDP_CLIENT_ID}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${ORCHESTRATOR_IDP_CLIENT_SECRET}
-      # Token Service mode (gateway >= 2.47.0): delegation minted at the
-      # self-hosted Token Service; the user's token stays in Authorization,
-      # the chain travels in X-IK-Token and nests hop by hop. Comment the
-      # block out to fall back to the classic IdP exchange.
-      JARVIS_TOKEN_SERVICE_BASE_URL: ${TOKEN_SERVICE_BASE_URL:-http://token-service:8102}
-      JARVIS_TOKEN_SERVICE_EXCHANGE_ENDPOINT: "oauth2/token"
-      JARVIS_TOKEN_SERVICE_INTROSPECT_ENDPOINT: "oauth2/introspect"
-      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_TYPE: client_secret_basic
-      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_ID: ${TOKEN_SERVICE_CLIENT_ID:-agent-gateway}
-      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_SECRET: ${TOKEN_SERVICE_CLIENT_SECRET}
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]
 
   orchestrator:
-    image: orchestrator-agent:latest
+    image: orchestrator-agent:token-exchange
     #    platform: linux/amd64
     #    build:
     #      context: .
     #      dockerfile: ./orchestrator_agent/Dockerfile
+    # Usecase bundle: domain vocabulary (env) + skills (volume). Switch demos
+    # with USECASE=<name> in .env; see usecases/README.md.
+    env_file:
+      - ./usecases/${USECASE:-canbank}/usecase.env
+    volumes:
+      - ./usecases/${USECASE:-canbank}/skills/orchestrator:/app/skills:ro
     ports:
       - "${ORCHESTRATOR_PORT}:${ORCHESTRATOR_PORT}"
     networks:
@@ -125,6 +161,7 @@ services:
       - retriever-iag-network
       - weather-iag-network
       - analyst-iag-network
+      - crm-iag-network
     environment:
       ADVERTISED_HOST: ${ORCHESTRATOR_HOST}
       ORCHESTRATOR_PORT: ${ORCHESTRATOR_PORT}
@@ -137,6 +174,13 @@ services:
       # through the analyst gateway; leave empty to disable the Drive tool.
       ANALYST_HOST: ${IAG_ANALYST_HOST}
       ANALYST_PORT: ${IAG_ANALYST_PORT}
+      # Routes query_crm (console -> orchestrator -> crm-iag -> crm agent ->
+      # Salesforce) through the CRM gateway; leave empty to disable the tool.
+      CRM_HOST: ${IAG_CRM_HOST:-}
+      CRM_PORT: ${IAG_CRM_PORT:-8888}
+      # Enables query_erp (invoices via the analyst's erp_* backend); set
+      # true in the usecase env once the erp profile + backend are wired.
+      ERP_TOOL_ENABLED: ${ERP_TOOL_ENABLED:-}
       GEMINI_ENABLED: ${GEMINI_ENABLED}
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       GEMINI_MODEL: ${GEMINI_MODEL}
@@ -164,23 +208,20 @@ services:
       JARVIS_PROTECTED_AGENT_BASE_URL: http://${RETRIEVER_HOST}:${RETRIEVER_PORT}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${RETRIEVER_IDP_CLIENT_ID}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${RETRIEVER_IDP_CLIENT_SECRET}
-      # Token Service mode (gateway >= 2.47.0) - see orchestrator-iag.
-      JARVIS_TOKEN_SERVICE_BASE_URL: ${TOKEN_SERVICE_BASE_URL:-http://token-service:8102}
-      JARVIS_TOKEN_SERVICE_EXCHANGE_ENDPOINT: "oauth2/token"
-      JARVIS_TOKEN_SERVICE_INTROSPECT_ENDPOINT: "oauth2/introspect"
-      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_TYPE: client_secret_basic
-      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_ID: ${TOKEN_SERVICE_CLIENT_ID:-agent-gateway}
-      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_SECRET: ${TOKEN_SERVICE_CLIENT_SECRET}
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]
 
   retriever:
-    image: retriever-agent:latest
+    image: retriever-agent:token-exchange
     #    platform: linux/amd64
     #    build:
     #      context: .
     #      dockerfile: ./retriever_agent/Dockerfile
+    env_file:
+      - ./usecases/${USECASE:-canbank}/usecase.env
+    volumes:
+      - ./usecases/${USECASE:-canbank}/skills/retriever:/app/skills:ro
     ports:
       - "${RETRIEVER_PORT}:${RETRIEVER_PORT}"
     networks:
@@ -227,13 +268,6 @@ services:
       # The weather agent runs wf2 (weather -> mcp), not the base ${WORKFLOW_ID}
       # (wf1). allowed_workflow_id is a single value per gateway.
       JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${WEATHER_WORKFLOW_ID}
-      # Token Service mode (gateway >= 2.47.0) - see orchestrator-iag.
-      JARVIS_TOKEN_SERVICE_BASE_URL: ${TOKEN_SERVICE_BASE_URL:-http://token-service:8102}
-      JARVIS_TOKEN_SERVICE_EXCHANGE_ENDPOINT: "oauth2/token"
-      JARVIS_TOKEN_SERVICE_INTROSPECT_ENDPOINT: "oauth2/introspect"
-      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_TYPE: client_secret_basic
-      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_ID: ${TOKEN_SERVICE_CLIENT_ID:-agent-gateway}
-      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_SECRET: ${TOKEN_SERVICE_CLIENT_SECRET}
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]
@@ -257,32 +291,30 @@ services:
       # The analyst runs its own workflow (wf3: millicent -> analyst -> mcp), not the
       # base ${WORKFLOW_ID} (wf1). allowed_workflow_id is a single value per gateway.
       JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${ANALYST_WORKFLOW_ID}
-      # Token Service mode (gateway >= 2.47.0) - see orchestrator-iag.
-      JARVIS_TOKEN_SERVICE_BASE_URL: ${TOKEN_SERVICE_BASE_URL:-http://token-service:8102}
-      JARVIS_TOKEN_SERVICE_EXCHANGE_ENDPOINT: "oauth2/token"
-      JARVIS_TOKEN_SERVICE_INTROSPECT_ENDPOINT: "oauth2/introspect"
-      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_TYPE: client_secret_basic
-      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_ID: ${TOKEN_SERVICE_CLIENT_ID:-agent-gateway}
-      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_SECRET: ${TOKEN_SERVICE_CLIENT_SECRET}
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]
 
   analyst:
-    image: analyst-agent:latest
+    image: analyst-agent:token-exchange
     #    platform: linux/amd64
     #    build:
     #      context: .
     #      dockerfile: ./analyst_agent/Dockerfile
+    env_file:
+      - ./usecases/${USECASE:-canbank}/usecase.env
+    volumes:
+      - ./usecases/${USECASE:-canbank}/skills/analyst:/app/skills:ro
     ports:
       - "${ANALYST_PORT}:${ANALYST_PORT}"
     networks:
       - analyst-iag-network
       - mcp-iag-network
-      # Membership in the drive gateway network is harmless while the "drive"
-      # profile is off; it only matters when ANALYST_MCP_SERVER_URLS adds the
-      # drive backend.
+      # Membership in the drive/erp gateway networks is harmless while their
+      # profiles are off; it only matters when ANALYST_MCP_SERVER_URLS adds
+      # those backends.
       - drive-mcp-iag-network
+      - erp-mcp-iag-network
     environment:
       ADVERTISED_HOST: ${ANALYST_HOST}
       ANALYST_PORT: ${ANALYST_PORT}
@@ -309,6 +341,74 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+  #  Protects the CRM agent (Salesforce cases; insurance usecase only - leave
+  #  IAG_CRM_HOST empty in usecases without a CRM story to disable the route)
+  crm-iag:
+    extends:
+      service: iag-base
+      file: iag-base-docker.yaml
+    # Started only for usecases that enable the "crm" profile in their env
+    # file (COMPOSE_PROFILES in .env.<usecase>); the switch script's
+    # --remove-orphans stops the pair when switching to a usecase without it.
+    profiles: ["crm"]
+    ports:
+      - "${IAG_CRM_PORT:-8888}:${IAG_CRM_PORT:-8888}"
+    networks:
+      - crm-iag-network
+    environment:
+      K_SERVICE: crm-iag
+      JARVIS_SERVICE_NAME: crm-iag
+      JARVIS_SERVICE_PORT: ${IAG_CRM_PORT:-8888}
+      JARVIS_PROTECTED_AGENT_BASE_URL: http://${CRM_HOST:-crm}:${CRM_PORT:-6006}
+      # Defaults keep `docker compose up` warning-free with a .env predating
+      # the CRM pair - compose validates these specs even when the profile is
+      # disabled (same convention as the drive PoC).
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${CRM_IDP_CLIENT_ID:-indykiteagent-crm}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${CRM_IDP_CLIENT_SECRET:-}
+      # The CRM agent runs its own workflow (wf-crm: staff -> orchestrator ->
+      # crm), not the base ${WORKFLOW_ID}. allowed_workflow_id is one value per
+      # gateway.
+      JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${CRM_WORKFLOW_ID:-wf-crm}
+    volumes:
+      - ./audit-config.yaml:/app/.configs/audit-config.yaml
+    command: ["--config=/app/.configs/audit-config.yaml"]
+
+  crm:
+    image: crm-agent:token-exchange
+    #    platform: linux/amd64
+    #    build:
+    #      context: .
+    #      dockerfile: ./crm_agent/Dockerfile
+    profiles: ["crm"]
+    env_file:
+      - ./usecases/${USECASE:-canbank}/usecase.env
+    # Deliberately NOT published to the host: the agent trusts the delegation
+    # token it receives because crm-iag minted and verified it. A host port
+    # would allow bypassing the gateway with a self-crafted JWT, whose spoofed
+    # sub/act would be written into Salesforce as attribution. Only crm-iag
+    # reaches it, over the internal network.
+    networks:
+      - crm-iag-network
+    environment:
+      ADVERTISED_HOST: ${CRM_HOST:-crm}
+      CRM_PORT: ${CRM_PORT:-6006}
+      CRM_AGENT_NAME: crm_agent
+      # Salesforce connected app (OAuth 2.0 JWT Bearer flow, RFC 7523). The
+      # private key pairs with the certificate uploaded to the connected app;
+      # mounted read-only from ./crm_agent/keys (gitignored).
+      SF_LOGIN_URL: ${SF_LOGIN_URL:-https://login.salesforce.com}
+      SF_CONSUMER_KEY: ${SF_CONSUMER_KEY:-}
+      SF_USERNAME: ${SF_USERNAME:-}
+      SF_PRIVATE_KEY_FILE: ${SF_PRIVATE_KEY_FILE:-/app/keys/sf-jwt.key}
+      SF_API_VERSION: ${SF_API_VERSION:-v61.0}
+      LOG_LEVEL: ${LOG_LEVEL}
+      # Third-party (a2a/httpx) log level; DEBUG shows SDK event breadcrumbs.
+      LIB_LOG_LEVEL: ${LIB_LOG_LEVEL:-INFO}
+    volumes:
+      - ./crm_agent/keys:/app/keys:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
   #  Protects the MCP server (MCP-protocol proxy mode)
   #  Single shared gateway that the retriever and weather agents call instead of
   #  hitting the MCP server directly, so MCP traffic is subject to the same
@@ -323,20 +423,6 @@ services:
       - mcp-iag-network
     environment:
       K_SERVICE: mcp-iag
-      # Token Service mode is ON (verified 2026-08-28: RC runs mcp-server
-      # 2.49.0 - a garbage X-IK-Token gets 400 invalid_request naming the
-      # header). The platform no longer gates Authorization on the single
-      # bound issuer+audience shape (any Token Introspect config of the app
-      # space authenticates) and validates the X-IK-Token delegation itself.
-      # This block is REQUIRED while the A2A gateways run token-service
-      # mode: their chain travels in X-IK-Token, which a classic-mode
-      # gateway ignores - mixed modes on one path break the chain.
-      JARVIS_TOKEN_SERVICE_BASE_URL: ${TOKEN_SERVICE_BASE_URL:-http://token-service:8102}
-      JARVIS_TOKEN_SERVICE_EXCHANGE_ENDPOINT: "oauth2/token"
-      JARVIS_TOKEN_SERVICE_INTROSPECT_ENDPOINT: "oauth2/introspect"
-      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_TYPE: client_secret_basic
-      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_ID: ${TOKEN_SERVICE_CLIENT_ID:-agent-gateway}
-      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_SECRET: ${TOKEN_SERVICE_CLIENT_SECRET}
       JARVIS_SERVICE_NAME: mcp-iag
       JARVIS_SERVICE_PORT: ${IAG_MCP_PORT}
       # Switch the gateway out of the default "a2a" proxy mode into MCP proxy mode.
@@ -355,11 +441,13 @@ services:
     command: ["--config=/app/.configs/audit-config.yaml"]
 
   weather:
-    image: weather-agent:latest
+    image: weather-agent:token-exchange
     #    platform: linux/amd64
     #    build:
     #      context: .
     #      dockerfile: ./weather_agent/Dockerfile
+    env_file:
+      - ./usecases/${USECASE:-canbank}/usecase.env
     ports:
       - "${WEATHER_PORT}:${WEATHER_PORT}"
     networks:
@@ -404,13 +492,6 @@ services:
       - drive-mcp-iag-network
     environment:
       K_SERVICE: drive-mcp-iag
-      # Token Service mode is ON - same block and reasoning as mcp-iag.
-      JARVIS_TOKEN_SERVICE_BASE_URL: ${TOKEN_SERVICE_BASE_URL:-http://token-service:8102}
-      JARVIS_TOKEN_SERVICE_EXCHANGE_ENDPOINT: "oauth2/token"
-      JARVIS_TOKEN_SERVICE_INTROSPECT_ENDPOINT: "oauth2/introspect"
-      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_TYPE: client_secret_basic
-      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_ID: ${TOKEN_SERVICE_CLIENT_ID:-agent-gateway}
-      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_SECRET: ${TOKEN_SERVICE_CLIENT_SECRET}
       JARVIS_SERVICE_NAME: drive-mcp-iag
       JARVIS_SERVICE_PORT: ${IAG_DRIVE_MCP_PORT:-8887}
       # MCP proxy mode, same as mcp-iag.
@@ -428,8 +509,6 @@ services:
     command: ["--config=/app/.configs/audit-config.yaml"]
 
   drive-mcp:
-    # Distinct tag: iag-mcp-demo builds its own drive-mcp:latest (with PDF
-    # extraction); sharing the tag made the last `make` win for both stacks.
     image: drive-mcp:token-exchange
     #    build:
     #      context: .
@@ -447,6 +526,81 @@ services:
       # Google OAuth material - see drive_mcp/README.md for the auth bootstrap.
       - ./drive_mcp/.gdrive:/gdrive:ro
 
+  #  Protects the ERP MCP server (MCP-protocol proxy mode). Optional "erp"
+  #  profile: a Postgres invoices table whose rows are pre-filtered per caller
+  #  by AuthZEN search/resource before any SQL runs - same prompt, different
+  #  rows, and the database knows nothing about the graph.
+  erp-mcp-iag:
+    extends:
+      service: iag-base
+      file: iag-base-docker.yaml
+    profiles: ["erp"]
+    ports:
+      - "${IAG_ERP_MCP_PORT:-8889}:${IAG_ERP_MCP_PORT:-8889}"
+    networks:
+      # Client-facing net (analyst/chatbot) + the private backend net where
+      # erp-mcp and erp-db live - this gateway is the only bridge between them.
+      - erp-mcp-iag-network
+      - erp-backend-network
+    environment:
+      K_SERVICE: erp-mcp-iag
+      JARVIS_SERVICE_NAME: erp-mcp-iag
+      JARVIS_SERVICE_PORT: ${IAG_ERP_MCP_PORT:-8889}
+      JARVIS_PROTECTED_AGENT_PROTOCOL: mcp
+      JARVIS_PROTECTED_AGENT_BASE_URL: http://${ERP_MCP_HOST:-erp-mcp}:${ERP_MCP_PORT:-8010}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${ERP_MCP_IDP_CLIENT_ID:-indykiteagent-erp}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${ERP_MCP_IDP_CLIENT_SECRET:-}
+      # Left empty: three workflow shapes (wf-erp / wf-erp-analyst /
+      # wf-erp-console) converge on this gateway and allowed_workflow_id is
+      # single-valued - same trick as the drive gateway.
+      JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${ERP_WORKFLOW_ID:-}
+    volumes:
+      - ./audit-config.yaml:/app/.configs/audit-config.yaml
+    command: ["--config=/app/.configs/audit-config.yaml"]
+
+  erp-mcp:
+    image: erp-mcp:token-exchange
+    #    platform: linux/amd64
+    #    build:
+    #      context: .
+    #      dockerfile: ./erp_mcp/Dockerfile
+    profiles: ["erp"]
+    # Trust boundary, enforced by topology: the server trusts the delegation
+    # token's subject because erp-mcp-iag minted and verified it - so nothing
+    # else may reach it (a direct caller could forge a JWT and read other
+    # subjects' rows). No host port, and membership ONLY in the private
+    # backend net, which clients (analyst/chatbot) are not on; the gateway
+    # is the sole bridge.
+    networks:
+      - erp-backend-network
+    environment:
+      ERP_MCP_PORT: ${ERP_MCP_PORT:-8010}
+      ERP_DB_DSN: postgresql://erp:erp@erp-db:5432/erp
+      INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
+      APP_AGENT_CREDENTIALS_TOKEN: ${APP_AGENT_CREDENTIALS_TOKEN}
+      # Subject node type for the AuthZEN search (insurance: Person,
+      # canbank: default User); reuses the gateways' subject-type env.
+      ERP_SUBJECT_TYPE: ${AUTHZEN_SUBJECT_TYPES:-User}
+      LOG_LEVEL: ${LOG_LEVEL}
+    depends_on:
+      - erp-db
+
+  erp-db:
+    image: postgres:18-alpine@sha256:77f585114c32fbca283dc835b0596f4e52b51b4c6662d7810b2f4084f60a1873
+    profiles: ["erp"]
+    # Private backend net only - reached exclusively by erp-mcp.
+    networks:
+      - erp-backend-network
+    environment:
+      POSTGRES_USER: erp
+      POSTGRES_PASSWORD: erp
+      POSTGRES_DB: erp
+    volumes:
+      - ./erp_mcp/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      # postgres 18+ keeps its data in a version-specific subdirectory, so the
+      # volume mounts one level up from the data directory.
+      - erp_db_data:/var/lib/postgresql
+
 networks:
   console-network:
     driver: bridge
@@ -458,10 +612,20 @@ networks:
     driver: bridge
   analyst-iag-network:
     driver: bridge
+  crm-iag-network:
+    driver: bridge
   mcp-iag-network:
     driver: bridge
   drive-mcp-iag-network:
     driver: bridge
+  erp-mcp-iag-network:
+    driver: bridge
+  # Private net for erp-mcp + erp-db; only the erp gateway bridges into it.
+  # A normal bridge (not internal:true) so erp-mcp keeps egress to the
+  # platform's search/resource API.
+  erp-backend-network:
+    driver: bridge
 
 volumes:
   flask_session_data: {}
+  erp_db_data: {}

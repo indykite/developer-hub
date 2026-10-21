@@ -75,6 +75,16 @@ ANALYST_HOST = os.getenv("ANALYST_HOST", "").strip()
 ANALYST_PORT = int(os.getenv("ANALYST_PORT", "8885"))
 _ANALYST_DEFAULT_URL = f"http://{ANALYST_HOST}:{ANALYST_PORT}" if ANALYST_HOST else ""
 ANALYST_URL = (os.getenv("ANALYST_URL", "").strip() or _ANALYST_DEFAULT_URL).rstrip("/")
+# The CRM gateway relays Salesforce case prompts (crm-iag -> crm agent).
+# Empty CRM_HOST disables the query_crm tool (usecases without a CRM story).
+CRM_HOST = os.getenv("CRM_HOST", "").strip()
+CRM_PORT = int(os.getenv("CRM_PORT", "8888"))
+_CRM_DEFAULT_URL = f"http://{CRM_HOST}:{CRM_PORT}" if CRM_HOST else ""
+CRM_URL = (os.getenv("CRM_URL", "").strip() or _CRM_DEFAULT_URL).rstrip("/")
+# The ERP invoices ride the analyst's erp_* MCP backend (like Drive). The
+# flag is set in the usecase env once the erp profile + backend are wired;
+# empty disables the query_erp tool.
+ERP_TOOL_ENABLED = (os.getenv("ERP_TOOL_ENABLED") or "").lower() in ("true", "1", "yes")
 ORCHESTRATOR_TIMEOUT = float(os.getenv("ORCHESTRATOR_TIMEOUT", "300"))
 _LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
@@ -279,7 +289,7 @@ def _build_client(url: str, token: str) -> tuple["ClientFactory", "AgentCard"]:
     return factory, url
 
 
-async def _call_agent(base_url: str, text: str, token: str) -> str:  # noqa: C901,PLR0911,PLR0912  # skipcq: PY-R1000
+async def _call_agent(base_url: str, text: str, token: str) -> str:  # noqa: C901,PLR0911,PLR0912
     """Send *text* to a downstream A2A gateway and return the response text.
 
     Speaks raw JSON-RPC 2.0 directly — no card resolution or SDK client.
@@ -347,10 +357,13 @@ async def _call_agent(base_url: str, text: str, token: str) -> str:  # noqa: C90
             return ""
 
         _logger.info("Polling agent task: %s", task_id)
-        max_polls = int(ORCHESTRATOR_TIMEOUT / 2)
+        # Poll fast: downstream answers are often ready within seconds, and a
+        # coarse interval adds straight latency to every user prompt.
+        poll_interval = 0.5
+        max_polls = int(ORCHESTRATOR_TIMEOUT / poll_interval)
 
         for _ in range(max_polls):
-            await asyncio.sleep(2)
+            await asyncio.sleep(poll_interval)
             poll_payload = {
                 "jsonrpc": "2.0",
                 "id": uuid.uuid4().hex,
@@ -362,7 +375,7 @@ async def _call_agent(base_url: str, text: str, token: str) -> str:  # noqa: C90
                 poll_resp.raise_for_status()
             except Exception as e:
                 _logger.warning("Error polling agent task %s: %s", task_id, e)
-                await asyncio.sleep(2)
+                await asyncio.sleep(poll_interval)
                 continue
 
             poll_body = poll_resp.json()
@@ -419,7 +432,12 @@ async def _call_analyst(text: str) -> str:
     return await _call_agent(ANALYST_URL, text, _current_access_token.get())
 
 
-async def _call_agent_a2a(base_url: str, text: str, token: str) -> str:  # noqa: C901, PLR0912  # skipcq: PY-R1000
+async def _call_crm(text: str) -> str:
+    """Send *text* to the CRM agent (Salesforce cases)."""
+    return await _call_agent(CRM_URL, text, _current_access_token.get())
+
+
+async def _call_agent_a2a(base_url: str, text: str, token: str) -> str:  # noqa: C901, PLR0912
     """Send *text* to a downstream A2A agent using card resolution and the SDK client."""
     headers: dict[str, str] = {}
     if token:
@@ -552,13 +570,55 @@ async def query_drive(query: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# LangChain tool: query_crm
+# ---------------------------------------------------------------------------
+
+
+@tool
+async def query_crm(query: str) -> str:
+    """Forward a Salesforce case request to the CRM agent.
+
+    Use this for: opening/filing a support case or ticket in Salesforce or the
+    CRM, on behalf of a customer. Compose the argument as
+    'subject: <short case title>' on the first line, then the case description
+    (include who the case is for, e.g. 'on behalf of James Mitchell').
+    """
+    return await _call_crm(query)
+
+
+# ---------------------------------------------------------------------------
+# LangChain tool: query_erp
+# ---------------------------------------------------------------------------
+
+
+@tool
+async def query_erp(query: str) -> str:
+    """Forward an invoice/billing question to the analyst's ERP backend.
+
+    Use this for: invoices, billing, premiums due, account fees, payment
+    status - questions about what is owed or was paid. The rows come back
+    pre-filtered by authorization for the calling user.
+
+    NOT for coverage, policies, household/family data, property, vehicles,
+    documents or "what can X see" - those are knowledge-graph questions for
+    query_retriever, even when a premium or a policy number is mentioned.
+    """
+    # The analyst holds several MCP backends; make the ERP intent explicit so
+    # a rephrased query cannot be routed to the knowledge-graph tools instead.
+    return await _call_analyst(
+        f"ERP invoice request - answer ONLY with the erp_* tools (e.g. erp_list_invoices), "
+        f"never with knowledge-graph, CIQ or drive tools: {query}",
+    )
+
+
+# ---------------------------------------------------------------------------
 # Agent Skills (agentskills.io) - discovery & skill catalog
 # ---------------------------------------------------------------------------
 
 _SKILLS_DIR = Path(__file__).resolve().parent / "skills"
 
 
-def _parse_skill_file(location: Path) -> dict[str, Any] | None:  # noqa: C901,PLR0911,PLR0912  # skipcq: PY-R1000
+def _parse_skill_file(location: Path) -> dict[str, Any] | None:  # noqa: C901,PLR0911,PLR0912
     """Parse a SKILL.md file: extract YAML frontmatter and body. Returns skill record or None."""
     try:
         raw = location.read_text(encoding="utf-8")
@@ -748,12 +808,30 @@ _DRIVE_PROMPT = (
     if ANALYST_URL
     else ""
 )
+# Same gating for the CRM tool: only steer towards query_crm when registered.
+_CRM_PROMPT = (
+    "For opening or filing a support case or ticket in Salesforce/the CRM, use query_crm and compose "
+    "its argument as 'subject: <title>' on the first line then the description, naming who the case "
+    "is for. Do not use query_retriever for Salesforce cases. "
+    if CRM_URL
+    else ""
+)
+# And for the ERP tool: invoices/billing must not fall into the retriever
+# catch-all ("internal documents / enterprise data") below.
+_ERP_PROMPT = (
+    "For invoices, billing, premiums due, account fees or payment status, use query_erp - the rows "
+    "come back pre-filtered by authorization. Do not use query_retriever for invoices or billing. "
+    if ERP_TOOL_ENABLED and ANALYST_URL
+    else ""
+)
 _BASE_SYSTEM_PROMPT = (
     "You are an orchestrator. Your primary job is to relay prompts to downstream agents. "
     "Look at your available skills and choose the right one for each request. "
     "For weather/forecast/current conditions, use query_weather. "
     "Do not use query_retriever for weather. "
     + _DRIVE_PROMPT
+    + _CRM_PROMPT
+    + _ERP_PROMPT
     + "ALWAYS use the query_retriever tool for: MCP, MCP tools or resources, data retrieval, "
     "internal documents, real-time stock prices, "
     "questions about employees, enterprise data, authorization (AuthZEN), knowledge queries, or any "
@@ -773,6 +851,10 @@ _orchestrator_tools = ([_activate_skill_tool] if _activate_skill_tool is not Non
 ]
 if ANALYST_URL:
     _orchestrator_tools.append(query_drive)
+if CRM_URL:
+    _orchestrator_tools.append(query_crm)
+if ERP_TOOL_ENABLED and ANALYST_URL:
+    _orchestrator_tools.append(query_erp)
 _llm_with_tools = _llm.bind_tools(_orchestrator_tools)
 
 orchestrator_card = AgentCard(
@@ -813,20 +895,15 @@ _TOOL_CALL_MAX_ITERATIONS = 5
 class OrchestratorExecutor(AgentExecutor):
     """AgentExecutor that routes incoming messages through an LLM + tool loop."""
 
-    async def execute(  # noqa: C901,D102,PLR0912  # skipcq: PY-R1000,PYL-R0201
-        self,
-        context: RequestContext,
-        event_queue: EventQueue,
-    ) -> None:
+    async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:  # noqa: C901,D102,PLR0912
         access_token = _get_access_token_from_context(context)
         if not access_token:
             raise HTTPException(status_code=401, detail="Authorization required")
-        _current_access_token.set(access_token)
-        _current_ik_token.set(_get_ik_token_from_context(context))
-
         # Demo feature: the short-lived delegation token is intentionally
         # surfaced in the console audit terminal to show the exchange chain;
         # logs carry only a redacted fingerprint to avoid credential leaks.
+        _current_access_token.set(access_token)
+        _current_ik_token.set(_get_ik_token_from_context(context))
         _logger.info("Exchanged bearer token (redacted): %s...%s", access_token[:6], access_token[-6:])
         _report_exchanged_token(access_token, _current_ik_token.get())
 
@@ -916,12 +993,7 @@ class OrchestratorExecutor(AgentExecutor):
         )
         _logger.info("LLM response for %s: %s...", ORCHESTRATOR_AGENT_NAME, final_text[:200])
 
-    # skipcq: PYL-R0201 - AgentExecutor interface override; must stay an instance method
-    async def cancel(  # noqa: D102  # skipcq: PYL-R0201
-        self,
-        context: RequestContext,
-        event_queue: EventQueue,
-    ) -> None:
+    async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:  # noqa: D102
         await event_queue.enqueue_event(
             TaskStatusUpdateEvent(
                 task_id=context.task_id,
@@ -961,6 +1033,14 @@ if __name__ == "__main__":
         _logger.info("Analyst URL (query_drive): %s", ANALYST_URL)
     else:
         _logger.info("ANALYST_HOST not set - query_drive tool disabled")
+    if CRM_URL:
+        _logger.info("CRM URL (query_crm): %s", CRM_URL)
+    else:
+        _logger.info("CRM_HOST not set - query_crm tool disabled")
+    if ERP_TOOL_ENABLED and ANALYST_URL:
+        _logger.info("ERP route enabled (query_erp via the analyst's erp_* backend)")
+    else:
+        _logger.info("ERP_TOOL_ENABLED not set - query_erp tool disabled")
     # uvicorn must bind to 0.0.0.0 inside Docker; safe because the container
     # network exposes only the intended port via compose.
     uvicorn.run(

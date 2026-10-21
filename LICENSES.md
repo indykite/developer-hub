@@ -2,7 +2,7 @@
 
 This repository serves as a collection of independent code examples and small applications. It is designed to be a place where different projects can be hosted without being part of a single, unified codebase.
 
-Generated at: 2026-10-20T16:58:55Z
+Generated at: 2026-10-21T19:55:07Z
 
 DO NOT EDIT!!
 
@@ -14,7 +14,7 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 
 | License | Classification | Severity | Count |
 | --- | --- | --- | ---: |
-| MIT | notice | LOW | 39 |
+| MIT | notice | LOW | 40 |
 | Apache-2.0 | notice | LOW | 14 |
 | BSD-3-Clause | notice | LOW | 12 |
 | BSD-2-Clause | notice | LOW | 2 |
@@ -25,19 +25,19 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 | Python-2.0 | notice | LOW | 2 |
 | BSD-0-Clause | unknown | UNKNOWN | 1 |
 
-**Total packages scanned:** 78
+**Total packages scanned:** 79
 
 ## Report Summary (by target)
 
 | Target | Type | Licenses |
 | --- | --- | ---: |
-| Loose File License(s) | - | 70 |
+| Loose File License(s) | - | 71 |
 | instant-stack/package-lock.json | npm | 4 |
 | music/package-lock.json | npm | 4 |
 
 ## Details
 
-### `Loose File License(s)` (-) -- 70 licenses
+### `Loose File License(s)` (-) -- 71 licenses
 
 | Package | License | Classification | Severity |
 | --- | --- | --- | --- |
@@ -78,6 +78,7 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 | pip | ISC | notice | LOW |
 | Flask\_Migrate | MIT | notice | LOW |
 | a2a/iag-mcp-demo/chatbot/static/assets/js/cytoscape.min.js | MIT | notice | LOW |
+| a2a/iag-token-exchange/chatbot/static/assets/js/cytoscape.min.js | MIT | notice | LOW |
 | alembic | MIT | notice | LOW |
 | annotated\_types | MIT | notice | LOW |
 | blinker | MIT | notice | LOW |

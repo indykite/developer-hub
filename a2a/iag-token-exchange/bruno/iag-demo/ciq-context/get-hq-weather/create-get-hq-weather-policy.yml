@@ -1,0 +1,30 @@
+---
+info:
+  name: Create Get HQ Weather Policy
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "get-hq-weather",
+          "display_name": "Get HQ Weather",
+          "description": "Return the current weather reading for CanBank's London headquarters. The hq_weather Weather node's temperature property is populated at query time by the `weather` external data resolver, which calls open-meteo.",
+          "project_id": "{{project_id}}",
+          "policy": "{ \"meta\": { \"policy_version\": \"1.0-ciq\" }, \"subject\": { \"type\": \"User\" }, \"condition\": { \"cypher\": \"MATCH (subject:User {external_id: $token.sub}) WITH subject MATCH (weather:Weather {external_id: 'hq_weather'})\", \"filter\": [ ] }, \"allowed_reads\": { \"nodes\": [ \"subject.*\", \"weather.*\" ], \"relationships\": [  ], \"aggregate_values\": [ ] } }",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
