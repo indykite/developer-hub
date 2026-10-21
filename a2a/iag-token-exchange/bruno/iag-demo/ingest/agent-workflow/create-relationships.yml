@@ -288,6 +288,19 @@ http:
           {
             "source": {
               "type": "Department",
+              "external_id": "support"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf2"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
+          },
+          {
+            "source": {
+              "type": "Department",
               "external_id": "trading"
             },
             "target": {
@@ -297,45 +310,6 @@ http:
             "properties": [
             ],
             "type": "CAN_TRIGGER"
-          },
-          {
-            "source": {
-              "type": "Container",
-              "external_id": "workflows"
-            },
-            "target": {
-              "type": "Workflow",
-              "external_id": "wf1"
-            },
-            "properties": [
-            ],
-            "type": "INVOKES"
-          },
-          {
-            "source": {
-              "type": "Container",
-              "external_id": "workflows"
-            },
-            "target": {
-              "type": "Workflow",
-              "external_id": "wf2"
-            },
-            "properties": [
-            ],
-            "type": "INVOKES"
-          },
-          {
-            "source": {
-              "type": "Container",
-              "external_id": "workflows"
-            },
-            "target": {
-              "type": "Workflow",
-              "external_id": "wf3"
-            },
-            "properties": [
-            ],
-            "type": "INVOKES"
           },
           {
             "source": {
@@ -362,27 +336,6 @@ http:
             "target": {
               "type": "Agent",
               "external_id": "indykiteagent-2"
-            },
-            "properties": [
-              {
-                "type": "workflow_name",
-                "value": "wf1"
-              },
-              {
-                "type": "discriminating_property",
-                "value": "workflow_name"
-              }
-            ],
-            "type": "INVOKES"
-          },
-          {
-            "source": {
-              "type": "Agent",
-              "external_id": "indykiteagent"
-            },
-            "target": {
-              "type": "Agent",
-              "external_id": "indykiteagent-3"
             },
             "properties": [
               {
@@ -842,6 +795,198 @@ http:
             "properties": [
             ],
             "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Workflow",
+              "external_id": "wf-erp"
+            },
+            "target": {
+              "type": "Agent",
+              "external_id": "indykiteagent-erp"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf-erp"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Workflow",
+              "external_id": "wf-erp-analyst"
+            },
+            "target": {
+              "type": "Agent",
+              "external_id": "indykiteagent-4"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf-erp-analyst"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Agent",
+              "external_id": "indykiteagent-4"
+            },
+            "target": {
+              "type": "Agent",
+              "external_id": "indykiteagent-erp"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf-erp-analyst"
+              },
+              {
+                "type": "discriminating_property",
+                "value": "workflow_name"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Workflow",
+              "external_id": "wf-erp-console"
+            },
+            "target": {
+              "type": "Agent",
+              "external_id": "indykiteagent"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf-erp-console"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Agent",
+              "external_id": "indykiteagent"
+            },
+            "target": {
+              "type": "Agent",
+              "external_id": "indykiteagent-4"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf-erp-console"
+              },
+              {
+                "type": "discriminating_property",
+                "value": "workflow_name"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Agent",
+              "external_id": "indykiteagent-4"
+            },
+            "target": {
+              "type": "Agent",
+              "external_id": "indykiteagent-erp"
+            },
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf-erp-console"
+              },
+              {
+                "type": "discriminating_property",
+                "value": "workflow_name"
+              }
+            ],
+            "type": "INVOKES"
+          },
+          {
+            "source": {
+              "type": "Department",
+              "external_id": "support"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf-erp"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
+          },
+          {
+            "source": {
+              "type": "Department",
+              "external_id": "support"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf-erp-analyst"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
+          },
+          {
+            "source": {
+              "type": "Department",
+              "external_id": "support"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf-erp-console"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
+          },
+          {
+            "source": {
+              "type": "Department",
+              "external_id": "trading"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf-erp"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
+          },
+          {
+            "source": {
+              "type": "Department",
+              "external_id": "trading"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf-erp-analyst"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
+          },
+          {
+            "source": {
+              "type": "Department",
+              "external_id": "trading"
+            },
+            "target": {
+              "type": "Workflow",
+              "external_id": "wf-erp-console"
+            },
+            "properties": [
+            ],
+            "type": "CAN_TRIGGER"
           }
         ]
       }

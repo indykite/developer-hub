@@ -24,6 +24,7 @@ the only (subject, action, resource) triples that can ever evaluate to
 |--------------|----------------|---------------|----------------------------------------|
 | `User`       | `CAN_TRIGGER`  | `Workflow`    | `wf1`, `wf2`, `wf3`, `wf-drive`        |
 | `User`       | `CAN_RETRIEVE` | `Quote`       | `stock_quote`                          |
+| `User`       | `CAN_VIEW`     | `Invoice`     | `inv-cb-001` ... `inv-cb-009`          |
 
 - `subject_id` is the logged-in user's `external_id` (e.g. `millicent`);
   resolve it via the `get-self` knowledge query if unknown.
@@ -33,6 +34,6 @@ the only (subject, action, resource) triples that can ever evaluate to
   evaluates to `false` regardless of the user's real permissions.
 
 Maintenance note: keep this table in sync with the project's KBAC policies
-(`instant-stack/data/iag/manifest.json`, `kbac` section). Remove this skill if
+(instant-stack `data/canbank-ts/manifest.json`, `kbac` section). Remove this skill if
 the dataset changes or once the platform exposes policy vocabulary through
 the MCP server itself.

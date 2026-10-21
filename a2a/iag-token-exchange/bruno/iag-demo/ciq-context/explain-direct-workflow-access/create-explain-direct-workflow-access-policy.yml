@@ -1,0 +1,30 @@
+---
+info:
+  name: Create Explain Direct Workflow Access Policy
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "explain-direct-workflow-access",
+          "display_name": "Explain Direct Workflow Access",
+          "description": "Read the direct User-Workflow CAN_TRIGGER edge for the console explainer (CanBank).",
+          "project_id": "{{project_id}}",
+          "policy": "{ \"meta\": { \"policy_version\": \"1.0-ciq\" }, \"subject\": { \"type\": \"_Application\" }, \"condition\": { \"cypher\": \"MATCH (subject:_Application) MATCH (u:User {external_id: $subject_id})-[t:CAN_TRIGGER]->(wf:Workflow {external_id: $workflow_id})\", \"filter\": [ ] }, \"allowed_reads\": { \"nodes\": [ \"u.*\", \"wf.*\" ], \"relationships\": [  ], \"aggregate_values\": [ ] } }",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -7,18 +7,31 @@
         <div class="col-12 col-xl-10">
             <div class="card border-0 shadow mb-4">
                 <div class="card-body">
-                    <h3 class="mb-2">Provision Everything (after the MCP server config)</h3>
-                    <p class="text-muted mb-2">Replays every create button that follows the five Getting Started
-                        configurations, in click order: both captures (nodes + relationships), the KBAC policy, the
-                        three external data resolvers, then each CIQ policy immediately followed by its knowledge
-                        query - submitting exactly what each individual form would submit and saving the same IDs to
-                        <code>.env</code>.</p>
-                    <p class="text-muted mb-4">The Project, Application, App Agent, Token Introspect and MCP Server
-                        must already exist (create them with the Getting Started cards) - their IDs and tokens are
-                        read from <code>.env</code>. Captures on a freshly created project can hit cached permission
-                        denials or transient platform errors; the run heals the former by re-saving the agent's
-                        permissions and waits out the latter, retrying the idempotent upload. AuthZEN evaluations and
-                        CIQ executes keep their own forms.</p>
+                    <h3 class="mb-2">Provision Everything</h3>
+                    <p class="text-muted mb-2">Builds the whole demo from an empty organization. Each step submits
+                        its create form exactly as you would, and saves the same IDs to <code>.env</code>. The steps
+                        run in dependency order:</p>
+                    <ol class="text-muted mb-2">
+                        <li><strong>Project</strong>, then a wait until its knowledge graph (IKG) is active. This can
+                            take 10–15 minutes.</li>
+                        <li><strong>Application</strong> and <strong>App Agent</strong>, with credentials saved as
+                            <code>APP_TOKEN</code>.</li>
+                        <li><strong>Audit signing</strong> and <strong>event sink</strong>, then a delivery check of
+                            about 30s. These run only when the three <code>PUBSUB_*</code> keys are set. If one fails,
+                            the run stops before any data is captured.</li>
+                        <li><strong>Token introspect</strong> and <strong>MCP server</strong>, then a short pause for
+                            the agent's permissions.</li>
+                        <li><strong>Captures</strong> of nodes and relationships. Transient platform errors are
+                            retried; an access denial stops the capture.</li>
+                        <li><strong>KBAC policies</strong>, <strong>external data resolvers</strong>, then each
+                            <strong>CIQ policy</strong> followed by its knowledge query.</li>
+                    </ol>
+                    <p class="text-muted mb-4">Only <code>URL_ENDPOINTS</code>, <code>SA_TOKEN</code> and
+                        <code>ORGANIZATION_ID</code> must exist beforehand. With "Skip steps…" checked, any step whose
+                        ID is already in <code>.env</code> is skipped, except the sink check, which always runs. A
+                        re-run therefore continues where a failed or stopped run ended. Keep this tab open until the
+                        run finishes: closing it stops the run. AuthZEN evaluations and CIQ executes keep their own
+                        forms.</p>
 
                     <div class="mb-4">
                         <h6 class="text-muted">Prerequisites (in <code>.env</code>)</h6>
@@ -73,7 +86,7 @@
                     </div>
 
                     <div class="mt-4">
-                        <h6 class="text-muted">The {{ steps | length }} steps, in click order</h6>
+                        <h6 class="text-muted">The {{ steps | length }} steps this run will take</h6>
                         <ol class="small text-muted mb-0">
                             {% for step in steps %}
                             <li>{{ step.label }}{% if step.path %} <code>{{ step.path }}</code>{% endif %}</li>

@@ -397,7 +397,12 @@ _BASE_SYSTEM_PROMPT = (
     "When several backends are configured, every tool name is prefixed with its backend alias "
     "(e.g. indykite_ciq_execute, indykite_list_resources, drive_search) - pick the tool whose backend matches "
     "the request: indykite_* for knowledge-graph data, CIQ queries and AuthZEN authorization; drive_* for "
-    "Google Drive documents and files. With a single unaliased backend the names below appear without a prefix.\n"
+    "Google Drive documents and files; erp_* for invoices and billing data (the rows those tools return are "
+    "already pre-filtered by authorization - present exactly what comes back and never speculate about rows "
+    "that might be hidden). With a single unaliased backend the names below appear without a prefix.\n"
+    "If the request targets a backend (Google Drive, ERP, knowledge graph) whose tools are NOT in your tool "
+    "list, that backend denied access or is unreachable - say exactly that and stop. NEVER answer such a "
+    "request with another backend's tools, and NEVER present one backend's data as if it came from another.\n"
     "Upon receiving a request, you must:\n"
     "1. Consider the combination of (a) your skills (authzen, ciq-execute) and (b) available MCP "
     "resources and MCP tools. Use list_resources to discover MCP resources (URIs, names, "
@@ -410,16 +415,11 @@ _BASE_SYSTEM_PROMPT = (
     "exposed by the server—use list_resources and the tool list to see what is available and choose "
     "the right resource or tool for the request.\n"
     'Use ciq_execute with a concrete {"id": "<query-id>"} and its "input_params" — '
-    "NEVER call ciq_execute with empty arguments. Known query ids (call with these exact shapes):\n"
-    '  {"id": "get-stock-quote", "input_params": {"ticker": "NVDA"}}\n'
-    '  {"id": "get-stock-trade-threshold", "input_params": {"customer_external_id": "rebecca"}}\n'
-    '  {"id": "get-self", "input_params": {}}\n'
-    '  {"id": "get-internal-documents", "input_params": {"taxonomy_external_id": "policy"}}\n'
-    '  {"id": "get-decisions", "input_params": {"document_external_id": "refund_policy"}}\n'
-    '  {"id": "get-customer-facing-documents", "input_params": {}}\n'
-    '  {"id": "get-regulatory-agreements", "input_params": {}}\n'
-    "Substitute the real ticker / customer / document / taxonomy from the user question; "
-    "if unsure which id fits, call list_resources first.\n"
+    "NEVER call ciq_execute with empty arguments, and NEVER invent a query id. Valid ids and "
+    "their exact call shapes come from (a) the examples in your activated ciq-execute skill and "
+    '(b) the MCP server itself: read_resource on "indykite://knowledge-queries/" lists every '
+    "query, each description carrying a ready-to-use ciq_execute example. Substitute the real "
+    "values from the user question; if unsure which id fits, read that resource first.\n"
     "AuthZEN (evaluation, evaluations, resource_search, subject_search, action_search): example "
     '{"subject":{"type":"user","id":"alice"},"action":{"name":"view"},"resource":{"type":"record","id":"109"}}; '
     'response {"decision":true} or {"decision":false}. Return data only when evaluation is '
@@ -916,11 +916,7 @@ def _make_read_resource_tool(session: ClientSession, alias: str = "") -> Structu
     )
 
 
-def _make_langchain_tool(  # skipcq: PY-R1000
-    session: ClientSession,
-    mcp_tool: Any,  # noqa: ANN401
-    alias: str = "",
-) -> StructuredTool:
+def _make_langchain_tool(session: ClientSession, mcp_tool: Any, alias: str = "") -> StructuredTool:  # noqa: ANN401
     """Convert an MCP tool to a LangChain StructuredTool.
 
     The LangChain-facing name is prefixed with the backend alias so tools from
@@ -954,9 +950,9 @@ def _make_langchain_tool(  # skipcq: PY-R1000
         # the LLM would otherwise retry in a loop).
         if tool_name == "ciq_execute" and not args.get("id"):
             return (
-                'ciq_execute requires a query "id" (e.g. get-self, get-stock-quote, '
-                "get-internal-documents, get-decisions) and its input_params. "
-                "Retry with a concrete id, or call list_resources to discover valid ids."
+                'ciq_execute requires a query "id" and its input_params. Retry with a '
+                "concrete id from your ciq-execute skill, or read_resource on "
+                '"indykite://knowledge-queries/" to discover valid ids.'
             )
         _logger.info(
             "MCP RPC request: %s",
@@ -1278,7 +1274,7 @@ class _McpToolsEntry:
             if conn.client is not None:
                 conn.client.headers.update(headers)
 
-    async def ping(self) -> bool:  # skipcq: PY-R1000
+    async def ping(self) -> bool:
         """Probe every cached session before reuse; False means full rebuild.
 
         Each backend is probed independently so one dead backend does not
@@ -1513,12 +1509,47 @@ async def _run_tool_calls(tool_calls: list[dict], tools: list[StructuredTool]) -
     return results
 
 
+def _unavailable_backends(tools: list[StructuredTool]) -> list[str]:
+    """Return the configured backend aliases that contributed no tools this request.
+
+    Every connected backend contributes its namespaced list_resources tool, so
+    a configured alias without one was denied by its gateway or unreachable.
+    """
+    tool_names = {t.name for t in tools}
+    return [alias for alias, _ in _MCP_SERVERS if alias and f"{alias}_list_resources" not in tool_names]
+
+
 async def _run_llm_loop(llm: Any, tools: list[StructuredTool], prompt: str) -> str:  # noqa: ANN401
     """Run the LLM + tool-calling loop. Returns the final response text."""
     messages: list[Any] = [
         HumanMessage(content=_SYSTEM_PROMPT),
         HumanMessage(content=prompt),
     ]
+    unavailable = _unavailable_backends(tools)
+    # Deterministic deny: the orchestrator's carve-out prompts name the target
+    # backend literally ("answer ONLY with the drive_* tools"). If that backend
+    # contributed no tools, its gateway denied this caller - answer the denial
+    # instead of letting the LLM improvise with another backend's data.
+    for alias in unavailable:
+        if f"{alias}_*" in prompt:
+            return (
+                f"The '{alias}' backend is unavailable for this request - its gateway "
+                "denied the authorization for this user, or the backend is unreachable - "
+                "so no data was retrieved. No other data source was consulted."
+            )
+    if unavailable:
+        messages.insert(
+            1,
+            HumanMessage(
+                content=(
+                    "Runtime note: these configured backends are UNAVAILABLE for this request "
+                    f"(denied by authorization or unreachable): {', '.join(unavailable)}. "
+                    "If the user's request targets one of them, answer ONLY that the backend "
+                    "is unavailable (denied by authorization or unreachable) - make no tool "
+                    "calls and include no other data."
+                ),
+            ),
+        )
     for iteration in range(_TOOL_CALL_MAX_ITERATIONS):
         try:
             response = await llm.ainvoke(messages)
@@ -1631,13 +1662,11 @@ class AnalystExecutor(AgentExecutor):
         _current_ik_token.set(_get_ik_token_from_context(context))
         if not access_token:
             raise HTTPException(status_code=401, detail="Authorization required")
-
         # Demo feature: the short-lived delegation token is intentionally
         # surfaced in the console audit terminal to show the exchange chain;
         # logs carry only a redacted fingerprint to avoid credential leaks.
         _logger.info("Exchanged bearer token (redacted): %s...%s", access_token[:6], access_token[-6:])
         _report_exchanged_token(access_token, _current_ik_token.get())
-
         await _process_analyst_request(context, event_queue, access_token)
 
     # skipcq: PYL-R0201 - AgentExecutor interface override; must stay an instance method

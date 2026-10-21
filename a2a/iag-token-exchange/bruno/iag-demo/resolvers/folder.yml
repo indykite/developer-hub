@@ -1,0 +1,13 @@
+---
+info:
+  name: resolvers
+  type: folder
+  seq: 7
+
+request:
+  headers:
+    - name: Accept
+      value: application/json
+  auth:
+    type: bearer
+    token: "{{service_token}}"

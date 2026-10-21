@@ -1,0 +1,31 @@
+---
+info:
+  name: Create Get HQ Weather Query
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/knowledge-queries"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "get-hq-weather",
+          "display_name": "Get HQ Weather",
+          "description": "Get HQ Weather returns the current weather reading for CanBank's London headquarters: temperature, apparent temperature, wind speed and weather code, together with the unit labels. The hq_weather Weather node carries `latitude` and `longitude` properties that are substituted into the `weather` external data resolver URL. The `current` and `units` properties are populated live from open-meteo at query time. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-hq-weather\", \"input_params\": { } }.",
+          "project_id": "{{project_id}}",
+          "policy_id": "{{get_hq_weather_policy}}",
+          "query": "{ \"nodes\": [ \"weather.external_id\", \"weather.property.location\", \"weather.property.latitude\", \"weather.property.longitude\", \"weather.property.current\", \"weather.property.units\" ], \"relationships\": [  ], \"aggregate_values\": [ ] }",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

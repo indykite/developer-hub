@@ -1,0 +1,30 @@
+---
+info:
+  name: Create User CAN_TRIGGER Workflow Policy
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "user-can-trigger-workflow",
+          "display_name": "User can trigger workflow",
+          "description": "Allow a user to trigger an agentic workflow when their department can trigger it OR they have been assigned to it directly.",
+          "project_id": "{{project_id}}",
+          "policy": "{ \"meta\": { \"policy_version\": \"2.0-kbac\" }, \"subject\": { \"type\": \"User\" }, \"actions\": [ \"CAN_TRIGGER\" ], \"resource\": { \"type\": \"Workflow\" }, \"condition\": { \"cypher\": \"MATCH (subject:User)-[:WORKS_IN|CAN_TRIGGER*..3]->(resource:Workflow)\" } }",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

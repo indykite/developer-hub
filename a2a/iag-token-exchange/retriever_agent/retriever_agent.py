@@ -138,6 +138,10 @@ MCP_SESSION_TTL = float(os.getenv("MCP_SESSION_TTL", "300"))
 CIQ_QUERY_STOCK_PRICE = os.getenv("CIQ_QUERY_STOCK_PRICE", "").strip() or "get-stock-quote"
 CIQ_QUERY_PURCHASE_LIMIT = os.getenv("CIQ_QUERY_PURCHASE_LIMIT", "").strip() or "get-stock-trade-threshold"
 CIQ_QUERY_STORE_DECISION = os.getenv("CIQ_QUERY_STORE_DECISION", "").strip() or "store-decision"
+# Subject toggle for the composite floor(limit/price) tool - only meaningful
+# for usecases whose dataset defines a purchase-limit + unit-price query pair
+# (see usecases/<subject>/usecase.env).
+MAX_PURCHASE_TOOL_ENABLED = os.getenv("MAX_PURCHASE_TOOL_ENABLED", "true").strip().lower() in ("true", "1", "yes")
 _LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
 logging.basicConfig(
@@ -358,30 +362,22 @@ _BASE_SYSTEM_PROMPT = (
     "You are a helpful data retriever assistant that uses the Indykite MCP server to retrieve data. "
     "The backend exposes both MCP Resources and MCP Tools; both should be listed and considered at runtime.\n"
     "Upon receiving a request, you must:\n"
-    "1. Consider the combination of (a) your skills (authzen, ciq-execute, max-purchase-amount, "
-    "retriever) and (b) available MCP resources and MCP tools. Use list_resources to discover MCP "
+    "1. Consider the combination of (a) your loaded skills (see <available_skills>) and (b) available "
+    "MCP resources and MCP tools. Use list_resources to discover MCP "
     "resources (URIs, names, descriptions). Your bound tools already include the MCP server's tools "
     "(e.g. list_resources, read_resource, ciq_execute, plus any AuthZEN or other tools from the server).\n"
     "2. Select from this combined list which to run: either call an MCP tool (list_resources, "
-    "read_resource, ciq_execute, or an AuthZEN tool), or use max_purchase_amount, or activate a "
+    "read_resource, ciq_execute, or an AuthZEN tool), or one of your other bound tools, or activate a "
     "skill (activate_skill) and then run the matching tool, or reply without a tool (retriever).\n"
     "3. Run the selected tool or skill. Skills authzen and ciq-execute match MCP resources or tools "
     "exposed by the server—use list_resources and the tool list to see what is available and choose "
     "the right resource or tool for the request.\n"
     'Use ciq_execute with a concrete {"id": "<query-id>"} and its "input_params" — '
-    "NEVER call ciq_execute with empty arguments. Known query ids (call with these exact shapes):\n"
-    '  {"id": "get-stock-quote", "input_params": {"ticker": "NVDA"}}\n'
-    '  {"id": "get-stock-trade-threshold", "input_params": {"customer_external_id": "rebecca"}}\n'
-    '  {"id": "get-self", "input_params": {}}\n'
-    '  {"id": "get-internal-documents", "input_params": {"taxonomy_external_id": "policy"}}\n'
-    '  {"id": "get-internal-documents-chained", "input_params": {"taxonomy_external_id": "policy"}}\n'
-    '  {"id": "get-decisions", "input_params": {"document_external_id": "refund_policy"}}\n'
-    '  {"id": "get-customer-facing-documents", "input_params": {}}\n'
-    '  {"id": "get-regulatory-agreements", "input_params": {}}\n'
-    "Substitute the real ticker / customer / document / taxonomy from the user question; "
-    "if unsure which id fits, call list_resources first. Use get-internal-documents-chained "
-    "(not get-internal-documents) whenever the user names it or asks for the chain-guarded / "
-    "delegated variant.\n"
+    "NEVER call ciq_execute with empty arguments, and NEVER invent a query id. Valid ids and "
+    "their exact call shapes come from (a) the examples in your activated ciq-execute skill and "
+    '(b) the MCP server itself: read_resource on "indykite://knowledge-queries/" lists every '
+    "query, each description carrying a ready-to-use ciq_execute example. Substitute the real "
+    "values from the user question; if unsure which id fits, read that resource first.\n"
     "AuthZEN (evaluation, evaluations, resource_search, subject_search, action_search): example "
     '{"subject":{"type":"user","id":"alice"},"action":{"name":"view"},"resource":{"type":"record","id":"109"}}; '
     'response {"decision":true} or {"decision":false}. Return data only when evaluation is '
@@ -847,7 +843,7 @@ def _make_read_resource_tool(session: ClientSession) -> StructuredTool:
     )
 
 
-def _make_langchain_tool(session: ClientSession, mcp_tool: Any) -> StructuredTool:  # noqa: ANN401  # skipcq: PY-R1000
+def _make_langchain_tool(session: ClientSession, mcp_tool: Any) -> StructuredTool:  # noqa: ANN401
     """Convert an MCP tool to a LangChain StructuredTool."""
     tool_name = mcp_tool.name
     tool_desc = mcp_tool.description or ""
@@ -877,9 +873,9 @@ def _make_langchain_tool(session: ClientSession, mcp_tool: Any) -> StructuredToo
         # the LLM would otherwise retry in a loop).
         if tool_name == "ciq_execute" and not args.get("id"):
             return (
-                'ciq_execute requires a query "id" (e.g. get-self, get-stock-quote, '
-                "get-internal-documents, get-decisions) and its input_params. "
-                "Retry with a concrete id, or call list_resources to discover valid ids."
+                'ciq_execute requires a query "id" and its input_params. Retry with a '
+                "concrete id from your ciq-execute skill, or read_resource on "
+                '"indykite://knowledge-queries/" to discover valid ids.'
             )
         _logger.info(
             "MCP RPC request: %s",
@@ -1113,11 +1109,14 @@ class _McpToolsEntry:
             await self.conn.ready.wait()
             if self.conn.result is not None:
                 session, mcp_tools, mcp_resources = self.conn.result
-                lc_tools: list[StructuredTool] = [
-                    _make_list_resources_tool(session),
-                    _make_read_resource_tool(session),
-                    _make_max_purchase_amount_tool(session),
-                ] + [_make_langchain_tool(session, t) for t in mcp_tools]
+                lc_tools: list[StructuredTool] = (
+                    [
+                        _make_list_resources_tool(session),
+                        _make_read_resource_tool(session),
+                    ]
+                    + ([_make_max_purchase_amount_tool(session)] if MAX_PURCHASE_TOOL_ENABLED else [])
+                    + [_make_langchain_tool(session, t) for t in mcp_tools]
+                )
                 activate_skill_tool = _make_activate_skill_tool(_SKILL_REGISTRY)
                 if activate_skill_tool is not None:
                     lc_tools = [activate_skill_tool, *lc_tools]
@@ -1144,7 +1143,7 @@ class _McpToolsEntry:
         if self.conn is not None and self.conn.client is not None:
             self.conn.client.headers.update(headers)
 
-    async def ping(self) -> bool:  # skipcq: PY-R1000
+    async def ping(self) -> bool:
         """Probe the cached session before reuse; False means rebuild."""
         if self.conn is None or self.conn.result is None:
             return False
@@ -1480,13 +1479,11 @@ class RetrieverExecutor(AgentExecutor):
         _current_ik_token.set(_get_ik_token_from_context(context))
         if not access_token:
             raise HTTPException(status_code=401, detail="Authorization required")
-
         # Demo feature: the short-lived delegation token is intentionally
         # surfaced in the console audit terminal to show the exchange chain;
         # logs carry only a redacted fingerprint to avoid credential leaks.
         _logger.info("Exchanged bearer token (redacted): %s...%s", access_token[:6], access_token[-6:])
         _report_exchanged_token(access_token, _current_ik_token.get())
-
         await _process_retriever_request(context, event_queue, access_token)
 
     # skipcq: PYL-R0201 - AgentExecutor interface override; must stay an instance method

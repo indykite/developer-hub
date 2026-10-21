@@ -64,11 +64,12 @@
                         <h5 class="mb-1">One-click provisioning</h5>
                         <p class="text-muted small mb-0">Let a virtual operator click every create button below
                             for you, in dependency order, creating a fresh project in your existing
-                            organization: the five Getting
-                            Started steps (Project through MCP Server), both captures, the KBAC policies, the
-                            external data resolvers, then all CIQ policies and knowledge queries. Steps whose ids
-                            are already in <code>.env</code> are skipped. AuthZEN evaluations and CIQ executes are
-                            not included; every individual form keeps working as before.</p>
+                            organization: the project, application and app agent; audit signing and the event sink
+                            when the <code>PUBSUB_*</code> keys are set; token introspect and the MCP server; both
+                            captures; the KBAC policies; the external data resolvers; then all CIQ policies and
+                            knowledge queries. Steps whose ids are already in <code>.env</code> are skipped.
+                            AuthZEN evaluations and CIQ executes are not included; every individual form keeps
+                            working as before.</p>
                     </div>
                     <a href="/api_provision/run" class="btn btn-primary mt-2 mt-md-0">Provision Everything</a>
                 </div>

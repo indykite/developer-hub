@@ -1,75 +1,85 @@
 # iag-token-exchange
 
-Demonstrates the Indykite Agent Gateway, a smart, context-enabled gateway that secures A2A and MCP communication channels.
-This variant routes MCP traffic through a dedicated MCP-protecting gateway (`mcp-iag`) - see
-[Protecting MCP traffic](#protecting-mcp-traffic-mcp-iag) - and mints its delegation tokens with a
-self-hosted **IndyKite Token Service** (see [Token Service](#token-service-setup)).
-
-## What this demo shows
-
-A multi-agent system where **every hop is governed by identity, delegation,
-and graph-based authorization**. On every request, each gateway:
-
-1. **Introspects** the caller's token (who is asking?);
-2. obtains its own **actor identity** (client-credentials);
-3. **exchanges tokens to grow the delegation chain** - the `act` claims nest:
-   user → orchestrator → retriever → …;
-4. resolves the **workflow graph** from the knowledge graph (the
-   `get-agent-workflows` ContX IQ query);
-5. checks the actual **actors chain matches a modeled workflow** (`wf1`,
-   `wf2`, `wf3`);
-6. makes an AuthZEN **`CAN_TRIGGER` KBAC decision**;
-7. forwards - and **audits** every decision.
-
-The MCP gateways - the last hop before the platform - mint their delegation
-at the **Token Service** instead of the external IdP: the chain token stays
-in `Authorization` and the Token Service delegation travels beside it in
-`X-IK-Token` (platform policies read it as `$ik_token`), validated by the
-platform **offline via an inline public JWK**. Every exchange is audited at
-the Token Service. The A2A gateways grow the delegation chain via the IdP's
-exchange endpoint.
+Demonstrates the Indykite Agent Gateway, a smart, context-enabled gateway that
+secures A2A and MCP communication channels. This variant is `iag-mcp-demo`
+(same usecases, agents, gateways and console) with one difference: every
+gateway mints its delegation tokens at a self-hosted **IndyKite Token
+Service** instead of the external IdP, so the user's own token travels
+untouched in `Authorization` and the delegation chain beside it in
+`X-IK-Token`, growing hop by hop; see
+[Token Service setup](#token-service-setup). MCP traffic goes through a
+dedicated MCP-protecting gateway (`mcp-iag`); see
+[Protecting MCP traffic](#protecting-mcp-traffic-mcp-iag).
 
 One prompt, end to end (`who am I` as millicent):
 
 ```text
-console ──user token──▶ orchestrator-iag   introspect · exchange→D1 (act: ia) · wf-check · authorize
-                        └─▶ orchestrator   LLM picks query_retriever, forwards D1 (+X-IK-Token)
-D1 ────────────────────▶ retriever-iag     introspect D1 · exchange→D2 (act: ia2→ia) · wf1-check
-                        └─▶ retriever      LLM picks ciq_execute(get-self), MCP session → mcp-iag
-D2 ────────────────────▶ mcp-iag           introspect D2 · chain [ia, ia2, ia-mcp] = wf1 ✓
-                                           mints D3 at the Token Service (act: ia-mcp→ia2→ia)
-                        └─▶ platform MCP   Authorization=D2 + X-IK-Token=D3
-                                           → CIQ get-self runs against the graph → "You are Millicent…"
+console ──user token U──▶ orchestrator-iag   introspect U · Token Service exchange → D1 (sub: millicent, act: ia) · wf-check · authorize
+                          └─▶ orchestrator   Authorization=U + X-IK-Token=D1; LLM picks query_retriever, forwards both
+U + D1 ──────────────────▶ retriever-iag     introspect U · introspect D1 at the Token Service · exchange D1 → D2 (act: ia2→ia) · wf1-check
+                          └─▶ retriever      Authorization=U + X-IK-Token=D2; LLM picks ciq_execute(get-self) → mcp-iag
+U + D2 ──────────────────▶ mcp-iag           chain [ia, ia2, ia-mcp] = wf1 ✓ · exchange D2 → D3 (act: ia-mcp→ia2→ia)
+                          └─▶ platform MCP   Authorization=U + X-IK-Token=D3 → CIQ get-self runs against the graph → "You are Millicent…"
 ```
 
-What success looks like in the tokens - the platform receives two per MCP
-call: `Authorization`, the IdP chain token
-(`sub: millicent, act: {sub: ia2, act: {sub: ia}}`), and `X-IK-Token`, the
-Token Service delegation
-(`iss: the Token Service, sub: millicent, act: {sub: ia-mcp, act: {sub: ia2, act: {sub: ia}}}`) -
-the complete, cryptographically signed delegation history of one prompt.
+The platform validates `X-IK-Token` through the project's Token Introspect
+configurations (the `-ts` datasets provision them, with the Token Service's
+public key inline), and policies can read the chain as `$ik_token` - the
+`get-internal-documents-chained` / `get-policy-documents-chained` knowledge
+queries refuse any request whose chain is not exactly
+console → orchestrator → retriever → mcp.
+
+## Contents
+
+- [Folders](#folders)
+- [Running the demo](#running-the-demo)
+    - [1. Prerequisites](#1-prerequisites)
+    - [2. Configure the usecase's env file](#2-configure-the-usecases-env-file)
+    - [3. Build the local service images](#3-build-the-local-service-images)
+    - [4. Pin the Agent Gateway image tag](#4-pin-the-agent-gateway-image-tag)
+    - [Token Service setup](#token-service-setup)
+    - [5. Start the stack](#5-start-the-stack)
+    - [6. Try the demo prompts](#6-try-the-demo-prompts)
+    - [7. Troubleshooting](#7-troubleshooting)
+    - [8. Stop](#8-stop)
+- Feature deep-dives
+    - [Protecting MCP traffic (mcp-iag)](#protecting-mcp-traffic-mcp-iag)
+    - [Google Drive behind the gateway (profile drive)](#proxying-a-non-indykite-mcp-server-google-drive-profile-drive)
+    - [Deny → remediate → allow (grant button)](#deny--remediate--allow-grant-button)
+    - [Salesforce cases (profile crm)](#salesforce-cases-profile-crm)
+    - [Explain the decision (why? cards)](#explain-the-decision-why-cards)
+    - [Graph-filtered ERP rows (profile erp)](#graph-filtered-erp-rows-profile-erp)
+    - [Parallel multi-agent MCP (WF4)](#parallel-multi-agent-mcp-wf4)
 
 ## Folders
 
 This repo contains the following folders, refer to the README files in each of the folders for additional information.
 
-## `agentgateway.dev`
+### `agentgateway.dev`
 
 Contains some configuration yaml files for the open-source AgentGateway tool. See [AgentGateway](https://github.com/agentgateway/agentgateway) for details.
 
-## `chatbot`
+### `chatbot`
 
-A simple Web GUI app and  A2A client that enables Human-user prompting and interactions. The `chatbot` communicates directly with the `orachestrator_agent` (see below).
+A simple Web GUI app and  A2A client that enables Human-user prompting and interactions. The `chatbot` communicates directly with the `orchestrator_agent` (see below).
 
-## `orchestrator_agent`
+The console header's **Architecture** link opens `/static/architecture.html`: a
+self-contained diagram of every container (console, gateways, agents, MCP
+servers, database), the IndyKite platform services, the IdP with its OAuth2
+token-exchange service, the external parties (Salesforce, Google Drive,
+Open-Meteo, the LLM) and the numbered request flow between them. It reads
+`/api/config` to badge the active usecase and grey out the `drive`/`crm`/`erp`
+groups when their compose profile is off.
+
+### `orchestrator_agent`
 
 An A2A agent that manages the interactions with the end-users, and delegates the action to further agents down the workflow chain: `query_retriever` (data/IKG), `query_weather` (weather), and `query_drive` (Google Drive, via the `analyst_agent` - enabled when `ANALYST_HOST` is set).
 
-## `retriever_agent`
+### `retriever_agent`
 
 An A2A agent that manages all data or IKG requests. It acts as an MCP client to the Indykite MCP Server.
 
-## `weather_agent`
+### `weather_agent`
 
 An A2A agent that returns the current weather for a requested city. It calls the public
 [Open-Meteo](https://open-meteo.com) geocoding + forecast APIs (no API key required) and
@@ -77,16 +87,18 @@ is wired into the stack as an additional downstream agent the `orchestrator_agen
 delegate to - useful for demonstrating multi-agent routing behind the Indykite Agent
 Gateway.
 
-When the prompt mentions CanBank's headquarters (`HQ`, `headquarters`, `office`) **and**
-`MCP_SERVER_URL` is configured, the agent takes a different path: it calls the canbank
-`get-hq-weather` knowledge query through the IndyKite MCP server. That query reads the
-`hq_weather` Weather node, whose `current` and `units` properties are populated live by
-the canbank `weather` and `weather-units` external data resolvers (open-meteo). All
-other cities still go through the direct Open-Meteo path. See
-[`canbank/README.md`](../../canbank/README.md#external-data-resolvers) for the resolver
-setup.
+When the prompt mentions the usecase's headquarters (keywords from
+`WEATHER_HQ_KEYWORDS` in the usecase's `usecase.env`, e.g. `HQ`, `headquarters`,
+`office`) **and** `MCP_SERVER_URL` is configured, the agent takes a different path:
+it calls the usecase's `get-hq-weather` knowledge query through the IndyKite MCP
+server. That query reads the `hq_weather` Weather node, whose `current` and `units`
+properties are populated live by the usecase's `weather` and `weather-units`
+external data resolvers (open-meteo). All other cities still go through the direct
+Open-Meteo path. See
+[`canbank/README.md`](../../canbank/README.md#external-data-resolvers) for the
+canbank resolver setup.
 
-## `analyst_agent`
+### `analyst_agent`
 
 An A2A agent modeled on the `retriever_agent` but **multi-backend**: it
 connects to one or more MCP servers per request (`MCP_SERVER_URLS`, e.g. the
@@ -100,29 +112,92 @@ isolated MCP sessions through the same `mcp-iag` gateway, with per-user
 authorization bound to each Bearer token. See
 [Parallel multi-agent MCP (WF4)](#parallel-multi-agent-mcp-wf4).
 
-## `bruno`
+### `crm_agent`
+
+An A2A agent that files **Salesforce cases on behalf of a person** (optional
+`crm` compose profile, insurance usecase). It receives the gateway-minted
+delegation token, then performs a second, standards-based token exchange - an
+OAuth 2.0 JWT Bearer assertion (RFC 7523) signed with the connected app's
+private key - for a Salesforce access token, and creates the Case via the
+REST API. The Case description records the delegated subject and the agent
+actor chain; both tokens surface in the console's audit terminal as TOKEN
+cards. No LLM: the orchestrator's `query_crm` tool composes the
+subject/description deterministically. Its workflow (`wf-crm`) is
+staff-only - a customer's request ends in a red DENY. See
+[Salesforce cases (profile `crm`)](#salesforce-cases-profile-crm).
+
+### `erp_mcp`
+
+The graph-filtered "ERP" of the optional `erp` compose profile: a Python
+MCP server (streamable HTTP) in front of a Postgres invoices table. Before
+any SQL runs it asks AuthZEN **search/resource** which `Invoice` ids the
+calling subject may `CAN_VIEW` - the graph's `SERVES`/`HAS_INVOICE` edges
+decide the rows, the database knows nothing about authorization. Same
+prompt, different rows per login. See
+[Graph-filtered ERP rows (profile `erp`)](#graph-filtered-erp-rows-profile-erp).
+
+### `bruno`
 
 Bruno collection of sample data, ciq queries and kbac queries, plus the
 [`wf4-parallel-mcp`](bruno/iag-demo/wf4-parallel-mcp) suite mirroring the
 jarvis-proto "WF4 - Parallel Multi-Agent MCP" e2e tests.
 
+### `usecases`
+
+The demo's domain, packaged per usecase (`canbank`, `insurance`): a
+`usecase.env` with the domain vocabulary, the per-agent skill files mounted
+into the containers, and a `DEMO_SCRIPT.md` with the suggested prompts and
+narrative. The agents, gateways, and compose topology stay usecase-agnostic;
+see [`usecases/README.md`](usecases/README.md) for selecting and adding
+usecases.
+
+### `drive_mcp`
+
+The Google Drive MCP server used by the optional `drive` compose profile
+(the reference stdio server wrapped into Streamable HTTP); see
+[`drive_mcp/README.md`](drive_mcp/README.md).
+
 ## Running the demo
 
 The stack boots five Agent Gateway instances: four protecting the
 orchestrator, retriever, weather, and analyst agents (A2A), plus one
-(`mcp-iag`) protecting the IndyKite MCP server (MCP) - alongside five in-repo
-services (`chatbot`, `orchestrator_agent`, `retriever_agent`, `weather_agent`,
+(`mcp-iag`) protecting the IndyKite MCP server (MCP) - alongside the
+**Token Service** every gateway exchanges at and five in-repo services
+(`chatbot`, `orchestrator_agent`, `retriever_agent`, `weather_agent`,
 `analyst_agent`) wired together via Docker Compose. The optional `drive`
 compose profile adds a sixth gateway (`drive-mcp-iag`) and a Google Drive MCP
 server. See [Protecting MCP traffic](#protecting-mcp-traffic-mcp-iag) for the
 MCP gateway and the [Google Drive section](#proxying-a-non-indykite-mcp-server-google-drive-profile-drive)
 for Drive.
 
+The stack at a glance:
+
+| Gateway (host port) | Protects | Downstream / external | Profile |
+| --- | --- | --- | --- |
+| console `:3000` | - | the chatbot UI itself | base |
+| `token-service` `:8102` | - | issues the delegation tokens for every gateway | base |
+| `orchestrator-iag` `:8881` | orchestrator agent | routes to the other agents | base |
+| `retriever-iag` `:8882` | retriever agent | IndyKite MCP via `mcp-iag` | base |
+| `weather-iag` `:8884` | weather agent | Open-Meteo + `mcp-iag` (HQ) | base |
+| `analyst-iag` `:8885` | analyst agent | `mcp-iag`, `drive-mcp-iag`, `erp-mcp-iag` | base |
+| `mcp-iag` `:8886` | IndyKite MCP server (hosted) | `*.mcp.indykite.com` | base |
+| `drive-mcp-iag` `:8887` | drive-mcp server | Google Drive API | `drive` |
+| `crm-iag` `:8888` | crm agent | Salesforce (RFC 7523) | `crm` |
+| `erp-mcp-iag` `:8889` | erp-mcp server | `erp-db` (Postgres) | `erp` |
+
 In short, the actual run sequence is:
-provision the IndyKite project (step 1) → `cp .example.env .env` and fill it
-(step 2) → `make` (step 3) → check the gateway image tag (step 4) →
-`docker compose up -d` (step 5) → log in at `http://localhost:3000` and prompt
-(step 6). For Google Drive, additionally follow the
+
+1. Configure the Token Service ([Token Service setup](#token-service-setup))
+   and provision the IndyKite project with its public key
+   ([Prerequisites](#1-prerequisites)).
+2. `cp .example.env .env.<usecase>`, fill it, then
+   `./switch-usecase.sh <usecase>`.
+3. `make`.
+4. Check the gateway image tag.
+5. `docker compose up -d`.
+6. Log in at `http://localhost:3000` and prompt.
+
+For Google Drive, additionally follow the
 [Drive section](#proxying-a-non-indykite-mcp-server-google-drive-profile-drive)
 before step 5.
 
@@ -136,22 +211,30 @@ before step 5.
   (`uv`, `poetry`, `venv` + `pip`) works if you prefer. You only need this
   locally if you plan to run or debug the services outside Docker; the
   `docker compose up` path installs everything inside the images.
-- **An IndyKite project** provisioned with the data, policies and queries
-  below. Two equivalent ways to do it:
-    - **the [`instant-stack`](../../instant-stack) Flask app** (with its
-    `iag` dataset, `DATASET=iag`): pre-filled forms for everything (capture
-    nodes/relationships, CIQ policies + knowledge queries incl.
-    `get-agent-workflows`, KBAC policies, App Agent, Token Introspect, MCP
-    server config, external data resolvers); its
-    [`data/iag`](../../instant-stack/data/iag) dataset is kept in sync with
-    this Bruno collection, or
-    - **the Bruno collection** (`bruno/iag-demo`), request by request, as
-    linked below.
+- **An IndyKite project** per usecase, provisioned with that usecase's data,
+  policies and queries (each usecase lives in its own project; see
+  [`usecases/README.md`](usecases/README.md)). Both usecases provision with
+  **instant-stack**, from the Token Service variants of the datasets:
+  `data/canbank-ts` for **canbank** (`DATASET=canbank-ts`) and
+  `data/insurance-ts` for **insurance** (`DATASET=insurance-ts`; see
+  [`usecases/insurance/DEMO_SCRIPT.md`](usecases/insurance/DEMO_SCRIPT.md)).
+  They hold the same graph, queries and policies as `data/canbank` /
+  `data/insurance` plus the Token Service layer: three Token Introspect
+  configurations (IdP tokens with the `indykiteagent-mcp` and `chatbot-mcp`
+  audiences, and the Token Service issuer validated offline with its public
+  JWK - set `TOKEN_SERVICE_PUBLIC_JWK` in instant-stack's `.env` before
+  provisioning), one chain-guarded knowledge query + policy, and one
+  chain-guarded KBAC policy. The instant-stack manifests cover everything:
+  capture nodes/relationships, CIQ policies + knowledge queries incl.
+  `get-agent-workflows`, KBAC policies, App Agent, Token Introspect, MCP
+  server config, and external data resolvers. For canbank, the **Bruno
+  collection** (`bruno/iag-demo`) mirrors the same data request-by-request
+  as a manual alternative, as linked below (its `chain-guard` folder holds
+  the chain-guarded query/policy and probes).
 
   Required in either case:
-    - the canbank graph ingested (Bruno:
-    [`bruno/iag-demo/ingest/{canbank,customers,customer-docs}`](bruno/iag-demo/ingest),
-    or instant-stack's Capture forms),
+    - the canbank graph ingested (instant-stack `data/canbank-ts`, or Bruno:
+    [`bruno/iag-demo/ingest/{canbank,customers,customer-docs}`](bruno/iag-demo/ingest)),
     - the agent-workflow graph ingested (Bruno:
     [`bruno/iag-demo/ingest/agent-workflow`](bruno/iag-demo/ingest/agent-workflow)):
     `User`s, `Workflow`s (`wf1`/`wf2`/`wf3` plus the Drive/console shapes
@@ -166,7 +249,11 @@ before step 5.
     - a ContX IQ knowledge query + policy: pick any pair from
     [`bruno/iag-demo/ciq-context`](bruno/iag-demo/ciq-context),
     - an App Agent with a credentials token,
-    - a Token Introspect config pointing at the Curity issuer,
+    - Token Introspect configs for the IdP issuer (audiences
+    `indykiteagent-mcp` and `chatbot-mcp`) and for the Token Service issuer
+    (`https://token-service.demo.local`, public JWK inline) - without the
+    latter every request carrying an `X-IK-Token` is refused with
+    `401 Invalid token in X-IK-Token header`,
     - the project's **MCP server configuration** `enabled` and bound to that App
     Agent (`app_agent_id`) and Token Introspect (`token_introspect_id`). This
     config is created together with the project (it can't be created from the
@@ -176,17 +263,23 @@ before step 5.
 - **Provider clients** for `console` (chatbot login), `indykiteagent`
   (orchestrator), `indykiteagent-2` (retriever), `indykiteagent-3`
   (weather), and `indykiteagent-4` (analyst): each with its secret.
-  The optional Drive MCP PoC additionally needs `indykiteagent-drive`.
+  The optional Drive MCP PoC additionally needs `indykiteagent-drive`, the
+  optional CRM profile `indykiteagent-crm`, and the optional ERP profile
+  `indykiteagent-erp`.
 - **(Optional) Gemini API key**, otherwise an **Ollama** instance reachable
   from Docker (default `http://host.docker.internal:11434`).
 
-### 2. Configure `.env`
+### 2. Configure the usecase's env file
+
+Each usecase keeps a complete env file (`.env.canbank`, `.env.insurance`, …;
+gitignored) and `.env` is a symlink to the active one:
 
 ```bash
-cp .example.env .env
+cp .example.env .env.canbank        # or .env.insurance - fill the placeholders
+./switch-usecase.sh canbank         # relinks .env and (re)creates the stack
 ```
 
-The root `.env` (this file) is always required: `docker compose` loads it for
+The root `.env` symlink is always required: `docker compose` loads it for
 every service. The per-service `.env` files under `chatbot/`,
 `orchestrator_agent/`, `retriever_agent/`, and `weather_agent/` are only used
 when running those services directly on the host (outside Docker); they are
@@ -214,6 +307,7 @@ Fill in, at a minimum:
 | `DRIVE_WORKFLOW_ID` | *(Drive profile)* Workflow the drive gateway allows. Leave **empty** so `wf-drive`, `wf-drive-analyst` and `wf-drive-console` all authorize. |
 | `ANALYST_MCP_SERVER_URLS` | *(Drive profile)* Multi-backend analyst: `indykite=http://mcp-iag:8886/mcp/v1/<PROJECT_GID_URL_ENCODED>,drive=http://drive-mcp-iag:8887/mcp`. Required for Drive prompts; see the Drive section. |
 | `CIQ_QUERY_HQ_WEATHER` | Optional. Name/GID of the `get-hq-weather` knowledge query used by the weather agent for HQ prompts (default: `get-hq-weather`). Create it in `canbank` (slot 9 + the `weather` / `weather-units` EDRs). Without it, all weather prompts go to Open-Meteo. |
+| `TOKEN_SERVICE_CLIENT_ID` / `_SECRET` | The client every gateway presents on the Token Service's `/oauth2/token`; must equal `idp.client_auth` in `token-service/token-service.yaml` (see [Token Service setup](#token-service-setup)). Same values in every `.env.<usecase>` - one Token Service serves both usecases. |
 | `FLASK_SECRET_KEY` | Generate a fresh one: `python -c "import secrets; print(secrets.token_hex(32))"` |
 
 LLM selection:
@@ -227,14 +321,22 @@ LLM selection:
 The three in-repo services are built locally. There's a makefile for this:
 
 ```bash
-make                 # build chatbot, orchestrator-agent, retriever-agent, weather-agent, analyst-agent
+make                 # build chatbot, orchestrator-agent, retriever-agent, weather-agent, analyst-agent, crm-agent
 # or individually:
 make new-chatbot
 make new-orchestrator
 make new-retriever
 make new-weather
 make new-analyst
+make new-crm
+make new-drive-mcp   # optional, profile "drive" - outside the default build
+make new-erp-mcp     # optional, profile "erp"   - outside the default build
 ```
+
+Every image is tagged `:token-exchange` (`chatbot:token-exchange`,
+`retriever-agent:token-exchange`, ...), so this stack and `iag-mcp-demo`
+(which builds the same service names as `:latest`) coexist on one Docker
+host without one app's `make` replacing the other's images.
 
 ### 4. Pin the Agent Gateway image tag
 
@@ -243,17 +345,15 @@ make new-analyst
 ```yaml
 services:
   iag-base:
-    image: indykite/agent-gateway:2.65.1   # or any newer tag from Docker Hub
+    image: indykite/agent-gateway:2.70.2   # or any newer version tag from Docker Hub (`latest` lags behind)
 ```
 
-All gateways inherit this tag. `2.47.0` makes a gateway in token-service mode
-read the incoming `X-IK-Token` (introspected at the Token Service, used as
-the subject of this hop's exchange), so multi-hop A2A delegation chains grow
-hop by hop - the minimum for the A2A gateways' token-service mode. `2.42.x`
-added the `token_service` exchange block itself (delegation minted by the
-IndyKite Token Service, travelling in `X-IK-Token`); `2.21.1` was the first
-tag with MCP proxying (`JARVIS_PROTECTED_AGENT_PROTOCOL: mcp`), which the
-`mcp-iag` and `drive-mcp-iag` services need - the published `2.0.x` tags
+All gateways inherit this tag. `2.47.0` is the minimum for this demo: from
+that version a gateway runs token-service mode with hop-by-hop nesting (it
+reads the incoming `X-IK-Token`, introspects it at the Token Service and
+exchanges it, so the `act` chain grows at every hop). `2.21.1` and newer implement MCP proxying
+(`JARVIS_PROTECTED_AGENT_PROTOCOL: mcp`), which the `mcp-iag`,
+`drive-mcp-iag` and `erp-mcp-iag` services need - the published `2.0.x` tags
 ignore the protocol and 404 every MCP method after the auth pipeline passes.
 Avoid floating tags like `latest` so the demo behaviour is reproducible.
 
@@ -262,7 +362,7 @@ If you are on Apple Silicon, add a `platform` attribute:
 ```yaml
 services:
   iag-base:
-    image: indykite/agent-gateway:2.65.1
+    image: indykite/agent-gateway:2.70.2
     platform: linux/amd64
 ```
 
@@ -279,69 +379,67 @@ for different releases.
 
 ### Token Service setup
 
-The Token Service issues the exchanged (delegation) tokens for the A2A
-gateways (the MCP gateways join once the platform's mcp-server `2.49.0` -
-which validates the `X-IK-Token` delegated token and accepts any Token
-Introspect config of the app space - is rolled out to the target
-environment; see the notes in `docker-compose.yaml`). Full
-config/run details live in
-[`token-service/README.md`](token-service/README.md); in short:
+The Token Service issues the exchanged (delegation) tokens for **every**
+gateway - the A2A ones and the MCP-protecting ones alike: all gateways
+inherit the `JARVIS_TOKEN_SERVICE_*` block from
+[`iag-base-docker.yaml`](iag-base-docker.yaml). Full config/run details live
+in [`token-service/README.md`](token-service/README.md); in short:
 
 1. **Get the image**: published on Docker Hub as
    [`indykite/token-service`](https://hub.docker.com/r/indykite/token-service);
-   `docker-compose.yaml` pins `indykite/token-service:1.0.0` (currently
-   `linux/amd64` only - the compose file requests the platform explicitly,
-   so arm64 hosts run it under emulation).
-   `docker compose pull token-service` fetches it.
+   `docker-compose.yaml` pins `indykite/token-service:1.0.0` (`linux/amd64`
+   only - the compose file requests the platform explicitly, so arm64 hosts
+   run it under emulation). `docker compose pull token-service` fetches it.
 2. **Configure it**: copy `token-service/token-service.example.yaml` to
-   `token-service/token-service.yaml` (gitignored) and fill in a fresh RSA private JWK
-   (`idp.signing_keys`), the client credentials the gateways present
-   (`idp.client_auth`, matching `TOKEN_SERVICE_CLIENT_ID/SECRET` in `.env`),
-   `idp.audiences` (**every audience a subject token can carry**: the console
-   client and all `indykiteagent*` ids - a missing one is refused with
-   `invalid_target`), and the `token_introspection.configurations` that
+   `token-service/token-service.yaml` (gitignored) and fill in a fresh RSA
+   private JWK (`idp.signing_keys`), the client credentials the gateways
+   present (`idp.client_auth`, matching `TOKEN_SERVICE_CLIENT_ID/SECRET` in
+   `.env.<usecase>`), and the IdP client secret of the two `opaque` online
+   fallbacks. `idp.audiences` lists **every audience a subject token can
+   carry plus every protected agent** (the console client, `chatbot-mcp`,
+   all `indykiteagent*` ids incl. `-crm` and `-erp`) - a missing one is
+   refused with `invalid_target`; the `token_introspection.configurations`
    validate incoming subject/actor tokens (offline JWT matchers per gateway
-   actor audience + two `opaque` online fallbacks at the IdP's introspection
-   endpoint for user tokens with any audience).
-3. **Platform-side trust** (once per project), via
-   `POST /configs/v1/token-introspects` (Service Account token,
-   `Accept: application/json`):
-   - Token Service configs, one per workflow path:
-     `jwt_matcher {issuer: https://token-service.demo.local, audience: indykiteagent-2|3|4}`
-     (the issuer must be `https` - the platform treats `http` issuers as
-     opaque and skips offline validation)
-     with `offline_validation.public_jwks` holding the **raw public JWK
-     JSON** (`kty`/`n`/`e`/`alg`/`kid`/`use` only - no private fields, no
-     `key_ops`);
-   - IdP delegation configs (same audiences, the IdP's issuer) - in Token
-     Service mode the platform receives the chain token with the per-path
-     audience, so each must be matched explicitly.
+   actor audience + the online fallbacks at the IdP's introspection
+   endpoint). One Token Service serves both usecases: the configuration is
+   usecase-independent.
+3. **Platform-side trust**, once per project: the `-ts` datasets provision a
+   Token Introspect configuration for the Token Service issuer
+   (`https://token-service.demo.local`, audience `chatbot-mcp` - the
+   delegation inherits the user token's audience) with the **public** half
+   of the signing key inline. Put that public JWK (`kty`/`n`/`e`/`alg`/`kid`/`use`
+   only - no private fields, no `key_ops`) into instant-stack's `.env` as
+   `TOKEN_SERVICE_PUBLIC_JWK` before provisioning; a running service
+   publishes it at `http://localhost:8102/.well-known/jwks.json`. The
+   issuer must be `https` - the platform treats `http` issuers as opaque and
+   skips offline validation. Allow a few minutes for configuration to
+   propagate.
 
-   Allow a few minutes for configuration to propagate.
+**What changes on the wire.** The protected agents receive the user's own
+token in `Authorization` and the delegation in `X-IK-Token`; the agents
+forward both to the next gateway (a hop without the header has no
+delegation history and is denied with `no workflow matches the actors
+chain`). The CRM agent and the ERP MCP server read the subject and the
+`act` chain from `X-IK-Token`. Platform policies read the chain as
+`$ik_token`: the chain-guarded knowledge query
+(`get-internal-documents-chained` in canbank,
+`get-policy-documents-chained` in insurance) and the `*-can-disclose-document-chained`
+KBAC policy require `$ik_token.act.act.act.sub = indykiteagent`, i.e.
+exactly the console → orchestrator → retriever → mcp route. Prompt
+*"Use get-internal-documents-chained to list the policy documents"* (canbank)
+or *"Use get-policy-documents-chained to list the policy documents"*
+(insurance) from the console and the query answers; the same query called
+with a shorter chain (Bruno `chain-guard` folder, or the analyst's direct
+`wf3` route) is refused with `invalid_delegation_chain`.
 
 **Auditing.** The Token Service delivers every exchange attempt to the same
 webhook the gateways use (`audit.http.url: http://chatbot:3000/api/push-update`),
 so delegation minting appears in the console's audit terminal beside the
-gateway authorization decisions, tagged `service: token-service`:
-
-```json
-{"service": "token-service", "decision": "AUTHORIZED", "reason": "token exchanged",
- "subject": "millicent", "actor": "indykiteagent-mcp",
- "actorsChain": ["indykiteagent-mcp"], "tokenID": "9ce3c0c0-…"}
-{"service": "token-service", "decision": "NOT_AUTHORIZED",
- "reason": "this service does not issue tokens for the audience \"not-allowed\""}
-```
-
-`tokenID` is the `jti` of the issued token - the link between the audit
-record and the delegation it produced. Refusals are audited too, with the
-reason, so a denied exchange is as visible as a successful one.
-
-To observe it working, prompt in the console and watch
-`docker logs -f iag-token-exchange-token-service-1`: one
-`POST /oauth2/token` 200 per MCP hop is your issuer minting the delegation.
-`curl http://localhost:8102/.well-known/openid-configuration` and
-`/.well-known/jwks.json` show the issuer surface, and a manual exchange
-(see `token-service/README.md`) proves it end to end without the stack.
+gateway authorization decisions, tagged `service: token-service`
+(`TOKEN_EXCHANGED` / `EXCHANGE_REFUSED`, `INTROSPECTED*`; `tokenID` is the
+`jti` of the issued token). To observe it working, prompt in the console and
+watch `docker compose logs -f token-service`: one `POST /oauth2/token` per
+hop is your issuer minting the delegation.
 
 ### 5. Start the stack
 
@@ -354,6 +452,7 @@ This brings up:
 | Service | Port | Role |
 | --- | --- | --- |
 | `chatbot` | `3000` | Web UI + A2A client (log in via IdP Provider) |
+| `token-service` | `8102` | IndyKite Token Service: issues and introspects the delegation tokens for every gateway |
 | `orchestrator-iag` | `8881` | Agent Gateway protecting the orchestrator |
 | `orchestrator` | `6001` | Orchestrator agent |
 | `retriever-iag` | `8882` | Agent Gateway protecting the retriever |
@@ -454,8 +553,8 @@ Actual steps to get Drive working end-to-end:
    # equivalent one-off alternative: docker compose --profile drive up -d
    ```
 
-The graph data (Bruno ingest and the `instant-stack` app) always includes the
-Drive workflows and the `indykiteagent-drive` agent: they are inert while
+The graph data (instant-stack datasets and the Bruno ingest) always includes
+the Drive workflows and the `indykiteagent-drive` agent: they are inert while
 the profile is off, so the same provisioning works for both modes.
 
 Three ways to exercise it, in increasing order of demo value:
@@ -510,13 +609,180 @@ Parallel `INVOKES` edges between the same agent pair are discriminated by the
 `workflow_name` property (`discriminating_property: workflow_name`). Because
 `allowed_workflow_id` is single-valued, the analyst and drive gateways run
 unpinned (`ANALYST_WORKFLOW_ID=` / `DRIVE_WORKFLOW_ID=` empty, like `mcp-iag`)
-so all shapes authorize. Re-ingest the workflow data after upgrading (bruno
-`ingest/agent-workflow` or the `instant-stack` app).
+so all shapes authorize. Re-ingest the workflow data after upgrading
+(instant-stack, or bruno `ingest/agent-workflow`).
+
+#### Deny → remediate → allow (grant button)
+
+Authorization is data: when a drive prompt ends in a red DENY card, the card
+offers a button that depends on who is looking (`/api/auth/status` returns
+the subject and the role):
+
+- **the denied person** sees **request access** on their own card, whatever
+  their role - the denial is the proof they cannot grant it themselves. It
+  files an access request (`/api/access-request`) that appears in the staff
+  inbox on the Support page, where staff grant it.
+- **people who can grant** see **grant access** on other people's cards.
+  One click writes the missing `CAN_TRIGGER` edges (Capture API upsert to
+  the three drive workflows), then opens the why? graph so the new path is
+  visible immediately; re-running the prompt turns the chain green. The
+  button flips to **revoke access** (Capture delete of the same edges) so
+  the beat is repeatable.
+
+Who can grant is decided by a live **AuthZEN self-check**: only someone who
+can `CAN_TRIGGER` every workflow in a service's bundle themselves may grant
+it. `/api/auth/status` runs the check once per login and returns the
+services that pass as `can_grant`; the app shows the Support inbox and the
+grant buttons only for those. `/api/grant` repeats the check on every call,
+so millicent (trading, holds the drive workflows) passes while roy (also
+staff, no drive path) or a customer calling it directly gets a clean 403.
+
+Configured by `GRANT_WORKFLOW_MAP` in the usecase env
+(`gateway=wf:wf:...,gateway=...`, empty = buttons off). The example maps
+`drive-mcp-iag` to the `wf-drive*` bundle and `erp-mcp-iag` to `wf-erp*`, so
+invoice requests (the `access: "request"` invoice cards) can be granted the
+same way. `analyst-iag` is deliberately not mapped: it fronts both backends,
+so its DENY cards have no single bundle; grants happen on the backend
+gateway's card. A gateway missing from the map still takes requests, they
+just show in the inbox without a Grant button. Grant rights are re-checked
+by `/api/auth/status` at most once a minute and whenever a grant, revoke or
+request event arrives. The chatbot also
+needs `AUTHZEN_SUBJECT_TYPES` (insurance `Person`, canbank `User`). The
+gateway pins stay empty - only the chatbot reads this map.
+
+Timing: each gateway caches a subject's workflow set for
+`IAG_AUTHZEN_CACHE_TTL` (30 s by default, set in `.env`; see
+[`iag-base-docker.yaml`](iag-base-docker.yaml)), so a grant or revoke reaches
+gateway decisions within that window. The platform itself is consistent at
+once. Restarting the gateways
+(`docker compose restart orchestrator-iag analyst-iag drive-mcp-iag`) clears
+the cache immediately.
 
 The chatbot console reaches Drive through the orchestrator's `query_drive`
 tool (enabled when `ANALYST_HOST` is set on the orchestrator, wired by
 default): console -> orchestrator -> analyst -> `drive-mcp-iag` -> Drive, with
 every hop introspected, authorized against the chains above, and audited.
+
+### Salesforce cases (profile `crm`)
+
+The `crm` compose profile (insurance usecase) adds a delegation story that
+lands in a **real third-party SaaS**: a staff login asks the console to open
+a case, and a Case appears in a Salesforce dev org, created on behalf of the
+delegated person:
+
+```text
+console -> orchestrator-iag -> orchestrator --query_crm--> crm-iag (wf-crm) -> crm_agent
+                                                                                |  RFC 7523 JWT (signed with the connected app's key)
+                                                                                +-> Salesforce /services/oauth2/token -> Case via REST
+```
+
+The CRM agent receives the gateway-minted delegation token, reads its `sub` +
+`act` chain, then exchanges a signed JWT Bearer assertion (RFC 7523) for a
+Salesforce access token and creates the Case - the description records
+"Filed on behalf of `<subject>` via agent chain ...". The audit terminal shows
+**two** TOKEN cards per run: the IndyKite delegation token and the Salesforce
+access token (redacted by default - it is a third-party credential; set
+`SF_REPORT_FULL_TOKEN=true` to display it in full).
+`wf-crm` is staff-only (`support`/`sales` hold `CAN_TRIGGER`;
+`james` does not), so the same prompt from the customer login ends in a red
+DENY - authorization by relationship.
+
+Setup, once (details in the insurance
+[`DEMO_SCRIPT.md`](usecases/insurance/DEMO_SCRIPT.md) prerequisites):
+
+1. A Salesforce Developer Edition org with a **classic Connected App**
+   (in new orgs first enable `Setup -> External Client App Settings ->
+   Allow creation of connected apps`; the External Client App UI does not
+   expose the JWT Bearer flow): Enable OAuth Settings, **Use digital
+   signatures** + upload the certificate, scopes `api` **and**
+   `refresh_token/offline_access`, policy "Admin approved users are
+   pre-authorized" + assign the integration user's profile.
+2. Generate the keypair
+   (`openssl req -x509 -newkey rsa:2048 -nodes -keyout crm_agent/keys/sf-jwt.key
+   -out sf-jwt.crt -days 365 -subj "/CN=iag-token-exchange"`); upload `sf-jwt.crt`
+   to the connected app. Both files are gitignored; the private key stays at
+   `crm_agent/keys/sf-jwt.key` (mounted read-only). Make it readable by the
+   container's non-root user: `chmod 644 crm_agent/keys/sf-jwt.key`.
+3. Fill `.env`: `CRM_IDP_CLIENT_ID/SECRET` (`indykiteagent-crm`),
+   `IAG_CRM_HOST=crm-iag`, `SF_CONSUMER_KEY`, `SF_USERNAME`, and add `crm` to
+   `COMPOSE_PROFILES`. The dataset must carry the `wf-crm` workflow
+   (instant-stack `data/insurance-ts`).
+
+The orchestrator registers `query_crm` only when `CRM_HOST` is set (empty in
+canbank - the tool, containers, and story are absent there). Unlike the other
+agents, the CRM agent's port is **not** published to the host: it trusts the
+gateway-verified delegation token for the on-behalf-of attribution written
+into Salesforce, so only `crm-iag` may reach it (internal network). Common errors:
+`invalid_grant / invalid assertion` = certificate/key mismatch or the app not
+yet propagated (2-10 min); `refresh_token scope is required ...` = missing
+`refresh_token` scope or the pre-authorization policy; a "permission error"
+reading credentials = the key file is not readable by uid 1001 (`chmod 644`).
+
+### Explain the decision (why? cards)
+
+Every AUTHORIZED / NOT AUTHORIZED card in the console's audit terminal can
+carry a **why?** button that renders the authorization path behind the
+decision, live from the graph:
+
+```text
+why? click -> chatbot GET /api/explain?subject=millicent&workflow=wf1
+           -> POST {INDYKITE_BASE_URL}/contx-iq/v1/execute   (app-agent key)
+              explain-staff-workflow-access  + explain-direct-workflow-access
+           -> cytoscape modal: (millicent)-[WORKS_IN]->(Support)-[CAN_TRIGGER]->(wf1)
+```
+
+The two `_Application`-subject explain queries mirror the KBAC policy's two
+path shapes with every hop aliased (a `*..3` pattern cannot expose its
+intermediate nodes): the staff leg `Subject-[WORKS_IN]->Department-
+[CAN_TRIGGER]->Workflow` and the direct leg `Subject-[CAN_TRIGGER]->Workflow`.
+A **denial renders as the two nodes with no connecting path** - the graph
+shows *why not*. Since the query runs live, changing the graph mid-demo
+(capture a new `CAN_TRIGGER` edge) changes the answer on the next click.
+
+Setup: the queries ship in both datasets (instant-stack `data/canbank-ts` slots
+11/12, `data/insurance-ts` slots 10/11 - subject `User` vs `Person`); provision
+them and put the two gids in `.env` (`EXPLAIN_STAFF_QUERY_ID`,
+`EXPLAIN_DIRECT_QUERY_ID`). The buttons appear only when both are set. The
+audit events don't carry the workflow id, so the UI parses it from the
+AUTHORIZED reason text and falls back to a gateway->workflow map
+(`EXPLAIN_WORKFLOW_MAP`, assembled in compose from the `*_WORKFLOW_ID` vars)
+for DENY cards. Cytoscape is vendored at
+`chatbot/static/assets/js/cytoscape.min.js` (no CDN).
+
+### Graph-filtered ERP rows (profile `erp`)
+
+An ordinary Postgres "ERP" (one invoices table) whose rows are pre-filtered
+per caller by the knowledge graph - the so-far-unused **AuthZEN
+search/resource** API finally gets its showcase:
+
+```text
+console -> orchestrator --query_erp--> analyst --erp_list_invoices--> erp-mcp-iag -> erp-mcp
+                                                                                     |  POST /access/v1/search/resource (app-agent key)
+                                                                                     |  -> allowed invoice ids for the token's subject
+                                                                                     +-> SELECT ... WHERE external_id = ANY(ids)  @ erp-db
+```
+
+Before any SQL runs, the ERP MCP server asks AuthZEN which `Invoice` ids the
+calling subject may `CAN_VIEW`; the graph decides via
+`Department-[SERVES]->customer-[HAS_INVOICE]->Invoice` (staff) and the direct
+`HAS_INVOICE` edge (customer). **Same prompt, different rows**: insurance -
+millicent 5 households, rebecca the 5 others, james exactly his own invoice;
+canbank - millicent 9 (support+trading), leslie 6, roy 3. The database knows
+nothing about the graph, and search/resource (enumeration) complements the
+evaluation API (yes/no) used elsewhere in the demo.
+
+Setup: create the `indykiteagent-erp` IdP client; provision the dataset
+additions (Invoice nodes, SERVES/HAS_INVOICE edges, `staff-can-view-invoice`
+KBAC + the `wf-erp-*` workflow chains - in both datasets); then per usecase
+`.env`: add `erp` to `COMPOSE_PROFILES`, append
+`,erp=http://erp-mcp-iag:8889/mcp` to `ANALYST_MCP_SERVER_URLS`, set
+`ERP_TOOL_ENABLED=true` and the IdP secret; `make new-erp-mcp` and rebuild
+orchestrator/analyst for the new prompts.
+
+Trust boundary: like the CRM agent, `erp-mcp` (and `erp-db`) are **not**
+published to the host - only `erp-mcp-iag` reaches them. The server reads the
+subject from the gateway-minted delegation token; exposing it directly would
+let a self-crafted JWT read other subjects' rows.
 
 ### Parallel multi-agent MCP (WF4)
 
@@ -553,8 +819,10 @@ Two ways to see it:
 
 ### 6. Try the demo prompts
 
-See [`CANBANK_DEMO_SCRIPT.md`](CANBANK_DEMO_SCRIPT.md) for the scripted tour.
-Quick prompts once you're logged in as **Leslie**:
+See the active usecase's demo script for the scripted tour:
+[`usecases/canbank/DEMO_SCRIPT.md`](usecases/canbank/DEMO_SCRIPT.md) or
+[`usecases/insurance/DEMO_SCRIPT.md`](usecases/insurance/DEMO_SCRIPT.md).
+Quick canbank prompts once you're logged in as **Leslie**:
 
 - *"What policy documents pertain to refunds?"*
 - *"Retrieve past decisions that incorporated the 'refund_policy' document."*
@@ -602,7 +870,7 @@ agent skills (`<agent>/skills/`):
 - `canbank-authz` - dataset-owned: the exact policy triples of *this* project
   (`User -CAN_TRIGGER-> Workflow`, `User -CAN_RETRIEVE-> Quote` with known
   ids). Keep its table in sync with the `kbac` section of
-  `instant-stack/data/iag/manifest.json` when policies change; remove it if the
+  instant-stack `data/canbank-ts/manifest.json` when policies change; remove it if the
   platform ever exposes policy vocabulary through the MCP server itself.
 
 With the `drive` profile up, log in as **millicent** and mention "Google
@@ -619,29 +887,10 @@ Each one shows the full chain in the audit terminal: `orchestrator-iag` →
 
 ### 7. Troubleshooting
 
-- **`invalid_target` from the Token Service**: the requested (or inherited)
-  audience is not listed in its `idp.audiences` - add the missing client id
-  and restart the `token-service` container.
-- **Platform `401 invalid_token` on MCP calls**: no Token Introspect config
-  matches the *arriving* token's issuer+audience pair - create it (see
-  [Token Service setup](#token-service-setup)) and allow a few minutes for
-  propagation.
-- **403 "no workflow matches the actors chain"**: the delegation history was
-  lost between hops (both `Authorization` and `X-IK-Token` must be forwarded)
-  or the workflow graph doesn't model this chain - re-ingest the
-  agent-workflow data.
-- **Gateway / token-service containers show "unhealthy"**: only expected on
-  gateway tags below `2.52.1` / token-service below `1.0.0`, whose binaries
-  don't serve the baked `:9080/healthz` probe. On the pinned versions
-  "unhealthy" is a real signal; probe the service port to double-check
-  (`curl -s -o /dev/null -w '%{http_code}'
-  http://localhost:8881/.well-known/agent-card.json` - 401 = serving with
-  auth enforced).
 - **`manifest unknown` / `manifest for indykite/agent-gateway:<tag> not found`**:
   the pinned tag doesn't exist for your platform. Pick a valid one from
-  [Docker Hub](https://hub.docker.com/r/indykite/agent-gateway/tags) (`2.43.6`
-  is the tested pin; `2.21.1`+ has MCP proxying, `2.42.0`+ the Token Service
-  block) and, on Apple Silicon, add `platform: linux/amd64`.
+  [Docker Hub](https://hub.docker.com/r/indykite/agent-gateway/tags) (`2.21.1`
+  or newer for MCP proxying) and, on Apple Silicon, add `platform: linux/amd64`.
 - **OAuth redirect mismatch**: the Provider `console` client's redirect URL
   must exactly match `http://${CHATBOT_HOST}:${CHATBOT_PORT}/auth/callback`.
 - **`401 Unauthorized` / `403 Forbidden` on every prompt**: the user you're
@@ -675,11 +924,66 @@ Each one shows the full chain in the audit terminal: `orchestrator-iag` →
   means token refresh failed - re-run the auth bootstrap.
 - **Drive file reads answer "binary document"**: the file is an uploaded
   binary, not a Google-native doc - convert it (*Open with → Google Docs*).
+- **Console features silently missing (why? cards, table styling, ...)**
+  after switching demo apps: the sibling `iag-token-exchange` app builds
+  images with the same tags and has overwritten this app's - re-run this
+  app's `make` and `docker compose up -d` (see the warning in the build
+  section).
+- **`Bind for 0.0.0.0:88xx failed: port is already allocated`**: the
+  sibling `iag-token-exchange` stack shares the full port map - only one of
+  the two demos can run at a time. Stop the other first (if its `.env` is
+  broken and `compose down` fails:
+  `docker ps -a --filter name=iag-token-exchange -q | xargs docker stop`).
+- **A mounted file exists on the host but the container sees an empty
+  directory** (e.g. `crm_agent/keys/`): the host directory was deleted and
+  recreated while the container ran - a bind mount pins the old inode.
+  `docker compose up -d --force-recreate <service>` rebinds it.
+- **Grant button problems**: no `grant access` button on a DENY card = the
+  card's gateway has no `GRANT_WORKFLOW_MAP` entry, you're not logged in,
+  the card is your own denial (you get `request access` instead), or the
+  AuthZEN self-check found no `CAN_TRIGGER` path of your own to that
+  service's workflows (`can_grant` in `/api/auth/status`, re-checked within
+  a minute or on the next grant/request event). As millicent it means the
+  staff path isn't provisioned. A **403 on click** means the same check
+  failed on the write. A **502** means the
+  chatbot can't reach `INDYKITE_BASE_URL` / the app-agent key is invalid.
+- **Invoices empty or `erp-db` exits after a postgres major upgrade**: the
+  `erp_db_data` volume holds a cluster from the previous major version, which
+  the new image will not open (it refuses to start, or initialises an empty
+  cluster next to the old files). The volume only holds the seed rows from
+  `erp_mcp/init.sql`, so reset it once:
+  `docker compose rm -sf erp-db && docker volume rm iag-token-exchange_erp_db_data`,
+  then `docker compose up -d erp-db erp-mcp` re-seeds it.
+- **ERP answers "authorization search failed"**: check
+  `APP_AGENT_CREDENTIALS_TOKEN` / `INDYKITE_BASE_URL` in the erp-mcp
+  container; "no invoices are visible" with 0 rows for a staff login means
+  the `SERVES`/`HAS_INVOICE` edges or the invoice KBAC policies are not
+  provisioned.
+- **Gateway metrics**: every gateway serves Prometheus metrics at
+  `:9090/metrics` inside its network (enabled via
+  `JARVIS_SERVICE_TRACING_DETECTOR: local` in `iag-base-docker.yaml`; no host
+  port is published - probe from a member container).
+- **`401 Invalid token in X-IK-Token header`** from AuthZEN, ContX IQ or the
+  MCP server: the project has no Token Introspect configuration for the
+  Token Service issuer, or its inline public JWK does not match the signing
+  key - provision the `-ts` dataset with the current `TOKEN_SERVICE_PUBLIC_JWK`
+  (compare with `http://localhost:8102/.well-known/jwks.json`).
+- **Token Service audit `EXCHANGE_REFUSED` / `invalid_target`**: the
+  requested audience is missing from `idp.audiences` in
+  `token-service/token-service.yaml` (every `indykiteagent*` client plus the
+  user token audiences must be listed).
+- **`502` from a gateway right after start**: the gateway could not reach
+  the Token Service or its client secret is wrong - the gateway log names
+  the endpoint and the response; compare `TOKEN_SERVICE_CLIENT_SECRET` with
+  `idp.client_auth.client_secret`.
+- **`403` with `no workflow matches the actors chain` on the second hop**:
+  the previous agent forwarded `Authorization` without `X-IK-Token`, so the
+  gateway saw no delegation history (all in-repo agents forward both).
 - **Tail gateway logs** to see the introspect / exchange / CIQ / AuthZen
   decisions:
 
   ```bash
-  docker compose logs -f orchestrator-iag retriever-iag mcp-iag analyst-iag drive-mcp-iag
+  docker compose logs -f token-service orchestrator-iag retriever-iag mcp-iag analyst-iag drive-mcp-iag crm-iag erp-mcp-iag
   ```
 
 ### 8. Stop

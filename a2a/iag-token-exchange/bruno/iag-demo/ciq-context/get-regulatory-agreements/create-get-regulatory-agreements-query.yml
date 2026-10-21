@@ -16,7 +16,7 @@ http:
       {
           "name": "get-regulatory-agreements",
           "display_name": "Get Regulatory Agreements",
-          "description": "Call tool 'ciq_execute' with argument: \"id\": \"get-regulatory-agreements\" and no \"input_params\". Example: { \"id\": \"get-regulatory-agreements\", \"input_params\": { } }. Returns a list of regulatory agreements that includes the external_id, name, and description.",
+          "description": "Call tool 'ciq_execute' with argument: \"id\": \"get-regulatory-requirements\" and no \"input_params\". Example: { \"id\": \"get-regulatory-agreements\", \"input_params\": { } }. Returns a list of regulatory agreements that includes the external_id, name, and description.",
           "project_id": "{{project_id}}",
           "policy_id": "{{get_regulatory_agreements_policy}}",
           "query": "{ \"nodes\": [ \"ra.external_id\", \"ra.property.name\", \"ra.property.description\" ], \"relationships\": [  ], \"aggregate_values\": [ ] }",
