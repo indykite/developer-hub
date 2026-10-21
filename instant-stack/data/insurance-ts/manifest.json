@@ -1062,7 +1062,7 @@
     "description": "SecureHome Insurance demo consuming the IndyKite Knowledge Graph"
   },
   "project": {
-    "name": "insurance-demo-ts2",
+    "name": "insurance-demo-ts",
     "display_name": "SecureHome Insurance Demo TS",
     "description": "Household insurance demo project TS for IndyKite KBAC and ContX IQ",
     "region": "europe-west1",

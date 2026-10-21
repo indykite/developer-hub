@@ -189,7 +189,7 @@ _LIB_LOG_LEVEL = os.getenv("LIB_LOG_LEVEL", "INFO").upper()
 _LIB_LOG_LEVELNO = {"CRITICAL": 50, "ERROR": 40, "WARNING": 30, "INFO": 20, "DEBUG": 10}.get(_LIB_LOG_LEVEL, 20)
 
 
-class _CondenseLibLogs(logging.Filter):
+class _CondenseLibLogs(logging.Filter):  # skipcq: PY-A6006
     """Tame third-party log records at the handler, per LIB_LOG_LEVEL.
 
     Records from the noisy libraries are dropped below LIB_LOG_LEVEL, and the
@@ -916,7 +916,11 @@ def _make_read_resource_tool(session: ClientSession, alias: str = "") -> Structu
     )
 
 
-def _make_langchain_tool(session: ClientSession, mcp_tool: Any, alias: str = "") -> StructuredTool:  # noqa: ANN401
+def _make_langchain_tool(  # skipcq: PY-R1000
+    session: ClientSession,
+    mcp_tool: Any,  # noqa: ANN401
+    alias: str = "",
+) -> StructuredTool:
     """Convert an MCP tool to a LangChain StructuredTool.
 
     The LangChain-facing name is prefixed with the backend alias so tools from
@@ -1274,7 +1278,7 @@ class _McpToolsEntry:
             if conn.client is not None:
                 conn.client.headers.update(headers)
 
-    async def ping(self) -> bool:
+    async def ping(self) -> bool:  # skipcq: PY-R1000
         """Probe every cached session before reuse; False means full rebuild.
 
         Each backend is probed independently so one dead backend does not

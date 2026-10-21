@@ -159,7 +159,7 @@ _LIB_LOG_LEVEL = os.getenv("LIB_LOG_LEVEL", "INFO").upper()
 _LIB_LOG_LEVELNO = {"CRITICAL": 50, "ERROR": 40, "WARNING": 30, "INFO": 20, "DEBUG": 10}.get(_LIB_LOG_LEVEL, 20)
 
 
-class _CondenseLibLogs(logging.Filter):
+class _CondenseLibLogs(logging.Filter):  # skipcq: PY-A6006
     """Tame third-party log records at the handler, per LIB_LOG_LEVEL.
 
     Records from the noisy libraries are dropped below LIB_LOG_LEVEL, and the

@@ -104,7 +104,7 @@ _LIB_LOG_LEVEL = os.getenv("LIB_LOG_LEVEL", "INFO").upper()
 _LIB_LOG_LEVELNO = {"CRITICAL": 50, "ERROR": 40, "WARNING": 30, "INFO": 20, "DEBUG": 10}.get(_LIB_LOG_LEVEL, 20)
 
 
-class _CondenseLibLogs(logging.Filter):
+class _CondenseLibLogs(logging.Filter):  # skipcq: PY-A6006
     """Tame third-party log records at the handler, per LIB_LOG_LEVEL.
 
     Records from the noisy libraries are dropped below LIB_LOG_LEVEL, and the
@@ -289,7 +289,7 @@ def _build_client(url: str, token: str) -> tuple["ClientFactory", "AgentCard"]:
     return factory, url
 
 
-async def _call_agent(base_url: str, text: str, token: str) -> str:  # noqa: C901,PLR0911,PLR0912
+async def _call_agent(base_url: str, text: str, token: str) -> str:  # noqa: C901,PLR0911,PLR0912  # skipcq: PY-R1000
     """Send *text* to a downstream A2A gateway and return the response text.
 
     Speaks raw JSON-RPC 2.0 directly — no card resolution or SDK client.
