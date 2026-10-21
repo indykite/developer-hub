@@ -65,8 +65,8 @@ the `get-home-insurance-access` knowledge query can express that.
   `ciq_execute` with `{"id":"get-home-insurance-access","input_params":{"caller_id":"adult-002"}}` and
   describe what the result shows her. Never answer "not authorized" to a
   coverage-data question.
-- AuthZEN answers ONLY the two triples in the table above: may a person
-  TRIGGER a workflow, may a person VIEW a document.
+- AuthZEN answers ONLY the three triples in the table above: may a person
+  TRIGGER a workflow, VIEW a document, or VIEW an invoice.
 - "Why can't X see ..." presupposes a denial - never accept that premise
   without running the tool. Run the query (or, for documents, the AuthZEN
   check) first; if it shows access, correct the question: "She can - ..."

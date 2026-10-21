@@ -38,7 +38,7 @@
               "description": "By invoice id. Naming an id is not enough: the graph must connect you to it.",
               "input": {
                 "label": "Invoice id",
-                "placeholder": "inv-001"
+                "placeholder": "inv-cb-001"
               },
               "prompt": "Show me invoice {input}",
               "render": "details",

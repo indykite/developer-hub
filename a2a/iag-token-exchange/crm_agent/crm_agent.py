@@ -463,7 +463,11 @@ async def _file_case(prompt: str, access_token: str) -> str:
 
 
 class CrmExecutor(AgentExecutor):
-    async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:  # noqa: D102
+    async def execute(  # noqa: D102  # skipcq: PYL-R0201
+        self,
+        context: RequestContext,
+        event_queue: EventQueue,
+    ) -> None:
         access_token = _get_access_token_from_context(context)
         if not access_token:
             raise HTTPException(status_code=401, detail="Authorization required")
@@ -518,7 +522,11 @@ class CrmExecutor(AgentExecutor):
         )
         _logger.info("CRM response: %s", result_text[:200])
 
-    async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:  # noqa: D102
+    async def cancel(  # noqa: D102  # skipcq: PYL-R0201
+        self,
+        context: RequestContext,
+        event_queue: EventQueue,
+    ) -> None:
         await event_queue.enqueue_event(
             TaskStatusUpdateEvent(
                 task_id=context.task_id,

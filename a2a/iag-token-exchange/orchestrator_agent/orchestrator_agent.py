@@ -437,7 +437,7 @@ async def _call_crm(text: str) -> str:
     return await _call_agent(CRM_URL, text, _current_access_token.get())
 
 
-async def _call_agent_a2a(base_url: str, text: str, token: str) -> str:  # noqa: C901, PLR0912
+async def _call_agent_a2a(base_url: str, text: str, token: str) -> str:  # noqa: C901, PLR0912  # skipcq: PY-R1000
     """Send *text* to a downstream A2A agent using card resolution and the SDK client."""
     headers: dict[str, str] = {}
     if token:
@@ -618,7 +618,7 @@ async def query_erp(query: str) -> str:
 _SKILLS_DIR = Path(__file__).resolve().parent / "skills"
 
 
-def _parse_skill_file(location: Path) -> dict[str, Any] | None:  # noqa: C901,PLR0911,PLR0912
+def _parse_skill_file(location: Path) -> dict[str, Any] | None:  # noqa: C901,PLR0911,PLR0912  # skipcq: PY-R1000
     """Parse a SKILL.md file: extract YAML frontmatter and body. Returns skill record or None."""
     try:
         raw = location.read_text(encoding="utf-8")
@@ -895,7 +895,11 @@ _TOOL_CALL_MAX_ITERATIONS = 5
 class OrchestratorExecutor(AgentExecutor):
     """AgentExecutor that routes incoming messages through an LLM + tool loop."""
 
-    async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:  # noqa: C901,D102,PLR0912
+    async def execute(  # noqa: C901,D102,PLR0912  # skipcq: PY-R1000,PYL-R0201
+        self,
+        context: RequestContext,
+        event_queue: EventQueue,
+    ) -> None:
         access_token = _get_access_token_from_context(context)
         if not access_token:
             raise HTTPException(status_code=401, detail="Authorization required")
@@ -993,7 +997,11 @@ class OrchestratorExecutor(AgentExecutor):
         )
         _logger.info("LLM response for %s: %s...", ORCHESTRATOR_AGENT_NAME, final_text[:200])
 
-    async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:  # noqa: D102
+    async def cancel(  # noqa: D102  # skipcq: PYL-R0201
+        self,
+        context: RequestContext,
+        event_queue: EventQueue,
+    ) -> None:
         await event_queue.enqueue_event(
             TaskStatusUpdateEvent(
                 task_id=context.task_id,
