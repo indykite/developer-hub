@@ -6,7 +6,7 @@ info:
 
 http:
   method: PUT
-  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies/{{get_regulatory_agreements_policy}}"
   headers:
     - name: Content-Type
       value: application/json

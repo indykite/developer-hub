@@ -8,7 +8,9 @@ ENV PYTHONUNBUFFERED=1
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# Only the application source; the Salesforce signing key under keys/ is
+# bind-mounted at runtime and must never enter an image layer.
+COPY crm_agent.py .
 
 # Run as a non-root user (trivy AVD-DS-0002)
 RUN groupadd --system --gid 1001 app \

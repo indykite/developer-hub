@@ -843,7 +843,7 @@ def _make_read_resource_tool(session: ClientSession) -> StructuredTool:
     )
 
 
-def _make_langchain_tool(session: ClientSession, mcp_tool: Any) -> StructuredTool:  # noqa: ANN401
+def _make_langchain_tool(session: ClientSession, mcp_tool: Any) -> StructuredTool:  # noqa: ANN401  # skipcq: PY-R1000
     """Convert an MCP tool to a LangChain StructuredTool."""
     tool_name = mcp_tool.name
     tool_desc = mcp_tool.description or ""

@@ -761,7 +761,11 @@ async def _fetch_current_weather(city: str) -> str:
 
 
 class WeatherExecutor(AgentExecutor):
-    async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:  # noqa: D102
+    async def execute(  # noqa: D102  # skipcq: PYL-R0201
+        self,
+        context: RequestContext,
+        event_queue: EventQueue,
+    ) -> None:
         access_token = _get_access_token_from_context(context)
         _current_ik_token.set(_get_ik_token_from_context(context))
         if not access_token:
@@ -832,7 +836,11 @@ class WeatherExecutor(AgentExecutor):
         )
         _logger.info("Weather response: %s", result_text[:200])
 
-    async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:  # noqa: D102
+    async def cancel(  # noqa: D102  # skipcq: PYL-R0201
+        self,
+        context: RequestContext,
+        event_queue: EventQueue,
+    ) -> None:
         await event_queue.enqueue_event(
             TaskStatusUpdateEvent(
                 task_id=context.task_id,

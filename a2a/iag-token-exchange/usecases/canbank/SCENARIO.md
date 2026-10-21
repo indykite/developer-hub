@@ -32,8 +32,8 @@ times - it is the co-star.
    → the stored decisions. *Say*: "Precedent, linked in the graph - follow
    `decision_001` in the data explorer."
 4. **Type**: "Show me the invoices"
-   → **6 rows**: the customers support serves, rebecca's card fee among
-   them. *Say*: "Not filtered by the app, and not by the database - the
+   → **6 rows**: invoices for Alison, Bob and Charlie, the customers support
+   serves. *Say*: "Not filtered by the app, and not by the database - the
    rows were chosen by the graph before any SQL ran."
 5. **Click** **why?** on a green card
    → `leslie → support → CAN_TRIGGER → wf1`, drawn live from the graph.

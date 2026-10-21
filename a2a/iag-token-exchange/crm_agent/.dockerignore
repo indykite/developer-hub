@@ -1,0 +1,3 @@
+# Salesforce connected-app private key: runtime bind mount only
+keys/
+__pycache__/

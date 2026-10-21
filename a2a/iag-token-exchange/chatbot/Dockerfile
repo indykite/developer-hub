@@ -11,12 +11,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN mkdir -p /tmp/flask_session && chmod 777 /tmp/flask_session
-
-# Run as a non-root user (trivy AVD-DS-0002)
+# Run as a non-root user (trivy AVD-DS-0002); the session store holds
+# authenticated user tokens, so it is owned by that user and closed to others
 RUN groupadd --system --gid 1001 app \
  && useradd --system --uid 1001 --gid app --home-dir /app --shell /usr/sbin/nologin app \
- && chown -R app:app /app
+ && mkdir -p /tmp/flask_session \
+ && chown -R app:app /app /tmp/flask_session \
+ && chmod 700 /tmp/flask_session
 USER app
 
 EXPOSE 3000
