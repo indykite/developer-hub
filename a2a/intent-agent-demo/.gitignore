@@ -1,0 +1,27 @@
+# Environment and generated secrets
+.env
+.env.*
+!.example.env
+token-service/token-service.yaml
+console/keys/*
+!console/keys/.gitkeep
+
+# Audit files written by the file-delivery variant
+audit/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Helm
+chart/charts/
+chart/*.tgz
+chart/values-local.yaml
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store

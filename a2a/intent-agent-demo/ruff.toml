@@ -1,0 +1,19 @@
+# Inherits the repository-wide rules (select = ALL, line length 120, double
+# quotes); only the test suite relaxes what pytest-style code cannot satisfy.
+extend = "../../pyproject.toml"
+
+# Keep ruff's import sorting in agreement with the repo's isort hook, which
+# files the console's own `app` package with the third-party imports (same
+# arrangement the root config uses for instant-stack's `api` package).
+[lint.isort]
+known-third-party = ["app"]
+
+[lint.per-file-ignores]
+"console/tests/*" = [
+    "S101",    # pytest asserts
+    "S105",    # test fixtures carry literal "secrets"
+    "S106",
+    "PLR2004", # expected values in assertions are literals by design
+    "ANN",     # fixtures and test functions stay unannotated
+    "D",       # test names are the documentation
+]

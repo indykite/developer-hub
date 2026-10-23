@@ -72,6 +72,8 @@ self-contained folder per dataset:
 ```text
 data/
   canbank/              # the default dataset (DATASET=canbank)
+  intent/               # a2a/intent-agent-demo: the canbank graph + 24 KBAC
+                        # policies, no MCP/CIQ/resolvers (DATASET=intent)
     manifest.json       # all Config-API elements: project, application,
                         # app_agent, mcp_server, token_introspect, kbac,
                         # resolvers, ciq_policies, ciq_queries

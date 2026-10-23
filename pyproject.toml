@@ -87,6 +87,12 @@ method-rgx = '^_{0,2}[a-z][_a-z\d]*$'
 #
 # 'ruff' config section
 # https://github.com/astral-sh/ruff
+#
+# bandit (python-bandit pre-commit hook)
+# B101 (assert used) is skipped: assert is the test-suite idiom, not a security control.
+[tool.bandit]
+skips = ["B101"]
+
 [tool.ruff]
 target-version = 'py311'
 line-length = 120
