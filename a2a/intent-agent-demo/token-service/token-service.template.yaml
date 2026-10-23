@@ -1,0 +1,91 @@
+---
+# IndyKite Token Service (ITS) configuration for the intent-agent demo.
+#
+# TEMPLATE: `make keys` renders it into token-service.yaml (gitignored) by
+# filling the four double-underscore placeholders below with freshly generated
+# material: the private RSA JWK the ITS signs delegation tokens with
+# (ITS_SIGNING_JWK), the public half of the demo issuer's key
+# (DEMO_IDP_PUBLIC_JWK, pairs with console/keys/demo-idp.key), the
+# client_secret_basic secret (TOKEN_SERVICE_CLIENT_SECRET) and the webhook key
+# the console expects (AUDIT_WEBHOOK_API_KEY); the last two are mirrored in .env.
+# The rendered file is written world-readable like .env: the Token Service and
+# console containers run as their own uids and must be able to read it.
+#
+# Reference for every field: https://developer.indykite.com/guides/guide-token-service
+
+service:
+  name: token-service
+  port: 8102
+  environment: local
+  log_level: info
+  # The `iss` claim of every token this service signs - an identifier, not a
+  # transport address. https because the IndyKite platform validates JWTs
+  # offline only for https issuers; inside the compose network the service is
+  # reached at http://token-service:8102.
+  base_url: https://token-service.intent-demo.local
+
+idp:
+  # Allow-list of `aud` values a delegation token may be issued for. The
+  # console exchanges for `intent_agent` (the Intent Agent's
+  # EXPECTED_TOKEN_AUDIENCE); `intent-demo-console` is the audience of the
+  # subject tokens the demo issuer mints and doubles as the "wrong audience"
+  # guardrail scenario.
+  audiences:
+    - intent_agent
+    - intent-demo-console
+  # Delegation tokens cannot be revoked - keep them short.
+  token_ttl: 5m
+  actor_type: Agent
+  # Presented as HTTP Basic by the console on /oauth2/token and by the Intent
+  # Agent on /oauth2/introspect (INTROSPECT_CLIENT_ID / INTROSPECT_CLIENT_SECRET).
+  client_auth:
+    type: client_secret_basic
+    client_id: intent-demo
+    client_secret: "__TOKEN_SERVICE_CLIENT_SECRET__" # skipcq: SCT-A000 - placeholder, filled by `make keys`
+  # First key signs; keep older keys listed while their tokens are alive.
+  signing_keys:
+    - '__ITS_SIGNING_JWK__'
+
+# Which incoming subject/actor tokens the exchange accepts. Both come from the
+# demo issuer built into the console (RS256 JWTs, iss https://demo-idp.intent-demo.local),
+# verified offline against its public key - no network call, no external IdP.
+token_introspection:
+  configurations:
+    demo-idp-subject:
+      token_types:
+        - subject_token
+      matcher:
+        type: jwt
+        issuer: https://demo-idp.intent-demo.local
+        audience: intent-demo-console
+      validation:
+        offline:
+          keys:
+            - '__DEMO_IDP_PUBLIC_JWK__'
+    demo-idp-actor:
+      token_types:
+        - actor_token
+      matcher:
+        type: jwt
+        issuer: https://demo-idp.intent-demo.local
+        audience: intent_agent
+      validation:
+        offline:
+          keys:
+            - '__DEMO_IDP_PUBLIC_JWK__'
+
+# Every exchange and introspection is audited to the console, which shows the
+# records in the same stream as the Intent Agent's own audit log. The webhook
+# auth and queue keys use the compact spellings the service reads (apikey,
+# apikeyheader, buffersize); snake_case variants are ignored.
+audit:
+  delivery: webhook
+  http:
+    url: http://console:3200/audit/webhook
+    method: POST
+    auth:
+      type: api-key
+      apikey: "__AUDIT_WEBHOOK_API_KEY__"
+      apikeyheader: X-API-Key
+  async:
+    buffersize: 100

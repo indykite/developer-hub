@@ -24,6 +24,9 @@ ignore: |
   a2a/iag-demo/bruno/
   a2a/iag-mcp-demo/bruno/
   a2a/iag-token-exchange/bruno/
+  # Helm chart templates are Go templates that only become YAML once rendered
+  # (`helm lint` / `helm template` check them).
+  a2a/intent-agent-demo/chart/templates/
 
 rules:
   braces:

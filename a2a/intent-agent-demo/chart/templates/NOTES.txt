@@ -1,0 +1,12 @@
+intent-agent-demo {{ .Chart.Version }} installed as {{ .Release.Name }} in {{ .Release.Namespace }}.
+
+Open the console (loopback port-forward; the API has no caller authentication):
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ .Release.Name }}-console 3200:{{ .Values.console.port }}
+  then http://127.0.0.1:3200/
+
+Watch the pods come up (the Intent Agent waits for the Token Service and Redis):
+  kubectl get pods -n {{ .Release.Namespace }} -w
+
+Expected Secrets (created before install, see the README):
+  {{ .Values.secrets.envSecret }}   GEMINI_API_KEY, APP_AGENT_CREDENTIALS_TOKEN, TOKEN_SERVICE_CLIENT_SECRET, AUDIT_WEBHOOK_API_KEY
+  {{ .Values.secrets.filesSecret }} token-service.yaml, demo-idp.key
