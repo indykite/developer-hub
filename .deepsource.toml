@@ -1,6 +1,10 @@
 # https://docs.deepsource.com/docs/dashboard/repository/.deepsource.toml
 version = 1
 
+# Files DeepSource treats as tests: test-only idioms such as `assert` (BAN-B101)
+# are not raised for them. Matches the repository's <name>_test.py convention.
+test_patterns = ["**/tests/*_test.py", "**/test/*_test.py"]
+
 #
 [[analyzers]]
 name = "secrets"

@@ -167,6 +167,8 @@ repos:
     hooks:
       - id: bandit
         name: python-bandit
+        # Settings live in pyproject.toml ([tool.bandit]); bandit reads no config unless told.
+        args: [-c, pyproject.toml]
 
   - repo: https://github.com/PyCQA/isort
     rev: 9f905615631c545f5aea2516508109350d1d2f7d # frozen: 9.0.2
@@ -236,6 +238,8 @@ repos:
         language: system
         entry: yamlfmt
         types: [yaml]
+        # Helm chart templates are Go templates, not parseable YAML.
+        exclude: ^a2a/intent-agent-demo/chart/templates/
   # - repo: https://github.com/adrienverge/yamllint <- "language: python" slower & takes larger CI cache comparing to "system"
   #   rev: v1.37.1
   - repo: local

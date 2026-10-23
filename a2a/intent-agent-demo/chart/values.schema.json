@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "intent-agent-demo values",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "secrets",
+    "platform",
+    "intentAgent",
+    "tokenService",
+    "console",
+    "redis"
+  ],
+  "definitions": {
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "tag"
+      ],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tag": {
+          "type": "string",
+          "minLength": 1
+        },
+        "pullPolicy": {
+          "type": "string",
+          "enum": [
+            "Always",
+            "IfNotPresent",
+            "Never"
+          ]
+        }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "properties": {
+        "requests": {
+          "type": "object"
+        },
+        "limits": {
+          "type": "object"
+        }
+      }
+    },
+    "port": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 65535
+    },
+    "logLevel": {
+      "type": "string",
+      "enum": [
+        "DEBUG",
+        "INFO",
+        "WARNING",
+        "ERROR"
+      ]
+    }
+  },
+  "properties": {
+    "secrets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "envSecret",
+        "filesSecret"
+      ],
+      "properties": {
+        "envSecret": {
+          "type": "string",
+          "minLength": 1
+        },
+        "filesSecret": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "platform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "indykiteBaseUrl"
+      ],
+      "properties": {
+        "indykiteBaseUrl": {
+          "type": "string",
+          "pattern": "^https://"
+        }
+      }
+    },
+    "intentAgent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "image",
+        "intentPort",
+        "healthPort"
+      ],
+      "properties": {
+        "image": {
+          "$ref": "#/definitions/image"
+        },
+        "replicaCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "intentPort": {
+          "$ref": "#/definitions/port"
+        },
+        "healthPort": {
+          "$ref": "#/definitions/port"
+        },
+        "logLevel": {
+          "$ref": "#/definitions/logLevel"
+        },
+        "geminiModel": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expectedTokenAudience": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requestTimeoutSeconds": {
+          "type": "string",
+          "pattern": "^[0-9]+(\\.[0-9]+)?$"
+        },
+        "llmTimeoutSeconds": {
+          "type": "string",
+          "pattern": "^[0-9]+(\\.[0-9]+)?$"
+        },
+        "validationMaxRetries": {
+          "type": "string",
+          "pattern": "^[0-9]+$"
+        },
+        "resources": {
+          "$ref": "#/definitions/resources"
+        }
+      }
+    },
+    "tokenService": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "image",
+        "port",
+        "clientId"
+      ],
+      "properties": {
+        "image": {
+          "$ref": "#/definitions/image"
+        },
+        "port": {
+          "$ref": "#/definitions/port"
+        },
+        "clientId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "resources": {
+          "$ref": "#/definitions/resources"
+        }
+      }
+    },
+    "console": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "image",
+        "port",
+        "service"
+      ],
+      "properties": {
+        "image": {
+          "$ref": "#/definitions/image"
+        },
+        "port": {
+          "$ref": "#/definitions/port"
+        },
+        "logLevel": {
+          "$ref": "#/definitions/logLevel"
+        },
+        "service": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "ClusterIP",
+                "NodePort",
+                "LoadBalancer"
+              ]
+            },
+            "nodePort": {
+              "type": "integer",
+              "minimum": 30000,
+              "maximum": 32767
+            }
+          }
+        },
+        "resources": {
+          "$ref": "#/definitions/resources"
+        }
+      }
+    },
+    "redis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "image"
+      ],
+      "properties": {
+        "image": {
+          "$ref": "#/definitions/image"
+        },
+        "resources": {
+          "$ref": "#/definitions/resources"
+        }
+      }
+    }
+  }
+}

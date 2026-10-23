@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture · Intent Agent demo</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23F8951D'/%3E%3Crect x='7' y='9' width='18' height='3' rx='1.5' fill='%230A0A0A'/%3E%3Crect x='7' y='15' width='11' height='3' rx='1.5' fill='%230A0A0A'/%3E%3Crect x='7' y='21' width='15' height='3' rx='1.5' fill='%230A0A0A'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..700,50&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+  <style>
+    .page { max-width: 1240px; margin: 0 auto; padding: 32px 44px 80px; }
+    .page-head { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; margin-bottom: 18px; }
+    .page-head a { color: var(--sub); font-size: 13px; }
+    .page-head a:hover { color: var(--blue); }
+    .plate { border: 1px solid var(--line); border-top: 3px solid var(--orange); border-radius: var(--radius); background: var(--card); box-shadow: var(--shadow); padding: 12px; overflow-x: auto; }
+    svg { width: 100%; min-width: 1080px; height: auto; display: block; }
+    .box { fill: var(--card); stroke-width: 1.5; rx: 10; }
+    .b-console { stroke: var(--blue); fill: var(--blue-soft); }
+    .b-agent { stroke: var(--orange); fill: var(--orange-soft); }
+    .b-its { stroke: var(--blue); }
+    .b-data { stroke: var(--teal); fill: var(--teal-soft); }
+    .b-ext { stroke: var(--line-strong); fill: var(--muted-bg); }
+    .b-future { stroke: var(--amber); stroke-dasharray: 6 4; fill: transparent; }
+    .boundary { fill: none; stroke: var(--line-strong); stroke-dasharray: 7 5; rx: 14; }
+    .t { fill: var(--text); font-family: var(--sans); font-size: 13px; font-weight: 600; }
+    .t-sub { fill: var(--sub); font-family: var(--sans); font-size: 10.5px; }
+    .t-mono { fill: var(--sub); font-family: var(--mono); font-size: 10px; }
+    .t-bound { fill: var(--faint); font-family: var(--serif); font-style: italic; font-size: 12px; }
+    .t-edge { fill: var(--text); font-family: var(--mono); font-size: 10px; }
+    .edge { stroke: var(--sub); stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+    .edge-soft { stroke: var(--faint); stroke-width: 1.2; stroke-dasharray: 3 4; fill: none; marker-end: url(#arrow-soft); }
+    .below { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; margin-top: 18px; }
+    @media (max-width: 900px) { .below { grid-template-columns: 1fr; } .page { padding: 20px 16px 60px; } }
+    .below ol { padding-left: 20px; color: var(--sub); }
+    .below li { margin-bottom: 7px; }
+    .below li b { color: var(--text); font-weight: 500; }
+    .below code { font-size: 12px; color: var(--text); background: var(--muted-bg); padding: 1px 4px; border-radius: 4px; }
+    .note { border-left: 3px solid var(--orange); padding-left: 12px; color: var(--sub); margin-top: 12px; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="page-head">
+    <h1 class="display" style="font-size:30px">How the pieces fit</h1>
+    <a href="/">← back to the console</a>
+  </div>
+  <div class="plate">
+    <svg viewBox="0 0 1160 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Architecture of the Intent Agent demo">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7280"/></marker>
+        <marker id="arrow-soft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9AA3B2"/></marker>
+      </defs>
+
+      <!-- boundaries -->
+      <rect class="boundary" x="20" y="20" width="710" height="520"/>
+      <text class="t-bound" x="36" y="42">docker compose · minikube — everything local</text>
+      <rect class="boundary" x="760" y="20" width="380" height="330"/>
+      <text class="t-bound" x="776" y="42">IndyKite platform (hosted)</text>
+      <rect class="boundary" x="760" y="380" width="380" height="160"/>
+      <text class="t-bound" x="776" y="402">external</text>
+
+      <!-- console: x 50-300, y 70-190 -->
+      <rect class="box b-console" x="50" y="70" width="250" height="120"/>
+      <text class="t" x="66" y="94">console</text>
+      <text class="t-sub" x="66" y="112">demo issuer · RS256 persona + actor JWTs</text>
+      <text class="t-sub" x="66" y="127">Token Service + A2A clients (raw JSON-RPC)</text>
+      <text class="t-sub" x="66" y="142">AuthZEN decision mapper</text>
+      <text class="t-sub" x="66" y="157">audit webhook + live stream</text>
+      <text class="t-mono" x="66" y="178">:3200</text>
+
+      <!-- token service: x 50-300, y 250-350 -->
+      <rect class="box b-its" x="50" y="250" width="250" height="100"/>
+      <text class="t" x="66" y="274">token-service</text>
+      <text class="t-sub" x="66" y="292">IndyKite Token Service (official image)</text>
+      <text class="t-sub" x="66" y="307">/oauth2/token · RFC 8693 exchange</text>
+      <text class="t-sub" x="66" y="322">/oauth2/introspect · RFC 7662</text>
+      <text class="t-mono" x="66" y="340">:8102</text>
+
+      <!-- intent agent: x 430-700, y 70-260 -->
+      <rect class="box b-agent" x="450" y="70" width="260" height="190"/>
+      <text class="t" x="466" y="94">intent-agent</text>
+      <text class="t-sub" x="466" y="112">A2A JSON-RPC · SendMessage only</text>
+      <text class="t-sub" x="466" y="127">Bearer → introspection (aud intent_agent)</text>
+      <text class="t-sub" x="466" y="142">subject bound from message.metadata</text>
+      <text class="t-sub" x="466" y="157">vocabulary = data schema + caller's policies</text>
+      <text class="t-sub" x="466" y="172">Gemini structured output → validation loop</text>
+      <text class="t-sub" x="466" y="187">CEL filters checked against the schema</text>
+      <text class="t-sub" x="466" y="202">one audit record per request</text>
+      <text class="t-mono" x="466" y="224">:6003 A2A · :8001 /health /metrics</text>
+      <text class="t-mono" x="466" y="240">image indykite/intent-agent</text>
+
+      <!-- redis + optional second instance: y 300-350 -->
+      <rect class="box b-data" x="450" y="300" width="125" height="50"/>
+      <text class="t" x="466" y="323">redis</text>
+      <text class="t-sub" x="466" y="339">shared schema cache</text>
+      <rect class="box b-future" x="590" y="300" width="120" height="50"/>
+      <text class="t" x="606" y="323">intent-agent-2</text>
+      <text class="t-sub" x="606" y="339">profile cluster</text>
+
+      <!-- platform: x 790-1110 -->
+      <rect class="box b-data" x="790" y="70" width="320" height="60"/>
+      <text class="t" x="806" y="94">Data Schema API</text>
+      <text class="t-mono" x="806" y="112">GET /data-schema/v1 · X-IK-ClientKey</text>
+      <rect class="box b-data" x="790" y="150" width="320" height="60"/>
+      <text class="t" x="806" y="174">AuthZEN · policy listing</text>
+      <text class="t-mono" x="806" y="192">GET /access/v1/policies?subject_type=</text>
+      <rect class="box b-data" x="790" y="230" width="320" height="100"/>
+      <text class="t" x="806" y="254">AuthZEN · decisions</text>
+      <text class="t-mono" x="806" y="272">POST /access/v1/evaluations</text>
+      <text class="t-mono" x="806" y="288">POST /access/v1/search/{subject,resource,action}</text>
+      <text class="t-sub" x="806" y="306">KBAC policies over the IKG (instant-stack data/intent)</text>
+      <text class="t-sub" x="806" y="321">context reads input_params only</text>
+
+      <!-- external -->
+      <rect class="box b-ext" x="790" y="430" width="320" height="60"/>
+      <text class="t" x="806" y="454">Google Gemini</text>
+      <text class="t-mono" x="806" y="472">structured output · the only model call</text>
+
+      <!-- phase 2 -->
+      <rect class="box b-future" x="50" y="400" width="650" height="110"/>
+      <text class="t" x="66" y="424">phase 2 · IndyKite Agent Gateway in front of a protected agent</text>
+      <text class="t-sub" x="66" y="444">intent_agent: {base_url, audience: intent_agent, timeout} — whoami via ContX IQ, client-credentials</text>
+      <text class="t-sub" x="66" y="459">grant, A2A SendMessage with subject_type/subject_id, then forward; the intent is logged today.</text>
+      <text class="t-sub" x="66" y="474">Needs a real IdP for the user's token and a platform Token Introspect that trusts it - the</text>
+      <text class="t-sub" x="66" y="489">wiring the iag-token-exchange demo already has.</text>
+
+      <!-- 1-2: console -> token service (down) -->
+      <path class="edge" d="M175 190 L175 250"/>
+      <text class="t-edge" x="186" y="212">① mint subject + actor JWT</text>
+      <text class="t-edge" x="186" y="228">② exchange → delegation token</text>
+
+      <!-- 3: console -> agent -->
+      <path class="edge" d="M300 110 L450 110"/>
+      <text class="t-edge" x="308" y="101">③ SendMessage · Bearer</text>
+
+      <!-- 7: agent -> console (audit) -->
+      <path class="edge-soft" d="M450 165 L300 165"/>
+      <text class="t-edge" x="308" y="156">⑦ audit (webhook)</text>
+
+      <!-- 4: agent -> token service (introspect) -->
+      <path class="edge" d="M450 225 C 390 225, 370 290, 300 290"/>
+      <text class="t-edge" x="306" y="245">④ introspect</text>
+
+      <!-- token service -> console (audit, soft) -->
+      <path class="edge-soft" d="M110 250 L110 190"/>
+
+      <!-- 5: agent -> platform -->
+      <path class="edge" d="M710 100 L790 100"/>
+      <text class="t-edge" x="716" y="91">⑤ schema</text>
+      <path class="edge" d="M710 180 L790 180"/>
+      <text class="t-edge" x="716" y="171">⑤ policies</text>
+
+      <!-- agent -> redis -->
+      <path class="edge" d="M512 260 L512 300"/>
+
+      <!-- 6: agent -> gemini -->
+      <path class="edge" d="M710 235 C 750 235, 750 460, 790 460"/>
+      <text class="t-edge" x="716" y="416">⑥ extract</text>
+
+      <!-- 8: console -> platform decisions, routed under the agent -->
+      <path class="edge" d="M300 178 C 380 178, 370 282, 450 282 L 710 282 C 750 282, 750 280, 790 280"/>
+      <text class="t-edge" x="520" y="276">⑧ decide: evaluations / search</text>
+    </svg>
+  </div>
+
+  <div class="below">
+    <div class="panel">
+      <h2>One prompt, end to end</h2>
+      <ol>
+        <li><b>Mint.</b> The console's demo issuer signs two RS256 JWTs: the persona's subject token (<code>aud intent-demo-console</code>) and the console's own actor token (<code>aud intent_agent</code>). A corporate IdP plays this role in production.</li>
+        <li><b>Exchange.</b> RFC 8693 at the Token Service: subject + actor in, a delegation token out, <code>sub</code> = the persona, <code>act.sub</code> = the console, <code>aud</code> = <code>intent_agent</code>, 5 minutes to live. The exchange is audited.</li>
+        <li><b>SendMessage.</b> A2A JSON-RPC to the Intent Agent with <code>Authorization: Bearer &lt;delegation&gt;</code>, <code>A2A-Version: 1.0</code>, <code>X-Request-ID</code>, and the caller's <code>subject_type</code>/<code>subject_id</code> in <code>message.metadata</code>.</li>
+        <li><b>Introspect.</b> The agent validates the Bearer at the Token Service (RFC 7662, client_secret_basic) and requires <code>aud</code> to contain <code>intent_agent</code>. Inactive or wrong-audience tokens are 401 before the prompt is read.</li>
+        <li><b>Vocabulary.</b> The data schema and the caller type's ACTIVE KBAC policies are fetched from the platform with the app agent key, cached in Redis. No policies for the type means a refusal before any model call.</li>
+        <li><b>Extract.</b> Gemini answers in a structured schema whose enums are the granted (subject, action, resource) triples; the subject is rebound to the caller afterwards, so prompt text can never impersonate anyone.</li>
+        <li><b>Validate and audit.</b> Every evaluation is re-checked against schema and policies, CEL filters are parsed and type-checked, off-schema answers are fed back once; the record with outcome, versions, retries and latency lands on the console's webhook.</li>
+        <li><b>Decide.</b> The console maps each evaluation to the AuthZEN endpoint the platform has today and shows the live decision or search results. <code>filters</code> and <code>qualifiers</code> are shown as carried: the AuthZEN API reads <code>input_params</code> only.</li>
+      </ol>
+    </div>
+    <div class="panel">
+      <h2>Boundaries</h2>
+      <p class="muted">Only two things leave the machine: the platform calls (schema, policies, decisions) and the Gemini call made by the agent. Secrets live in <code>.env</code> and in two generated files that git ignores: the Token Service config and the demo issuer key.</p>
+      <div class="note">The Intent Agent makes no authorization decision. It produces the question, in the AuthZEN shape, from the only vocabulary a policy engine will accept. The decision stays with the engine - which is why the demo shows both halves side by side.</div>
+      <h3>Phase 2</h3>
+      <p class="muted">Put an IndyKite Agent Gateway in front of a protected agent and set its <code>intent_agent</code> section to this agent. The gateway resolves the caller with ContX IQ <code>whoami</code>, mints its own token for audience <code>intent_agent</code>, and sends the same SendMessage - the intent then rides along the authorized request. That needs a real IdP and a platform Token Introspect that trusts the user's token.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,9 @@
+---
+apiVersion: v2
+name: intent-agent-demo
+description: The IndyKite Intent Agent shown end to end - console, Token Service, agent, Redis - for minikube or any small cluster.
+type: application
+# Version of this demo chart and of the demo itself. The Intent Agent version
+# it deploys is a value (intentAgent.image.tag), not this field.
+version: 0.1.0
+appVersion: "0.1.0"

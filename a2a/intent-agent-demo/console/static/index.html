@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intent Agent · demo console</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23F8951D'/%3E%3Crect x='7' y='9' width='18' height='3' rx='1.5' fill='%230A0A0A'/%3E%3Crect x='7' y='15' width='11' height='3' rx='1.5' fill='%230A0A0A'/%3E%3Crect x='7' y='21' width='15' height='3' rx='1.5' fill='%230A0A0A'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..700,50&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div>
+        <div class="brand-title">Intent Agent</div>
+        <div class="brand-sub">prompt → AuthZEN intent</div>
+      </div>
+    </div>
+    <nav class="nav" id="nav">
+      <button class="nav-item active" data-view="playground"><span class="nav-index">01</span>Playground</button>
+      <button class="nav-item" data-view="guardrails"><span class="nav-index">02</span>Guardrails</button>
+      <button class="nav-item" data-view="vocabulary"><span class="nav-index">03</span>Vocabulary</button>
+      <button class="nav-item" data-view="audit"><span class="nav-index">04</span>Audit<span class="nav-count" id="auditCount"></span></button>
+      <button class="nav-item" data-view="agents"><span class="nav-index">05</span>Agents</button>
+      <a class="nav-item" href="/architecture"><span class="nav-index">06</span>Architecture</a>
+    </nav>
+    <div class="rail-status">
+      <div class="status-row"><span class="dot" id="dotAgent"></span>Intent Agent</div>
+      <div class="status-row"><span class="dot" id="dotIts"></span>Token Service</div>
+      <div class="status-metrics" id="railMetrics">—</div>
+    </div>
+  </aside>
+
+  <main class="stage">
+    <!-- Playground / Guardrails -->
+    <section class="view" id="view-playground">
+      <header class="view-head">
+        <h1 class="display" id="viewTitle">Ask as someone. Watch the intent appear.</h1>
+        <p class="lede" id="viewLede">Pick an identity, send a sentence. The Intent Agent turns it into AuthZEN evaluations it can prove against the graph's policies - nothing more, nothing invented.</p>
+      </header>
+
+      <div class="personas" id="personas"></div>
+
+      <div class="composer">
+        <div class="composer-top">
+          <div class="facts-wrap">
+            <div class="persona-facts" id="personaFacts"></div>
+            <details class="hint">
+              <summary title="What are these chips?">?</summary>
+              <p>Read live from the graph: for every policy of this identity's type, an AuthZEN <code>search/resource</code> says which resources it reaches right now. A prompt inside these facts should extract and decide ALLOW; one outside them should be refused or decide DENY, which is just as telling.</p>
+            </details>
+          </div>
+          <div class="auth-wrap">
+            <div class="auth-mode" id="authMode">
+              <button data-mode="delegation" class="active" title="Exchange at the Token Service for audience intent_agent - the normal path">delegation token</button>
+              <button data-mode="wrong_audience" title="Exchange for another audience - the agent answers 401 'not valid for this agent'">wrong audience</button>
+              <button data-mode="raw_subject" title="Send the persona's own JWT, never exchanged - introspection says inactive, 401">raw subject token</button>
+              <button data-mode="none" title="No Authorization header - 401 'Authorization required'">no token</button>
+            </div>
+            <details class="hint">
+              <summary title="What is this switch?">?</summary>
+              <p>What goes in the <code>Authorization</code> header. Only a Token Service delegation for audience <code>intent_agent</code> passes introspection; the other three stop at the Introspect step, before the prompt is read, and are still audited. Switch back to <em>delegation token</em> afterwards.</p>
+            </details>
+          </div>
+        </div>
+        <div class="composer-row">
+          <textarea id="promptText" rows="2" placeholder="Type a question as this identity, or pick a card below"></textarea>
+          <button class="send" id="sendBtn"><span>Send</span><kbd>Enter</kbd></button>
+        </div>
+      </div>
+
+      <div class="gallery">
+        <div class="gallery-tabs" id="galleryTabs"></div>
+        <p class="gallery-blurb" id="galleryBlurb"></p>
+        <div class="gallery-cards" id="galleryCards"></div>
+      </div>
+
+      <div class="pipeline" id="pipeline">
+        <div class="pipe-node" data-step="issue"><i></i><b>Issue</b><small>demo issuer · subject + actor JWT</small><em></em></div>
+        <div class="pipe-node" data-step="exchange"><i></i><b>Exchange</b><small>Token Service · RFC 8693</small><em></em></div>
+        <div class="pipe-node" data-step="introspect"><i></i><b>Introspect</b><small>agent → Token Service · RFC 7662</small><em></em></div>
+        <div class="pipe-node" data-step="bind"><i></i><b>Bind subject</b><small>metadata, never the prompt</small><em></em></div>
+        <div class="pipe-node" data-step="vocab"><i></i><b>Vocabulary</b><small>data schema + policies</small><em></em></div>
+        <div class="pipe-node" data-step="extract"><i></i><b>Extract</b><small>Gemini, structured output</small><em></em></div>
+        <div class="pipe-node" data-step="validate"><i></i><b>Validate</b><small>schema · policies · CEL</small><em></em></div>
+        <div class="pipe-node" data-step="audit"><i></i><b>Audit</b><small>one record per request</small><em></em></div>
+      </div>
+
+      <div class="result" id="result" hidden>
+        <div class="result-head">
+          <div class="result-verdict" id="verdict"></div>
+          <div class="result-meta" id="resultMeta"></div>
+        </div>
+        <div class="actors" id="actors"></div>
+        <div class="chain" id="chain"></div>
+        <div class="tickets" id="tickets"></div>
+        <div class="refusal" id="refusal" hidden></div>
+        <div class="wire">
+          <div class="wire-tabs" id="wireTabs">
+            <button data-tab="request" class="active">A2A request</button>
+            <button data-tab="envelope">Task envelope</button>
+            <button data-tab="payload">Artifact</button>
+            <button data-tab="tokens">Tokens</button>
+            <button data-tab="audit">Audit record</button>
+            <button data-tab="decisions">Decision calls</button>
+          </div>
+          <pre class="wire-body" id="wireBody"></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- Vocabulary -->
+    <section class="view" id="view-vocabulary" hidden>
+      <header class="view-head">
+        <h1 class="display">Everything the agent is allowed to say.</h1>
+        <p class="lede">The output vocabulary is not prompt-engineered: it is the project's data schema and the ACTIVE KBAC policies of the caller's subject type, fetched from the platform. Graph relationships are never actions; a policy is.</p>
+      </header>
+      <div class="vocab-controls">
+        <div class="seg" id="vocabSubject">
+          <button data-type="User" class="active">User</button>
+          <button data-type="Customer">Customer</button>
+        </div>
+        <span class="muted" id="vocabInfo"></span>
+      </div>
+      <div class="vocab-grid">
+        <div class="panel">
+          <h2>Policies <span class="muted">→ granted triples</span></h2>
+          <div id="policyList" class="policy-list"></div>
+        </div>
+        <div class="panel">
+          <h2>Data schema <span class="muted">→ node types and relationships</span></h2>
+          <div id="schemaNodes" class="schema-nodes"></div>
+          <h3>Relationships</h3>
+          <div id="schemaRelationships" class="schema-edges"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Audit -->
+    <section class="view" id="view-audit" hidden>
+      <header class="view-head">
+        <h1 class="display">Every request leaves a record.</h1>
+        <p class="lede">The Intent Agent and the Token Service both deliver their audit records to this console's webhook. Nothing here is reconstructed from the response: it is what the services wrote.</p>
+      </header>
+      <div class="audit-list" id="auditList"></div>
+    </section>
+
+    <!-- Agents -->
+    <section class="view" id="view-agents" hidden>
+      <header class="view-head">
+        <h1 class="display">The parties, as they present themselves.</h1>
+        <p class="lede">What a gateway would discover before sending anything: the Intent Agent's public card, the Token Service's discovery document and keys, and the identity this console acts under.</p>
+      </header>
+      <div class="agents-grid">
+        <div class="panel" id="agentCardPanel"><h2>Intent Agent <span class="muted">→ agent card</span></h2><div class="empty">loading…</div></div>
+        <div>
+          <div class="panel" id="tokenServicePanel"><h2>Token Service <span class="muted">→ discovery</span></h2><div class="empty">loading…</div></div>
+          <div class="panel" id="consolePanel" style="margin-top:16px"><h2>Console <span class="muted">→ the actor</span></h2></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<template id="ticketTpl">
+  <article class="ticket">
+    <div class="ticket-index"></div>
+    <div class="ticket-body">
+      <div class="triple">
+        <div class="triple-part subject"><span class="lbl">subject</span><span class="val"></span></div>
+        <div class="arrow">→</div>
+        <div class="triple-part action"><span class="lbl">action</span><span class="val"></span></div>
+        <div class="arrow">→</div>
+        <div class="triple-part resource"><span class="lbl">resource</span><span class="val"></span></div>
+      </div>
+      <div class="ticket-tags"></div>
+      <div class="ticket-context"></div>
+    </div>
+    <div class="ticket-decision"></div>
+  </article>
+</template>
+<script src="/static/app.js"></script>
+</body>
+</html>

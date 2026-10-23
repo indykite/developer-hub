@@ -7,3 +7,7 @@ secret:*:flask_app.log
 
 # Ignore pip polyglot vulnerability until patch is released; recently discovered
 CVE-2026-3219
+
+# Helm: the demo chart pulls public Docker Hub images (docker.io/indykite/token-service);
+# this repo keeps no private-registry allow-list, so the "untrusted registry" check is moot here.
+KSV-0125

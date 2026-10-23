@@ -1,0 +1,599 @@
+{
+  "dataset": "intent",
+  "display_name": "Intent Agent demo",
+  "description": "Config-as-data for the a2a/intent-agent-demo app: the CanBank graph (users, departments, customers, accounts, invoices, documents, workflows) with a KBAC policy set wide enough for the Intent Agent to express every intent pattern it supports - single and multi intent, resource and subject search, second subject with a gate, $name input parameters, filters on resource properties. 24 policies in all. No MCP server, token introspect, resolvers or CIQ queries: the Intent Agent reads only the data schema and the ACTIVE policies of the caller's subject type.",
+  "ciq_queries": [],
+  "ciq_policies": [],
+  "resolvers": [],
+  "app_agent": {
+    "name": "intent-agent",
+    "display_name": "Intent Agent",
+    "description": "App agent used by the Intent Agent (data schema + policy listing) and by the demo console (AuthZEN decisions)",
+    "api_permissions": [
+      "Authorization",
+      "Capture",
+      "ReadAuthZConfigs",
+      "ReadDataSchema",
+      "ContXIQ",
+      "Audit"
+    ],
+    "credentials_expire_days": 180
+  },
+  "audit_signing": {},
+  "event_sink": {},
+  "mcp_server": {},
+  "token_introspect": [],
+  "kbac": [
+    {
+      "name": "user-can-trigger-workflow",
+      "display_name": "User can trigger workflow",
+      "description": "A user can trigger an agentic workflow when their department can trigger it or they were assigned to it directly.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "CAN_TRIGGER"
+        ],
+        "resource": {
+          "type": "Workflow"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:WORKS_IN|CAN_TRIGGER*..3]->(resource:Workflow)"
+        }
+      }
+    },
+    {
+      "name": "user-works-in-department",
+      "display_name": "User works in department",
+      "description": "The department a user works in directly.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "WORKS_IN"
+        ],
+        "resource": {
+          "type": "Department"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:WORKS_IN]->(resource:Department)"
+        }
+      }
+    },
+    {
+      "name": "user-works-under-department",
+      "display_name": "User works under department",
+      "description": "Whether the user works under the department named by $department (required input parameter).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "WORKS_UNDER_DEPARTMENT"
+        ],
+        "resource": {
+          "type": "Department"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:WORKS_IN]->(:Department)<-[:CONTAINS*1..]-(resource:Department) WHERE resource.external_id = $department"
+        }
+      }
+    },
+    {
+      "name": "user-reports-to",
+      "display_name": "User reports to",
+      "description": "The user's direct manager.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "REPORTS_TO"
+        ],
+        "resource": {
+          "type": "User"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:REPORTS_TO]->(resource:User)"
+        }
+      }
+    },
+    {
+      "name": "user-reports-to-indirectly",
+      "display_name": "User reports to indirectly",
+      "description": "Managers two or more levels above the user.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "REPORTS_TO_INDIRECTLY"
+        ],
+        "resource": {
+          "type": "User"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:REPORTS_TO*2..]->(resource:User)"
+        }
+      }
+    },
+    {
+      "name": "user-can-query-colleague",
+      "display_name": "User can query colleague",
+      "description": "Gate for questions about another user: a user may ask about colleagues of the same department. The Intent Agent emits this evaluation first when a prompt names another user.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "CAN_QUERY_USER"
+        ],
+        "resource": {
+          "type": "User"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:WORKS_IN]->(:Department)<-[:WORKS_IN]-(resource:User)"
+        }
+      }
+    },
+    {
+      "name": "user-can-retrieve-quote",
+      "display_name": "User can retrieve quote",
+      "description": "Staff in a department allowed to retrieve a quote.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "CAN_RETRIEVE",
+          "GET_PRICE"
+        ],
+        "resource": {
+          "type": "Quote"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:WORKS_IN]->(:Department)-[:CAN_RETRIEVE]->(resource:Quote)"
+        }
+      }
+    },
+    {
+      "name": "user-can-access-folder",
+      "display_name": "User can access folder",
+      "description": "Folders the user's department can access.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "CAN_ACCESS"
+        ],
+        "resource": {
+          "type": "Folder"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:WORKS_IN]->(:Department)-[:CAN_ACCESS]->(resource:Folder)"
+        }
+      }
+    },
+    {
+      "name": "user-can-access-folder-document",
+      "display_name": "User can access folder document",
+      "description": "Documents inside the folders the user's department can access.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "CAN_ACCESS_FOLDER_DOCUMENT"
+        ],
+        "resource": {
+          "type": "Document"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:WORKS_IN]->(:Department)-[:CAN_ACCESS]->(:Folder)-[:CONTAINS]->(resource:Document)"
+        }
+      }
+    },
+    {
+      "name": "user-can-disclose-document",
+      "display_name": "User can disclose document",
+      "description": "Documents reachable through the user's department, folders and containment (up to four hops).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "CAN_DISCLOSE"
+        ],
+        "resource": {
+          "type": "Document"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(resource:Document)"
+        }
+      }
+    },
+    {
+      "name": "staff-can-view-invoice",
+      "display_name": "Staff can view invoice",
+      "description": "Staff can view the invoices of the customers their department serves.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "CAN_VIEW"
+        ],
+        "resource": {
+          "type": "Invoice"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:WORKS_IN]->(:Department)-[:SERVES]->(:Customer)-[:HAS_INVOICE]->(resource:Invoice)"
+        }
+      }
+    },
+    {
+      "name": "user-can-access-customer",
+      "display_name": "User can access customer",
+      "description": "Customers contained in the system named by $system (required input parameter) that the user's department can access.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "CAN_ACCESS_CUSTOMER"
+        ],
+        "resource": {
+          "type": "Customer"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:WORKS_IN]->(:Department)-[:CAN_ACCESS]->(system:System)-[:CONTAINS]->(resource:Customer) WHERE system.external_id = $system"
+        }
+      }
+    },
+    {
+      "name": "user-affected-account",
+      "display_name": "User affected account",
+      "description": "Accounts touched by a decision the user made (decision closed a ticket regarding the account).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "AFFECTED"
+        ],
+        "resource": {
+          "type": "Account"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:MADE]->(:Decision)<-[:CLOSED_BY]-(:Ticket)-[:REGARDING]->(resource:Account)"
+        }
+      }
+    },
+    {
+      "name": "customer-can-query-fellow-customer",
+      "display_name": "Customer can query fellow customer",
+      "description": "Gate for questions about another customer: customers served by the same department. The Intent Agent emits this evaluation first when a prompt names another customer.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Customer"
+        },
+        "actions": [
+          "CAN_QUERY_CUSTOMER"
+        ],
+        "resource": {
+          "type": "Customer"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Customer)<-[:SERVES]-(:Department)-[:SERVES]->(resource:Customer)"
+        }
+      }
+    },
+    {
+      "name": "customer-owns-account",
+      "display_name": "Customer owns account",
+      "description": "The customer's own accounts.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Customer"
+        },
+        "actions": [
+          "OWNS",
+          "VIEW_BALANCE"
+        ],
+        "resource": {
+          "type": "Account"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Customer)-[:OWNS]->(resource:Account)"
+        }
+      }
+    },
+    {
+      "name": "customer-has-account-tier",
+      "display_name": "Customer has account tier",
+      "description": "Whether the customer owns an account of the tier named by $tier (required input parameter).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Customer"
+        },
+        "actions": [
+          "HAS"
+        ],
+        "resource": {
+          "type": "AccountTier"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Customer)-[:OWNS]->(:Account)-[:IS_TIER]->(resource:AccountTier) WHERE resource.external_id = $tier"
+        }
+      }
+    },
+    {
+      "name": "customer-views-invoice",
+      "display_name": "Customer views invoice",
+      "description": "The customer's own invoices.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Customer"
+        },
+        "actions": [
+          "VIEW_INVOICE"
+        ],
+        "resource": {
+          "type": "Invoice"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Customer)-[:HAS_INVOICE]->(resource:Invoice)"
+        }
+      }
+    },
+    {
+      "name": "customer-views-unpaid-invoice",
+      "display_name": "Customer views unpaid invoice",
+      "description": "The customer's open invoices: the invoice's state is a HAS_STATUS relationship to an InvoiceStatus node, so the condition is a traversal plus an external_id equality.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Customer"
+        },
+        "actions": [
+          "VIEW_UNPAID_INVOICE"
+        ],
+        "resource": {
+          "type": "Invoice"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Customer)-[:HAS_INVOICE]->(resource:Invoice)-[:HAS_STATUS]->(status:InvoiceStatus) WHERE status.external_id = 'open'"
+        }
+      }
+    },
+    {
+      "name": "customer-views-account-category",
+      "display_name": "Customer views account category",
+      "description": "Investment categories of the accounts the customer owns.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Customer"
+        },
+        "actions": [
+          "VIEW_ACCOUNT_CATEGORY"
+        ],
+        "resource": {
+          "type": "InvestmentCategory"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Customer)-[:OWNS]->(:Account)-[:IS_TYPE]->(resource:InvestmentCategory)"
+        }
+      }
+    },
+    {
+      "name": "customer-views-product-document",
+      "display_name": "Customer views product document",
+      "description": "Documents classified under an investment category the customer holds an account in.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Customer"
+        },
+        "actions": [
+          "VIEW_PRODUCT_DOCUMENT"
+        ],
+        "resource": {
+          "type": "Document"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Customer)-[:OWNS]->(:Account)-[:IS_TYPE]->(:InvestmentCategory)<-[:CLASSIFIED_AS]-(resource:Document)"
+        }
+      }
+    },
+    {
+      "name": "customer-views-ticket-decision",
+      "display_name": "Customer views ticket decision",
+      "description": "Decisions that closed a ticket the customer opened.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Customer"
+        },
+        "actions": [
+          "VIEW_TICKET_DECISION"
+        ],
+        "resource": {
+          "type": "Decision"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Customer)<-[:CREATED_BY]-(:Ticket)-[:CLOSED_BY]->(resource:Decision)"
+        }
+      }
+    },
+    {
+      "name": "user-works-under-departments",
+      "display_name": "User works under departments",
+      "description": "Every department above the user's own in the org tree; the parameter-less twin of WORKS_UNDER_DEPARTMENT.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "WORKS_UNDER"
+        ],
+        "resource": {
+          "type": "Department"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:WORKS_IN]->(:Department)<-[:CONTAINS*1..]-(resource:Department)"
+        }
+      }
+    },
+    {
+      "name": "user-can-list-customers",
+      "display_name": "User can list customers",
+      "description": "Customers in any system the user's department can access; the parameter-less twin of CAN_ACCESS_CUSTOMER.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "User"
+        },
+        "actions": [
+          "CAN_LIST_CUSTOMER"
+        ],
+        "resource": {
+          "type": "Customer"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:User)-[:WORKS_IN]->(:Department)-[:CAN_ACCESS]->(:System)-[:CONTAINS]->(resource:Customer)"
+        }
+      }
+    },
+    {
+      "name": "customer-has-account-tiers",
+      "display_name": "Customer has account tiers",
+      "description": "Tiers of every account the customer owns; the parameter-less twin of HAS.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Customer"
+        },
+        "actions": [
+          "HAS_TIER"
+        ],
+        "resource": {
+          "type": "AccountTier"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Customer)-[:OWNS]->(:Account)-[:IS_TIER]->(resource:AccountTier)"
+        }
+      }
+    }
+  ],
+  "application": {
+    "name": "intent-demo-app",
+    "display_name": "Intent Demo App",
+    "description": "Application that fronts the Intent Agent demo console"
+  },
+  "project": {
+    "name": "intent-demo",
+    "display_name": "Intent Agent Demo",
+    "description": "Project for the Intent Agent demo: CanBank graph plus the KBAC policies the agent derives intent from",
+    "region": "europe-west1",
+    "db_connection": {
+      "name": "",
+      "password": "",
+      "url": "",
+      "username": ""
+    }
+  }
+}
