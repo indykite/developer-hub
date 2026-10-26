@@ -2,5 +2,5 @@ fastapi==0.121.0
 httpx==0.28.1
 pydantic==2.12.4
 pydantic-settings==2.11.0
-PyJWT[crypto]==2.10.1
+PyJWT[crypto]==2.15.0
 uvicorn[standard]==0.38.0
