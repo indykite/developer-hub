@@ -389,3 +389,31 @@ textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px
 .auth-wrap:not(.guardrails) .auth-mode button:not([data-mode="delegation"]) { display: none; }
 .auth-wrap:not(.guardrails) .auth-mode button[data-mode="delegation"] { cursor: default; }
 .auth-wrap:not(.guardrails) .hint { display: none; }
+
+/* graph view: schema or per-persona reach, drawn with Cytoscape on a light plate */
+.graph-toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.graph-opt { font-size: 13px; color: var(--sub); display: flex; align-items: center; gap: 6px; }
+.graph-opt input { accent-color: var(--orange); }
+.graph-select { font: inherit; font-size: 13px; padding: 5px 10px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--card); color: var(--text); }
+.graph-btn { font-size: 12.5px; padding: 5px 11px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--sub); }
+.graph-btn:hover { color: var(--blue); border-color: var(--blue); }
+.graph-shell { display: grid; grid-template-columns: 1fr 300px; gap: 14px; min-height: 560px; }
+@media (max-width: 1000px) { .graph-shell { grid-template-columns: 1fr; } }
+.graph-canvas {
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); box-shadow: var(--shadow); min-height: 560px;
+  background-image: linear-gradient(var(--muted-bg) 1px, transparent 1px), linear-gradient(90deg, var(--muted-bg) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+.graph-side { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); padding: 14px 16px; overflow: auto; max-height: 70vh; }
+.graph-side h2 { font-family: var(--serif); font-weight: 500; font-size: 18px; margin-bottom: 2px; word-break: break-word; }
+.graph-side .kind { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--sub); margin-bottom: 10px; }
+.graph-side h3 { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); margin: 12px 0 6px; }
+.graph-side .row { display: flex; gap: 8px; font-size: 12.5px; padding: 2px 0; }
+.graph-side .row .k { font-family: var(--mono); font-size: 11.5px; color: var(--sub); min-width: 90px; }
+.graph-side .row .v { word-break: break-word; }
+.graph-side .pol { padding: 6px 0; border-top: 1px dashed var(--line); font-size: 12px; }
+.graph-side .pol b { font-family: var(--mono); color: var(--orange-ink); font-weight: 600; }
+.graph-side .pol i { font-style: normal; font-family: var(--mono); color: var(--teal); }
+.graph-side .pol small { display: block; color: var(--sub); font-family: var(--mono); font-size: 10.5px; white-space: pre-wrap; word-break: break-word; margin-top: 2px; }
+.graph-legend { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; font-size: 11.5px; color: var(--sub); }
+.graph-legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; background: var(--dot); }

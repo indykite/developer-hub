@@ -14,6 +14,7 @@ const state = {
   auditEntries: [],
   suggested: "",
   vocabSubject: "User",
+  graph: { mode: "schema", persona: null, policies: false, cy: null, loaded: false },
   schema: null,
   policies: {},
 };
@@ -91,6 +92,7 @@ function selectView(view) {
   $("#view-vocabulary").hidden = view !== "vocabulary";
   $("#view-audit").hidden = view !== "audit";
   $("#view-agents").hidden = view !== "agents";
+  $("#view-graph").hidden = view !== "graph";
   if (playground) {
     // The failure modes belong to Guardrails; the Playground always sends a proper delegation token.
     document.querySelector(".auth-wrap").classList.toggle("guardrails", view === "guardrails");
@@ -105,6 +107,7 @@ function selectView(view) {
   if (view === "vocabulary") renderVocabulary();
   if (view === "audit") renderAudit();
   if (view === "agents") renderAgents();
+  if (view === "graph") renderGraph();
 }
 
 // ---------- health ----------
@@ -891,3 +894,279 @@ function auditNode(entry) {
 }
 
 boot();
+
+
+// ---------- graph ----------
+// Two live graphs drawn with Cytoscape (vendored, loaded on first open):
+//   schema - one node per node type from the data schema, edges = relationship kinds,
+//            optionally the policies as dashed action edges (the agent's whole vocabulary);
+//   reach  - one persona in the middle, one edge per granted action to each resource it reaches now.
+
+const GRAPH_SCRIPTS = ["layout-base.js", "cose-base.js", "cytoscape.min.js", "cytoscape-fcose.js"];
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const tag = document.createElement("script");
+    tag.src = src;
+    tag.onload = resolve;
+    tag.onerror = () => reject(new Error(`failed to load ${src}`));
+    document.head.append(tag);
+  });
+}
+
+async function ensureGraphLib() {
+  if (state.graph.loaded) return;
+  for (const file of GRAPH_SCRIPTS) await loadScript(`/static/vendor/${file}`);
+  if (window.cytoscape && window.cytoscapeFcose) window.cytoscape.use(window.cytoscapeFcose);
+  state.graph.loaded = true;
+}
+
+const token = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+
+function graphStyle() {
+  const t = {
+    text: token("--text"), sub: token("--sub"), line: token("--line-strong"), card: token("--card"),
+    blue: token("--blue"), blueSoft: token("--blue-soft"), teal: token("--teal"), tealSoft: token("--teal-soft"),
+    orange: token("--orange"), orangeInk: token("--orange-ink"),
+  };
+  return [
+    { selector: "node", style: {
+      shape: "ellipse", width: "data(size)", height: "data(size)",
+      "background-color": t.tealSoft, "border-width": 2, "border-color": t.teal,
+      label: "data(label)", "font-family": "Inter, Arial, sans-serif", "font-size": 11, color: t.text,
+      "text-valign": "bottom", "text-margin-y": 6, "text-wrap": "ellipsis", "text-max-width": 120,
+      "text-background-color": t.card, "text-background-opacity": 0.85, "text-background-padding": 2, "text-background-shape": "round-rectangle",
+      "transition-property": "border-width, opacity", "transition-duration": "0.15s",
+    } },
+    { selector: "node[?identity]", style: { "background-color": t.blueSoft, "border-color": t.blue, "outline-width": 1, "outline-color": t.blue, "outline-offset": 3, "outline-opacity": 0.45 } },
+    { selector: "node[kind = 'persona']", style: { "background-color": t.blue, "border-color": t.blue, color: t.text, "font-weight": 600, "font-size": 12, "text-max-width": 220 } },
+    { selector: "edge", style: {
+      "curve-style": "bezier", width: 1.2, "line-color": t.line, "target-arrow-shape": "triangle", "target-arrow-color": t.line, "arrow-scale": 0.8,
+      label: "data(label)", "font-family": "JetBrains Mono, monospace", "font-size": 9, color: t.sub, "text-rotation": "autorotate",
+      "text-background-color": t.card, "text-background-opacity": 0.9, "text-background-padding": 2, "text-background-shape": "round-rectangle",
+    } },
+    // Policy edges are dense around the identity types: their labels appear for the node you click.
+    { selector: "edge[kind = 'policy']", style: { "line-style": "dashed", "line-color": t.orange, "target-arrow-color": t.orange, color: t.orangeInk, width: 1.6, "font-weight": 600, label: "" } },
+    { selector: "edge[kind = 'policy'].show", style: { label: "data(label)" } },
+    { selector: "edge[kind = 'reach']", style: { "line-color": t.orange, "target-arrow-color": t.orange, color: t.orangeInk, width: 1.4 } },
+    { selector: "node:selected", style: { "border-width": 4 } },
+    { selector: ".dim", style: { opacity: 0.18 } },
+  ];
+}
+
+const nodeSize = (count) => Math.max(26, Math.min(70, 22 + 7 * Math.sqrt(count || 1)));
+
+async function schemaElements(withPolicies) {
+  const schema = state.schema || (await fetch("/api/schema").then((r) => (r.ok ? r.json() : Promise.reject(r))));
+  state.schema = schema;
+  const nodes = schema.nodes
+    .filter((n) => !n.type.startsWith("_"))
+    .map((n) => ({ data: { id: n.type, label: n.type, kind: "type", size: nodeSize(n.count), count: n.count, identity: n.identity, properties: n.properties } }));
+  const known = new Set(nodes.map((n) => n.data.id));
+  const edges = schema.relationships
+    .filter((r) => known.has(r.source) && known.has(r.target))
+    .map((r, i) => ({ data: { id: `r${i}`, source: r.source, target: r.target, label: r.relation, kind: "relationship", count: r.count } }));
+  if (withPolicies) {
+    const listings = await Promise.all(["User", "Customer"].map((type) => fetch(`/api/policies?subject_type=${type}`).then((r) => (r.ok ? r.json() : Promise.reject(r)))));
+    listings.forEach((listing) => {
+      (listing.policies || []).forEach((pol, i) => {
+        if (!known.has(pol.subject_type) || !known.has(pol.resource_type)) return;
+        pol.actions.forEach((action, j) => edges.push({ data: { id: `p${pol.subject_type}${i}${j}`, source: pol.subject_type, target: pol.resource_type, label: action, kind: "policy", cypher: pol.cypher, params: pol.params } }));
+      });
+    });
+    state.policies.User = listings[0];
+    state.policies.Customer = listings[1];
+  }
+  return { nodes, edges };
+}
+
+async function reachElements(persona) {
+  const data = await fetch(`/api/persona-facts?persona=${encodeURIComponent(persona.id)}`).then((r) => (r.ok ? r.json() : Promise.reject(r)));
+  const nodes = [{ data: { id: `persona:${persona.id}`, label: persona.name, kind: "persona", size: 54, type: persona.type, externalId: persona.id, identity: true } }];
+  const edges = [];
+  const seen = new Set();
+  for (const fact of data.facts) {
+    for (const id of fact.ids) {
+      const nid = `${fact.resource_type}:${id}`;
+      if (!seen.has(nid)) {
+        seen.add(nid);
+        nodes.push({ data: { id: nid, label: id, kind: "resource", size: 30, type: fact.resource_type, externalId: id, identity: ["User", "Customer"].includes(fact.resource_type) } });
+      }
+      edges.push({ data: { id: `${fact.action}->${nid}`, source: `persona:${persona.id}`, target: nid, label: fact.action, kind: "reach" } });
+    }
+  }
+  return { nodes, edges, facts: data.facts };
+}
+
+function graphSidePanel(node) {
+  const side = $("#graphSide");
+  side.replaceChildren();
+  if (!node) {
+    side.append(el("div", "empty", "Click a node, or pick one in the toolbar, for its details."));
+    return;
+  }
+  const d = node.data();
+  side.append(el("h2", "", d.label));
+  if (d.kind === "type") {
+    side.append(el("div", "kind", `${d.identity ? "identity " : ""}node type · ${d.count} instance${d.count === 1 ? "" : "s"}`));
+    if (d.properties?.length) {
+      side.append(el("h3", "", "properties"));
+      d.properties.forEach((p) => {
+        const row = el("div", "row");
+        row.append(el("span", "k", p.name), el("span", "v", (p.types || []).join(", ")));
+        side.append(row);
+      });
+    }
+    const rels = node.connectedEdges("[kind = 'relationship']");
+    if (rels.length) {
+      side.append(el("h3", "", "relationships"));
+      rels.forEach((e) => {
+        const row = el("div", "row");
+        row.append(el("span", "k", e.data("label")), el("span", "v", `${e.data("source")} → ${e.data("target")}`));
+        side.append(row);
+      });
+    }
+    const pols = [];
+    ["User", "Customer"].forEach((type) => (state.policies[type]?.policies || []).forEach((pol) => {
+      if (pol.subject_type === d.id || pol.resource_type === d.id) pols.push(pol);
+    }));
+    if (pols.length) {
+      side.append(el("h3", "", "policies naming this type"));
+      pols.forEach((pol) => {
+        const row = el("div", "pol");
+        row.append(el("i", "", pol.subject_type), document.createTextNode(" → "), el("b", "", pol.actions.join(", ")), document.createTextNode(" → "), el("i", "", pol.resource_type), el("small", "", pol.cypher));
+        side.append(row);
+      });
+    }
+  } else {
+    side.append(el("div", "kind", d.kind === "persona" ? `${d.type} · the caller` : `${d.type}${d.identity ? " · identity" : ""}`));
+    const row = el("div", "row");
+    row.append(el("span", "k", "external_id"), el("span", "v", d.externalId));
+    side.append(row);
+    const edges = d.kind === "persona" ? node.connectedEdges() : node.connectedEdges("[kind = 'reach']");
+    if (edges.length) {
+      side.append(el("h3", "", d.kind === "persona" ? "reaches" : "reached through"));
+      edges.forEach((e) => {
+        const r = el("div", "row");
+        r.append(el("span", "k", e.data("label")), el("span", "v", d.kind === "persona" ? e.target().data("label") : "from the caller"));
+        side.append(r);
+      });
+    }
+  }
+}
+
+function bindGraphControls() {
+  if (bindGraphControls.done) return;
+  bindGraphControls.done = true;
+  $("#graphMode").addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    state.graph.mode = btn.dataset.mode;
+    [...$("#graphMode").children].forEach((b) => b.classList.toggle("active", b === btn));
+    renderGraph();
+  });
+  $("#graphPolicies").addEventListener("change", (e) => {
+    state.graph.policies = e.target.checked;
+    renderGraph();
+  });
+  const select = $("#graphPersona");
+  state.config.personas.forEach((p) => {
+    const opt = el("option", "", `${p.name} (${p.type})`);
+    opt.value = p.id;
+    select.append(opt);
+  });
+  select.addEventListener("change", () => {
+    state.graph.persona = state.config.personas.find((p) => p.id === select.value);
+    renderGraph();
+  });
+  $("#graphRelayout").addEventListener("click", () => state.graph.cy?.layout(graphLayout()).run());
+  // Keyboard route into the canvas: the picker opens the same details panel a tap on a node does.
+  $("#graphNodePick").addEventListener("change", (e) => {
+    const cy = state.graph.cy;
+    if (!cy) return;
+    const node = e.target.value ? cy.getElementById(e.target.value) : null;
+    focusGraphNode(cy, node);
+    if (node?.length) cy.animate({ center: { eles: node }, duration: 250 });
+  });
+}
+
+function focusGraphNode(cy, node) {
+  if (!node?.length) {
+    cy.elements().removeClass("dim").removeClass("show");
+    graphSidePanel(null);
+    return;
+  }
+  cy.elements().addClass("dim").removeClass("show");
+  node.closedNeighborhood().removeClass("dim");
+  node.connectedEdges().addClass("show");
+  graphSidePanel(node);
+}
+
+function fillNodePicker(nodes) {
+  const pick = $("#graphNodePick");
+  pick.replaceChildren(el("option", "", "inspect node…"));
+  pick.firstChild.value = "";
+  [...nodes]
+    .sort((a, b) => a.data.label.localeCompare(b.data.label))
+    .forEach((n) => {
+      const opt = el("option", "", n.data.kind === "resource" ? `${n.data.type} ${n.data.label}` : n.data.label);
+      opt.value = n.data.id;
+      pick.append(opt);
+    });
+}
+
+const graphLayout = () => (window.cytoscapeFcose
+  ? { name: "fcose", animate: false, fit: true, padding: 40, idealEdgeLength: 110, nodeRepulsion: 9000, quality: "default", randomize: true }
+  : { name: "cose", animate: false, fit: true, padding: 40 });
+
+async function renderGraph() {
+  bindGraphControls();
+  const g = state.graph;
+  const reach = g.mode === "reach";
+  $("#graphPolicyOpt").hidden = reach;
+  $("#graphPersona").hidden = !reach;
+  if (reach && !g.persona) {
+    g.persona = state.persona;
+    $("#graphPersona").value = g.persona.id;
+  }
+  $("#graphLede").textContent = reach
+    ? "Reach: the chosen identity in the middle, one relationship per granted action to every resource it reaches right now, answered by the platform's AuthZEN search for each of its policies. The same facts as the chips on the Playground, drawn."
+    : "Schema: one node per type, sized by how many instances the project holds, linked by the relationship kinds the platform observed. Switch on the policies to see the only relationships the agent may ever name as actions.";
+  $("#graphInfo").textContent = "loading…";
+  graphSidePanel(null);
+  // Only the newest render may touch the canvas: a slower earlier request must not overwrite it.
+  const render = (g.render = (g.render || 0) + 1);
+  const persona = g.persona;
+  const policies = g.policies;
+  let elements;
+  try {
+    await ensureGraphLib();
+    if (render !== g.render) return;
+    elements = reach ? await reachElements(persona) : await schemaElements(policies);
+  } catch (err) {
+    if (render !== g.render) return;
+    $("#graphInfo").textContent = `unavailable (${err.status || err.message || err})`;
+    return;
+  }
+  if (render !== g.render) return;
+  if (g.cy) g.cy.destroy();
+  g.cy = window.cytoscape({ container: $("#graphCanvas"), elements: [...elements.nodes, ...elements.edges], style: graphStyle(), wheelSensitivity: 0.2 });
+  g.cy.layout(graphLayout()).run();
+  fillNodePicker(elements.nodes);
+  g.cy.on("tap", "node", (e) => {
+    focusGraphNode(g.cy, e.target);
+    $("#graphNodePick").value = e.target.id();
+  });
+  g.cy.on("tap", (e) => {
+    if (e.target === g.cy) {
+      focusGraphNode(g.cy, null);
+      $("#graphNodePick").value = "";
+    }
+  });
+  const polCount = elements.edges.filter((e) => e.data.kind === "policy").length;
+  // A fact whose AuthZEN search failed has no ids; name it so an outage never reads as "nothing reached".
+  const failed = (elements.facts || []).filter((f) => f.error).map((f) => `${f.action} unavailable`);
+  $("#graphInfo").textContent = reach
+    ? [`${elements.nodes.length - 1} resources reached through ${elements.edges.length} grants`, ...failed].join(" · ")
+    : `${elements.nodes.length} node types · ${elements.edges.length - polCount} relationship kinds${policies ? ` · ${polCount} policy relationships` : ""}`;
+}

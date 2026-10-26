@@ -2,7 +2,7 @@
 
 This repository serves as a collection of independent code examples and small applications. It is designed to be a place where different projects can be hosted without being part of a single, unified codebase.
 
-Generated at: 2026-10-21T19:55:07Z
+Generated at: 2026-10-26T16:52:18Z
 
 DO NOT EDIT!!
 
@@ -15,7 +15,7 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 | License | Classification | Severity | Count |
 | --- | --- | --- | ---: |
 | MIT | notice | LOW | 40 |
-| Apache-2.0 | notice | LOW | 14 |
+| Apache-2.0 | notice | LOW | 15 |
 | BSD-3-Clause | notice | LOW | 12 |
 | BSD-2-Clause | notice | LOW | 2 |
 | BeOpen | unknown | UNKNOWN | 2 |
@@ -25,19 +25,19 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 | Python-2.0 | notice | LOW | 2 |
 | BSD-0-Clause | unknown | UNKNOWN | 1 |
 
-**Total packages scanned:** 79
+**Total packages scanned:** 80
 
 ## Report Summary (by target)
 
 | Target | Type | Licenses |
 | --- | --- | ---: |
-| Loose File License(s) | - | 71 |
+| Loose File License(s) | - | 72 |
 | instant-stack/package-lock.json | npm | 4 |
 | music/package-lock.json | npm | 4 |
 
 ## Details
 
-### `Loose File License(s)` (-) -- 71 licenses
+### `Loose File License(s)` (-) -- 72 licenses
 
 | Package | License | Classification | Severity |
 | --- | --- | --- | --- |
@@ -55,6 +55,7 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 | pip | Apache-2.0 | notice | LOW |
 | python\_dateutil | Apache-2.0 | notice | LOW |
 | requests | Apache-2.0 | notice | LOW |
+| tzdata | Apache-2.0 | notice | LOW |
 | typing\_extensions | BSD-0-Clause | unknown | UNKNOWN |
 | pip | BSD-2-Clause | notice | LOW |
 | rq | BSD-2-Clause | notice | LOW |

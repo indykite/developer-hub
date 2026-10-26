@@ -26,7 +26,8 @@
       <button class="nav-item" data-view="vocabulary"><span class="nav-index">03</span>Vocabulary</button>
       <button class="nav-item" data-view="audit"><span class="nav-index">04</span>Audit<span class="nav-count" id="auditCount"></span></button>
       <button class="nav-item" data-view="agents"><span class="nav-index">05</span>Agents</button>
-      <a class="nav-item" href="/architecture"><span class="nav-index">06</span>Architecture</a>
+      <button class="nav-item" data-view="graph"><span class="nav-index">06</span>Graph</button>
+      <a class="nav-item" href="/architecture"><span class="nav-index">07</span>Architecture</a>
     </nav>
     <div class="rail-status">
       <div class="status-row"><span class="dot" id="dotAgent"></span>Intent Agent</div>
@@ -147,6 +148,31 @@
         <p class="lede">The Intent Agent and the Token Service both deliver their audit records to this console's webhook. Nothing here is reconstructed from the response: it is what the services wrote.</p>
       </header>
       <div class="audit-list" id="auditList"></div>
+    </section>
+
+    <!-- Graph -->
+    <section class="view" id="view-graph" hidden>
+      <header class="view-head">
+        <h1 class="display">The graph, as the agent sees it.</h1>
+        <p class="lede" id="graphLede">Schema: one node per type, sized by how many instances the project holds, linked by the relationship kinds the platform observed. Switch on the policies to see the only relationships the agent may ever name as actions.</p>
+      </header>
+      <div class="graph-toolbar">
+        <div class="seg" id="graphMode">
+          <button data-mode="schema" class="active">Schema</button>
+          <button data-mode="reach">Reach</button>
+        </div>
+        <label class="graph-opt" id="graphPolicyOpt"><input type="checkbox" id="graphPolicies"> policies as relationships</label>
+        <select id="graphPersona" class="graph-select" aria-label="Reach persona" hidden></select>
+        <button class="graph-btn" id="graphRelayout" title="Run the force layout again">re-layout</button>
+        <select id="graphNodePick" class="graph-select" aria-label="Inspect a node"><option value="">inspect node…</option></select>
+        <span class="muted" id="graphInfo"></span>
+      </div>
+      <div class="graph-shell">
+        <div class="graph-canvas" id="graphCanvas"></div>
+        <aside class="graph-side" id="graphSide">
+          <div class="empty">Click a node, or pick one in the toolbar, for its details.</div>
+        </aside>
+      </div>
     </section>
 
     <!-- Agents -->
