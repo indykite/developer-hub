@@ -17,9 +17,6 @@ jobs:
     name: pre-commit-cache
     runs-on: ubuntu-latest
     steps:
-      # INDYKITEONE_PAT was retired (ENG-9545, 2026-08). pre-commit needs read
-      # access to the private ops-common hooks repo; mint a short-lived
-      # ik-code-reader token scoped to it instead.
       - name: Mint ik-code-reader installation token
         id: code_reader_token
         uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
@@ -42,3 +39,11 @@ jobs:
     steps:
       - name: trivy
         uses: indykite/.github/.github/actions/trivy@master
+        with:
+          scanners: vuln,secret,misconfig,license
+          slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
+          jira-api-token: ${{ secrets.JIRA_API_TOKEN }}
+          jira-cloud-id: ${{ secrets.JIRA_CLOUD_ID }}
+          jira-watchers: ${{ secrets.TRIVY_JIRA_WATCHERS }}
+          github-app-client-id: ${{ vars.IK_CODE_WRITER_CLIENT_ID }}
+          github-app-private-key: ${{ secrets.IK_CODE_WRITER_PEM }}
