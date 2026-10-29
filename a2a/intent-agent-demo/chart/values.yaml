@@ -43,7 +43,7 @@ intentAgent:
 tokenService:
   image:
     repository: docker.io/indykite/token-service
-    tag: "1.0.0"
+    tag: "1.0.0@sha256:a1248b73ab22fb939e533455a89468b7112b2b938486d8feca818e17776a97e2"
     pullPolicy: IfNotPresent
   port: 8102
   # Must equal idp.client_auth.client_id inside token-service.yaml.
@@ -72,7 +72,7 @@ console:
 redis:
   image:
     repository: redis
-    tag: 8-alpine
+    tag: 8-alpine@sha256:21090af93f8324db2f0f0f4f38a7c60369d47d917e000c3423d89d2ae2883537
     pullPolicy: IfNotPresent
   resources:
     requests: {cpu: 50m, memory: 64Mi}
