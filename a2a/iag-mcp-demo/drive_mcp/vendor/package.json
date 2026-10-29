@@ -4,8 +4,8 @@
   "type": "module",
   "dependencies": {
     "@google-cloud/local-auth": "^3.0.1",
-    "@modelcontextprotocol/sdk": "1.32.0",
+    "@modelcontextprotocol/sdk": "1.32.2",
     "googleapis": "^188.0.0",
-    "pdfjs-dist": "6.3.289"
+    "pdfjs-dist": "6.4.299"
   }
 }
