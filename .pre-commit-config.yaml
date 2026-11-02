@@ -65,7 +65,7 @@ repos:
   #
   # Renovate
   - repo: https://github.com/renovatebot/pre-commit-hooks # ci:ignore:OK to validate locally only, otherwise it adds 850MB+ to unpacked cache
-    rev: "44.192.2" # frozen: 43.150.0
+    rev: "44.206.1" # frozen: 43.150.0
     hooks:
       - id: renovate-config-validator
         args: [--strict]
@@ -199,7 +199,7 @@ repos:
         stages: [manual] # XXX: not used by default, but left as a reference for potential tool introduction
 
   - repo: https://github.com/pre-commit/mirrors-mypy # ci:ignore:manual stage only
-    rev: 2834ec6639549dd6796205c8f011dedcd587288b # frozen: v2.4.0
+    rev: ad26ebfa797fcb9b8f83275937c1c1d6e126719c # frozen: v2.4.1
     hooks:
       - id: mypy
         name: python-mypy
