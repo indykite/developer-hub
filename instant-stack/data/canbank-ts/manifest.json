@@ -784,6 +784,7 @@
     "providers": {
       "pubsub-provider": {
         "pubsub": {
+          "display_name": "Pub/Sub topic ${PUBSUB_TOPIC}",
           "project_id": "${PUBSUB_GCP_PROJECT}",
           "topic_name": "${PUBSUB_TOPIC}"
         }
