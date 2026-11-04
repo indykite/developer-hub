@@ -4,9 +4,12 @@ audit:
   # The INTENT records (the gateway asking the Intent Agent) carry the
   # prompt, and the reason of a failed intent, only with this on. The prompt
   # is the end user's own words; this demo shows it on the console's audit
-  # terminal on purpose.
+  # terminal on purpose, and the console streams it only to a logged-in
+  # session (/api/updates answers 401 to anyone else).
   include_prompt: true
   http:
+    # The console always listens on 3300 inside the compose network;
+    # CHATBOT_PORT in .env only moves the published host port.
     url: http://chatbot:3300/api/push-update
     method: post
     auth:

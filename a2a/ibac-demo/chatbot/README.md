@@ -13,7 +13,7 @@ Environment variables:
 
 | Variable | Default | Description |
 | ---------- | --------- | ------------- |
-| `CHATBOT_PORT` | `3000` | Port the chatbot web app listens on. |
+| `CHATBOT_PORT` | `3000` | Port the chatbot web app listens on when run locally, and the port of the login redirect and logout URLs. In compose the container always listens on 3300 and `CHATBOT_PORT` is the published host port. |
 | `ORCHESTRATOR_HOST` | `localhost` | Host of the Orchestrator Agent. |
 | `ORCHESTRATOR_PORT` | `6001` | Port of the Orchestrator Agent. |
 | `ORCHESTRATOR_TIMEOUT` | `300` | Request timeout in seconds (LLM responses can take a while). |

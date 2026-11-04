@@ -3357,6 +3357,28 @@
         "external_id": "refund_policy"
       },
       "type": "EXCEPTION_TO"
+    },
+    {
+      "source": {
+        "type": "Ticket",
+        "external_id": "ticket_001"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "type": "ASSIGNED_TO"
+    },
+    {
+      "source": {
+        "type": "Ticket",
+        "external_id": "ticket_002"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "type": "ASSIGNED_TO"
     }
   ]
 }

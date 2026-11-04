@@ -555,7 +555,7 @@
       "slot": "10",
       "name": "store-decision",
       "display_name": "Store Decision",
-      "description": "Create a new Decision node and wire it to the document it applies (APPLIES), the ticket it closes (CLOSED_BY) and the authenticated user who made it (MADE) in one atomic CIQ upsert.",
+      "description": "Create a new Decision node and wire it to the document it applies (APPLIES), the ticket it closes (CLOSED_BY) and the authenticated user who made it (MADE) in one atomic CIQ upsert. Allowed only to staff who reach the document through their department and whose department the ticket is assigned to (ASSIGNED_TO).",
       "policy": {
         "meta": {
           "policy_version": "1.0-ciq"
@@ -564,7 +564,7 @@
           "type": "Person"
         },
         "condition": {
-          "cypher": "MATCH (subject:Person {external_id: $token.sub}) MATCH (document:Document {external_id: $document_external_id}) MATCH (ticket:Ticket {external_id: $ticket_external_id})",
+          "cypher": "MATCH (subject:Person {external_id: $token.sub})-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(document:Document {external_id: $document_external_id}) MATCH (subject)-[:WORKS_IN]->(:Department)<-[:ASSIGNED_TO]-(ticket:Ticket {external_id: $ticket_external_id})",
           "filter": []
         },
         "allowed_upserts": {
@@ -674,7 +674,7 @@
           "type": "Person"
         },
         "condition": {
-          "cypher": "MATCH (subject:Person {external_id: $token.sub})-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(document:Document)-[:IS_TYPE]->(taxonomy:Taxonomy {external_id: $taxonomy_external_id})",
+          "cypher": "MATCH (subject:Person {external_id: $token.sub})-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(document:Document)-[:IS_TYPE]->(taxonomy:Taxonomy {external_id: $taxonomy_external_id}) WHERE $ik_token.act_chain = ['${AUTH0_SUB_ORCHESTRATOR}', '${AUTH0_SUB_RETRIEVER}', '${AUTH0_SUB_MCP}']",
           "filter": [],
           "token_filter": {
             "attribute": "$ik_token.act.act.act.sub",
@@ -682,7 +682,7 @@
             "value": "${AUTH0_SUB_ORCHESTRATOR}",
             "advice": {
               "error": "invalid_delegation_chain",
-              "error_description": "Expected a depth-3 delegation chain with the orchestrator agent as the innermost actor ($ik_token.act.act.act.sub)"
+              "error_description": "Expected the console->orchestrator->retriever->mcp delegation chain: a depth-3 chain whose oldest actor is the orchestrator; the cypher then requires $ik_token.act_chain to list orchestrator, retriever and mcp in that order"
             }
           }
         },
@@ -1009,12 +1009,7 @@
           "type": "Document"
         },
         "condition": {
-          "cypher": "MATCH (subject:Person)-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(resource:Document)",
-          "filter": {
-            "attribute": "$ik_token.act.act.act.sub",
-            "operator": "=",
-            "value": "${AUTH0_SUB_ORCHESTRATOR}"
-          }
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(resource:Document) WHERE $ik_token.act_chain = ['${AUTH0_SUB_ORCHESTRATOR}', '${AUTH0_SUB_RETRIEVER}', '${AUTH0_SUB_MCP}']"
         }
       }
     },

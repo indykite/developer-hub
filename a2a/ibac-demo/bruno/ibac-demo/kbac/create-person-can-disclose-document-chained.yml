@@ -18,7 +18,7 @@ http:
         "display_name": "Person can disclose document (chain-guarded)",
         "description": "Allow a person to DISCLOSE a document they can reach through their department only when the full console->orchestrator->retriever->mcp Token Service delegation chain is presented.",
         "project_id": "{{project_id}}",
-        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"CAN_DISCLOSE\"],\"resource\":{\"type\":\"Document\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(resource:Document)\",\"filter\":{\"attribute\":\"$ik_token.act.act.act.sub\",\"operator\":\"=\",\"value\":\"{{auth0_sub_orchestrator}}\"}}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"CAN_DISCLOSE\"],\"resource\":{\"type\":\"Document\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(resource:Document) WHERE $ik_token.act_chain = ['{{auth0_sub_orchestrator}}', '{{auth0_sub_retriever}}', '{{auth0_sub_mcp}}']\"}}",
         "status": "ACTIVE"
       }
   auth: inherit

@@ -47,9 +47,9 @@ runtime:
         });
 
         // The full console->orchestrator->retriever->mcp shape the guard wants
-        // (act.act.act.sub = the orchestrator's subject) is proven authoritatively by
-        // ciq-full-chain-allowed below returning documents - only a correct
-        // depth-3 chain passes the token_filter.
+        // (act_chain = [orchestrator, retriever, mcp]) is proven authoritatively by
+        // ciq-full-chain-allowed below returning documents - only that chain
+        // passes both the token_filter and the cypher's act_chain comparison.
         bru.setVar("delegated_depth3", jsonData.access_token);
 
 settings:

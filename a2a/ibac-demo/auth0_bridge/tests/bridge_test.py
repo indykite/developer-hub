@@ -18,6 +18,7 @@ GOOD_CLIENT = ("m2m-client", "m2m-secret")
 
 
 def _token(**overrides) -> str:
+    """Mint an Auth0-shaped RS256 access token signed with the test key; overrides replace claims."""
     now = int(time.time())
     claims = {
         "iss": server.ISSUER,
@@ -33,6 +34,7 @@ def _token(**overrides) -> str:
 
 
 def _basic(client_id: str, secret: str) -> dict[str, str]:
+    """HTTP Basic authorization header for the given client credentials."""
     return {"Authorization": "Basic " + base64.b64encode(f"{client_id}:{secret}".encode()).decode()}
 
 
@@ -63,10 +65,12 @@ def auth0(monkeypatch):
 
 @pytest.fixture
 def client():
+    """Test client bound to the bridge application."""
     return TestClient(server.app)
 
 
 def test_active_token(client, auth0):
+    """A valid tenant token introspects as active with its claims and client_id taken from azp."""
     resp = client.post("/oauth/introspect", data={"token": _token()}, headers=_basic(*GOOD_CLIENT))
     assert resp.status_code == 200
     body = resp.json()
@@ -80,6 +84,7 @@ def test_active_token(client, auth0):
 
 
 def test_expired_token_is_inactive(client, auth0):
+    """An expired token answers active=false, still with status 200 as RFC 7662 requires."""
     expired = _token(exp=int(time.time()) - 5)
     resp = client.post("/oauth/introspect", data={"token": expired}, headers=_basic(*GOOD_CLIENT))
     assert resp.status_code == 200
@@ -87,17 +92,20 @@ def test_expired_token_is_inactive(client, auth0):
 
 
 def test_foreign_issuer_is_inactive(client, auth0):
+    """A token issued by another issuer is not vouched for."""
     foreign = _token(iss="https://somebody-else.example/")
     resp = client.post("/oauth/introspect", data={"token": foreign}, headers=_basic(*GOOD_CLIENT))
     assert resp.json() == {"active": False}
 
 
 def test_garbage_token_is_inactive(client, auth0):
+    """A string that is not a JWT answers active=false instead of an error."""
     resp = client.post("/oauth/introspect", data={"token": "not.a.jwt"}, headers=_basic(*GOOD_CLIENT))  # nosec B105
     assert resp.json() == {"active": False}
 
 
 def test_caller_must_authenticate(client, auth0):
+    """Introspection without credentials, or with a wrong secret, is refused with 401 and a Basic challenge."""
     assert client.post("/oauth/introspect", data={"token": _token()}).status_code == 401
     bad = client.post("/oauth/introspect", data={"token": _token()}, headers=_basic("m2m-client", "wrong"))
     assert bad.status_code == 401
@@ -105,6 +113,7 @@ def test_caller_must_authenticate(client, auth0):
 
 
 def test_caller_verification_is_cached(client, auth0):
+    """Repeated calls by one caller verify its credentials at Auth0 once, with the default audience."""
     for _ in range(3):
         client.post("/oauth/introspect", data={"token": _token()}, headers=_basic(*GOOD_CLIENT))
     verifications = [c for c in auth0 if c["form"].get("grant_type") == "client_credentials"]
@@ -113,6 +122,7 @@ def test_caller_verification_is_cached(client, auth0):
 
 
 def test_form_credentials_accepted(client, auth0):
+    """Client credentials may be sent in the form body instead of a Basic header."""
     resp = client.post(
         "/oauth/introspect",
         data={"token": _token(), "client_id": GOOD_CLIENT[0], "client_secret": GOOD_CLIENT[1]},
@@ -121,6 +131,7 @@ def test_form_credentials_accepted(client, auth0):
 
 
 def test_token_passthrough_adds_default_audience(client, auth0):
+    """A token request without audience is forwarded with the default audience and the caller's header."""
     resp = client.post("/oauth/token", data={"grant_type": "client_credentials"}, headers=_basic(*GOOD_CLIENT))
     assert resp.status_code == 200
     assert resp.json()["access_token"]
@@ -129,6 +140,7 @@ def test_token_passthrough_adds_default_audience(client, auth0):
 
 
 def test_token_passthrough_keeps_explicit_audience(client, auth0):
+    """An audience named by the caller is forwarded unchanged."""
     client.post(
         "/oauth/token",
         data={"grant_type": "client_credentials", "audience": "intent_agent"},
@@ -138,12 +150,14 @@ def test_token_passthrough_keeps_explicit_audience(client, auth0):
 
 
 def test_token_passthrough_returns_upstream_error(client, auth0):
+    """Auth0's status and error body are relayed to the caller as they are."""
     resp = client.post("/oauth/token", data={"grant_type": "client_credentials"}, headers=_basic("x", "y"))
     assert resp.status_code == 401
     assert resp.json()["error"] == "access_denied"
 
 
 def test_healthz(client):
+    """The health endpoint reports the issuer the bridge was configured with."""
     body = client.get("/healthz").json()
     assert body["status"] == "ok"
     assert body["issuer"] == "https://tenant.test.auth0.com/"

@@ -20,10 +20,12 @@ RUN groupadd --system --gid 1001 app \
  && chmod 700 /tmp/flask_session
 USER app
 
-EXPOSE 3000
+# The container always listens on 3300; the published host port is chosen in
+# compose (CHATBOT_PORT), so the gateways' static audit webhook stays valid.
+EXPOSE 3300
 
 # Healthcheck — verify the Flask port is accepting connections (trivy AVD-DS-0026)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
-  CMD python -c "import socket,os,sys; s=socket.socket(); s.settimeout(3); s.connect(('127.0.0.1', int(os.environ.get('CHATBOT_PORT','3000')))); s.close()" || exit 1
+  CMD python -c "import socket,sys; s=socket.socket(); s.settimeout(3); s.connect(('127.0.0.1', 3300)); s.close()" || exit 1
 
-CMD ["python", "app.py"]
+CMD ["python", "app.py", "--host", "0.0.0.0", "--port", "3300"]

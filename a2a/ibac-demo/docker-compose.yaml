@@ -26,8 +26,11 @@ services:
     # Usecase branding (ORG_NAME/ORG_TAGLINE) so the console adapts per usecase.
     env_file:
       - ./usecases/${USECASE:-ibac}/usecase.env
+    # The console listens on 3300 inside the network (the gateways' static
+    # audit-config.yaml and the agents' webhooks post there); CHATBOT_PORT is
+    # the host port only, and the port the login redirect URLs carry.
     ports:
-      - "${CHATBOT_PORT}:${CHATBOT_PORT}"
+      - "${CHATBOT_PORT}:3300"
     networks:
       - console-network
       - orchestrator-iag-network
@@ -37,7 +40,7 @@ services:
       - analyst-iag-network
       - drive-mcp-iag-network
       # Membership in every agent network lets the agents' exchanged-token
-      # webhooks reach http://chatbot:${CHATBOT_PORT} (harmless when a profile is off).
+      # webhooks reach http://chatbot:3300 (harmless when a profile is off).
       - crm-iag-network
       - erp-mcp-iag-network
     volumes:
@@ -108,7 +111,7 @@ services:
         ${ERP_MCP_IDP_CLIENT_ID:-}@clients=erp-mcp-gateway
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    command: python app.py --host 0.0.0.0 --port ${CHATBOT_PORT}
+    command: python app.py --host 0.0.0.0 --port 3300
 
   # Auth0 bridge - the gateways' identity provider endpoint (see
   # auth0_bridge/README.md). Auth0 publishes no RFC 7662 introspection
@@ -245,7 +248,7 @@ services:
       ADVERTISED_HOST: ${ORCHESTRATOR_HOST}
       ORCHESTRATOR_PORT: ${ORCHESTRATOR_PORT}
       ORCHESTRATOR_AGENT_NAME: orchestrator_agent
-      CHATBOT_UPDATES_URL: http://chatbot:${CHATBOT_PORT}/api/push-update
+      CHATBOT_UPDATES_URL: http://chatbot:3300/api/push-update
       RETRIEVER_HOST: ${IAG_RETRIEVER_HOST}
       RETRIEVER_PORT: ${IAG_RETRIEVER_PORT}
       WEATHER_HOST: ${IAG_WEATHER_HOST}
@@ -312,7 +315,7 @@ services:
       ADVERTISED_HOST: ${RETRIEVER_HOST}
       RETRIEVER_PORT: ${RETRIEVER_PORT}
       RETRIEVER_AGENT_NAME: retriever_agent
-      CHATBOT_UPDATES_URL: http://chatbot:${CHATBOT_PORT}/api/push-update
+      CHATBOT_UPDATES_URL: http://chatbot:3300/api/push-update
       # Route MCP calls through the MCP-protecting IAG instead of the MCP server
       # directly. To bypass the IAG, set this back to ${MCP_SERVER_URL}.
       MCP_SERVER_URL: http://${IAG_MCP_HOST}:${IAG_MCP_PORT}${MCP_SERVER_PATH}
@@ -397,7 +400,7 @@ services:
       ADVERTISED_HOST: ${ANALYST_HOST}
       ANALYST_PORT: ${ANALYST_PORT}
       ANALYST_AGENT_NAME: analyst_agent
-      CHATBOT_UPDATES_URL: http://chatbot:${CHATBOT_PORT}/api/push-update
+      CHATBOT_UPDATES_URL: http://chatbot:3300/api/push-update
       # Route MCP calls through the MCP-protecting IAG instead of the MCP server
       # directly. To bypass the IAG, set this back to ${MCP_SERVER_URL}.
       MCP_SERVER_URL: http://${IAG_MCP_HOST}:${IAG_MCP_PORT}${MCP_SERVER_PATH}
@@ -467,7 +470,7 @@ services:
       ADVERTISED_HOST: ${CRM_HOST:-crm}
       CRM_PORT: ${CRM_PORT:-7006}
       CRM_AGENT_NAME: crm_agent
-      CHATBOT_UPDATES_URL: http://chatbot:${CHATBOT_PORT}/api/push-update
+      CHATBOT_UPDATES_URL: http://chatbot:3300/api/push-update
       # Salesforce connected app (OAuth 2.0 JWT Bearer flow, RFC 7523). The
       # private key pairs with the certificate uploaded to the connected app;
       # mounted read-only from ./crm_agent/keys (gitignored).
@@ -534,7 +537,7 @@ services:
       ADVERTISED_HOST: ${WEATHER_HOST}
       WEATHER_PORT: ${WEATHER_PORT}
       WEATHER_AGENT_NAME: weather_agent
-      CHATBOT_UPDATES_URL: http://chatbot:${CHATBOT_PORT}/api/push-update
+      CHATBOT_UPDATES_URL: http://chatbot:3300/api/push-update
       # Route MCP calls through the MCP-protecting IAG instead of the MCP server
       # directly. To bypass the IAG, set this back to ${MCP_SERVER_URL}.
       MCP_SERVER_URL: http://${IAG_MCP_HOST}:${IAG_MCP_PORT}${MCP_SERVER_PATH}
@@ -718,7 +721,7 @@ services:
       REDIS_URL: redis://intent-redis:6379
       # Audit records go to the console's audit terminal like the gateways'.
       AUDIT_DELIVERY: webhook
-      AUDIT_HTTP_URL: http://chatbot:${CHATBOT_PORT}/api/push-update
+      AUDIT_HTTP_URL: http://chatbot:3300/api/push-update
       AUDIT_HTTP_METHOD: POST
       AUDIT_HTTP_AUTH_TYPE: no-auth
       AUDIT_ASYNC: "true"
