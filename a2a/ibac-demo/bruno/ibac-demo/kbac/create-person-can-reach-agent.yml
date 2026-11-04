@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Person Can Reach Agent
+  type: http
+  seq: 34
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "person-can-reach-agent",
+        "display_name": "Person can reach agent (gateway admission)",
+        "description": "The Agent Gateway's admission check: the subject may reach the protected agent (the newest hop of the delegation chain, resource type Agent) when a workflow they can trigger - directly or through their department - has exactly the delegation chain as its path of agents ($ik_token.act_chain, sent by the gateway in X-IK-Token). One policy serves every gateway; a chain from another workflow, or one that does not end at this agent, is refused.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"CAN_TRIGGER\"],\"resource\":{\"type\":\"Agent\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WORKS_IN|CAN_TRIGGER*..3]->(wf:Workflow) MATCH (wf)-[rels:INVOKES*]->(resource:Agent) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_person_can_reach_agent", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,38 @@
+---
+info:
+  name: Create Get My Family Query
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/knowledge-queries"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "get-my-family",
+        "display_name": "Get My Family",
+        "description": "Retrieve the authenticated person's household: spouse or partner, children with their age group, and the accounts of children who are minors (adult children's accounts are not returned). Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-my-family\", \"input_params\": { } }.",
+        "project_id": "{{project_id}}",
+        "policy_id": "{{get_my_family_policy}}",
+        "query": "{\"nodes\":[\"subject.external_id\",\"subject.property.name\",\"spouse.external_id\",\"spouse.property.name\",\"child.external_id\",\"child.property.name\",\"child.property.age\",\"ageGroup.external_id\",\"account.external_id\",\"account.property.account_type\",\"account.property.balance\"],\"relationships\":[\"r_spouse\",\"r_parent\",\"r_owns\"],\"aggregate_values\":[]}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("get_my_family_query", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

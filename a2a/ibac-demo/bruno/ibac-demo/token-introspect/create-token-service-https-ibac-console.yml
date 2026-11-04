@@ -1,0 +1,47 @@
+---
+info:
+  name: Create Token Service Https Ibac Console
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/token-introspects"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "project_id": "{{project_id}}",
+        "name": "token-service-https-ibac-console",
+        "display_name": "Token Service Delegations (ibac-console audience)",
+        "description": "Token-service-minted delegation JWTs arriving in X-IK-Token; audience inherited from the user subject token. The public JWK comes from .env (TOKEN_SERVICE_PUBLIC_JWK) - fetch it from the running service's /.well-known/jwks.json and strip it to kty/n/e/alg/kid/use.",
+        "ikg_node_type": "Person",
+        "jwt_matcher": {
+          "issuer": "https://token-service.ibac-demo.local",
+          "audience": "ibac-console"
+        },
+        "claims_mapping": {},
+        "offline_validation": {
+          "public_jwks": [
+            "{{token_service_public_jwk}}"
+          ]
+        },
+        "perform_upsert": true
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("token_service_https_ibac_console_introspect", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

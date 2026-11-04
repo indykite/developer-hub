@@ -1,0 +1,30 @@
+---
+info:
+  name: WF4 Parallel Multi-Agent MCP
+  type: folder
+  seq: 6
+
+request:
+  auth: inherit
+
+docs: |-
+  Parallel multi-agent MCP: several people and agents hold concurrent MCP
+  sessions through the same mcp-iag gateway, and authorization follows each
+  person's token.
+
+  Three sessions: Millicent + Marmaduke both via the shared retriever agent
+  (two people, one agent) and Millicent via the analyst agent. The MCP
+  requests are interleaved round-robin (init A/B/C, initialized A/B/C, list
+  A/B/C, ...) so all three sessions stay live at once. All three session ids
+  must be distinct. The MCP subject is bound to the bearer token, so
+  authorization reflects each person even on the shared retriever: Millicent
+  CAN_TRIGGER wf3 (allow), Marmaduke cannot (deny - he holds wf1 only).
+
+  Tokens are Auth0 access tokens (audience ibac-console): log in to the
+  console (http://localhost:3300) as each person and copy the access token
+  into user_token_millicent / user_token_marmaduke. Subject ids are the Auth0
+  subjects ({{auth0_sub_millicent}}, {{auth0_sub_marmaduke}}); the payload
+  subject is irrelevant to the decision, which is bound to the bearer.
+
+  Prerequisites: the ibac dataset provisioned (admission policy
+  person-can-reach-agent), the compose stack up with the analyst services.

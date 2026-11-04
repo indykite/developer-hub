@@ -1,0 +1,46 @@
+---
+info:
+  name: Delegation Chain Guard
+  type: folder
+  seq: 7
+
+request:
+  auth: inherit
+
+docs: |-
+  Deterministic probes for the chain-guarded CIQ query
+  get-internal-documents-chained.
+
+  The query's CIQ policy carries a token_filter on $ik_token.act.act.act.sub =
+  the orchestrator's subject ({{auth0_sub_orchestrator}}, the <client_id>@clients
+  of its Auth0 M2M application): only a delegation chain of depth 3 whose
+  innermost actor is the orchestrator - the full console -> orchestrator ->
+  retriever -> mcp route - may read the documents. token_filter is evaluated
+  against the token claims in-process, so a shorter or absent chain is refused
+  before the graph is ever touched.
+
+  Rather than drive the live agents (whose gateway also enforces a separate
+  workflow-authorization check, and whose LLM tool choice is nondeterministic),
+  these requests mint the delegation directly at the Token Service - exactly
+  how the gateways do it, hop by hop - and present it to the platform CIQ REST
+  endpoint. That isolates the data-policy chain guard cleanly.
+
+  Flow:
+  - seq 1-3: actor tokens from Auth0 (client credentials of the orchestrator,
+    retriever and mcp M2M applications, audience {{agents_audience}} - what the
+    auth0-bridge adds for the gateways).
+  - seq 4-6: build the chain hop by hop at the Token Service, audience
+    {{console_audience}} as the gateways ask: user -> +orchestrator (depth-1)
+    -> +retriever (depth-2) -> +mcp (depth-3). The depth-1 token is kept for
+    the short-chain negative.
+  - seq 7: CIQ execute WITH the full depth-3 X-IK-Token -> 200 (ALLOWED).
+  - seq 8: CIQ execute WITH the depth-1 X-IK-Token (short chain) -> 401
+    invalid_delegation_chain (DENIED).
+  - seq 9: CIQ execute WITHOUT any X-IK-Token -> 401 (DENIED).
+  - seq 10: CIQ execute WITH a malformed X-IK-Token -> refused (DENIED).
+
+  Prerequisites: the compose stack up (Token Service on localhost:9102), the
+  ibac dataset provisioned (get-internal-documents-chained). Environment vars,
+  all from the stack's .env: user_token_millicent (a fresh console login),
+  agent_token (APP_AGENT_CREDENTIALS_TOKEN), the three client ids + secrets,
+  token_service_client_secret (TOKEN_SERVICE_CLIENT_SECRET), auth0_domain.

@@ -1,0 +1,42 @@
+---
+info:
+  name: Create Get Stock Trade Threshold Policy
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "get-stock-trade-threshold",
+        "display_name": "Get Stock Trade Threshold",
+        "description": "Return a customer's stock account tier when accessed by a trading user.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person {external_id: $token.sub})-[:WORKS_IN]->(department:Department)-[:CAN_ACCESS|CONTAINS*..2]->(customer:Customer {external_id: $customer_external_id})-[:OWNS]-(account:Account)-[:IS_TIER]->(tier:AccountTier) WHERE (account)-[:IS_TYPE]->(:InvestmentCategory {external_id: 'cat_stocks'})\",\"filter\":[]},\"allowed_reads\":{\"nodes\":[\"subject.*\",\"customer.*\",\"account.*\",\"tier.*\"],\"relationships\":[],\"aggregate_values\":[]}}",
+        "status": "ACTIVE",
+        "tags": [
+          "ibac",
+          "trading",
+          "threshold"
+        ]
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("get_stock_trade_threshold_policy", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

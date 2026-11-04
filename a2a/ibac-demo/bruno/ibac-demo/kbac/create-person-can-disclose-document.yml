@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Person Can Disclose Document
+  type: http
+  seq: 15
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "person-can-disclose-document",
+        "display_name": "Can disclose document",
+        "description": "Documents reachable through the person's department, folders and containers (unguarded twin of the chained policy).",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"CAN_DISCLOSE_UNCHAINED\"],\"resource\":{\"type\":\"Document\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(resource:Document)\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_person_can_disclose_document", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

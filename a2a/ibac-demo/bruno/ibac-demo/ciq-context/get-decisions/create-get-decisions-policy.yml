@@ -1,0 +1,42 @@
+---
+info:
+  name: Create Get Decisions Policy
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "get-decisions",
+        "display_name": "Get Decisions",
+        "description": "Given a document, return the decisions that referenced it along with the ticket, the customer and the affected account.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person {external_id: $token.sub})-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(document:Document {external_id: $document_external_id})<-[document_applied]-(decision:Decision)<--(ticket:Ticket)-[:REGARDING]->(account:Account), (ticket)-[:CREATED_BY]-(customer:Customer), (decision)<-[:MADE]-(actor:Person)\",\"filter\":[]},\"allowed_reads\":{\"nodes\":[\"subject.*\",\"actor.*\",\"document.*\",\"decision\",\"decision.*\",\"ticket.*\",\"account.*\",\"customer.*\"],\"relationships\":[\"document_applied.*\"],\"aggregate_values\":[]}}",
+        "status": "ACTIVE",
+        "tags": [
+          "ibac",
+          "decisions",
+          "tickets"
+        ]
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("get_decisions_policy", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

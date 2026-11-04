@@ -1,0 +1,31 @@
+---
+info:
+  name: Update Get Stock Trade Threshold Query
+  type: http
+  seq: 5
+
+http:
+  method: PUT
+  url: "{{ik_api_url_prefix}}/configs/v1/knowledge-queries/{{get_stock_trade_threshold_query}}"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "get-stock-trade-threshold",
+        "display_name": "Get Stock Trade Threshold",
+        "description": "Retrieve a customer's stock account tier and threshold. Caller must be in the trading department. Example: { \"id\": \"get-stock-trade-threshold\", \"input_params\": { \"customer_external_id\": \"cust-cashmere\" } }.",
+        "project_id": "{{project_id}}",
+        "policy_id": "{{get_stock_trade_threshold_policy}}",
+        "query": "{\"nodes\":[\"subject.external_id\",\"subject.property.name\",\"subject.property.title\",\"customer.property.name\",\"tier.property.name\",\"tier.property.threshold_amount\"],\"relationships\":[],\"aggregate_values\":[]}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

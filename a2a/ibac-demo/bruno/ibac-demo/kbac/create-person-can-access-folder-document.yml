@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Person Can Access Folder Document
+  type: http
+  seq: 14
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "person-can-access-folder-document",
+        "display_name": "Can access folder document",
+        "description": "Documents inside the folders the person's department can access.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"CAN_ACCESS_FOLDER_DOCUMENT\"],\"resource\":{\"type\":\"Document\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WORKS_IN]->(:Department)-[:CAN_ACCESS]->(:Folder)-[:CONTAINS]->(resource:Document)\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_person_can_access_folder_document", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

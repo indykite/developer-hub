@@ -1,0 +1,13 @@
+---
+info:
+  name: ciq-config
+  type: folder
+  seq: 1
+
+request:
+  headers:
+    - name: Accept
+      value: application/json
+  auth:
+    type: bearer
+    token: "{{service_token}}"

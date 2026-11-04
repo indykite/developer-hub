@@ -1,0 +1,93 @@
+---
+version: '3.9'
+
+services:
+  iag-base:
+    # The gateway image is loaded locally, not pulled: the release this demo
+    # needs (2.91) is not on Docker Hub yet. Load it from your registry and
+    # tag it `agent-gateway:latest`, or name it in .env as AGENT_GATEWAY_IMAGE;
+    # pull_policy never makes compose fail loudly instead of pulling. What the
+    # demo relies on: MCP proxying (JARVIS_PROTECTED_AGENT_PROTOCOL: mcp, used
+    # by mcp-iag, drive-mcp-iag and erp-mcp-iag) from 2.21; token service mode
+    # with hop-by-hop nesting of the incoming X-IK-Token from 2.47; the
+    # per-gateway user-token audience check and token_service.audience from
+    # 2.89; the ibac.enabled switch that gates the intent_agent section, the
+    # INTENT audit records and the gateway answering a failed intent in place
+    # of the agent from 2.90; client-credentials tokens kept until shortly
+    # before their expires_in from 2.91; admission decided by ONE AuthZEN
+    # evaluation over the delegation chain ($ik_token.act_chain, policy
+    # person-can-reach-agent in the dataset) instead of the CIQ workflow lookup,
+    # and MCP gateways serving one endpoint with OAuth discovery, from 2.93.
+    # All gateways share this image.
+    image: ${AGENT_GATEWAY_IMAGE:-agent-gateway:latest}
+    pull_policy: never
+    environment:
+      JARVIS_SERVICE_LOG_LEVEL: debug
+      JARVIS_SERVICE_ENVIRONMENT: demo
+      # Token Service mode, on every gateway: the delegation token is minted
+      # at the self-hosted IndyKite Token Service instead of the IdP's
+      # exchange endpoint. The user's own token stays in Authorization, the
+      # delegation travels in X-IK-Token (policies read it as $ik_token), and
+      # a gateway that receives an X-IK-Token introspects it at the Token
+      # Service and nests it into the next exchange, so the act chain grows
+      # hop by hop. The MCP gateways run the same mode because the platform
+      # validates the X-IK-Token itself; a classic-mode gateway on the path
+      # would drop the header and break the chain. The client credentials
+      # must match token-service.yaml idp.client_auth.
+      JARVIS_TOKEN_SERVICE_BASE_URL: ${TOKEN_SERVICE_BASE_URL:-http://token-service:8102}
+      JARVIS_TOKEN_SERVICE_EXCHANGE_ENDPOINT: "oauth2/token"
+      JARVIS_TOKEN_SERVICE_INTROSPECT_ENDPOINT: "oauth2/introspect"
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_TYPE: client_secret_basic
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_ID: ${TOKEN_SERVICE_CLIENT_ID:-agent-gateway}
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_SECRET: ${TOKEN_SERVICE_CLIENT_SECRET}
+      # Without a resource detector the gateway skips its whole metrics
+      # pipeline ("skip starting metrics server, no registry available");
+      # "local" turns on Prometheus metrics at :9090/metrics (in-network only,
+      # no host port is published).
+      JARVIS_SERVICE_TRACING_DETECTOR: local
+      # Identity provider = the Auth0 bridge (auth0_bridge/). A gateway
+      # validates the user's access token only by RFC 7662 introspection,
+      # under the same base URL as the client-credentials endpoint it gets
+      # its actor token from; Auth0 offers no introspection endpoint and
+      # refuses a client-credentials grant without an audience, which the
+      # gateway does not send. The bridge answers both: introspection by
+      # verifying Auth0's JWTs against the tenant JWKS, the token endpoint
+      # by forwarding to Auth0 with the agents' audience added. The exchange
+      # endpoint is unused in Token Service mode.
+      JARVIS_IDENTITY_PROVIDER_BASE_URL: http://auth0-bridge:8090
+      JARVIS_IDENTITY_PROVIDER_INTROSPECT_ENDPOINT: oauth/introspect
+      JARVIS_IDENTITY_PROVIDER_CLIENT_CREDENTIAL_ENDPOINT: oauth/token
+      JARVIS_IDENTITY_PROVIDER_EXCHANGE_ENDPOINT: oauth/token
+      # Advertised in the public agent card as the security scheme callers
+      # get their token from (A2A gateways), and named as the authorization
+      # server in the OAuth protected resource metadata (MCP gateways).
+      JARVIS_IDENTITY_PROVIDER_OPENID_CONFIGURATION_URL: https://${AUTH0_DOMAIN}/.well-known/openid-configuration
+      JARVIS_IDENTITY_PROVIDER_ISSUER: https://${AUTH0_DOMAIN}/
+      # A workflow starts only with a user token issued for the console
+      # audience, and every delegation is minted for that same audience -
+      # the one the dataset's two Token Introspects accept.
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_AUDIENCES: ${AUTH0_CONSOLE_AUDIENCE:-ibac-console}
+      JARVIS_TOKEN_SERVICE_AUDIENCE: ${AUTH0_CONSOLE_AUDIENCE:-ibac-console}
+      # ContX IQ resolves the subject of every request (whoami).
+      JARVIS_CONTX_IQ_BASE_URL: ${INDYKITE_BASE_URL}/contx-iq/v1
+      JARVIS_CONTX_IQ_APP_AGENT_CREDENTIALS_TOKEN: ${APP_AGENT_CREDENTIALS_TOKEN}
+      # Admission: one AuthZEN evaluation per request - subject = whoami,
+      # action CAN_TRIGGER, resource = the Agent node of this gateway's own
+      # actor (the newest hop of the chain), the user token in Authorization
+      # and the delegation in X-IK-Token; the dataset's person-can-reach-agent
+      # policy compares $ik_token.act_chain with the workflow's path of
+      # agents. To restrict a gateway to some workflows, write the restriction
+      # into a tagged policy and send JARVIS_AUTHZEN_INPUT_PARAMS (JSON map)
+      # and JARVIS_AUTHZEN_POLICY_TAGS (space-separated) here.
+      JARVIS_AUTHZEN_BASE_URL: ${INDYKITE_BASE_URL}/access/v1
+      JARVIS_AUTHZEN_ACTION: CAN_TRIGGER
+      # Admission decision cache: how long a gateway keeps a decision per
+      # subject, agent and chain before asking the platform again, i.e. how
+      # fast a grant or revoke reaches gateway decisions. Keep both values
+      # equal. (The subject type comes from whoami; AUTHZEN_SUBJECT_TYPES is
+      # read by the console and the ERP only.)
+      JARVIS_AUTHZEN_CACHE_TTL: ${IAG_AUTHZEN_CACHE_TTL:-30s}
+      JARVIS_AUTHZEN_CACHE_UPDATE_AFTER: ${IAG_AUTHZEN_CACHE_TTL:-30s}
+
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

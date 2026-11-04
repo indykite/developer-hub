@@ -145,14 +145,16 @@ TOKEN_INTROSPECTS: list = _TI_RAW if isinstance(_TI_RAW, list) else ([_TI_RAW] i
 # First config kept under the old name for callers that predate the list.
 TOKEN_INTROSPECT: dict = TOKEN_INTROSPECTS[0] if TOKEN_INTROSPECTS else {}
 
-# ${ENV_VAR} placeholders in token-introspect manifest strings, e.g. the
-# token-service public JWK in offline_validation.public_jwks - secrets and
-# per-deployment values stay in .env instead of being committed in the
-# manifest.
+# ${ENV_VAR} placeholders in dataset strings - token-introspect configs (the
+# token-service public JWK, an IdP issuer), event-sink providers, KBAC and CIQ
+# policy bodies (e.g. an agent subject in a chain filter) and the capture
+# nodes/relationships (e.g. agent external_ids that are IdP client subjects).
+# Secrets and per-deployment values stay in .env instead of being committed in
+# the dataset files.
 _ENV_PLACEHOLDER = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
 
 
-def _resolve_env_placeholders(value):
+def resolve_env_placeholders(value):
     """Recursively expand ``${ENV_VAR}`` placeholders from the environment.
 
     An unset variable resolves to the empty string (and is logged by the
@@ -161,9 +163,9 @@ def _resolve_env_placeholders(value):
     if isinstance(value, str):
         return _ENV_PLACEHOLDER.sub(lambda m: os.getenv(m.group(1), ""), value)
     if isinstance(value, list):
-        return [_resolve_env_placeholders(v) for v in value]
+        return [resolve_env_placeholders(v) for v in value]
     if isinstance(value, dict):
-        return {k: _resolve_env_placeholders(v) for k, v in value.items()}
+        return {k: resolve_env_placeholders(v) for k, v in value.items()}
     return value
 
 
@@ -180,7 +182,7 @@ def token_introspect_env_key(index: int) -> str:
 def token_introspect_at(index: int) -> dict:
     """Return the token-introspect config at *index*, with env placeholders resolved."""
     cfg = TOKEN_INTROSPECTS[index] if index < len(TOKEN_INTROSPECTS) else {}
-    return _resolve_env_placeholders(cfg)
+    return resolve_env_placeholders(cfg)
 
 
 # --- KBAC authorization policies (migrated from api/authorization_policy.py) ---
@@ -217,7 +219,7 @@ def kbac_form_default(project_id: str = "", index: int = 0) -> dict:
         "description": policy.get("description", ""),
         "display_name": policy.get("display_name", ""),
         "name": policy.get("name", ""),
-        "policy": json.dumps(policy.get("policy", {}), separators=(",", ":")),
+        "policy": json.dumps(resolve_env_placeholders(policy.get("policy", {})), separators=(",", ":")),
         "status": policy.get("status", "ACTIVE"),
         "env_key": kbac_env_key(index),
     }
@@ -255,7 +257,7 @@ def event_sink_form_default(project_id: str = "") -> dict:
         "display_name": EVENT_SINK.get("display_name", ""),
         "description": EVENT_SINK.get("description", ""),
         "include_cdc_events": "true" if EVENT_SINK.get("include_cdc_events") else "false",
-        "providers": json.dumps(_resolve_env_placeholders(EVENT_SINK.get("providers", {})), indent=2),
+        "providers": json.dumps(resolve_env_placeholders(EVENT_SINK.get("providers", {})), indent=2),
         "routes": json.dumps(EVENT_SINK.get("routes", []), indent=2),
     }
 

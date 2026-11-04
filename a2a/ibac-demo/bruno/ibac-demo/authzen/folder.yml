@@ -1,0 +1,13 @@
+---
+info:
+  name: authzen
+  type: folder
+  seq: 4
+
+request:
+  auth: inherit
+
+docs: |-
+  AuthZEN decisions with the app agent key (service context: any subject may be
+  asked about, unlike a user-token call which is bound to its own subject).
+  Subjects are Auth0 subjects ({{subject_external_id}} defaults to Millicent).

@@ -37,9 +37,10 @@ RELATIONSHIPS_FILE = _dataset.RELATIONSHIPS_PATH
 
 
 def _load_default_relationships():
+    """Relationships of the active dataset, ${ENV_VAR} placeholders resolved from .env."""
     try:
         with RELATIONSHIPS_FILE.open() as f:
-            return json.load(f)
+            return _dataset.resolve_env_placeholders(json.load(f))
     except (FileNotFoundError, json.JSONDecodeError) as e:
         logger.warning("Could not load %s: %s", RELATIONSHIPS_FILE, e)
         return {"relationships": []}

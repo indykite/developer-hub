@@ -1,0 +1,35 @@
+---
+info:
+  name: Update Get My Family Policy
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies/{{get_my_family_policy}}"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "get-my-family",
+        "display_name": "Get My Family",
+        "description": "The logged-in person's household: spouse or partner, children with their age group, and the accounts of children who are minors.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person {external_id: $token.sub}) OPTIONAL MATCH (subject)-[r_spouse:MARRIED_TO|PARTNERS|CO_PARENTS]-(spouse:Person) OPTIONAL MATCH (subject)-[r_parent:PARENT_OF]->(child:Person)-[:IS_AGE_GROUP]->(ageGroup:AgeGroup) OPTIONAL MATCH (child)-[:IS_CUSTOMER]->(:Customer)-[r_owns:OWNS]->(account:Account) WHERE ageGroup.external_id = 'minor'\",\"filter\":[]},\"allowed_reads\":{\"nodes\":[\"subject.*\",\"spouse.external_id\",\"spouse.property.name\",\"child.external_id\",\"child.property.name\",\"child.property.age\",\"ageGroup.external_id\",\"account.*\"],\"relationships\":[\"r_spouse\",\"r_parent\",\"r_owns\"],\"aggregate_values\":[]}}",
+        "status": "ACTIVE",
+        "tags": [
+          "ibac",
+          "family",
+          "guardian"
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

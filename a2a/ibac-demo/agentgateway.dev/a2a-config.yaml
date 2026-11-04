@@ -1,0 +1,39 @@
+---
+# yaml-language-server: $schema=../../schema/config.json
+config:
+  logging:
+    format: json
+    fields:
+      add:
+        backend: backend
+
+binds:
+  - port: 3000
+    listeners:
+      # Route for Agent 1
+      - routes:
+          - path: /alice
+            policies:
+              cors:
+                allowOrigins:
+                  - "*"
+                allowHeaders:
+                  - content-type
+                  - cache-control
+              a2a: {}
+            backends:
+              - host: localhost:8001
+
+      # Route for Agent 2
+      - routes:
+          - path: /carol
+            policies:
+              cors:
+                allowOrigins:
+                  - "*"
+                allowHeaders:
+                  - content-type
+                  - cache-control
+              a2a: {}
+            backends:
+              - host: localhost:8003

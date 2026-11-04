@@ -1,0 +1,34 @@
+---
+info:
+  name: List ACTIVE policies for Person
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: "{{ik_api_url_prefix}}/access/v1/policies?subject_type=Person"
+  headers:
+    - name: Accept
+      value: application/json
+  params:
+    - name: subject_type
+      value: "Person"
+      type: query
+  auth:
+    type: apikey
+    key: X-IK-ClientKey
+    value: "{{agent_token}}"
+    placement: header
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        // What the Intent Agent reads as its vocabulary (needs ReadAuthZConfigs on the app agent).
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,299 @@
+{
+  "_comment": "App layer of the console for the CanBank (ibac) usecase: the sections behind the nav, and the action cards on each. Every action sends its prompt through the normal orchestrator pipeline; '{input}' is replaced by the card's input field. render hints the presenter: details | docs | table | case | weather | text | auto. access: 'request' offers a Request-access button when a gateway denies the action. A group's audience (customer | staff; absent = everyone) selects who sees it; the role comes from staff_check - here the explain queries' staff leg: staff are the people who WORKS_IN a department that CAN_TRIGGER the workflow. services: the gateways a card depends on - only their NOT AUTHORIZED decisions show on the card.",
+  "default_layer": "app",
+  "accent": "#1E3A8A",
+  "staff_check": {
+    "explain": {
+      "workflow": "wf1"
+    }
+  },
+  "placeholder": "Ask about your accounts, family, documents, quotes or invoices\u2026",
+  "sections": [
+    {
+      "id": "accounts",
+      "label": "Accounts",
+      "icon": "billing",
+      "title": "Accounts",
+      "intro": "Invoices from the ERP. The rows are filtered by the graph before any SQL runs: each person sees their slice - staff the customers their department serves, customers their own, parents their minor children's.",
+      "groups": [
+        {
+          "title": "Invoices",
+          "actions": [
+            {
+              "id": "invoices",
+              "title": "My invoices",
+              "description": "Customers: their own (and a minor child's). Staff: the customers their department serves.",
+              "prompt": "Show me the invoices",
+              "render": "table",
+              "access": "request",
+              "denied": "Invoice access is not enabled on your account. Ask CanBank support to enable it, or request it here.",
+              "services": [
+                "analyst-iag",
+                "erp-mcp-iag"
+              ]
+            },
+            {
+              "id": "invoice-detail",
+              "title": "Open an invoice",
+              "description": "By invoice id. Naming an id is not enough: the graph must connect you to it.",
+              "input": {
+                "label": "Invoice id",
+                "placeholder": "inv-cb-009"
+              },
+              "prompt": "Show me invoice {input}",
+              "render": "details",
+              "access": "request",
+              "denied": "Invoice access is not enabled on your account. Ask CanBank support to enable it, or request it here.",
+              "services": [
+                "analyst-iag",
+                "erp-mcp-iag"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Family",
+          "audience": "customer",
+          "note": "Parents see the accounts of children who are minors; adult children's accounts stay their own.",
+          "actions": [
+            {
+              "id": "family",
+              "title": "My family",
+              "description": "Spouse or partner, children with their age group, and the youth accounts of minor children.",
+              "prompt": "Show my family",
+              "render": "details",
+              "services": [
+                "retriever-iag",
+                "mcp-iag"
+              ]
+            },
+            {
+              "id": "dependent-accounts",
+              "title": "May I see my child's account?",
+              "description": "A live AuthZEN search: which accounts you may view as a guardian.",
+              "prompt": "Which accounts of my children am I allowed to view as a guardian? Check with authzen.",
+              "render": "text",
+              "services": [
+                "retriever-iag",
+                "mcp-iag"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "investments",
+      "label": "Investments",
+      "icon": "chart",
+      "title": "Investments",
+      "intro": "Quotes and purchase limits, gated by who you are.",
+      "groups": [
+        {
+          "title": "Market",
+          "actions": [
+            {
+              "id": "quote",
+              "title": "Stock quote",
+              "description": "Live price for a ticker, if your department may retrieve quotes.",
+              "input": {
+                "label": "Ticker",
+                "placeholder": "META"
+              },
+              "prompt": "What is the price of {input}?",
+              "render": "details",
+              "services": [
+                "retriever-iag",
+                "mcp-iag"
+              ]
+            },
+            {
+              "id": "quote-allowed",
+              "title": "May I retrieve a stock quote?",
+              "description": "A live AuthZEN decision on your own access.",
+              "prompt": "Am I allowed to retrieve a stock quote? Check with authzen.",
+              "render": "text",
+              "services": [
+                "retriever-iag",
+                "mcp-iag"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Trading desk",
+          "audience": "staff",
+          "note": "A customer's purchase capacity.",
+          "actions": [
+            {
+              "id": "shares",
+              "title": "How many shares can a customer buy?",
+              "description": "Purchase limit divided by the unit price, for a customer record id and a ticker.",
+              "input": {
+                "label": "Customer id and ticker",
+                "placeholder": "cust-cashmere NVDA"
+              },
+              "prompt": "Tell me how many shares of the ticker the customer can purchase: {input}",
+              "render": "text",
+              "services": [
+                "retriever-iag",
+                "mcp-iag"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documents",
+      "label": "Documents",
+      "icon": "doc",
+      "title": "Documents",
+      "intro": "Policies and agreements live in the knowledge graph; working files live in Google Drive. Access to each is decided separately.",
+      "groups": [
+        {
+          "title": "Document library",
+          "actions": [
+            {
+              "id": "customer-docs",
+              "title": "Customer-facing documents",
+              "description": "What the bank publishes to customers.",
+              "prompt": "What customer-facing documents do we have?",
+              "render": "docs",
+              "services": [
+                "retriever-iag",
+                "mcp-iag"
+              ]
+            },
+            {
+              "id": "refund-docs",
+              "title": "Policy documents about refunds",
+              "description": "Internal policies that mention refunds.",
+              "prompt": "What policy documents pertain to refunds?",
+              "render": "docs",
+              "services": [
+                "retriever-iag",
+                "mcp-iag"
+              ]
+            },
+            {
+              "id": "regulatory",
+              "title": "Regulatory agreements",
+              "description": "The agreements the bank is subject to.",
+              "prompt": "What regulatory agreements do we have?",
+              "render": "docs",
+              "services": [
+                "retriever-iag",
+                "mcp-iag"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Google Drive",
+          "actions": [
+            {
+              "id": "drive-list",
+              "title": "My Drive files",
+              "description": "Working files behind the Drive gateway.",
+              "prompt": "List the files in my Google Drive.",
+              "render": "docs",
+              "access": "request",
+              "services": [
+                "analyst-iag",
+                "drive-mcp-iag"
+              ]
+            },
+            {
+              "id": "drive-search",
+              "title": "Search Drive for CanBank files",
+              "description": "Files matching the bank's name.",
+              "prompt": "Search Google Drive for canbank and list the matching files.",
+              "render": "docs",
+              "access": "request",
+              "services": [
+                "analyst-iag",
+                "drive-mcp-iag"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "support",
+      "label": "Support",
+      "icon": "support",
+      "title": "Support",
+      "intro": "Your profile, our office, cases and access requests.",
+      "inbox": {
+        "audience": "staff"
+      },
+      "groups": [
+        {
+          "title": "Profile and office",
+          "actions": [
+            {
+              "id": "who-am-i",
+              "title": "My profile",
+              "description": "How the platform sees you: department and manager for staff, your customer record as a customer.",
+              "prompt": "who am I",
+              "render": "details",
+              "services": [
+                "retriever-iag",
+                "mcp-iag"
+              ]
+            },
+            {
+              "id": "hq-weather",
+              "title": "Weather at CanBank HQ",
+              "description": "Live from the graph's weather node and its resolvers.",
+              "prompt": "What's the weather at CanBank HQ?",
+              "render": "weather",
+              "services": [
+                "weather-iag",
+                "mcp-iag"
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Cases",
+          "note": "Salesforce cases are filed by staff on a customer's behalf; the delegation chain is recorded in the case. A customer's own request is denied by the gateway.",
+          "actions": [
+            {
+              "id": "case-for",
+              "title": "Open a case for a customer",
+              "description": "Name the customer and what the case is about.",
+              "input": {
+                "label": "Customer and subject",
+                "placeholder": "Cashmere WiFi Malhotra about her late payment fee"
+              },
+              "prompt": "Open a Salesforce case for {input}.",
+              "render": "case",
+              "access": "request",
+              "services": [
+                "crm-iag"
+              ]
+            },
+            {
+              "id": "case-mine",
+              "title": "Open a case",
+              "description": "Describe the issue; the request travels the staff-only CRM workflow.",
+              "input": {
+                "label": "What is it about?",
+                "placeholder": "the late fee on my credit card"
+              },
+              "prompt": "Open a Salesforce case about {input}",
+              "render": "case",
+              "access": "request",
+              "services": [
+                "crm-iag"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

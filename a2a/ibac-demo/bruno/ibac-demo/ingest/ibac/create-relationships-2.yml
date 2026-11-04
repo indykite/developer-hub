@@ -1,0 +1,411 @@
+---
+info:
+  name: Create Relationships 2
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/capture/v1/relationships"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "relationships": [
+          {
+            "source": {
+              "type": "Customer",
+              "external_id": "cust-cashmere"
+            },
+            "target": {
+              "type": "Invoice",
+              "external_id": "inv-cb-009"
+            },
+            "type": "HAS_INVOICE"
+          },
+          {
+            "source": {
+              "type": "Invoice",
+              "external_id": "inv-cb-009"
+            },
+            "target": {
+              "type": "InvoiceStatus",
+              "external_id": "open"
+            },
+            "type": "HAS_STATUS"
+          },
+          {
+            "source": {
+              "type": "Person",
+              "external_id": "auth0|69c4e616c7f64bc45838a6b1"
+            },
+            "target": {
+              "type": "Customer",
+              "external_id": "cust-tokenina"
+            },
+            "type": "IS_CUSTOMER"
+          },
+          {
+            "source": {
+              "type": "System",
+              "external_id": "sys_canbank_core"
+            },
+            "target": {
+              "type": "Customer",
+              "external_id": "cust-tokenina"
+            },
+            "type": "CONTAINS"
+          },
+          {
+            "source": {
+              "type": "Department",
+              "external_id": "support"
+            },
+            "target": {
+              "type": "Customer",
+              "external_id": "cust-tokenina"
+            },
+            "type": "SERVES"
+          },
+          {
+            "source": {
+              "type": "Customer",
+              "external_id": "cust-tokenina"
+            },
+            "target": {
+              "type": "Account",
+              "external_id": "acc_tokenina_youth"
+            },
+            "type": "OWNS"
+          },
+          {
+            "source": {
+              "type": "Account",
+              "external_id": "acc_tokenina_youth"
+            },
+            "target": {
+              "type": "AccountTier",
+              "external_id": "tier_1"
+            },
+            "type": "IS_TIER"
+          },
+          {
+            "source": {
+              "type": "Person",
+              "external_id": "auth0|69c44ee97dc076f0d05f0280"
+            },
+            "target": {
+              "type": "Customer",
+              "external_id": "cust-berengar"
+            },
+            "type": "IS_CUSTOMER"
+          },
+          {
+            "source": {
+              "type": "System",
+              "external_id": "sys_canbank_core"
+            },
+            "target": {
+              "type": "Customer",
+              "external_id": "cust-berengar"
+            },
+            "type": "CONTAINS"
+          },
+          {
+            "source": {
+              "type": "Department",
+              "external_id": "support"
+            },
+            "target": {
+              "type": "Customer",
+              "external_id": "cust-berengar"
+            },
+            "type": "SERVES"
+          },
+          {
+            "source": {
+              "type": "Customer",
+              "external_id": "cust-berengar"
+            },
+            "target": {
+              "type": "Account",
+              "external_id": "acc_berengar_youth"
+            },
+            "type": "OWNS"
+          },
+          {
+            "source": {
+              "type": "Account",
+              "external_id": "acc_berengar_youth"
+            },
+            "target": {
+              "type": "AccountTier",
+              "external_id": "tier_1"
+            },
+            "type": "IS_TIER"
+          },
+          {
+            "source": {
+              "type": "Customer",
+              "external_id": "cust-berengar"
+            },
+            "target": {
+              "type": "Invoice",
+              "external_id": "inv-cb-006"
+            },
+            "type": "HAS_INVOICE"
+          },
+          {
+            "source": {
+              "type": "Invoice",
+              "external_id": "inv-cb-006"
+            },
+            "target": {
+              "type": "InvoiceStatus",
+              "external_id": "open"
+            },
+            "type": "HAS_STATUS"
+          },
+          {
+            "source": {
+              "type": "Person",
+              "external_id": "auth0|69c470355a23140537489495"
+            },
+            "target": {
+              "type": "Customer",
+              "external_id": "cust-humperdinck"
+            },
+            "type": "IS_CUSTOMER"
+          },
+          {
+            "source": {
+              "type": "System",
+              "external_id": "sys_canbank_core"
+            },
+            "target": {
+              "type": "Customer",
+              "external_id": "cust-humperdinck"
+            },
+            "type": "CONTAINS"
+          },
+          {
+            "source": {
+              "type": "Department",
+              "external_id": "support"
+            },
+            "target": {
+              "type": "Customer",
+              "external_id": "cust-humperdinck"
+            },
+            "type": "SERVES"
+          },
+          {
+            "source": {
+              "type": "Customer",
+              "external_id": "cust-humperdinck"
+            },
+            "target": {
+              "type": "Account",
+              "external_id": "acc_humperdinck_youth"
+            },
+            "type": "OWNS"
+          },
+          {
+            "source": {
+              "type": "Account",
+              "external_id": "acc_humperdinck_youth"
+            },
+            "target": {
+              "type": "AccountTier",
+              "external_id": "tier_1"
+            },
+            "type": "IS_TIER"
+          },
+          {
+            "source": {
+              "type": "Person",
+              "external_id": "auth0|69c46a11e52080654279b72c"
+            },
+            "target": {
+              "type": "Customer",
+              "external_id": "cust-synergy"
+            },
+            "type": "IS_CUSTOMER"
+          },
+          {
+            "source": {
+              "type": "System",
+              "external_id": "sys_canbank_core"
+            },
+            "target": {
+              "type": "Customer",
+              "external_id": "cust-synergy"
+            },
+            "type": "CONTAINS"
+          },
+          {
+            "source": {
+              "type": "Department",
+              "external_id": "support"
+            },
+            "target": {
+              "type": "Customer",
+              "external_id": "cust-synergy"
+            },
+            "type": "SERVES"
+          },
+          {
+            "source": {
+              "type": "Customer",
+              "external_id": "cust-synergy"
+            },
+            "target": {
+              "type": "Account",
+              "external_id": "acc_synergy_youth"
+            },
+            "type": "OWNS"
+          },
+          {
+            "source": {
+              "type": "Account",
+              "external_id": "acc_synergy_youth"
+            },
+            "target": {
+              "type": "AccountTier",
+              "external_id": "tier_2"
+            },
+            "type": "IS_TIER"
+          },
+          {
+            "source": {
+              "type": "Person",
+              "external_id": "auth0|69c4556700bdb8e2f628d381"
+            },
+            "target": {
+              "type": "Customer",
+              "external_id": "cust-quarterly"
+            },
+            "type": "IS_CUSTOMER"
+          },
+          {
+            "source": {
+              "type": "System",
+              "external_id": "sys_canbank_core"
+            },
+            "target": {
+              "type": "Customer",
+              "external_id": "cust-quarterly"
+            },
+            "type": "CONTAINS"
+          },
+          {
+            "source": {
+              "type": "Department",
+              "external_id": "support"
+            },
+            "target": {
+              "type": "Customer",
+              "external_id": "cust-quarterly"
+            },
+            "type": "SERVES"
+          },
+          {
+            "source": {
+              "type": "Customer",
+              "external_id": "cust-quarterly"
+            },
+            "target": {
+              "type": "Account",
+              "external_id": "acc_quarterly_youth"
+            },
+            "type": "OWNS"
+          },
+          {
+            "source": {
+              "type": "Account",
+              "external_id": "acc_quarterly_youth"
+            },
+            "target": {
+              "type": "AccountTier",
+              "external_id": "tier_2"
+            },
+            "type": "IS_TIER"
+          },
+          {
+            "source": {
+              "type": "Ticket",
+              "external_id": "ticket_001"
+            },
+            "target": {
+              "type": "Customer",
+              "external_id": "cust-cashmere"
+            },
+            "type": "CREATED_BY"
+          },
+          {
+            "source": {
+              "type": "Ticket",
+              "external_id": "ticket_002"
+            },
+            "target": {
+              "type": "Customer",
+              "external_id": "cust-cookie"
+            },
+            "type": "CREATED_BY"
+          },
+          {
+            "source": {
+              "type": "Ticket",
+              "external_id": "ticket_001"
+            },
+            "target": {
+              "type": "Account",
+              "external_id": "acc_cashmere_cc"
+            },
+            "type": "REGARDING"
+          },
+          {
+            "source": {
+              "type": "Ticket",
+              "external_id": "ticket_002"
+            },
+            "target": {
+              "type": "Account",
+              "external_id": "acc_cookie_cc"
+            },
+            "type": "REGARDING"
+          },
+          {
+            "source": {
+              "type": "Ticket",
+              "external_id": "ticket_001"
+            },
+            "target": {
+              "type": "Decision",
+              "external_id": "decision_001"
+            },
+            "type": "CLOSED_BY"
+          },
+          {
+            "source": {
+              "type": "Decision",
+              "external_id": "decision_001"
+            },
+            "target": {
+              "type": "Document",
+              "external_id": "refund_policy"
+            },
+            "type": "EXCEPTION_TO"
+          }
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,8 @@
+---
+info:
+  name: get-stock-trade-threshold
+  type: folder
+  seq: 3
+
+request:
+  auth: inherit

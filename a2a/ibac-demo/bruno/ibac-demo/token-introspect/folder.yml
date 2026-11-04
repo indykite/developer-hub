@@ -1,0 +1,20 @@
+---
+info:
+  name: token-introspect
+  type: folder
+  seq: 2
+
+request:
+  headers:
+    - name: Accept
+      value: application/json
+  auth:
+    type: bearer
+    token: "{{service_token}}"
+
+docs: |-
+  The two Token Introspect configurations of the ibac project: Auth0 access
+  tokens (issuer {{auth0_issuer}}, audience ibac-console; the sub is the Person
+  external_id) and the Token Service delegations (issuer
+  https://token-service.ibac-demo.local, same audience, public JWK inline).
+  Service account bearer.

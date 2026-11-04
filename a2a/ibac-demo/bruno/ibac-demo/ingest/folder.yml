@@ -1,0 +1,26 @@
+---
+info:
+  name: ingest
+  type: folder
+  seq: 1
+
+request:
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json
+    - name: Cache-Control
+      value: no-cache
+  auth:
+    type: apikey
+    key: X-IK-ClientKey
+    value: "{{agent_token}}"
+    placement: header
+
+docs: |-
+  The ibac dataset (instant-stack data/ibac) as Capture API requests, generated
+  from nodes.json and relationships.json. Every Person external_id is an Auth0
+  subject; the Agent nodes' external_ids are the {{auth0_sub_*}} variables
+  (<client_id>@clients of the gateways' M2M applications). Run the nodes
+  request first, then the relationship batches in order (250 per request).

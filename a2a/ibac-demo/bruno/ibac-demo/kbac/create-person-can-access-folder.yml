@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Person Can Access Folder
+  type: http
+  seq: 13
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "person-can-access-folder",
+        "display_name": "Can access folder",
+        "description": "Folders the person's department can access.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"CAN_ACCESS\"],\"resource\":{\"type\":\"Folder\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WORKS_IN]->(:Department)-[:CAN_ACCESS]->(resource:Folder)\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_person_can_access_folder", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

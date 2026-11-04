@@ -1,0 +1,8 @@
+---
+info:
+  name: get-internal-documents-chained
+  type: folder
+  seq: 12
+
+request:
+  auth: inherit

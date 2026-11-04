@@ -1,0 +1,3000 @@
+---
+info:
+  name: Create Nodes
+  type: http
+  seq: 1
+
+http:
+  method: PUT
+  url: "{{ik_api_url_prefix}}/capture/v1/nodes"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "nodes": [
+          {
+            "external_id": "auth0|69c410bfb501d3a02bd01ea2",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Millicent Contextsworth"
+              },
+              {
+                "type": "firstname",
+                "value": "Millicent"
+              },
+              {
+                "type": "lastname",
+                "value": "Contextsworth"
+              },
+              {
+                "type": "email",
+                "value": "millicent@contextsworth.com"
+              },
+              {
+                "type": "age",
+                "value": 44
+              },
+              {
+                "type": "city",
+                "value": "Bandwidth Borough"
+              },
+              {
+                "type": "state",
+                "value": "Tennessee"
+              },
+              {
+                "type": "profession",
+                "value": "Director of Awkward Seating Arrangements"
+              },
+              {
+                "type": "title",
+                "value": "CSR 2"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c40d640ba356c7db9f8c8d",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Vivienne Boardroom"
+              },
+              {
+                "type": "firstname",
+                "value": "Vivienne"
+              },
+              {
+                "type": "lastname",
+                "value": "Boardroom"
+              },
+              {
+                "type": "email",
+                "value": "vivienne@boardroom.com"
+              },
+              {
+                "type": "age",
+                "value": 46
+              },
+              {
+                "type": "city",
+                "value": "Custody Court Corners"
+              },
+              {
+                "type": "state",
+                "value": "California"
+              },
+              {
+                "type": "profession",
+                "value": "SVP of Power Suit Selection"
+              },
+              {
+                "type": "title",
+                "value": "Customer Service Supervisor"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c3ec26b8338328f1511c88",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Cookie Malhotra"
+              },
+              {
+                "type": "firstname",
+                "value": "Cookie"
+              },
+              {
+                "type": "lastname",
+                "value": "Malhotra"
+              },
+              {
+                "type": "email",
+                "value": "cookie@malhotra.com"
+              },
+              {
+                "type": "age",
+                "value": 46
+              },
+              {
+                "type": "city",
+                "value": "Trojan Trails"
+              },
+              {
+                "type": "state",
+                "value": "Texas"
+              },
+              {
+                "type": "profession",
+                "value": "Director of Delicious Nickname Acquisition"
+              },
+              {
+                "type": "title",
+                "value": "Trader"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c40e7a92e98aebbeafe223",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Preston Capitalworth"
+              },
+              {
+                "type": "firstname",
+                "value": "Preston"
+              },
+              {
+                "type": "lastname",
+                "value": "Capitalworth"
+              },
+              {
+                "type": "email",
+                "value": "preston@capitalworth.com"
+              },
+              {
+                "type": "age",
+                "value": 49
+              },
+              {
+                "type": "city",
+                "value": "Custody Court Corners"
+              },
+              {
+                "type": "state",
+                "value": "California"
+              },
+              {
+                "type": "profession",
+                "value": "Chief Old Money Custodian"
+              },
+              {
+                "type": "title",
+                "value": "Private Banker"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c408f6e7fb3585804a7077",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Mild Concern"
+              },
+              {
+                "type": "firstname",
+                "value": "Mild"
+              },
+              {
+                "type": "lastname",
+                "value": "Concern"
+              },
+              {
+                "type": "email",
+                "value": "mild@concern.com"
+              },
+              {
+                "type": "age",
+                "value": 47
+              },
+              {
+                "type": "city",
+                "value": "Smörgåsbord Springs"
+              },
+              {
+                "type": "state",
+                "value": "Minnesota"
+              },
+              {
+                "type": "profession",
+                "value": "Assistant Manager of Slight Worry"
+              },
+              {
+                "type": "title",
+                "value": "Risk Analyst"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c40c7b92e98aebbeafe019",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "BetaTest McAllister"
+              },
+              {
+                "type": "firstname",
+                "value": "BetaTest"
+              },
+              {
+                "type": "lastname",
+                "value": "McAllister"
+              },
+              {
+                "type": "email",
+                "value": "betatest@mcallister.com"
+              },
+              {
+                "type": "age",
+                "value": 29
+              },
+              {
+                "type": "city",
+                "value": "Standup Meeting Mesa"
+              },
+              {
+                "type": "state",
+                "value": "Massachusetts"
+              },
+              {
+                "type": "profession",
+                "value": "Director of Finding Bugs in Production"
+              },
+              {
+                "type": "title",
+                "value": "QA Lead"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c40e05815a0ecf477c134b",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "ApiCall Jackson-Lee"
+              },
+              {
+                "type": "firstname",
+                "value": "ApiCall"
+              },
+              {
+                "type": "lastname",
+                "value": "Jackson-Lee"
+              },
+              {
+                "type": "email",
+                "value": "apicall@jacksonlee.com"
+              },
+              {
+                "type": "age",
+                "value": 45
+              },
+              {
+                "type": "city",
+                "value": "Localhost Landing"
+              },
+              {
+                "type": "state",
+                "value": "Texas"
+              },
+              {
+                "type": "profession",
+                "value": "Senior REST Whisperer"
+              },
+              {
+                "type": "title",
+                "value": "Integration Engineer"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c4129b0ba356c7db9f91ab",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Marmaduke Doomington"
+              },
+              {
+                "type": "firstname",
+                "value": "Marmaduke"
+              },
+              {
+                "type": "lastname",
+                "value": "Doomington"
+              },
+              {
+                "type": "email",
+                "value": "marmaduke@doomington.com"
+              },
+              {
+                "type": "age",
+                "value": 51
+              },
+              {
+                "type": "city",
+                "value": "Moist Meadows"
+              },
+              {
+                "type": "state",
+                "value": "Florida"
+              },
+              {
+                "type": "profession",
+                "value": "Professional Ominous Cloud Summoner"
+              },
+              {
+                "type": "title",
+                "value": "Operations Officer"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c407f3b501d3a02bd0151e",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Bambi Stardust"
+              },
+              {
+                "type": "firstname",
+                "value": "Bambi"
+              },
+              {
+                "type": "lastname",
+                "value": "Stardust"
+              },
+              {
+                "type": "email",
+                "value": "bambi@stardust.com"
+              },
+              {
+                "type": "age",
+                "value": 36
+              },
+              {
+                "type": "city",
+                "value": "Celestial Harmony Hills"
+              },
+              {
+                "type": "state",
+                "value": "Hawaii"
+              },
+              {
+                "type": "profession",
+                "value": "Intergalactic Glitter Distribution Coordinator"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c3ee8cb9ed562744ff9326",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Cornelius Pickleworth"
+              },
+              {
+                "type": "firstname",
+                "value": "Cornelius"
+              },
+              {
+                "type": "lastname",
+                "value": "Pickleworth"
+              },
+              {
+                "type": "email",
+                "value": "cornelius@pickleworth.com"
+              },
+              {
+                "type": "age",
+                "value": 14
+              },
+              {
+                "type": "city",
+                "value": "Ctrl-Z Canyon"
+              },
+              {
+                "type": "state",
+                "value": "Texas"
+              },
+              {
+                "type": "profession",
+                "value": "Professional Homework Avoider"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c41000db4ea22197e9cbf2",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Eustorgio Rodriguez"
+              },
+              {
+                "type": "firstname",
+                "value": "Eustorgio"
+              },
+              {
+                "type": "lastname",
+                "value": "Rodriguez"
+              },
+              {
+                "type": "email",
+                "value": "eustorgio@rodriguez.com"
+              },
+              {
+                "type": "age",
+                "value": 15
+              },
+              {
+                "type": "city",
+                "value": "Ctrl-Z Canyon"
+              },
+              {
+                "type": "state",
+                "value": "Texas"
+              },
+              {
+                "type": "profession",
+                "value": "Junior Dense Bread Advocate"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c413eab4187d1438819098",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Cashmere WiFi Malhotra"
+              },
+              {
+                "type": "firstname",
+                "value": "Cashmere WiFi"
+              },
+              {
+                "type": "lastname",
+                "value": "Malhotra"
+              },
+              {
+                "type": "email",
+                "value": "cashmere.wifi@malhotra.com"
+              },
+              {
+                "type": "age",
+                "value": 20
+              },
+              {
+                "type": "city",
+                "value": "Synergy Falls"
+              },
+              {
+                "type": "state",
+                "value": "Nevada"
+              },
+              {
+                "type": "profession",
+                "value": "Trainee Luxury Connectivity Specialist"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c4a309ce3b6c018d65332a",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Mortimer Pickleworth"
+              },
+              {
+                "type": "firstname",
+                "value": "Mortimer"
+              },
+              {
+                "type": "lastname",
+                "value": "Pickleworth"
+              },
+              {
+                "type": "email",
+                "value": "mortimer@pickleworth.com"
+              },
+              {
+                "type": "age",
+                "value": 54
+              },
+              {
+                "type": "city",
+                "value": "Firewall Flats"
+              },
+              {
+                "type": "state",
+                "value": "New York"
+              },
+              {
+                "type": "profession",
+                "value": "Chief Pickle Preservation Officer"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c4e83e0e9ee78af8a1d863",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Wilfred Pickleworth"
+              },
+              {
+                "type": "firstname",
+                "value": "Wilfred"
+              },
+              {
+                "type": "lastname",
+                "value": "Pickleworth"
+              },
+              {
+                "type": "email",
+                "value": "wilfred@pickleworth.com"
+              },
+              {
+                "type": "age",
+                "value": 50
+              },
+              {
+                "type": "city",
+                "value": "Ctrl-Z Canyon"
+              },
+              {
+                "type": "state",
+                "value": "Texas"
+              },
+              {
+                "type": "profession",
+                "value": "Artisanal Brine Consultant"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c4d4884fccfa890876e0a9",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Beulah Doomington"
+              },
+              {
+                "type": "firstname",
+                "value": "Beulah"
+              },
+              {
+                "type": "lastname",
+                "value": "Doomington"
+              },
+              {
+                "type": "email",
+                "value": "beulah@doomington.com"
+              },
+              {
+                "type": "age",
+                "value": 38
+              },
+              {
+                "type": "city",
+                "value": "Moist Meadows"
+              },
+              {
+                "type": "state",
+                "value": "Florida"
+              },
+              {
+                "type": "profession",
+                "value": "Certified Dramatic Thunder Sound Designer"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c44ee97dc076f0d05f0280",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Berengar Doomington"
+              },
+              {
+                "type": "firstname",
+                "value": "Berengar"
+              },
+              {
+                "type": "lastname",
+                "value": "Doomington"
+              },
+              {
+                "type": "email",
+                "value": "berengar@doomington.com"
+              },
+              {
+                "type": "age",
+                "value": 14
+              },
+              {
+                "type": "city",
+                "value": "Reboot Ridge"
+              },
+              {
+                "type": "state",
+                "value": "Washington"
+              },
+              {
+                "type": "profession",
+                "value": "Full-Time Snack Negotiator"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c470355a23140537489495",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Humperdinck Doomington"
+              },
+              {
+                "type": "firstname",
+                "value": "Humperdinck"
+              },
+              {
+                "type": "lastname",
+                "value": "Doomington"
+              },
+              {
+                "type": "email",
+                "value": "humperdinck@doomington.com"
+              },
+              {
+                "type": "age",
+                "value": 15
+              },
+              {
+                "type": "city",
+                "value": "Ctrl-Z Canyon"
+              },
+              {
+                "type": "state",
+                "value": "Texas"
+              },
+              {
+                "type": "profession",
+                "value": "Junior Excuse Engineer"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c4731ce96a96f6c42ce6f0",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Percival Contextsworth"
+              },
+              {
+                "type": "firstname",
+                "value": "Percival"
+              },
+              {
+                "type": "lastname",
+                "value": "Contextsworth"
+              },
+              {
+                "type": "email",
+                "value": "percival@contextsworth.com"
+              },
+              {
+                "type": "age",
+                "value": 47
+              },
+              {
+                "type": "city",
+                "value": "WiFi Wasteland"
+              },
+              {
+                "type": "state",
+                "value": "Colorado"
+              },
+              {
+                "type": "profession",
+                "value": "Senior Humidity Consultant"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c4e616c7f64bc45838a6b1",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Tokenina Contextsworth"
+              },
+              {
+                "type": "firstname",
+                "value": "Tokenina"
+              },
+              {
+                "type": "lastname",
+                "value": "Contextsworth"
+              },
+              {
+                "type": "email",
+                "value": "tokenina@contextsworth.com"
+              },
+              {
+                "type": "age",
+                "value": 11
+              },
+              {
+                "type": "city",
+                "value": "Yeetsburg"
+              },
+              {
+                "type": "state",
+                "value": "Oregon"
+              },
+              {
+                "type": "profession",
+                "value": "Certified Screen Time Maximizer"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c49d081321b6f2eb673142",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Filogonio Rodriguez"
+              },
+              {
+                "type": "firstname",
+                "value": "Filogonio"
+              },
+              {
+                "type": "lastname",
+                "value": "Rodriguez"
+              },
+              {
+                "type": "email",
+                "value": "filogonio@rodriguez.com"
+              },
+              {
+                "type": "age",
+                "value": 46
+              },
+              {
+                "type": "city",
+                "value": "WiFi Wasteland"
+              },
+              {
+                "type": "state",
+                "value": "Colorado"
+              },
+              {
+                "type": "profession",
+                "value": "Master of Unpronounceable Names"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c4bc0581602191ddbf2a90",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Petronila Rodriguez"
+              },
+              {
+                "type": "firstname",
+                "value": "Petronila"
+              },
+              {
+                "type": "lastname",
+                "value": "Rodriguez"
+              },
+              {
+                "type": "email",
+                "value": "petronila@rodriguez.com"
+              },
+              {
+                "type": "age",
+                "value": 46
+              },
+              {
+                "type": "city",
+                "value": "WiFi Wasteland"
+              },
+              {
+                "type": "state",
+                "value": "Colorado"
+              },
+              {
+                "type": "profession",
+                "value": "Senior Abuela Disappointment Avoider"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c4975a584b4b83e003ce65",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Harshvardhan Malhotra"
+              },
+              {
+                "type": "firstname",
+                "value": "Harshvardhan"
+              },
+              {
+                "type": "lastname",
+                "value": "Malhotra"
+              },
+              {
+                "type": "email",
+                "value": "harshvardhan@malhotra.com"
+              },
+              {
+                "type": "age",
+                "value": 48
+              },
+              {
+                "type": "city",
+                "value": "Trojan Trails"
+              },
+              {
+                "type": "state",
+                "value": "Texas"
+              },
+              {
+                "type": "profession",
+                "value": "Chief Syllable Accumulation Officer"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c46a11e52080654279b72c",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Synergy Maximillian Capitalworth"
+              },
+              {
+                "type": "firstname",
+                "value": "Synergy Maximillian"
+              },
+              {
+                "type": "lastname",
+                "value": "Capitalworth"
+              },
+              {
+                "type": "email",
+                "value": "synergy.maximillian@capitalworth.com"
+              },
+              {
+                "type": "age",
+                "value": 17
+              },
+              {
+                "type": "city",
+                "value": "Custody Court Corners"
+              },
+              {
+                "type": "state",
+                "value": "California"
+              },
+              {
+                "type": "profession",
+                "value": "Student of Advanced Fort Building"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c4556700bdb8e2f628d381",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Quarterly-Returns Capitalworth"
+              },
+              {
+                "type": "firstname",
+                "value": "Quarterly-Returns"
+              },
+              {
+                "type": "lastname",
+                "value": "Capitalworth"
+              },
+              {
+                "type": "email",
+                "value": "quarterlyreturns@capitalworth.com"
+              },
+              {
+                "type": "age",
+                "value": 17
+              },
+              {
+                "type": "city",
+                "value": "Custody Court Corners"
+              },
+              {
+                "type": "state",
+                "value": "California"
+              },
+              {
+                "type": "profession",
+                "value": "Junior Consultant in Staying Up Late"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c468a50f049ba11497a5f5",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Major Issue"
+              },
+              {
+                "type": "firstname",
+                "value": "Major"
+              },
+              {
+                "type": "lastname",
+                "value": "Issue"
+              },
+              {
+                "type": "email",
+                "value": "major@issue.com"
+              },
+              {
+                "type": "age",
+                "value": 50
+              },
+              {
+                "type": "city",
+                "value": "Smörgåsbord Springs"
+              },
+              {
+                "type": "state",
+                "value": "Minnesota"
+              },
+              {
+                "type": "profession",
+                "value": "Chief Escalation Enthusiast"
+              }
+            ]
+          },
+          {
+            "external_id": "auth0|69c4e2e5139001432a0a9ffb",
+            "type": "Person",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Murong Feixue Tianyu"
+              },
+              {
+                "type": "firstname",
+                "value": "Murong Feixue"
+              },
+              {
+                "type": "lastname",
+                "value": "Tianyu"
+              },
+              {
+                "type": "email",
+                "value": "murong.feixue@tianyu.com"
+              },
+              {
+                "type": "age",
+                "value": 37
+              },
+              {
+                "type": "city",
+                "value": "Celestial Harmony Hills"
+              },
+              {
+                "type": "state",
+                "value": "Hawaii"
+              },
+              {
+                "type": "profession",
+                "value": "Grand Master of Elegant Name Cards"
+              }
+            ]
+          },
+          {
+            "external_id": "minor",
+            "type": "AgeGroup",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Minor"
+              },
+              {
+                "type": "description",
+                "value": "Under 18"
+              }
+            ]
+          },
+          {
+            "external_id": "adult",
+            "type": "AgeGroup",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Adult"
+              },
+              {
+                "type": "description",
+                "value": "18 or older"
+              }
+            ]
+          },
+          {
+            "external_id": "wf1",
+            "type": "Workflow",
+            "is_identity": false,
+            "properties": []
+          },
+          {
+            "external_id": "wf2",
+            "type": "Workflow",
+            "is_identity": false,
+            "properties": []
+          },
+          {
+            "external_id": "wf3",
+            "type": "Workflow",
+            "is_identity": false,
+            "properties": []
+          },
+          {
+            "external_id": "wf-drive",
+            "type": "Workflow",
+            "is_identity": false,
+            "properties": []
+          },
+          {
+            "external_id": "wf-drive-analyst",
+            "type": "Workflow",
+            "is_identity": false,
+            "properties": []
+          },
+          {
+            "external_id": "wf-drive-console",
+            "type": "Workflow",
+            "is_identity": false,
+            "properties": []
+          },
+          {
+            "external_id": "wf3-console",
+            "type": "Workflow",
+            "is_identity": false,
+            "properties": []
+          },
+          {
+            "external_id": "{{auth0_sub_orchestrator}}",
+            "type": "Agent",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "orchestrator-agent"
+              }
+            ]
+          },
+          {
+            "external_id": "{{auth0_sub_retriever}}",
+            "type": "Agent",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "retriever-agent"
+              }
+            ]
+          },
+          {
+            "external_id": "{{auth0_sub_weather}}",
+            "type": "Agent",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "weather-agent"
+              }
+            ]
+          },
+          {
+            "external_id": "{{auth0_sub_analyst}}",
+            "type": "Agent",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "analyst-agent"
+              }
+            ]
+          },
+          {
+            "external_id": "{{auth0_sub_mcp}}",
+            "type": "Agent",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "mcp-gateway"
+              }
+            ]
+          },
+          {
+            "external_id": "{{auth0_sub_drive}}",
+            "type": "Agent",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "drive-mcp-gateway"
+              }
+            ]
+          },
+          {
+            "external_id": "s1",
+            "type": "Skill",
+            "is_identity": false,
+            "properties": []
+          },
+          {
+            "external_id": "s2",
+            "type": "Skill",
+            "is_identity": false,
+            "properties": []
+          },
+          {
+            "external_id": "s3",
+            "type": "Skill",
+            "is_identity": false,
+            "properties": []
+          },
+          {
+            "external_id": "t1",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": []
+          },
+          {
+            "external_id": "t2",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": []
+          },
+          {
+            "external_id": "canbank",
+            "type": "Entity",
+            "is_identity": false,
+            "tags": [
+              "Organization"
+            ],
+            "properties": [
+              {
+                "type": "name",
+                "value": "CanBank"
+              }
+            ]
+          },
+          {
+            "external_id": "canbank-depts",
+            "type": "Container",
+            "is_identity": false,
+            "tags": [],
+            "properties": [
+              {
+                "type": "name",
+                "value": "Departments"
+              }
+            ]
+          },
+          {
+            "external_id": "exec",
+            "type": "Department",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Executive",
+                "metadata": {
+                  "source": "Workday"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "lob",
+            "type": "Department",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Lines of Business",
+                "metadata": {
+                  "source": "Workday"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "governance",
+            "type": "Department",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Governance",
+                "metadata": {
+                  "source": "Workday"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "shared",
+            "type": "Department",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Shared Services",
+                "metadata": {
+                  "source": "Workday"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "support",
+            "type": "Department",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Customer Support",
+                "metadata": {
+                  "source": "Workday"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "consumer",
+            "type": "Department",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Consumer Banking",
+                "metadata": {
+                  "source": "Workday"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "commercial",
+            "type": "Department",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Commercial Banking",
+                "metadata": {
+                  "source": "Workday"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "private",
+            "type": "Department",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Private Banking",
+                "metadata": {
+                  "source": "Workday"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "trading",
+            "type": "Department",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Trading",
+                "metadata": {
+                  "source": "Workday"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "risk",
+            "type": "Department",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Risk Management",
+                "metadata": {
+                  "source": "Workday"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "crimes",
+            "type": "Department",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Financial Crimes Compliance",
+                "metadata": {
+                  "source": "Workday"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "regulatory",
+            "type": "Department",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Regulatory Affairs",
+                "metadata": {
+                  "source": "Workday"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "treasury",
+            "type": "Department",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Treasury & Asset-Liability Management",
+                "metadata": {
+                  "source": "Workday"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "tech",
+            "type": "Department",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Global Tech",
+                "metadata": {
+                  "source": "Workday"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "ops",
+            "type": "Department",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Business Operations",
+                "metadata": {
+                  "source": "Workday"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "strategy",
+            "type": "Department",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Corporate Strategy",
+                "metadata": {
+                  "source": "Workday"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "procurement",
+            "type": "Department",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Strategic Sourcing",
+                "metadata": {
+                  "source": "Workday"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "stock_quote",
+            "type": "Quote",
+            "is_identity": false,
+            "labels": [],
+            "properties": [
+              {
+                "type": "price",
+                "external_value": "stock-quote"
+              }
+            ]
+          },
+          {
+            "external_id": "cs_policy",
+            "type": "Folder",
+            "is_identity": false,
+            "labels": [],
+            "properties": [
+              {
+                "type": "name",
+                "value": "Customer Service Policy",
+                "metadata": {
+                  "source": "Sharepoint"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "refund_policy",
+            "type": "Document",
+            "is_identity": false,
+            "labels": [],
+            "properties": [
+              {
+                "type": "name",
+                "value": "Customer Refund Policy",
+                "metadata": {
+                  "source": "Sharepoint"
+                }
+              },
+              {
+                "type": "description",
+                "value": "Clear criteria for when a refund is authorized, who has the power to grant it, and what documentation is required. Tier 4 customers can have their credit card late payment penalties waived without consulting a supervisor."
+              },
+              {
+                "type": "url",
+                "value": "https://sharepoint.miscrosoft.com/canbank/site/csr/refund_policy.pdf",
+                "metadata": {
+                  "source": "Sharepoint"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "discount_policy",
+            "type": "Document",
+            "is_identity": false,
+            "labels": [],
+            "properties": [
+              {
+                "type": "name",
+                "value": "Discount Policy",
+                "metadata": {
+                  "source": "Sharepoint"
+                }
+              },
+              {
+                "type": "description",
+                "value": "Guidelines on what \"goodwill\" gestures an agent can offer to resolve a complaint without needing managerial approval."
+              },
+              {
+                "type": "url",
+                "value": "https://sharepoint.miscrosoft.com/canbank/site/csr/discount_policy.pdf",
+                "metadata": {
+                  "source": "Sharepoint"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "kyc_policy",
+            "type": "Document",
+            "is_identity": false,
+            "labels": [],
+            "properties": [
+              {
+                "type": "name",
+                "value": "KYC Policy",
+                "metadata": {
+                  "source": "Sharepoint"
+                }
+              },
+              {
+                "type": "description",
+                "value": "The exact steps an agent must take to verify a customer’s identity before proceeding to assist them."
+              },
+              {
+                "type": "url",
+                "value": "https://sharepoint.miscrosoft.com/canbank/site/csr/kyc_policy.pdf",
+                "metadata": {
+                  "source": "Sharepoint"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "policy",
+            "type": "Taxonomy",
+            "is_identity": false,
+            "labels": [],
+            "properties": [
+              {
+                "type": "name",
+                "value": "Policy"
+              },
+              {
+                "type": "description",
+                "value": "Formal governing documents that define the rules, standards, and principles of the organization. These documents mandate specific conduct to ensure legal compliance, mitigate risk, and align operations with our core mission and values."
+              }
+            ]
+          },
+          {
+            "external_id": "customer",
+            "type": "Site",
+            "is_identity": false,
+            "tags": [],
+            "properties": [
+              {
+                "type": "name",
+                "value": "Customer"
+              }
+            ]
+          },
+          {
+            "external_id": "docs",
+            "type": "Folder",
+            "is_identity": false,
+            "tags": [],
+            "properties": [
+              {
+                "type": "name",
+                "value": "Documents"
+              }
+            ]
+          },
+          {
+            "external_id": "jur-canada",
+            "type": "Jurisdiction",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Canada"
+              },
+              {
+                "type": "iso_3166_2",
+                "value": "CA"
+              }
+            ]
+          },
+          {
+            "external_id": "jur-usa",
+            "type": "Jurisdiction",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "USA"
+              },
+              {
+                "type": "iso_3166_2",
+                "value": "US"
+              }
+            ]
+          },
+          {
+            "external_id": "jur-emea",
+            "type": "Jurisdiction",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "EMEA"
+              }
+            ]
+          },
+          {
+            "external_id": "jur-switzerland",
+            "type": "Jurisdiction",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Switzerland"
+              }
+            ]
+          },
+          {
+            "external_id": "cat-mutual-fund",
+            "type": "InvestmentCategory",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Mutual Fund"
+              }
+            ]
+          },
+          {
+            "external_id": "cat-etf",
+            "type": "InvestmentCategory",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Exchange Traded Fund"
+              }
+            ]
+          },
+          {
+            "external_id": "cat-fixed-income",
+            "type": "InvestmentCategory",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Fixed Income"
+              }
+            ]
+          },
+          {
+            "external_id": "cat-derivatives",
+            "type": "InvestmentCategory",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Derivatives"
+              }
+            ]
+          },
+          {
+            "external_id": "cat-private-equity",
+            "type": "InvestmentCategory",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Private Equity"
+              }
+            ]
+          },
+          {
+            "external_id": "cat-islamic-finance",
+            "type": "InvestmentCategory",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Sukuk"
+              }
+            ]
+          },
+          {
+            "external_id": "cat-cash",
+            "type": "InvestmentCategory",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Guaranteed Investment"
+              }
+            ]
+          },
+          {
+            "external_id": "cat-lending",
+            "type": "InvestmentCategory",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Lombard Lending"
+              }
+            ]
+          },
+          {
+            "external_id": "cat_stocks",
+            "type": "InvestmentCategory",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Stocks"
+              }
+            ]
+          },
+          {
+            "external_id": "reg-csa-ni81",
+            "type": "RegulatoryAgreement",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "CSA NI 81-101"
+              },
+              {
+                "type": "description",
+                "value": "Compliance with National Instrument 81-101 (NI 81-101), including the preparation, filing, and delivery of simplified prospectuses, annual information forms (AIFs), and fund facts documents to investors in accordance with Canadian securities legislation."
+              }
+            ]
+          },
+          {
+            "external_id": "reg-cdic",
+            "type": "RegulatoryAgreement",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "CDIC Act"
+              },
+              {
+                "type": "description",
+                "value": "An agreement between [Institution Name] and the Canada Deposit Insurance Corporation ('CDIC'), intended to ensure ongoing compliance with the Canada Deposit Insurance Corporation Act and its associated By-laws, specifically regarding the proper identification of insured deposits, timely reporting of financial data, and adherence to sound business and financial practices as required under the Act."
+              }
+            ]
+          },
+          {
+            "external_id": "reg-sec-40",
+            "type": "RegulatoryAgreement",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "SEC 1940 Act"
+              },
+              {
+                "type": "description",
+                "value": "This Agreement is entered into to ensure that [Fund Name] (the 'Fund') operates in compliance with the applicable provisions of the Investment Company Act of 1940, as amended (the '1940 Act'), and the rules thereunder. The parties agree to adhere to all requirements regarding the registration, valuation of portfolio securities, custody of assets, and limitations on transactions with affiliates. This agreement ensures the Fund maintains its status as a registered investment company or properly relies on a specific exemption."
+              }
+            ]
+          },
+          {
+            "external_id": "reg-sec-498",
+            "type": "RegulatoryAgreement",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "SEC Rule 498"
+              },
+              {
+                "type": "description",
+                "value": "Compliant with SEC Rule 498, allowing for the delivery of a 'Summary Prospectus' for open-end mutual funds. Requires that key investor information be provided upfront, while detailed documents are available online. Ensures compliance with 'access equals delivery' provisions, provided that the required documents are hosted on a publicly accessible website, properly hyperlinked, and that requests for paper copies are met within three business days."
+              }
+            ]
+          },
+          {
+            "external_id": "reg-ucits-v",
+            "type": "RegulatoryAgreement",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "UCITS V"
+              },
+              {
+                "type": "description",
+                "value": "Under this agreement, the Depositary assumes strict liability for the loss of financial instruments held in custody, maintains legally protected segregation of assets (including at the sub-custodian level), and ensures that all delegation of safekeeping functions meets the stringent due diligence and independence standards of UCITS V."
+              }
+            ]
+          },
+          {
+            "external_id": "reg-priips",
+            "type": "RegulatoryAgreement",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "PRIIPS Regulation"
+              },
+              {
+                "type": "description",
+                "value": "The firm complies with Regulation (EU) No 1286/2014 (and the UK equivalent, where applicable) regarding Packaged Retail and Insurance-based Investment Products (PRIIPs). We ensure that a Key Information Document (KID) is produced for all in-scope products, is accurate, fair, clear, and not misleading, and that it is provided to retail investors in good time prior to their investment. The KID is reviewed annually and updated promptly upon any significant change to risk, cost, or performance."
+              }
+            ]
+          },
+          {
+            "external_id": "reg-isda",
+            "type": "RegulatoryAgreement",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "ISDA Master"
+              },
+              {
+                "type": "description",
+                "value": "An industry-standardized, bilateral contract governing over-the-counter (OTC) derivatives, designed to enforce close-out netting, mitigate credit risk, and provide a compliant framework for regulatory reporting and margin exchange (e.g., EMIR, Dodd-Frank)."
+              }
+            ]
+          },
+          {
+            "external_id": "reg-ni45",
+            "type": "RegulatoryAgreement",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "NI 45-106"
+              },
+              {
+                "type": "description",
+                "value": "The issuance of Securities is being made in reliance upon exemptions from the prospectus requirements of applicable Canadian provincial and territorial securities legislation, specifically in accordance with the exemptions set out in National Instrument 45-106 – Prospectus Exemptions ('NI 45-106'). The Issuer represents that no prospectus has been filed, and therefore no statutory rights of action or rescission exist, except as otherwise provided by applicable law or the terms of an Offering Memorandum."
+              }
+            ]
+          },
+          {
+            "external_id": "reg-fidleg",
+            "type": "RegulatoryAgreement",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Swiss FIDLEG"
+              },
+              {
+                "type": "description",
+                "value": "This Agreement is subject to the Swiss Financial Services Act (FIDLEG/FinSA), which entered into force on January 1, 2020. [Company Name] acts as a financial service provider in accordance with FIDLEG. Based on the client information provided, the Client is classified as [Retail/Professional/Institutional]. In accordance with the Rules of Conduct (Art. 7-20 FIDLEG), [Company Name] is committed to acting in the client's best interest, providing transparency regarding products (including Key Information Documents - KIDs), disclosing fees/retrocessions, and ensuring best execution of orders. A [Suitability/Appropriateness] test will be performed. The client is aware of the risks associated with financial instruments as detailed in the 'Risks Involved in Trading Financial Instruments' brochure. This agreement ensures compliance with documentation and accountability requirements."
+              }
+            ]
+          },
+          {
+            "external_id": "reg-emir",
+            "type": "RegulatoryAgreement",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "EU EMIR"
+              },
+              {
+                "type": "description",
+                "value": "This Agreement governs the compliance of [Party A] and [Party B] with the European Market Infrastructure Regulation (EU) No 648/2012 as amended (EMIR/EMIR Refit). It encompasses all applicable obligations, including the reporting of OTC and Exchange Traded Derivatives (ETD) to an authorized Trade Repository (Article 9), the central clearing of eligible OTC derivatives (Article 4), and the application of Risk Mitigation Techniques (including timely confirmation, portfolio reconciliation, dispute resolution, and margin exchange for non-cleared trades)."
+              }
+            ]
+          },
+          {
+            "external_id": "reg-uae-cb",
+            "type": "RegulatoryAgreement",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "New CBUAE Law"
+              },
+              {
+                "type": "description",
+                "value": "Law No. (6) of 2025 (the \"New CBUAE Law\") is a landmark overhaul that consolidates the UAE's financial regulatory framework, unifying the oversight of banking, insurance, and payment systems under the Central Bank of the UAE (CBUAE). It effectively repeals the previous 2018 Central Bank Law and the 2023 Insurance Law."
+              }
+            ]
+          },
+          {
+            "external_id": "doc-001",
+            "type": "Document",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "CanBank Maple Balanced Fund Facts"
+              }
+            ]
+          },
+          {
+            "external_id": "doc-002",
+            "type": "Document",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "5-Year GIC Disclosure Statement"
+              }
+            ]
+          },
+          {
+            "external_id": "doc-003",
+            "type": "Document",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "CanBank Blue-Chip Growth Prospectus"
+              }
+            ]
+          },
+          {
+            "external_id": "doc-004",
+            "type": "Document",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "CanBank S&P 500 ETF Summary Prospectus"
+              }
+            ]
+          },
+          {
+            "external_id": "doc-005",
+            "type": "Document",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "CanBank Euro-Agg UCITS KIID"
+              }
+            ]
+          },
+          {
+            "external_id": "doc-006",
+            "type": "Document",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Sustainable EMEA Equity KID"
+              }
+            ]
+          },
+          {
+            "external_id": "doc-007",
+            "type": "Document",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Global Multi-Asset Term Sheet"
+              }
+            ]
+          },
+          {
+            "external_id": "doc-008",
+            "type": "Document",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "CanBank Treasury Bond Offering Circular"
+              }
+            ]
+          },
+          {
+            "external_id": "doc-009",
+            "type": "Document",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Private Wealth Equity Pool OM"
+              }
+            ]
+          },
+          {
+            "external_id": "doc-010",
+            "type": "Document",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Lombard Loan Facility Agreement"
+              }
+            ]
+          },
+          {
+            "external_id": "doc-011",
+            "type": "Document",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Gulf Opportunities Sukuk Prospectus"
+              }
+            ]
+          },
+          {
+            "external_id": "doc-012",
+            "type": "Document",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "US High-Yield Debt Wrapper"
+              }
+            ]
+          },
+          {
+            "external_id": "doc-013",
+            "type": "Document",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Venture Tech LP Partnership Deed"
+              }
+            ]
+          },
+          {
+            "external_id": "doc-014",
+            "type": "Document",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Swiss Wealth Mgmt Addendum"
+              }
+            ]
+          },
+          {
+            "external_id": "doc-015",
+            "type": "Document",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Cross-Asset Hedging Disclosure"
+              }
+            ]
+          },
+          {
+            "external_id": "sys_canbank_core",
+            "type": "System",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "CanBank Core Banking Retail"
+              }
+            ]
+          },
+          {
+            "external_id": "tier_1",
+            "type": "AccountTier",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Tier 1"
+              },
+              {
+                "type": "tier",
+                "value": 1
+              },
+              {
+                "type": "threshold_amount",
+                "value": 1000
+              }
+            ]
+          },
+          {
+            "external_id": "tier_2",
+            "type": "AccountTier",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Tier 2"
+              },
+              {
+                "type": "tier",
+                "value": 2
+              },
+              {
+                "type": "threshold_amount",
+                "value": 5000
+              }
+            ]
+          },
+          {
+            "external_id": "tier_3",
+            "type": "AccountTier",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Tier 3"
+              },
+              {
+                "type": "tier",
+                "value": 3
+              },
+              {
+                "type": "threshold_amount",
+                "value": 10000
+              }
+            ]
+          },
+          {
+            "external_id": "tier_4",
+            "type": "AccountTier",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Tier 4"
+              },
+              {
+                "type": "tier",
+                "value": 4
+              },
+              {
+                "type": "threshold_amount",
+                "value": 1000000
+              }
+            ]
+          },
+          {
+            "external_id": "hq_weather",
+            "type": "Weather",
+            "is_identity": false,
+            "labels": [],
+            "properties": [
+              {
+                "type": "location",
+                "value": "London"
+              },
+              {
+                "type": "latitude",
+                "value": 51.5072
+              },
+              {
+                "type": "longitude",
+                "value": -0.1276
+              },
+              {
+                "type": "current",
+                "external_value": "weather"
+              },
+              {
+                "type": "units",
+                "external_value": "weather-units"
+              }
+            ]
+          },
+          {
+            "external_id": "wf-erp",
+            "type": "Workflow",
+            "is_identity": false,
+            "properties": []
+          },
+          {
+            "external_id": "wf-erp-analyst",
+            "type": "Workflow",
+            "is_identity": false,
+            "properties": []
+          },
+          {
+            "external_id": "wf-erp-console",
+            "type": "Workflow",
+            "is_identity": false,
+            "properties": []
+          },
+          {
+            "external_id": "{{auth0_sub_erp}}",
+            "type": "Agent",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "erp-mcp-gateway"
+              }
+            ]
+          },
+          {
+            "external_id": "wf-crm",
+            "type": "Workflow",
+            "is_identity": false,
+            "labels": [],
+            "properties": []
+          },
+          {
+            "external_id": "{{auth0_sub_crm}}",
+            "type": "Agent",
+            "is_identity": false,
+            "labels": [],
+            "properties": [
+              {
+                "type": "name",
+                "value": "crm-agent"
+              }
+            ]
+          },
+          {
+            "external_id": "decision_001",
+            "type": "Decision",
+            "is_identity": false,
+            "labels": [],
+            "properties": [
+              {
+                "type": "name",
+                "value": "Waive Credit Card Late Payment Charge",
+                "metadata": {
+                  "source": "Salesforce"
+                }
+              },
+              {
+                "type": "description",
+                "value": "Vivienne Boardroom, Customer Service Supervisor, waived the late payment charge for Cashmere WiFi Malhotra because Cashmere was a loyal customer and did not have any other late payment charges. Vivienne was concerned that Cashmere was at risk of leaving CanBank over the late credit card payment charge.",
+                "metadata": {
+                  "source": "Salesforce"
+                }
+              }
+            ]
+          },
+          {
+            "external_id": "cust-bambi",
+            "type": "Customer",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Bambi Stardust"
+              },
+              {
+                "type": "email",
+                "value": "bambi@stardust.com"
+              }
+            ]
+          },
+          {
+            "external_id": "acc_bambi_chequing",
+            "type": "Account",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "account_type",
+                "value": "Chequing"
+              },
+              {
+                "type": "balance",
+                "value": "5200.00"
+              }
+            ]
+          },
+          {
+            "external_id": "acc_bambi_mortgage",
+            "type": "Account",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "account_type",
+                "value": "Mortgage"
+              },
+              {
+                "type": "interest_rate",
+                "value": "4.5%"
+              }
+            ]
+          },
+          {
+            "external_id": "inv-cb-001",
+            "type": "Invoice",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "invoice_number",
+                "value": "INV-CB-001"
+              },
+              {
+                "type": "amount",
+                "value": "14.50"
+              },
+              {
+                "type": "due_date",
+                "value": "2025-01-31"
+              },
+              {
+                "type": "status",
+                "value": "open"
+              }
+            ]
+          },
+          {
+            "external_id": "inv-cb-002",
+            "type": "Invoice",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "invoice_number",
+                "value": "INV-CB-002"
+              },
+              {
+                "type": "amount",
+                "value": "923.10"
+              },
+              {
+                "type": "due_date",
+                "value": "2025-02-01"
+              },
+              {
+                "type": "status",
+                "value": "open"
+              }
+            ]
+          },
+          {
+            "external_id": "cust-cornelius",
+            "type": "Customer",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Cornelius Pickleworth"
+              },
+              {
+                "type": "email",
+                "value": "cornelius@pickleworth.com"
+              }
+            ]
+          },
+          {
+            "external_id": "acc_cornelius_youth",
+            "type": "Account",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "account_type",
+                "value": "Youth Savings"
+              },
+              {
+                "type": "balance",
+                "value": "310.00"
+              }
+            ]
+          },
+          {
+            "external_id": "inv-cb-003",
+            "type": "Invoice",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "invoice_number",
+                "value": "INV-CB-003"
+              },
+              {
+                "type": "amount",
+                "value": "85.00"
+              },
+              {
+                "type": "due_date",
+                "value": "2025-01-15"
+              },
+              {
+                "type": "status",
+                "value": "paid"
+              }
+            ]
+          },
+          {
+            "external_id": "cust-eustorgio",
+            "type": "Customer",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Eustorgio Rodriguez"
+              },
+              {
+                "type": "email",
+                "value": "eustorgio@rodriguez.com"
+              }
+            ]
+          },
+          {
+            "external_id": "acc_eustorgio_youth",
+            "type": "Account",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "account_type",
+                "value": "Youth Savings"
+              },
+              {
+                "type": "balance",
+                "value": "95.40"
+              }
+            ]
+          },
+          {
+            "external_id": "inv-cb-004",
+            "type": "Invoice",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "invoice_number",
+                "value": "INV-CB-004"
+              },
+              {
+                "type": "amount",
+                "value": "85.00"
+              },
+              {
+                "type": "due_date",
+                "value": "2025-04-15"
+              },
+              {
+                "type": "status",
+                "value": "open"
+              }
+            ]
+          },
+          {
+            "external_id": "cust-marmaduke",
+            "type": "Customer",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Marmaduke Doomington"
+              },
+              {
+                "type": "email",
+                "value": "marmaduke@doomington.com"
+              }
+            ]
+          },
+          {
+            "external_id": "acc_marmaduke_401k",
+            "type": "Account",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "account_type",
+                "value": "401k"
+              },
+              {
+                "type": "provider",
+                "value": "CanBank USA"
+              }
+            ]
+          },
+          {
+            "external_id": "acc_marmaduke_loan",
+            "type": "Account",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "account_type",
+                "value": "Personal Loan"
+              },
+              {
+                "type": "status",
+                "value": "Active"
+              }
+            ]
+          },
+          {
+            "external_id": "inv-cb-005",
+            "type": "Invoice",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "invoice_number",
+                "value": "INV-CB-005"
+              },
+              {
+                "type": "amount",
+                "value": "312.40"
+              },
+              {
+                "type": "due_date",
+                "value": "2025-02-10"
+              },
+              {
+                "type": "status",
+                "value": "overdue"
+              }
+            ]
+          },
+          {
+            "external_id": "cust-cookie",
+            "type": "Customer",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Cookie Malhotra"
+              },
+              {
+                "type": "email",
+                "value": "cookie@malhotra.com"
+              }
+            ]
+          },
+          {
+            "external_id": "acc_cookie_chequing",
+            "type": "Account",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "account_type",
+                "value": "Chequing"
+              },
+              {
+                "type": "status",
+                "value": "Active"
+              }
+            ]
+          },
+          {
+            "external_id": "acc_cookie_investing",
+            "type": "Account",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "account_type",
+                "value": "Investing"
+              },
+              {
+                "type": "status",
+                "value": "Active"
+              },
+              {
+                "type": "holdings",
+                "value": "Active"
+              }
+            ]
+          },
+          {
+            "external_id": "acc_cookie_cc",
+            "type": "Account",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "account_type",
+                "value": "CreditCard"
+              },
+              {
+                "type": "status",
+                "value": "late"
+              }
+            ]
+          },
+          {
+            "external_id": "inv-cb-007",
+            "type": "Invoice",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "invoice_number",
+                "value": "INV-CB-007"
+              },
+              {
+                "type": "amount",
+                "value": "129.99"
+              },
+              {
+                "type": "due_date",
+                "value": "2025-01-25"
+              },
+              {
+                "type": "status",
+                "value": "paid"
+              }
+            ]
+          },
+          {
+            "external_id": "inv-cb-008",
+            "type": "Invoice",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "invoice_number",
+                "value": "INV-CB-008"
+              },
+              {
+                "type": "amount",
+                "value": "220.00"
+              },
+              {
+                "type": "due_date",
+                "value": "2025-02-28"
+              },
+              {
+                "type": "status",
+                "value": "open"
+              }
+            ]
+          },
+          {
+            "external_id": "cust-cashmere",
+            "type": "Customer",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Cashmere WiFi Malhotra"
+              },
+              {
+                "type": "email",
+                "value": "cashmere.wifi@malhotra.com"
+              }
+            ]
+          },
+          {
+            "external_id": "acc_cashmere_investing",
+            "type": "Account",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "account_type",
+                "value": "Investing"
+              },
+              {
+                "type": "status",
+                "value": "Active"
+              },
+              {
+                "type": "holdings",
+                "value": "Active"
+              }
+            ]
+          },
+          {
+            "external_id": "acc_cashmere_cc",
+            "type": "Account",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "account_type",
+                "value": "CreditCard"
+              },
+              {
+                "type": "status",
+                "value": "paid"
+              }
+            ]
+          },
+          {
+            "external_id": "inv-cb-009",
+            "type": "Invoice",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "invoice_number",
+                "value": "INV-CB-009"
+              },
+              {
+                "type": "amount",
+                "value": "74.25"
+              },
+              {
+                "type": "due_date",
+                "value": "2025-02-20"
+              },
+              {
+                "type": "status",
+                "value": "open"
+              }
+            ]
+          },
+          {
+            "external_id": "cust-tokenina",
+            "type": "Customer",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Tokenina Contextsworth"
+              },
+              {
+                "type": "email",
+                "value": "tokenina@contextsworth.com"
+              }
+            ]
+          },
+          {
+            "external_id": "acc_tokenina_youth",
+            "type": "Account",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "account_type",
+                "value": "Youth Savings"
+              },
+              {
+                "type": "balance",
+                "value": "42.00"
+              }
+            ]
+          },
+          {
+            "external_id": "cust-berengar",
+            "type": "Customer",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Berengar Doomington"
+              },
+              {
+                "type": "email",
+                "value": "berengar@doomington.com"
+              }
+            ]
+          },
+          {
+            "external_id": "acc_berengar_youth",
+            "type": "Account",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "account_type",
+                "value": "Youth Savings"
+              },
+              {
+                "type": "balance",
+                "value": "120.00"
+              }
+            ]
+          },
+          {
+            "external_id": "inv-cb-006",
+            "type": "Invoice",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "invoice_number",
+                "value": "INV-CB-006"
+              },
+              {
+                "type": "amount",
+                "value": "312.40"
+              },
+              {
+                "type": "due_date",
+                "value": "2025-03-10"
+              },
+              {
+                "type": "status",
+                "value": "open"
+              }
+            ]
+          },
+          {
+            "external_id": "cust-humperdinck",
+            "type": "Customer",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Humperdinck Doomington"
+              },
+              {
+                "type": "email",
+                "value": "humperdinck@doomington.com"
+              }
+            ]
+          },
+          {
+            "external_id": "acc_humperdinck_youth",
+            "type": "Account",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "account_type",
+                "value": "Youth Savings"
+              },
+              {
+                "type": "balance",
+                "value": "88.00"
+              }
+            ]
+          },
+          {
+            "external_id": "cust-synergy",
+            "type": "Customer",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Synergy Maximillian Capitalworth"
+              },
+              {
+                "type": "email",
+                "value": "synergy.maximillian@capitalworth.com"
+              }
+            ]
+          },
+          {
+            "external_id": "acc_synergy_youth",
+            "type": "Account",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "account_type",
+                "value": "Youth Savings"
+              },
+              {
+                "type": "balance",
+                "value": "1500.00"
+              }
+            ]
+          },
+          {
+            "external_id": "cust-quarterly",
+            "type": "Customer",
+            "is_identity": true,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Quarterly-Returns Capitalworth"
+              },
+              {
+                "type": "email",
+                "value": "quarterlyreturns@capitalworth.com"
+              }
+            ]
+          },
+          {
+            "external_id": "acc_quarterly_youth",
+            "type": "Account",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "account_type",
+                "value": "Youth Savings"
+              },
+              {
+                "type": "balance",
+                "value": "1500.00"
+              }
+            ]
+          },
+          {
+            "external_id": "open",
+            "type": "InvoiceStatus",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Open"
+              }
+            ]
+          },
+          {
+            "external_id": "paid",
+            "type": "InvoiceStatus",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Paid"
+              }
+            ]
+          },
+          {
+            "external_id": "overdue",
+            "type": "InvoiceStatus",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Overdue"
+              }
+            ]
+          },
+          {
+            "external_id": "ticket_001",
+            "type": "Ticket",
+            "is_identity": false,
+            "labels": [],
+            "properties": [
+              {
+                "type": "name",
+                "value": "Credit card late payment penalty"
+              },
+              {
+                "type": "description",
+                "value": "I was only a few hours late with my credit card payment but I still received the fine. I would like the fine reversed."
+              }
+            ]
+          },
+          {
+            "external_id": "ticket_002",
+            "type": "Ticket",
+            "is_identity": false,
+            "labels": [],
+            "properties": [
+              {
+                "type": "name",
+                "value": "Credit card late payment penalty"
+              },
+              {
+                "type": "description",
+                "value": "I was only a few hours late with my credit card payment but I still received the fine. I would like the fine reversed."
+              }
+            ]
+          }
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,43 @@
+---
+info:
+  name: Create Auth0 Person Introspect
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/token-introspects"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "project_id": "{{project_id}}",
+        "name": "auth0-person-introspect",
+        "display_name": "Auth0 Person Token Introspect",
+        "description": "Auth0 access tokens of the console login (audience ibac-console), validated offline against the tenant JWKS; the token sub is the Person external_id. The issuer comes from .env (AUTH0_ISSUER, e.g. https://<tenant>.auth0.com/).",
+        "ikg_node_type": "Person",
+        "jwt_matcher": {
+          "issuer": "{{auth0_issuer}}",
+          "audience": "ibac-console"
+        },
+        "claims_mapping": {},
+        "offline_validation": {},
+        "perform_upsert": true
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("auth0_person_introspect_introspect", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

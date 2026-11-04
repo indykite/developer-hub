@@ -74,6 +74,8 @@ data/
   canbank/              # the default dataset (DATASET=canbank)
   intent/               # a2a/intent-agent-demo: the canbank graph + 24 KBAC
                         # policies, no MCP/CIQ/resolvers (DATASET=intent)
+  ibac/                 # a2a/ibac-demo: the canbank graph with the music demo's
+                        # people as Auth0 subjects (DATASET=ibac)
     manifest.json       # all Config-API elements: project, application,
                         # app_agent, mcp_server, token_introspect, kbac,
                         # resolvers, ciq_policies, ciq_queries
@@ -94,6 +96,13 @@ policies. Conventions worth following in a new manifest:
 - Give each query/policy/resolver a `slot` (any unique string) - forms are
   reachable as `/api_.../create?slot=<slot>` and provisioning records ids under
   `CIQ_POLICY_ID_<slot>` / `CIQ_QUERY_ID_<slot>` env keys.
+- Write per-deployment values as `${ENV_VAR}` placeholders and set them in
+  `.env`; they are resolved when a form or provisioning builds the payload, in
+  token introspects, the event sink, KBAC and CIQ policy bodies, and the capture
+  nodes and relationships (an unset variable becomes an empty string, which the
+  Config or Capture API then rejects visibly). Examples: the token-service
+  public JWK (`canbank-ts`), the Auth0 issuer and agent subjects (`ibac`, see
+  `.env.example`).
 - End each query description with an
   `Example: { "id": ..., "input_params": { ... } }` snippet - the execute form
   pre-fills its input from it, and CIQ policies whose `subject.type` is

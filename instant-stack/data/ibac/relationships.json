@@ -1,0 +1,3362 @@
+{
+  "relationships": [
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "adult"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c40d640ba356c7db9f8c8d"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "adult"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c3ec26b8338328f1511c88"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "adult"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c40e7a92e98aebbeafe223"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "adult"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c408f6e7fb3585804a7077"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "adult"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c40c7b92e98aebbeafe019"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "adult"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c40e05815a0ecf477c134b"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "adult"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4129b0ba356c7db9f91ab"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "adult"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c407f3b501d3a02bd0151e"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "adult"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c3ee8cb9ed562744ff9326"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "minor"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c41000db4ea22197e9cbf2"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "minor"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c413eab4187d1438819098"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "adult"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4a309ce3b6c018d65332a"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "adult"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4e83e0e9ee78af8a1d863"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "adult"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4d4884fccfa890876e0a9"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "adult"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c44ee97dc076f0d05f0280"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "minor"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c470355a23140537489495"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "minor"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4731ce96a96f6c42ce6f0"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "adult"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4e616c7f64bc45838a6b1"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "minor"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c49d081321b6f2eb673142"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "adult"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4bc0581602191ddbf2a90"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "adult"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4975a584b4b83e003ce65"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "adult"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c46a11e52080654279b72c"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "minor"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4556700bdb8e2f628d381"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "minor"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c468a50f049ba11497a5f5"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "adult"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4e2e5139001432a0a9ffb"
+      },
+      "target": {
+        "type": "AgeGroup",
+        "external_id": "adult"
+      },
+      "type": "IS_AGE_GROUP"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4a309ce3b6c018d65332a"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c4e83e0e9ee78af8a1d863"
+      },
+      "type": "MARRIED_TO"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4a309ce3b6c018d65332a"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c3ee8cb9ed562744ff9326"
+      },
+      "type": "PARENT_OF"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4e83e0e9ee78af8a1d863"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c3ee8cb9ed562744ff9326"
+      },
+      "type": "PARENT_OF"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4129b0ba356c7db9f91ab"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c4d4884fccfa890876e0a9"
+      },
+      "type": "MARRIED_TO"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4129b0ba356c7db9f91ab"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c44ee97dc076f0d05f0280"
+      },
+      "type": "PARENT_OF"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4d4884fccfa890876e0a9"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c44ee97dc076f0d05f0280"
+      },
+      "type": "PARENT_OF"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4129b0ba356c7db9f91ab"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c470355a23140537489495"
+      },
+      "type": "PARENT_OF"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4d4884fccfa890876e0a9"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c470355a23140537489495"
+      },
+      "type": "PARENT_OF"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4731ce96a96f6c42ce6f0"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
+      },
+      "type": "MARRIED_TO"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4731ce96a96f6c42ce6f0"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c4e616c7f64bc45838a6b1"
+      },
+      "type": "PARENT_OF"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c4e616c7f64bc45838a6b1"
+      },
+      "type": "PARENT_OF"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c49d081321b6f2eb673142"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c4bc0581602191ddbf2a90"
+      },
+      "type": "MARRIED_TO"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c49d081321b6f2eb673142"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c41000db4ea22197e9cbf2"
+      },
+      "type": "PARENT_OF"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4bc0581602191ddbf2a90"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c41000db4ea22197e9cbf2"
+      },
+      "type": "PARENT_OF"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4975a584b4b83e003ce65"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c3ec26b8338328f1511c88"
+      },
+      "type": "MARRIED_TO"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4975a584b4b83e003ce65"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c413eab4187d1438819098"
+      },
+      "type": "PARENT_OF"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c3ec26b8338328f1511c88"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c413eab4187d1438819098"
+      },
+      "type": "PARENT_OF"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c40e7a92e98aebbeafe223"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c40d640ba356c7db9f8c8d"
+      },
+      "type": "CO_PARENTS"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c40e7a92e98aebbeafe223"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c46a11e52080654279b72c"
+      },
+      "type": "PARENT_OF"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c40d640ba356c7db9f8c8d"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c46a11e52080654279b72c"
+      },
+      "type": "PARENT_OF"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c40e7a92e98aebbeafe223"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c4556700bdb8e2f628d381"
+      },
+      "type": "PARENT_OF"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c40d640ba356c7db9f8c8d"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c4556700bdb8e2f628d381"
+      },
+      "type": "PARENT_OF"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c408f6e7fb3585804a7077"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c468a50f049ba11497a5f5"
+      },
+      "type": "PARTNERS"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4e2e5139001432a0a9ffb"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c407f3b501d3a02bd0151e"
+      },
+      "type": "PARTNERS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf1"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf2"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf1"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf1"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_RETRIEVER}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_RETRIEVER}"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf2"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf2"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_WEATHER}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf2"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_WEATHER}"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf2"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf3"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-drive"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_DRIVE}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-drive-analyst"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-analyst"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_DRIVE}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-analyst"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-drive-console"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-console"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_DRIVE}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf3-console"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "s1"
+      },
+      "properties": [],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "s2"
+      },
+      "properties": [],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Skill",
+        "external_id": "s2"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "t1"
+      },
+      "properties": [],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Skill",
+        "external_id": "s2"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "t2"
+      },
+      "properties": [],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_RETRIEVER}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "s3"
+      },
+      "properties": [],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Skill",
+        "external_id": "s3"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "t2"
+      },
+      "properties": [],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Entity",
+        "external_id": "canbank"
+      },
+      "target": {
+        "type": "Container",
+        "external_id": "canbank-depts"
+      },
+      "properties": [],
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Container",
+        "external_id": "canbank-depts"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "exec"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "exec"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "lob"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "exec"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "governance"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "exec"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "shared"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "governance"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "risk"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "governance"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "crimes"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "governance"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "regulatory"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "governance"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "treasury"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "shared"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "tech"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "shared"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "ops"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "shared"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "strategy"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "shared"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "procurement"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf1"
+      },
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf1"
+      },
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "target": {
+        "type": "Quote",
+        "external_id": "stock_quote"
+      },
+      "type": "CAN_RETRIEVE"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "target": {
+        "type": "System",
+        "external_id": "sys_canbank_core"
+      },
+      "type": "CAN_ACCESS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Folder",
+        "external_id": "cs_policy"
+      },
+      "type": "CAN_ACCESS"
+    },
+    {
+      "source": {
+        "type": "Folder",
+        "external_id": "cs_policy"
+      },
+      "target": {
+        "type": "Document",
+        "external_id": "refund_policy"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Folder",
+        "external_id": "cs_policy"
+      },
+      "target": {
+        "type": "Document",
+        "external_id": "discount_policy"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Folder",
+        "external_id": "cs_policy"
+      },
+      "target": {
+        "type": "Document",
+        "external_id": "kyc_policy"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "refund_policy"
+      },
+      "target": {
+        "type": "Taxonomy",
+        "external_id": "policy"
+      },
+      "type": "IS_TYPE"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "discount_policy"
+      },
+      "target": {
+        "type": "Taxonomy",
+        "external_id": "policy"
+      },
+      "type": "IS_TYPE"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "kyc_policy"
+      },
+      "target": {
+        "type": "Taxonomy",
+        "external_id": "policy"
+      },
+      "type": "IS_TYPE"
+    },
+    {
+      "source": {
+        "type": "Site",
+        "external_id": "customer"
+      },
+      "target": {
+        "type": "Folder",
+        "external_id": "docs"
+      },
+      "properties": [],
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Folder",
+        "external_id": "docs"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-mutual-fund"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Folder",
+        "external_id": "docs"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-etf"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Folder",
+        "external_id": "docs"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-fixed-income"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Folder",
+        "external_id": "docs"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-derivatives"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Folder",
+        "external_id": "docs"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-private-equity"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Folder",
+        "external_id": "docs"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-islamic-finance"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Folder",
+        "external_id": "docs"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-cash"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Folder",
+        "external_id": "docs"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-lending"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-001"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-mutual-fund"
+      },
+      "type": "CLASSIFIED_AS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-001"
+      },
+      "target": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-csa-ni81"
+      },
+      "type": "SUBJECT_TO"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-002"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-cash"
+      },
+      "type": "CLASSIFIED_AS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-002"
+      },
+      "target": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-cdic"
+      },
+      "type": "SUBJECT_TO"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-013"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-private-equity"
+      },
+      "type": "CLASSIFIED_AS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-013"
+      },
+      "target": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-ni45"
+      },
+      "type": "SUBJECT_TO"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-003"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-mutual-fund"
+      },
+      "type": "CLASSIFIED_AS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-003"
+      },
+      "target": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-sec-40"
+      },
+      "type": "SUBJECT_TO"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-004"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-etf"
+      },
+      "type": "CLASSIFIED_AS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-004"
+      },
+      "target": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-sec-498"
+      },
+      "type": "SUBJECT_TO"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-012"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-fixed-income"
+      },
+      "type": "CLASSIFIED_AS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-012"
+      },
+      "target": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-isda"
+      },
+      "type": "SUBJECT_TO"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-005"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-mutual-fund"
+      },
+      "type": "CLASSIFIED_AS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-005"
+      },
+      "target": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-ucits-v"
+      },
+      "type": "SUBJECT_TO"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-006"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-mutual-fund"
+      },
+      "type": "CLASSIFIED_AS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-006"
+      },
+      "target": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-priips"
+      },
+      "type": "SUBJECT_TO"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-010"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-lending"
+      },
+      "type": "CLASSIFIED_AS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-010"
+      },
+      "target": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-priips"
+      },
+      "type": "SUBJECT_TO"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-011"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-islamic-finance"
+      },
+      "type": "CLASSIFIED_AS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-011"
+      },
+      "target": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-uae-cb"
+      },
+      "type": "SUBJECT_TO"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-014"
+      },
+      "target": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-fidleg"
+      },
+      "type": "SUBJECT_TO"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-014"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-mutual-fund"
+      },
+      "type": "CLASSIFIED_AS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-014"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-fixed-income"
+      },
+      "type": "CLASSIFIED_AS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-007"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-fixed-income"
+      },
+      "type": "CLASSIFIED_AS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-007"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-derivatives"
+      },
+      "type": "CLASSIFIED_AS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-007"
+      },
+      "target": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-isda"
+      },
+      "type": "SUBJECT_TO"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-008"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-fixed-income"
+      },
+      "type": "CLASSIFIED_AS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-008"
+      },
+      "target": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-isda"
+      },
+      "type": "SUBJECT_TO"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-009"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-private-equity"
+      },
+      "type": "CLASSIFIED_AS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-009"
+      },
+      "target": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-ni45"
+      },
+      "type": "SUBJECT_TO"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-009"
+      },
+      "target": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-sec-40"
+      },
+      "type": "SUBJECT_TO"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-015"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-derivatives"
+      },
+      "type": "CLASSIFIED_AS"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-015"
+      },
+      "target": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-emir"
+      },
+      "type": "SUBJECT_TO"
+    },
+    {
+      "source": {
+        "type": "Document",
+        "external_id": "doc-015"
+      },
+      "target": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-isda"
+      },
+      "type": "SUBJECT_TO"
+    },
+    {
+      "source": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-csa-ni81"
+      },
+      "target": {
+        "type": "Jurisdiction",
+        "external_id": "jur-canada"
+      },
+      "type": "ENFORCED_IN"
+    },
+    {
+      "source": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-cdic"
+      },
+      "target": {
+        "type": "Jurisdiction",
+        "external_id": "jur-canada"
+      },
+      "type": "ENFORCED_IN"
+    },
+    {
+      "source": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-ni45"
+      },
+      "target": {
+        "type": "Jurisdiction",
+        "external_id": "jur-canada"
+      },
+      "type": "ENFORCED_IN"
+    },
+    {
+      "source": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-sec-40"
+      },
+      "target": {
+        "type": "Jurisdiction",
+        "external_id": "jur-usa"
+      },
+      "type": "ENFORCED_IN"
+    },
+    {
+      "source": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-sec-498"
+      },
+      "target": {
+        "type": "Jurisdiction",
+        "external_id": "jur-usa"
+      },
+      "type": "ENFORCED_IN"
+    },
+    {
+      "source": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-ucits-v"
+      },
+      "target": {
+        "type": "Jurisdiction",
+        "external_id": "jur-emea"
+      },
+      "type": "ENFORCED_IN"
+    },
+    {
+      "source": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-priips"
+      },
+      "target": {
+        "type": "Jurisdiction",
+        "external_id": "jur-emea"
+      },
+      "type": "ENFORCED_IN"
+    },
+    {
+      "source": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-uae-cb"
+      },
+      "target": {
+        "type": "Jurisdiction",
+        "external_id": "jur-emea"
+      },
+      "type": "ENFORCED_IN"
+    },
+    {
+      "source": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-emir"
+      },
+      "target": {
+        "type": "Jurisdiction",
+        "external_id": "jur-emea"
+      },
+      "type": "ENFORCED_IN"
+    },
+    {
+      "source": {
+        "type": "RegulatoryAgreement",
+        "external_id": "reg-fidleg"
+      },
+      "target": {
+        "type": "Jurisdiction",
+        "external_id": "jur-switzerland"
+      },
+      "type": "ENFORCED_IN"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-erp"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ERP}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-erp-analyst"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-analyst"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ERP}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-analyst"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-erp-console"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ERP}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ],
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp-analyst"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp-console"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp-analyst"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-erp-console"
+      },
+      "properties": [],
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-crm"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-crm"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_CRM}"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-crm"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-crm"
+      },
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-crm"
+      },
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "type": "WORKS_IN"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "type": "WORKS_IN"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c40d640ba356c7db9f8c8d"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "type": "WORKS_IN"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c3ec26b8338328f1511c88"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "type": "WORKS_IN"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c40e7a92e98aebbeafe223"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "private"
+      },
+      "type": "WORKS_IN"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c408f6e7fb3585804a7077"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "risk"
+      },
+      "type": "WORKS_IN"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c40c7b92e98aebbeafe019"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "tech"
+      },
+      "type": "WORKS_IN"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c40e05815a0ecf477c134b"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "tech"
+      },
+      "type": "WORKS_IN"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4129b0ba356c7db9f91ab"
+      },
+      "target": {
+        "type": "Department",
+        "external_id": "ops"
+      },
+      "type": "WORKS_IN"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c40d640ba356c7db9f8c8d"
+      },
+      "type": "REPORTS_TO"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c3ec26b8338328f1511c88"
+      },
+      "target": {
+        "type": "Person",
+        "external_id": "auth0|69c40d640ba356c7db9f8c8d"
+      },
+      "type": "REPORTS_TO"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c40d640ba356c7db9f8c8d"
+      },
+      "target": {
+        "type": "Decision",
+        "external_id": "decision_001"
+      },
+      "type": "MADE"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf1"
+      },
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf1"
+      },
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf3"
+      },
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf3"
+      },
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-drive"
+      },
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-drive"
+      },
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-drive-analyst"
+      },
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-drive-analyst"
+      },
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-drive-console"
+      },
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-drive-console"
+      },
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf3-console"
+      },
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf3-console"
+      },
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4129b0ba356c7db9f91ab"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf1"
+      },
+      "type": "INVOKES"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4129b0ba356c7db9f91ab"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf1"
+      },
+      "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c407f3b501d3a02bd0151e"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-bambi"
+      },
+      "type": "IS_CUSTOMER"
+    },
+    {
+      "source": {
+        "type": "System",
+        "external_id": "sys_canbank_core"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-bambi"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-bambi"
+      },
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-bambi"
+      },
+      "target": {
+        "type": "Account",
+        "external_id": "acc_bambi_chequing"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-bambi"
+      },
+      "target": {
+        "type": "Account",
+        "external_id": "acc_bambi_mortgage"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-bambi"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-cb-001"
+      },
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "Invoice",
+        "external_id": "inv-cb-001"
+      },
+      "target": {
+        "type": "InvoiceStatus",
+        "external_id": "open"
+      },
+      "type": "HAS_STATUS"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-bambi"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-cb-002"
+      },
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "Invoice",
+        "external_id": "inv-cb-002"
+      },
+      "target": {
+        "type": "InvoiceStatus",
+        "external_id": "open"
+      },
+      "type": "HAS_STATUS"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c3ee8cb9ed562744ff9326"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-cornelius"
+      },
+      "type": "IS_CUSTOMER"
+    },
+    {
+      "source": {
+        "type": "System",
+        "external_id": "sys_canbank_core"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-cornelius"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-cornelius"
+      },
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-cornelius"
+      },
+      "target": {
+        "type": "Account",
+        "external_id": "acc_cornelius_youth"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "type": "Account",
+        "external_id": "acc_cornelius_youth"
+      },
+      "target": {
+        "type": "AccountTier",
+        "external_id": "tier_1"
+      },
+      "type": "IS_TIER"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-cornelius"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-cb-003"
+      },
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "Invoice",
+        "external_id": "inv-cb-003"
+      },
+      "target": {
+        "type": "InvoiceStatus",
+        "external_id": "paid"
+      },
+      "type": "HAS_STATUS"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c41000db4ea22197e9cbf2"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-eustorgio"
+      },
+      "type": "IS_CUSTOMER"
+    },
+    {
+      "source": {
+        "type": "System",
+        "external_id": "sys_canbank_core"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-eustorgio"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-eustorgio"
+      },
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-eustorgio"
+      },
+      "target": {
+        "type": "Account",
+        "external_id": "acc_eustorgio_youth"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "type": "Account",
+        "external_id": "acc_eustorgio_youth"
+      },
+      "target": {
+        "type": "AccountTier",
+        "external_id": "tier_1"
+      },
+      "type": "IS_TIER"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-eustorgio"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-cb-004"
+      },
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "Invoice",
+        "external_id": "inv-cb-004"
+      },
+      "target": {
+        "type": "InvoiceStatus",
+        "external_id": "open"
+      },
+      "type": "HAS_STATUS"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4129b0ba356c7db9f91ab"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-marmaduke"
+      },
+      "type": "IS_CUSTOMER"
+    },
+    {
+      "source": {
+        "type": "System",
+        "external_id": "sys_canbank_core"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-marmaduke"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-marmaduke"
+      },
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-marmaduke"
+      },
+      "target": {
+        "type": "Account",
+        "external_id": "acc_marmaduke_401k"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "type": "Account",
+        "external_id": "acc_marmaduke_401k"
+      },
+      "target": {
+        "type": "AccountTier",
+        "external_id": "tier_1"
+      },
+      "type": "IS_TIER"
+    },
+    {
+      "source": {
+        "type": "Account",
+        "external_id": "acc_marmaduke_401k"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-mutual-fund"
+      },
+      "type": "IS_TYPE"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-marmaduke"
+      },
+      "target": {
+        "type": "Account",
+        "external_id": "acc_marmaduke_loan"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "type": "Account",
+        "external_id": "acc_marmaduke_loan"
+      },
+      "target": {
+        "type": "AccountTier",
+        "external_id": "tier_1"
+      },
+      "type": "IS_TIER"
+    },
+    {
+      "source": {
+        "type": "Account",
+        "external_id": "acc_marmaduke_loan"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat-lending"
+      },
+      "type": "IS_TYPE"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-marmaduke"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-cb-005"
+      },
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "Invoice",
+        "external_id": "inv-cb-005"
+      },
+      "target": {
+        "type": "InvoiceStatus",
+        "external_id": "overdue"
+      },
+      "type": "HAS_STATUS"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c3ec26b8338328f1511c88"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-cookie"
+      },
+      "type": "IS_CUSTOMER"
+    },
+    {
+      "source": {
+        "type": "System",
+        "external_id": "sys_canbank_core"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-cookie"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-cookie"
+      },
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-cookie"
+      },
+      "target": {
+        "type": "Account",
+        "external_id": "acc_cookie_chequing"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-cookie"
+      },
+      "target": {
+        "type": "Account",
+        "external_id": "acc_cookie_investing"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "type": "Account",
+        "external_id": "acc_cookie_investing"
+      },
+      "target": {
+        "type": "AccountTier",
+        "external_id": "tier_3"
+      },
+      "type": "IS_TIER"
+    },
+    {
+      "source": {
+        "type": "Account",
+        "external_id": "acc_cookie_investing"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat_stocks"
+      },
+      "type": "IS_TYPE"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-cookie"
+      },
+      "target": {
+        "type": "Account",
+        "external_id": "acc_cookie_cc"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "type": "Account",
+        "external_id": "acc_cookie_cc"
+      },
+      "target": {
+        "type": "AccountTier",
+        "external_id": "tier_3"
+      },
+      "type": "IS_TIER"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-cookie"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-cb-007"
+      },
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "Invoice",
+        "external_id": "inv-cb-007"
+      },
+      "target": {
+        "type": "InvoiceStatus",
+        "external_id": "paid"
+      },
+      "type": "HAS_STATUS"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-cookie"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-cb-008"
+      },
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "Invoice",
+        "external_id": "inv-cb-008"
+      },
+      "target": {
+        "type": "InvoiceStatus",
+        "external_id": "open"
+      },
+      "type": "HAS_STATUS"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c413eab4187d1438819098"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-cashmere"
+      },
+      "type": "IS_CUSTOMER"
+    },
+    {
+      "source": {
+        "type": "System",
+        "external_id": "sys_canbank_core"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-cashmere"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "trading"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-cashmere"
+      },
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-cashmere"
+      },
+      "target": {
+        "type": "Account",
+        "external_id": "acc_cashmere_investing"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "type": "Account",
+        "external_id": "acc_cashmere_investing"
+      },
+      "target": {
+        "type": "AccountTier",
+        "external_id": "tier_3"
+      },
+      "type": "IS_TIER"
+    },
+    {
+      "source": {
+        "type": "Account",
+        "external_id": "acc_cashmere_investing"
+      },
+      "target": {
+        "type": "InvestmentCategory",
+        "external_id": "cat_stocks"
+      },
+      "type": "IS_TYPE"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-cashmere"
+      },
+      "target": {
+        "type": "Account",
+        "external_id": "acc_cashmere_cc"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "type": "Account",
+        "external_id": "acc_cashmere_cc"
+      },
+      "target": {
+        "type": "AccountTier",
+        "external_id": "tier_3"
+      },
+      "type": "IS_TIER"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-cashmere"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-cb-009"
+      },
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "Invoice",
+        "external_id": "inv-cb-009"
+      },
+      "target": {
+        "type": "InvoiceStatus",
+        "external_id": "open"
+      },
+      "type": "HAS_STATUS"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4e616c7f64bc45838a6b1"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-tokenina"
+      },
+      "type": "IS_CUSTOMER"
+    },
+    {
+      "source": {
+        "type": "System",
+        "external_id": "sys_canbank_core"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-tokenina"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-tokenina"
+      },
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-tokenina"
+      },
+      "target": {
+        "type": "Account",
+        "external_id": "acc_tokenina_youth"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "type": "Account",
+        "external_id": "acc_tokenina_youth"
+      },
+      "target": {
+        "type": "AccountTier",
+        "external_id": "tier_1"
+      },
+      "type": "IS_TIER"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c44ee97dc076f0d05f0280"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-berengar"
+      },
+      "type": "IS_CUSTOMER"
+    },
+    {
+      "source": {
+        "type": "System",
+        "external_id": "sys_canbank_core"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-berengar"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-berengar"
+      },
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-berengar"
+      },
+      "target": {
+        "type": "Account",
+        "external_id": "acc_berengar_youth"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "type": "Account",
+        "external_id": "acc_berengar_youth"
+      },
+      "target": {
+        "type": "AccountTier",
+        "external_id": "tier_1"
+      },
+      "type": "IS_TIER"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-berengar"
+      },
+      "target": {
+        "type": "Invoice",
+        "external_id": "inv-cb-006"
+      },
+      "type": "HAS_INVOICE"
+    },
+    {
+      "source": {
+        "type": "Invoice",
+        "external_id": "inv-cb-006"
+      },
+      "target": {
+        "type": "InvoiceStatus",
+        "external_id": "open"
+      },
+      "type": "HAS_STATUS"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c470355a23140537489495"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-humperdinck"
+      },
+      "type": "IS_CUSTOMER"
+    },
+    {
+      "source": {
+        "type": "System",
+        "external_id": "sys_canbank_core"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-humperdinck"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-humperdinck"
+      },
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-humperdinck"
+      },
+      "target": {
+        "type": "Account",
+        "external_id": "acc_humperdinck_youth"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "type": "Account",
+        "external_id": "acc_humperdinck_youth"
+      },
+      "target": {
+        "type": "AccountTier",
+        "external_id": "tier_1"
+      },
+      "type": "IS_TIER"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c46a11e52080654279b72c"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-synergy"
+      },
+      "type": "IS_CUSTOMER"
+    },
+    {
+      "source": {
+        "type": "System",
+        "external_id": "sys_canbank_core"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-synergy"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-synergy"
+      },
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-synergy"
+      },
+      "target": {
+        "type": "Account",
+        "external_id": "acc_synergy_youth"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "type": "Account",
+        "external_id": "acc_synergy_youth"
+      },
+      "target": {
+        "type": "AccountTier",
+        "external_id": "tier_2"
+      },
+      "type": "IS_TIER"
+    },
+    {
+      "source": {
+        "type": "Person",
+        "external_id": "auth0|69c4556700bdb8e2f628d381"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-quarterly"
+      },
+      "type": "IS_CUSTOMER"
+    },
+    {
+      "source": {
+        "type": "System",
+        "external_id": "sys_canbank_core"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-quarterly"
+      },
+      "type": "CONTAINS"
+    },
+    {
+      "source": {
+        "type": "Department",
+        "external_id": "support"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-quarterly"
+      },
+      "type": "SERVES"
+    },
+    {
+      "source": {
+        "type": "Customer",
+        "external_id": "cust-quarterly"
+      },
+      "target": {
+        "type": "Account",
+        "external_id": "acc_quarterly_youth"
+      },
+      "type": "OWNS"
+    },
+    {
+      "source": {
+        "type": "Account",
+        "external_id": "acc_quarterly_youth"
+      },
+      "target": {
+        "type": "AccountTier",
+        "external_id": "tier_2"
+      },
+      "type": "IS_TIER"
+    },
+    {
+      "source": {
+        "type": "Ticket",
+        "external_id": "ticket_001"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-cashmere"
+      },
+      "type": "CREATED_BY"
+    },
+    {
+      "source": {
+        "type": "Ticket",
+        "external_id": "ticket_002"
+      },
+      "target": {
+        "type": "Customer",
+        "external_id": "cust-cookie"
+      },
+      "type": "CREATED_BY"
+    },
+    {
+      "source": {
+        "type": "Ticket",
+        "external_id": "ticket_001"
+      },
+      "target": {
+        "type": "Account",
+        "external_id": "acc_cashmere_cc"
+      },
+      "type": "REGARDING"
+    },
+    {
+      "source": {
+        "type": "Ticket",
+        "external_id": "ticket_002"
+      },
+      "target": {
+        "type": "Account",
+        "external_id": "acc_cookie_cc"
+      },
+      "type": "REGARDING"
+    },
+    {
+      "source": {
+        "type": "Ticket",
+        "external_id": "ticket_001"
+      },
+      "target": {
+        "type": "Decision",
+        "external_id": "decision_001"
+      },
+      "type": "CLOSED_BY"
+    },
+    {
+      "source": {
+        "type": "Decision",
+        "external_id": "decision_001"
+      },
+      "target": {
+        "type": "Document",
+        "external_id": "refund_policy"
+      },
+      "type": "EXCEPTION_TO"
+    }
+  ]
+}

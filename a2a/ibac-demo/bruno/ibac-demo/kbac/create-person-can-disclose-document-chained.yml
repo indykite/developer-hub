@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Person Can Disclose Document Chained
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "person-can-disclose-document-chained",
+        "display_name": "Person can disclose document (chain-guarded)",
+        "description": "Allow a person to DISCLOSE a document they can reach through their department only when the full console->orchestrator->retriever->mcp Token Service delegation chain is presented.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"CAN_DISCLOSE\"],\"resource\":{\"type\":\"Document\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(resource:Document)\",\"filter\":{\"attribute\":\"$ik_token.act.act.act.sub\",\"operator\":\"=\",\"value\":\"{{auth0_sub_orchestrator}}\"}}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_person_can_disclose_document_chained", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

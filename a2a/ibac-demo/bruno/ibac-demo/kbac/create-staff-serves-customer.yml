@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Staff Serves Customer
+  type: http
+  seq: 18
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "staff-serves-customer",
+        "display_name": "Serves customer",
+        "description": "Customers served by the person's department.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"SERVES\"],\"resource\":{\"type\":\"Customer\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WORKS_IN]->(:Department)-[:SERVES]->(resource:Customer)\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_staff_serves_customer", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

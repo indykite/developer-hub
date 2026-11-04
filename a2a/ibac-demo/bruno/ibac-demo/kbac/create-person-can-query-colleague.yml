@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Person Can Query Colleague
+  type: http
+  seq: 12
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "person-can-query-colleague",
+        "display_name": "Can query colleague",
+        "description": "Gate for questions about another person: staff may ask about colleagues of their own department.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"CAN_QUERY_PERSON\"],\"resource\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WORKS_IN]->(:Department)<-[:WORKS_IN]-(resource:Person)\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_person_can_query_colleague", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
