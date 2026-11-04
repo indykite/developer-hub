@@ -8,8 +8,8 @@
 #                                                      └ audit record ──▶ console (webhook)
 #   console ──AuthZEN evaluations/search──▶ IndyKite platform (the decision step)
 #
-# Build the local images with `make images`; the Intent Agent image comes from
-# the public repo (`make intent-agent-image INTENT_AGENT_SRC=...`).
+# Build the console image with `make images`; the Intent Agent is the published
+# indykite/intent-agent image (override INTENT_AGENT_IMAGE to test a local build).
 
 services:
   # Showcase web console: demo issuer (persona/actor JWTs + JWKS), ITS client,
@@ -72,11 +72,11 @@ services:
       start_period: 10s
       retries: 5
 
-  # The product under demonstration. Image built from the public intent-agent
-  # repo (see INTENT_AGENT_IMAGE in .example.env). Distroless, non-root,
-  # nothing writable but /tmp - audit goes to the console webhook.
+  # The product under demonstration: the published image (see INTENT_AGENT_IMAGE
+  # in .example.env). Distroless, non-root, nothing writable but /tmp - audit
+  # goes to the console webhook.
   intent-agent:
-    image: ${INTENT_AGENT_IMAGE:-intent-agent:local}
+    image: ${INTENT_AGENT_IMAGE:-docker.io/indykite/intent-agent:1.0.0@sha256:0b857bc6edcf5ab5f206b7111471c11f9e5d9854a09e818e0081172179b4fe3c}
     expose:
       - "6003"
       - "8001"
@@ -116,7 +116,7 @@ services:
   # Second instance + balancer (profile "cluster"): both instances share one
   # schema/policy cache entry in Redis; the console then talks to the balancer.
   intent-agent-2:
-    image: ${INTENT_AGENT_IMAGE:-intent-agent:local}
+    image: ${INTENT_AGENT_IMAGE:-docker.io/indykite/intent-agent:1.0.0@sha256:0b857bc6edcf5ab5f206b7111471c11f9e5d9854a09e818e0081172179b4fe3c}
     profiles: ["cluster"]
     expose:
       - "6003"

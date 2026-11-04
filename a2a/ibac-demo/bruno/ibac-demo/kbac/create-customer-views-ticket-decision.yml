@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Customer Views Ticket Decision
+  type: http
+  seq: 29
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "customer-views-ticket-decision",
+        "display_name": "Views ticket decision",
+        "description": "Decisions that closed a ticket the person opened.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"VIEW_TICKET_DECISION\"],\"resource\":{\"type\":\"Decision\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:IS_CUSTOMER]->(:Customer)<-[:CREATED_BY]-(:Ticket)-[:CLOSED_BY]->(resource:Decision)\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_customer_views_ticket_decision", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

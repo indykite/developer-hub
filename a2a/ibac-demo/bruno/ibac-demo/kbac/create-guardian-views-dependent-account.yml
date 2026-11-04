@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Guardian Views Dependent Account
+  type: http
+  seq: 32
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "guardian-views-dependent-account",
+        "display_name": "Guardian views a minor child's account",
+        "description": "Accounts of a child who is a minor (IS_AGE_GROUP minor); adult children's accounts are their own business.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"VIEW_DEPENDENT_ACCOUNT\"],\"resource\":{\"type\":\"Account\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:PARENT_OF]->(child:Person)-[:IS_AGE_GROUP]->(:AgeGroup {external_id: 'minor'}) MATCH (child)-[:IS_CUSTOMER]->(:Customer)-[:OWNS]->(resource:Account)\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_guardian_views_dependent_account", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

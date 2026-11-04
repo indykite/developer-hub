@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Person Works Under Department
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "person-works-under-department",
+        "display_name": "Works under department ($department)",
+        "description": "Whether the person works under the department named by $department (required input param).",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"WORKS_UNDER_DEPARTMENT\"],\"resource\":{\"type\":\"Department\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WORKS_IN]->(:Department)<-[:CONTAINS*1..]-(resource:Department) WHERE resource.external_id = $department\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_person_works_under_department", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

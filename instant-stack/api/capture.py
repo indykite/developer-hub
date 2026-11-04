@@ -36,9 +36,10 @@ NODES_FILE = _dataset.NODES_PATH
 
 
 def _load_default_nodes():
+    """Nodes of the active dataset, ${ENV_VAR} placeholders resolved from .env."""
     try:
         with NODES_FILE.open() as f:
-            return json.load(f)
+            return _dataset.resolve_env_placeholders(json.load(f))
     except (FileNotFoundError, json.JSONDecodeError) as e:
         logger.warning("Could not load %s: %s", NODES_FILE, e)
         return {"nodes": []}

@@ -1,0 +1,31 @@
+---
+info:
+  name: Update Get Internal Documents Query
+  type: http
+  seq: 5
+
+http:
+  method: PUT
+  url: "{{ik_api_url_prefix}}/configs/v1/knowledge-queries/{{get_internal_documents_query}}"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "get-internal-documents",
+        "display_name": "Get Internal Documents",
+        "description": "Retrieve internal documents visible to the caller filtered by taxonomy. Example: { \"id\": \"get-internal-documents\", \"input_params\": { \"taxonomy_external_id\": \"policy\" } }.",
+        "project_id": "{{project_id}}",
+        "policy_id": "{{get_internal_documents_policy}}",
+        "query": "{\"nodes\":[\"subject.external_id\",\"subject.property.name\",\"subject.property.title\",\"document.external_id\",\"document.property.name\",\"document.property.description\",\"document.property.url\",\"taxonomy.property.name\"],\"relationships\":[],\"aggregate_values\":[]}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

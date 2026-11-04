@@ -1,0 +1,8 @@
+---
+info:
+  name: get-my-family
+  type: folder
+  seq: 13
+
+request:
+  auth: inherit

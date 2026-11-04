@@ -111,7 +111,7 @@ def _default_for_slot(slot: str) -> dict:
         name=spec["name"],
         display_name=spec["display_name"],
         description=spec["description"],
-        policy=spec["policy"],
+        policy=_dataset.resolve_env_placeholders(spec["policy"]),
         tags=spec["tags"],
     )
 

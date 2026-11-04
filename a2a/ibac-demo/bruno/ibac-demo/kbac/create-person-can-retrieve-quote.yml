@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Person Can Retrieve Quote
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "person-can-retrieve-quote",
+        "display_name": "Person can retrieve stock quote",
+        "description": "Staff in a department allowed to retrieve a quote. Evaluations carrying a user bearer token are bound to the token's subject.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"CAN_RETRIEVE\",\"GET_PRICE\"],\"resource\":{\"type\":\"Quote\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WORKS_IN]->(:Department)-[:CAN_RETRIEVE]->(resource:Quote)\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_person_can_retrieve_quote", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

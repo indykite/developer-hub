@@ -1,0 +1,31 @@
+---
+info:
+  name: Update Get Self Query
+  type: http
+  seq: 5
+
+http:
+  method: PUT
+  url: "{{ik_api_url_prefix}}/configs/v1/knowledge-queries/{{get_self_query}}"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "get-self",
+        "display_name": "Get Self",
+        "description": "Retrieve the authenticated person's profile: department and manager for staff, customer record for customers. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-self\", \"input_params\": { } }.",
+        "project_id": "{{project_id}}",
+        "policy_id": "{{get_self_policy}}",
+        "query": "{\"nodes\":[\"subject.external_id\",\"subject.property.name\",\"subject.property.email\",\"subject.property.title\",\"subject.property.profession\",\"department.property.name\",\"manager.property.name\",\"customer.external_id\",\"customer.property.name\"],\"relationships\":[],\"aggregate_values\":[\"agent\"]}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

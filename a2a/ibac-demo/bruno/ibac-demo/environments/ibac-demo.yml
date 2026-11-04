@@ -1,0 +1,217 @@
+---
+name: ibac-demo
+variables:
+  # IndyKite platform REST base (https://eu.api.indykite.com or https://us.api.indykite.com).
+  - name: ik_api_url_prefix
+    value: "https://eu.api.indykite.com"
+  # Service account bearer for the Config API (configs/v1).
+  - secret: true
+    name: service_token
+  # App agent credentials token (X-IK-ClientKey): capture, CIQ execute, AuthZEN.
+  # Same value as APP_AGENT_CREDENTIALS_TOKEN in the stack's .env.
+  - secret: true
+    name: agent_token
+  # Project gid (set after creating the project).
+  - name: project_id
+    value: ""
+  # Auth0 tenant: domain, issuer (trailing slash, as in the token's iss), the three
+  # API identifiers and the client ids/secrets of the M2M applications used here.
+  - name: auth0_domain
+    value: "1st.eu.auth0.com"
+  - name: auth0_issuer
+    value: "https://1st.eu.auth0.com/"
+  - name: console_audience
+    value: "ibac-console"
+  - name: agents_audience
+    value: "ibac-agents"
+  - name: orchestrator_client_id
+    value: ""
+  - secret: true
+    name: orchestrator_client_secret
+  - name: retriever_client_id
+    value: ""
+  - secret: true
+    name: retriever_client_secret
+  - name: mcp_client_id
+    value: ""
+  - secret: true
+    name: mcp_client_secret
+  # Agent subjects (<client_id>@clients): the Agent nodes' external_ids, the chain
+  # guard values and the delegation chain. Same values as AUTH0_SUB_<AGENT> in
+  # instant-stack's .env.
+  - name: auth0_sub_orchestrator
+    value: ""
+  - name: auth0_sub_retriever
+    value: ""
+  - name: auth0_sub_weather
+    value: ""
+  - name: auth0_sub_analyst
+    value: ""
+  - name: auth0_sub_mcp
+    value: ""
+  - name: auth0_sub_drive
+    value: ""
+  - name: auth0_sub_crm
+    value: ""
+  - name: auth0_sub_erp
+    value: ""
+  # People (Auth0 users of the tenant) used as subjects in the probes.
+  - name: auth0_sub_millicent
+    value: "auth0|69c410bfb501d3a02bd01ea2"
+  - name: auth0_sub_marmaduke
+    value: "auth0|69c4129b0ba356c7db9f91ab"
+  # Defaults of the AuthZEN probes.
+  - name: subject_external_id
+    value: "auth0|69c410bfb501d3a02bd01ea2"
+  - name: resource_external_id
+    value: "wf1"
+  # Auth0 access tokens (audience ibac-console) of logged-in people: copy them from the
+  # console session after logging in as each person (user_token = any person).
+  - secret: true
+    name: user_token
+  - secret: true
+    name: user_token_millicent
+  - secret: true
+    name: user_token_marmaduke
+  # Token Service: public signing JWK (kty/n/e/alg/kid/use as one JSON string) for
+  # the token-service Token Introspect; host URL and client secret for the chain guard.
+  - name: token_service_public_jwk
+    value: ""
+  - name: token_service_url
+    value: "http://localhost:9102"
+  - secret: true
+    name: token_service_client_secret
+  # Local compose stack endpoints (host ports of ibac-demo).
+  - name: iag_retriever_url
+    value: "http://localhost:9882"
+  - name: iag_analyst_url
+    value: "http://localhost:9885"
+  - name: iag_mcp_url
+    value: "http://localhost:9886/mcp/v1/<PROJECT_GID_URL_ENCODED>"
+  - name: iag_drive_mcp_url
+    value: "http://localhost:9887/mcp"
+  # gids recorded after each Create request (consumed by the matching Create Query / Update requests)
+  - name: auth0_person_introspect_introspect
+    value: ""
+  - name: token_service_https_ibac_console_introspect
+    value: ""
+  - name: kbac_person_can_trigger_workflow
+    value: ""
+  - name: kbac_person_can_retrieve_quote
+    value: ""
+  - name: kbac_staff_can_view_invoice
+    value: ""
+  - name: kbac_customer_own_invoice
+    value: ""
+  - name: kbac_guardian_can_view_dependent_invoice
+    value: ""
+  - name: kbac_person_can_disclose_document_chained
+    value: ""
+  - name: kbac_person_works_in_department
+    value: ""
+  - name: kbac_person_works_under_department
+    value: ""
+  - name: kbac_person_works_under_departments
+    value: ""
+  - name: kbac_person_reports_to
+    value: ""
+  - name: kbac_person_reports_to_indirectly
+    value: ""
+  - name: kbac_person_can_query_colleague
+    value: ""
+  - name: kbac_person_can_access_folder
+    value: ""
+  - name: kbac_person_can_access_folder_document
+    value: ""
+  - name: kbac_person_can_disclose_document
+    value: ""
+  - name: kbac_staff_can_access_customer
+    value: ""
+  - name: kbac_staff_can_list_customers
+    value: ""
+  - name: kbac_staff_serves_customer
+    value: ""
+  - name: kbac_staff_affected_account
+    value: ""
+  - name: kbac_customer_record
+    value: ""
+  - name: kbac_customer_can_query_fellow_customer
+    value: ""
+  - name: kbac_customer_owns_account
+    value: ""
+  - name: kbac_customer_has_account_tier
+    value: ""
+  - name: kbac_customer_has_account_tiers
+    value: ""
+  - name: kbac_customer_views_invoice
+    value: ""
+  - name: kbac_customer_views_unpaid_invoice
+    value: ""
+  - name: kbac_customer_views_account_category
+    value: ""
+  - name: kbac_customer_views_product_document
+    value: ""
+  - name: kbac_customer_views_ticket_decision
+    value: ""
+  - name: kbac_person_parent_of
+    value: ""
+  - name: kbac_person_household_member
+    value: ""
+  - name: kbac_guardian_views_dependent_account
+    value: ""
+  - name: kbac_guardian_of_minor
+    value: ""
+  - name: kbac_person_can_reach_agent
+    value: ""
+  - name: get_self_policy
+    value: ""
+  - name: get_self_query
+    value: ""
+  - name: get_stock_quote_policy
+    value: ""
+  - name: get_stock_quote_query
+    value: ""
+  - name: get_stock_trade_threshold_policy
+    value: ""
+  - name: get_stock_trade_threshold_query
+    value: ""
+  - name: get_internal_documents_policy
+    value: ""
+  - name: get_internal_documents_query
+    value: ""
+  - name: get_customer_facing_documents_policy
+    value: ""
+  - name: get_customer_facing_documents_query
+    value: ""
+  - name: get_regulatory_agreements_policy
+    value: ""
+  - name: get_regulatory_agreements_query
+    value: ""
+  - name: get_decisions_policy
+    value: ""
+  - name: get_decisions_query
+    value: ""
+  - name: get_hq_weather_policy
+    value: ""
+  - name: get_hq_weather_query
+    value: ""
+  - name: store_decision_policy
+    value: ""
+  - name: store_decision_query
+    value: ""
+  - name: explain_staff_workflow_access_policy
+    value: ""
+  - name: explain_staff_workflow_access_query
+    value: ""
+  - name: explain_direct_workflow_access_policy
+    value: ""
+  - name: explain_direct_workflow_access_query
+    value: ""
+  - name: get_internal_documents_chained_policy
+    value: ""
+  - name: get_internal_documents_chained_query
+    value: ""
+  - name: get_my_family_policy
+    value: ""
+  - name: get_my_family_query
+    value: ""

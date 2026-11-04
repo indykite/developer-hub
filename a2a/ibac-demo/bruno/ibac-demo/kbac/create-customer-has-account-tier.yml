@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Customer Has Account Tier
+  type: http
+  seq: 23
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "customer-has-account-tier",
+        "display_name": "Has account tier ($tier)",
+        "description": "Whether the person owns an account of the tier named by $tier (required input param).",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"HAS\"],\"resource\":{\"type\":\"AccountTier\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:IS_CUSTOMER]->(:Customer)-[:OWNS]->(:Account)-[:IS_TIER]->(resource:AccountTier) WHERE resource.external_id = $tier\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_customer_has_account_tier", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,31 @@
+---
+info:
+  name: Update Get Internal Documents Chained Query
+  type: http
+  seq: 5
+
+http:
+  method: PUT
+  url: "{{ik_api_url_prefix}}/configs/v1/knowledge-queries/{{get_internal_documents_chained_query}}"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "get-internal-documents-chained",
+        "display_name": "Get Internal Documents (chain-guarded)",
+        "description": "Retrieve internal documents by taxonomy over the fully delegated agent chain. Call tool 'ciq_execute' with input_params. Example: { \"id\": \"get-internal-documents-chained\", \"input_params\": { \"taxonomy_external_id\": \"policy\" } }. Refused unless the request traveled console->orchestrator->retriever->mcp with the ITS delegation intact.",
+        "project_id": "{{project_id}}",
+        "policy_id": "{{get_internal_documents_chained_policy}}",
+        "query": "{\"nodes\":[\"subject.external_id\",\"subject.property.name\",\"subject.property.title\",\"document.external_id\",\"document.property.name\",\"document.property.description\",\"document.property.url\",\"taxonomy.property.name\"],\"relationships\":[],\"aggregate_values\":[]}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

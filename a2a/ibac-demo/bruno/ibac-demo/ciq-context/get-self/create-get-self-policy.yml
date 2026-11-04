@@ -1,0 +1,42 @@
+---
+info:
+  name: Create Get Self Policy
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "get-self",
+        "display_name": "Get Self",
+        "description": "Return the authenticated person, their department and manager (staff) and their customer record (customers).",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person {external_id: $token.sub}) WITH subject OPTIONAL MATCH (subject)-[:WORKS_IN]->(department:Department) WITH subject, department OPTIONAL MATCH (subject)-[:REPORTS_TO]->(manager:Person) WITH subject, department, manager OPTIONAL MATCH (subject)-[:IS_CUSTOMER]->(customer:Customer) WITH subject, department, manager, customer, $token.act.sub AS agent\",\"filter\":[]},\"allowed_reads\":{\"nodes\":[\"subject.*\",\"department.*\",\"manager.*\",\"customer.*\"],\"relationships\":[],\"aggregate_values\":[\"agent\"]}}",
+        "status": "ACTIVE",
+        "tags": [
+          "ibac",
+          "self",
+          "profile"
+        ]
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("get_self_policy", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

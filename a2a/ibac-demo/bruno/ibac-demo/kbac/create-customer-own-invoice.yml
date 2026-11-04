@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Customer Own Invoice
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "customer-own-invoice",
+        "display_name": "Customer sees own invoice",
+        "description": "A logged-in person may view the invoices of the customer record they own (ERP search/resource).",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"CAN_VIEW\"],\"resource\":{\"type\":\"Invoice\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:IS_CUSTOMER]->(:Customer)-[:HAS_INVOICE]->(resource:Invoice)\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_customer_own_invoice", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

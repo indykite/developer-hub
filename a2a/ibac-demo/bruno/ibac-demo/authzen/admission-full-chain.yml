@@ -1,0 +1,53 @@
+---
+info:
+  name: "Gateway admission: Millicent reaches the mcp gateway over wf1"
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/access/v1/evaluation"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json
+    - name: X-IK-ClientKey
+      value: "{{agent_token}}"
+    - name: X-IK-Token
+      value: "{{delegated_depth3}}"
+  body:
+    type: json
+    data: |-
+      {
+        "subject": {
+          "type": "Person",
+          "id": "{{auth0_sub_millicent}}"
+        },
+        "action": {
+          "name": "CAN_TRIGGER"
+        },
+        "resource": {
+          "type": "Agent",
+          "id": "{{auth0_sub_mcp}}"
+        }
+      }
+  auth:
+    type: bearer
+    token: "{{user_token_millicent}}"
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        // The exact call a 2.93 gateway makes: subject = whoami, resource = the newest hop of the chain, the user token
+        // in Authorization and the delegation in X-IK-Token ($ik_token.act_chain = [orchestrator, retriever, mcp] = wf1).
+        // Needs the chain-guard folder run first (delegated_depth3).
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        test("decision is true", function () { expect(res.body.decision).to.be.true; });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

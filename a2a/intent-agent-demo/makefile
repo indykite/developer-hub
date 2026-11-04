@@ -2,13 +2,15 @@
 #
 #   make keys                 generate the Token Service config + demo issuer key (once)
 #   make intent-agent-image   build intent-agent:local from a checkout of the public repo
+#                             (only to test an unreleased agent; the stack runs the published image)
 #   make images               build the console image
 #   make up / down / logs     run the stack
 #   make test / lint          console unit tests, ruff over the demo
 #   make helm-lint / helm-template   check the chart renders
 
 COMPOSE := docker compose
-# Path to a checkout of https://github.com/indykite/intent-agent
+# Path to a checkout of https://github.com/indykite/intent-agent, and the tag a
+# source build gets (kept distinct from the published indykite/intent-agent).
 INTENT_AGENT_SRC ?= ../../../intent-agent
 INTENT_AGENT_IMAGE ?= intent-agent:local
 

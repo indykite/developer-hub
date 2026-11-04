@@ -1,0 +1,585 @@
+{
+  "_comment": "Coarse-authorization mappings (x-coaz-mappings) published on this agent's public card, one list per skill id. The Agent Gateway's IBAC engine matches the intent of a prompt (subject type, action, resource type) against them: discovery accepts a skill when any mapping matches any evaluation. Subjects are always Person (every login of the ibac dataset); actions are the KBAC actions of the dataset (ibac-authz skill); resource ids are literal where fixed and left empty otherwise, which matches as a search. A skill without an entry is published without mappings.",
+  "authzen": [
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Quote",
+          "id": "stock_quote"
+        }
+      ],
+      "action": [
+        {
+          "name": "CAN_RETRIEVE"
+        },
+        {
+          "name": "GET_PRICE"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Workflow"
+        }
+      ],
+      "action": [
+        {
+          "name": "CAN_TRIGGER"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Document"
+        }
+      ],
+      "action": [
+        {
+          "name": "CAN_DISCLOSE"
+        },
+        {
+          "name": "CAN_DISCLOSE_UNCHAINED"
+        },
+        {
+          "name": "CAN_ACCESS_FOLDER_DOCUMENT"
+        },
+        {
+          "name": "VIEW_PRODUCT_DOCUMENT"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Folder"
+        }
+      ],
+      "action": [
+        {
+          "name": "CAN_ACCESS"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Department"
+        }
+      ],
+      "action": [
+        {
+          "name": "WORKS_IN"
+        },
+        {
+          "name": "WORKS_UNDER"
+        },
+        {
+          "name": "WORKS_UNDER_DEPARTMENT"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Person"
+        }
+      ],
+      "action": [
+        {
+          "name": "REPORTS_TO"
+        },
+        {
+          "name": "REPORTS_TO_INDIRECTLY"
+        },
+        {
+          "name": "CAN_QUERY_PERSON"
+        },
+        {
+          "name": "PARENT_OF"
+        },
+        {
+          "name": "HOUSEHOLD_WITH"
+        },
+        {
+          "name": "GUARDIAN_OF"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Customer"
+        }
+      ],
+      "action": [
+        {
+          "name": "IS_CUSTOMER"
+        },
+        {
+          "name": "CAN_QUERY_CUSTOMER"
+        },
+        {
+          "name": "CAN_LIST_CUSTOMER"
+        },
+        {
+          "name": "CAN_ACCESS_CUSTOMER"
+        },
+        {
+          "name": "SERVES"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Account"
+        }
+      ],
+      "action": [
+        {
+          "name": "OWNS"
+        },
+        {
+          "name": "VIEW_BALANCE"
+        },
+        {
+          "name": "VIEW_DEPENDENT_ACCOUNT"
+        },
+        {
+          "name": "AFFECTED"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "AccountTier"
+        }
+      ],
+      "action": [
+        {
+          "name": "HAS"
+        },
+        {
+          "name": "HAS_TIER"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "InvestmentCategory"
+        }
+      ],
+      "action": [
+        {
+          "name": "VIEW_ACCOUNT_CATEGORY"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Decision"
+        }
+      ],
+      "action": [
+        {
+          "name": "VIEW_TICKET_DECISION"
+        }
+      ]
+    }
+  ],
+  "ciq-execute": [
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Quote",
+          "id": "stock_quote"
+        }
+      ],
+      "action": [
+        {
+          "name": "CAN_RETRIEVE"
+        },
+        {
+          "name": "GET_PRICE"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Workflow"
+        }
+      ],
+      "action": [
+        {
+          "name": "CAN_TRIGGER"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Document"
+        }
+      ],
+      "action": [
+        {
+          "name": "CAN_DISCLOSE"
+        },
+        {
+          "name": "CAN_DISCLOSE_UNCHAINED"
+        },
+        {
+          "name": "CAN_ACCESS_FOLDER_DOCUMENT"
+        },
+        {
+          "name": "VIEW_PRODUCT_DOCUMENT"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Folder"
+        }
+      ],
+      "action": [
+        {
+          "name": "CAN_ACCESS"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Department"
+        }
+      ],
+      "action": [
+        {
+          "name": "WORKS_IN"
+        },
+        {
+          "name": "WORKS_UNDER"
+        },
+        {
+          "name": "WORKS_UNDER_DEPARTMENT"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Person"
+        }
+      ],
+      "action": [
+        {
+          "name": "REPORTS_TO"
+        },
+        {
+          "name": "REPORTS_TO_INDIRECTLY"
+        },
+        {
+          "name": "CAN_QUERY_PERSON"
+        },
+        {
+          "name": "PARENT_OF"
+        },
+        {
+          "name": "HOUSEHOLD_WITH"
+        },
+        {
+          "name": "GUARDIAN_OF"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Customer"
+        }
+      ],
+      "action": [
+        {
+          "name": "IS_CUSTOMER"
+        },
+        {
+          "name": "CAN_QUERY_CUSTOMER"
+        },
+        {
+          "name": "CAN_LIST_CUSTOMER"
+        },
+        {
+          "name": "CAN_ACCESS_CUSTOMER"
+        },
+        {
+          "name": "SERVES"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Account"
+        }
+      ],
+      "action": [
+        {
+          "name": "OWNS"
+        },
+        {
+          "name": "VIEW_BALANCE"
+        },
+        {
+          "name": "VIEW_DEPENDENT_ACCOUNT"
+        },
+        {
+          "name": "AFFECTED"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "AccountTier"
+        }
+      ],
+      "action": [
+        {
+          "name": "HAS"
+        },
+        {
+          "name": "HAS_TIER"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "InvestmentCategory"
+        }
+      ],
+      "action": [
+        {
+          "name": "VIEW_ACCOUNT_CATEGORY"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Decision"
+        }
+      ],
+      "action": [
+        {
+          "name": "VIEW_TICKET_DECISION"
+        }
+      ]
+    }
+  ],
+  "max-purchase-amount": [
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Quote",
+          "id": "stock_quote"
+        }
+      ],
+      "action": [
+        {
+          "name": "CAN_RETRIEVE"
+        },
+        {
+          "name": "GET_PRICE"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "AccountTier"
+        }
+      ],
+      "action": [
+        {
+          "name": "HAS"
+        },
+        {
+          "name": "HAS_TIER"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Customer"
+        }
+      ],
+      "action": [
+        {
+          "name": "CAN_ACCESS_CUSTOMER"
+        },
+        {
+          "name": "CAN_LIST_CUSTOMER"
+        }
+      ]
+    }
+  ]
+}

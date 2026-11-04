@@ -1,0 +1,48 @@
+---
+info:
+  name: Search accounts Marmaduke may view as a guardian
+  type: http
+  seq: 4
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/access/v1/search/resource"
+  headers:
+    - name: Content-Type
+      value: application/json
+    - name: Accept
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "subject": {
+          "type": "Person",
+          "id": "{{auth0_sub_marmaduke}}"
+        },
+        "action": {
+          "name": "VIEW_DEPENDENT_ACCOUNT"
+        },
+        "resource": {
+          "type": "Account"
+        }
+      }
+  auth:
+    type: apikey
+    key: X-IK-ClientKey
+    value: "{{agent_token}}"
+    placement: header
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        // Berengar (14) and Humperdinck (15) are minors: their youth accounts. Cookie asking the same about
+        // Cashmere (20) gets nothing - the age band is the IS_AGE_GROUP relationship.
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

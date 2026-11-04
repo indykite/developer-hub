@@ -2,7 +2,7 @@
 
 This repository serves as a collection of independent code examples and small applications. It is designed to be a place where different projects can be hosted without being part of a single, unified codebase.
 
-Generated at: 2026-10-26T16:52:18Z
+Generated at: 2026-11-04T17:16:45Z
 
 DO NOT EDIT!!
 
@@ -14,8 +14,8 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 
 | License | Classification | Severity | Count |
 | --- | --- | --- | ---: |
-| MIT | notice | LOW | 40 |
-| Apache-2.0 | notice | LOW | 15 |
+| MIT | notice | LOW | 34 |
+| Apache-2.0 | notice | LOW | 16 |
 | BSD-3-Clause | notice | LOW | 12 |
 | BSD-2-Clause | notice | LOW | 2 |
 | BeOpen | unknown | UNKNOWN | 2 |
@@ -25,25 +25,25 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 | Python-2.0 | notice | LOW | 2 |
 | BSD-0-Clause | unknown | UNKNOWN | 1 |
 
-**Total packages scanned:** 80
+**Total packages scanned:** 75
 
 ## Report Summary (by target)
 
 | Target | Type | Licenses |
 | --- | --- | ---: |
-| Loose File License(s) | - | 72 |
-| instant-stack/package-lock.json | npm | 4 |
-| music/package-lock.json | npm | 4 |
+| Loose File License(s) | - | 74 |
+| a2a/intent-agent-demo/console/requirements.txt | pip | 1 |
 
 ## Details
 
-### `Loose File License(s)` (-) -- 72 licenses
+### `Loose File License(s)` (-) -- 74 licenses
 
 | Package | License | Classification | Severity |
 | --- | --- | --- | --- |
 | LICENSE | Apache-2.0 | notice | LOW |
 | a2a/iag-mcp-demo/LICENSE | Apache-2.0 | notice | LOW |
 | a2a/iag-token-exchange/LICENSE | Apache-2.0 | notice | LOW |
+| a2a/ibac-demo/LICENSE | Apache-2.0 | notice | LOW |
 | banking/LICENSE | Apache-2.0 | notice | LOW |
 | canbank/LICENSE | Apache-2.0 | notice | LOW |
 | capture/LICENSE | Apache-2.0 | notice | LOW |
@@ -80,6 +80,7 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 | Flask\_Migrate | MIT | notice | LOW |
 | a2a/iag-mcp-demo/chatbot/static/assets/js/cytoscape.min.js | MIT | notice | LOW |
 | a2a/iag-token-exchange/chatbot/static/assets/js/cytoscape.min.js | MIT | notice | LOW |
+| a2a/ibac-demo/chatbot/static/assets/js/cytoscape.min.js | MIT | notice | LOW |
 | alembic | MIT | notice | LOW |
 | annotated\_types | MIT | notice | LOW |
 | blinker | MIT | notice | LOW |
@@ -114,20 +115,8 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 | pip | Python-2.0 | notice | LOW |
 | typing\_extensions | Python-2.0 | notice | LOW |
 
-### `instant-stack/package-lock.json` (npm) -- 4 licenses
+### `a2a/intent-agent-demo/console/requirements.txt` (pip) -- 1 license
 
 | Package | License | Classification | Severity |
 | --- | --- | --- | --- |
-| cose-base | MIT | notice | LOW |
-| cytoscape | MIT | notice | LOW |
-| cytoscape-fcose | MIT | notice | LOW |
-| layout-base | MIT | notice | LOW |
-
-### `music/package-lock.json` (npm) -- 4 licenses
-
-| Package | License | Classification | Severity |
-| --- | --- | --- | --- |
-| cose-base | MIT | notice | LOW |
-| cytoscape | MIT | notice | LOW |
-| cytoscape-fcose | MIT | notice | LOW |
-| layout-base | MIT | notice | LOW |
+| PyJWT | MIT | notice | LOW |

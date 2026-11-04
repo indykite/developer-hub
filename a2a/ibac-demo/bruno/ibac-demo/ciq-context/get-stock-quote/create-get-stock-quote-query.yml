@@ -1,0 +1,38 @@
+---
+info:
+  name: Create Get Stock Quote Query
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/knowledge-queries"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "get-stock-quote",
+        "display_name": "Get Stock Quote",
+        "description": "Get Stock Quote retrieves the person, their department and a stock quote for the requested ticker symbol.The only information required is the currently authenticated person's bearer token and a ticker symbol for the stock. Use this function when the person asks questions about stock quotes, such as: 'What is the current price of <ticker>?' Returns: An object containing the person's details, including full_name, department, and the stock price. Call tool 'ciq_execute' with the person's bearer token as the authorization header. Use the following arguments: \"id\": \"get-stock-quote\" and \"ticker\". Example: { \"id\": \"get-stock-quote\", \"input_params\": { \"ticker\": \"NVDA\"} }.\"",
+        "project_id": "{{project_id}}",
+        "policy_id": "{{get_stock_quote_policy}}",
+        "query": "{\"nodes\":[\"subject.external_id\",\"subject.property.name\",\"subject.property.title\",\"department.property.name\",\"quote.property.price\"],\"relationships\":[],\"aggregate_values\":[]}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("get_stock_quote_query", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,38 @@
+---
+info:
+  name: Create Get Regulatory Agreements Query
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/knowledge-queries"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "get-regulatory-agreements",
+        "display_name": "Get Regulatory Agreements",
+        "description": "Retrieve the full list of regulatory agreements. Example: { \"id\": \"get-regulatory-agreements\", \"input_params\": { } }.",
+        "project_id": "{{project_id}}",
+        "policy_id": "{{get_regulatory_agreements_policy}}",
+        "query": "{\"nodes\":[\"ra.external_id\",\"ra.property.name\",\"ra.property.description\"],\"relationships\":[],\"aggregate_values\":[]}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("get_regulatory_agreements_query", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

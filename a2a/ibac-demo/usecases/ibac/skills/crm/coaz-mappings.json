@@ -1,0 +1,26 @@
+{
+  "_comment": "Coarse-authorization mappings (x-coaz-mappings) published on this agent's public card, one list per skill id. The Agent Gateway's IBAC engine matches the intent of a prompt (subject type, action, resource type) against them: discovery accepts a skill when any mapping matches any evaluation. Subjects are always Person (every login of the ibac dataset); actions are the KBAC actions of the dataset (ibac-authz skill); resource ids are literal where fixed and left empty otherwise, which matches as a search. A skill without an entry is published without mappings.",
+  "create-crm-case": [
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Customer"
+        }
+      ],
+      "action": [
+        {
+          "name": "SERVES"
+        },
+        {
+          "name": "CAN_QUERY_CUSTOMER"
+        }
+      ]
+    }
+  ]
+}

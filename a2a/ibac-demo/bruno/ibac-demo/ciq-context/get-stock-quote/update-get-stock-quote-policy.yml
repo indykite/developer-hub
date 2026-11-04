@@ -1,0 +1,35 @@
+---
+info:
+  name: Update Get Stock Quote Policy
+  type: http
+  seq: 4
+
+http:
+  method: PUT
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies/{{get_stock_quote_policy}}"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "get-stock-quote",
+        "display_name": "Get Stock Quote",
+        "description": "Return a stock quote when the caller's department is allowed to retrieve it.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person {external_id: $token.sub})-[:WORKS_IN]->(department:Department)-[:CAN_RETRIEVE]->(quote:Quote)\",\"filter\":[]},\"allowed_reads\":{\"nodes\":[\"subject.*\",\"department.*\",\"quote.*\"],\"relationships\":[],\"aggregate_values\":[]}}",
+        "status": "ACTIVE",
+        "tags": [
+          "ibac",
+          "trading",
+          "quote"
+        ]
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Customer Owns Account
+  type: http
+  seq: 22
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "customer-owns-account",
+        "display_name": "Owns account",
+        "description": "The person's own accounts.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"OWNS\",\"VIEW_BALANCE\"],\"resource\":{\"type\":\"Account\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:IS_CUSTOMER]->(:Customer)-[:OWNS]->(resource:Account)\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_customer_owns_account", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

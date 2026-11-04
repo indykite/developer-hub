@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Guardian Of Minor
+  type: http
+  seq: 33
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "guardian-of-minor",
+        "display_name": "Guardian of minor",
+        "description": "Children of the person who are minors.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"GUARDIAN_OF\"],\"resource\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:PARENT_OF]->(resource:Person)-[:IS_AGE_GROUP]->(:AgeGroup {external_id: 'minor'})\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_guardian_of_minor", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

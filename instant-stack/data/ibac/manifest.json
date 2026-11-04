@@ -1,0 +1,1684 @@
+{
+  "dataset": "ibac",
+  "display_name": "CanBank IBAC demo (Auth0 people, Token Service)",
+  "description": "Config-as-data for a2a/ibac-demo: the CanBank graph (departments, documents, accounts, invoices, agent workflows) with the music demo's people as the only identities. Every Person external_id is an Auth0 subject (auth0|<id>): the twelve real users of the music tenant plus their relatives with synthetic subs of the same shape. Logins are Persons; staff WORKS_IN a Department, customers IS_CUSTOMER a Customer record of the core banking system, parents are PARENT_OF their children and minors are IS_AGE_GROUP minor. Agents are Auth0 machine-to-machine subjects supplied by instant-stack .env as AUTH0_SUB_<AGENT>; the Auth0 issuer comes from AUTH0_ISSUER and the Token Service public key from TOKEN_SERVICE_PUBLIC_JWK. KBAC policies cover the Agent Gateway admission (CAN_TRIGGER on the Agent the delegation chain ends at, compared with $ik_token.act_chain), the console's workflow grants (CAN_TRIGGER on Workflow), the ERP (CAN_VIEW Invoice), the chain guard, and the Intent Agent vocabulary for staff, customers and guardians.",
+  "ciq_queries": [
+    {
+      "slot": "1",
+      "name": "get-self",
+      "display_name": "Get Self",
+      "description": "Retrieve the authenticated person's profile: department and manager for staff, customer record for customers. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-self\", \"input_params\": { } }.",
+      "query": {
+        "nodes": [
+          "subject.external_id",
+          "subject.property.name",
+          "subject.property.email",
+          "subject.property.title",
+          "subject.property.profession",
+          "department.property.name",
+          "manager.property.name",
+          "customer.external_id",
+          "customer.property.name"
+        ],
+        "relationships": [],
+        "aggregate_values": [
+          "agent"
+        ]
+      }
+    },
+    {
+      "slot": "2",
+      "name": "get-stock-quote",
+      "display_name": "Get Stock Quote",
+      "description": "Get Stock Quote retrieves the person, their department and a stock quote for the requested ticker symbol.The only information required is the currently authenticated person's bearer token and a ticker symbol for the stock. Use this function when the person asks questions about stock quotes, such as: 'What is the current price of <ticker>?' Returns: An object containing the person's details, including full_name, department, and the stock price. Call tool 'ciq_execute' with the person's bearer token as the authorization header. Use the following arguments: \"id\": \"get-stock-quote\" and \"ticker\". Example: { \"id\": \"get-stock-quote\", \"input_params\": { \"ticker\": \"NVDA\"} }.\"",
+      "query": {
+        "nodes": [
+          "subject.external_id",
+          "subject.property.name",
+          "subject.property.title",
+          "department.property.name",
+          "quote.property.price"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "3",
+      "name": "get-stock-trade-threshold",
+      "display_name": "Get Stock Trade Threshold",
+      "description": "Retrieve a customer's stock account tier and threshold. Caller must be in the trading department. Example: { \"id\": \"get-stock-trade-threshold\", \"input_params\": { \"customer_external_id\": \"cust-cashmere\" } }.",
+      "query": {
+        "nodes": [
+          "subject.external_id",
+          "subject.property.name",
+          "subject.property.title",
+          "customer.property.name",
+          "tier.property.name",
+          "tier.property.threshold_amount"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "4",
+      "name": "get-internal-documents",
+      "display_name": "Get Internal Documents",
+      "description": "Retrieve internal documents visible to the caller filtered by taxonomy. Example: { \"id\": \"get-internal-documents\", \"input_params\": { \"taxonomy_external_id\": \"policy\" } }.",
+      "query": {
+        "nodes": [
+          "subject.external_id",
+          "subject.property.name",
+          "subject.property.title",
+          "document.external_id",
+          "document.property.name",
+          "document.property.description",
+          "document.property.url",
+          "taxonomy.property.name"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "5",
+      "name": "get-customer-facing-documents",
+      "display_name": "Get Customer Facing Documents",
+      "description": "Retrieve customer facing documents with their regulatory agreements and investment categories. Example: { \"id\": \"get-customer-facing-documents\", \"input_params\": { } }.",
+      "query": {
+        "nodes": [
+          "doc.external_id",
+          "doc.property.name",
+          "ra.property.name",
+          "ic.property.name"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "6",
+      "name": "get-regulatory-agreements",
+      "display_name": "Get Regulatory Agreements",
+      "description": "Retrieve the full list of regulatory agreements. Example: { \"id\": \"get-regulatory-agreements\", \"input_params\": { } }.",
+      "query": {
+        "nodes": [
+          "ra.external_id",
+          "ra.property.name",
+          "ra.property.description"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "7",
+      "name": "get-decisions",
+      "display_name": "Get Decisions",
+      "description": "get-decisions retrieves past decisions that have been made based on a document, probably a policy of some kind. The results include: the actor, the decision, the document applied in the decision, a relationship document_applied.type that describes the relationship between the decision and the document, the support ticket, and account. The only information required is the currently authenticated person's bearer token. Use this function when we need to find past decisions such as: \"What decisions incorporated the refund policy document?\" Returns: An object containing the decision, the document, a relationship that explains how the document was applied, the actor, the support ticket and the affected account. Call tool 'ciq_execute' with the person's bearer token as the authorization header. Use the following arguments: \"id\": \"get-decisions\". Example: { \"id\": \"get-decisions\", \"input_params\": { \"document_external_id\": \"refund_policy\" } }.",
+      "query": {
+        "nodes": [
+          "actor.property.name",
+          "actor.property.title",
+          "document.property.name",
+          "document.property.description",
+          "document.property.url",
+          "decision.external_id",
+          "decision.property.description",
+          "decision.create_time",
+          "account.property.account_type",
+          "ticket.external_id",
+          "ticket.property.description"
+        ],
+        "relationships": [
+          "document_applied.type"
+        ],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "9",
+      "name": "get-hq-weather",
+      "display_name": "Get HQ Weather",
+      "description": "Get HQ Weather returns the current weather reading for CanBank's London headquarters: temperature, apparent temperature, wind speed and weather code, together with the unit labels. The hq_weather Weather node carries `latitude` and `longitude` properties that are substituted into the `weather` external data resolver URL. The `current` and `units` properties are populated live from open-meteo at query time. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-hq-weather\", \"input_params\": { } }.",
+      "query": {
+        "nodes": [
+          "weather.external_id",
+          "weather.property.location",
+          "weather.property.latitude",
+          "weather.property.longitude",
+          "weather.property.current",
+          "weather.property.units"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "10",
+      "name": "store-decision",
+      "display_name": "Store Decision",
+      "description": "Store Decision records a new decision in the knowledge graph: it creates a Decision node and links it to the policy document it applies (APPLIES), the support ticket it closes (CLOSED_BY) and the authenticated user who made it (MADE), all in one atomic operation. Use this function when a decision has been reached and must be persisted, such as: 'Record that I approved this refund as an exception to the refund policy.' Requires the person's bearer token. Call tool 'ciq_execute' with the following arguments: \"id\": \"store-decision\" and input_params decision_external_id, decision_description, document_external_id, ticket_external_id. Example: { \"id\": \"store-decision\", \"input_params\": { \"decision_external_id\": \"decision_002\", \"decision_description\": \"Refund approved as an exception\", \"document_external_id\": \"refund_policy\", \"ticket_external_id\": \"ticket_001\" } }.",
+      "query": {
+        "upsert_nodes": [
+          {
+            "name": "decision",
+            "type": "Decision",
+            "external_id": "$decision_external_id",
+            "properties": [
+              {
+                "type": "description",
+                "value": "$decision_description"
+              }
+            ]
+          }
+        ],
+        "upsert_relationships": [
+          {
+            "name": "r_applies",
+            "source": "decision",
+            "target": "document",
+            "type": "APPLIES"
+          },
+          {
+            "name": "r_made",
+            "source": "subject",
+            "target": "decision",
+            "type": "MADE"
+          },
+          {
+            "name": "r_closed",
+            "source": "ticket",
+            "target": "decision",
+            "type": "CLOSED_BY"
+          }
+        ],
+        "nodes": [
+          "decision.external_id",
+          "decision.property.description"
+        ],
+        "relationships": [
+          "r_applies",
+          "r_made",
+          "r_closed"
+        ]
+      }
+    },
+    {
+      "slot": "11",
+      "name": "explain-staff-workflow-access",
+      "display_name": "Explain Staff Workflow Access",
+      "description": "Authorization-path explainer for the console's why? cards: returns the staff path Person -WORKS_IN-> Department -CAN_TRIGGER-> Workflow when it exists in the graph (empty data = no such path). Example: { \"id\": \"explain-staff-workflow-access\", \"input_params\": { \"subject_id\": \"auth0|69c410bfb501d3a02bd01ea2\", \"workflow_id\": \"wf1\" } }.",
+      "query": {
+        "nodes": [
+          "u.external_id",
+          "u.property.name",
+          "u.property.first_name",
+          "d.external_id",
+          "d.property.name",
+          "wf.external_id"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "12",
+      "name": "explain-direct-workflow-access",
+      "display_name": "Explain Direct Workflow Access",
+      "description": "Authorization-path explainer for the console's why? cards: returns the direct Person -CAN_TRIGGER-> Workflow edge when it exists in the graph (empty data = no such path). Example: { \"id\": \"explain-direct-workflow-access\", \"input_params\": { \"subject_id\": \"auth0|69c4129b0ba356c7db9f91ab\", \"workflow_id\": \"wf1\" } }.",
+      "query": {
+        "nodes": [
+          "u.external_id",
+          "u.property.name",
+          "u.property.first_name",
+          "wf.external_id"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "13",
+      "name": "get-internal-documents-chained",
+      "display_name": "Get Internal Documents (chain-guarded)",
+      "description": "Retrieve internal documents by taxonomy over the fully delegated agent chain. Call tool 'ciq_execute' with input_params. Example: { \"id\": \"get-internal-documents-chained\", \"input_params\": { \"taxonomy_external_id\": \"policy\" } }. Refused unless the request traveled console->orchestrator->retriever->mcp with the ITS delegation intact.",
+      "query": {
+        "nodes": [
+          "subject.external_id",
+          "subject.property.name",
+          "subject.property.title",
+          "document.external_id",
+          "document.property.name",
+          "document.property.description",
+          "document.property.url",
+          "taxonomy.property.name"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "14",
+      "name": "get-my-family",
+      "display_name": "Get My Family",
+      "description": "Retrieve the authenticated person's household: spouse or partner, children with their age group, and the accounts of children who are minors (adult children's accounts are not returned). Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-my-family\", \"input_params\": { } }.",
+      "query": {
+        "nodes": [
+          "subject.external_id",
+          "subject.property.name",
+          "spouse.external_id",
+          "spouse.property.name",
+          "child.external_id",
+          "child.property.name",
+          "child.property.age",
+          "ageGroup.external_id",
+          "account.external_id",
+          "account.property.account_type",
+          "account.property.balance"
+        ],
+        "relationships": [
+          "r_spouse",
+          "r_parent",
+          "r_owns"
+        ],
+        "aggregate_values": []
+      }
+    }
+  ],
+  "ciq_policies": [
+    {
+      "slot": "1",
+      "name": "get-self",
+      "display_name": "Get Self",
+      "description": "Return the authenticated person, their department and manager (staff) and their customer record (customers).",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person {external_id: $token.sub}) WITH subject OPTIONAL MATCH (subject)-[:WORKS_IN]->(department:Department) WITH subject, department OPTIONAL MATCH (subject)-[:REPORTS_TO]->(manager:Person) WITH subject, department, manager OPTIONAL MATCH (subject)-[:IS_CUSTOMER]->(customer:Customer) WITH subject, department, manager, customer, $token.act.sub AS agent",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "department.*",
+            "manager.*",
+            "customer.*"
+          ],
+          "relationships": [],
+          "aggregate_values": [
+            "agent"
+          ]
+        }
+      },
+      "tags": [
+        "ibac",
+        "self",
+        "profile"
+      ]
+    },
+    {
+      "slot": "2",
+      "name": "get-stock-quote",
+      "display_name": "Get Stock Quote",
+      "description": "Return a stock quote when the caller's department is allowed to retrieve it.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person {external_id: $token.sub})-[:WORKS_IN]->(department:Department)-[:CAN_RETRIEVE]->(quote:Quote)",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "department.*",
+            "quote.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "ibac",
+        "trading",
+        "quote"
+      ]
+    },
+    {
+      "slot": "3",
+      "name": "get-stock-trade-threshold",
+      "display_name": "Get Stock Trade Threshold",
+      "description": "Return a customer's stock account tier when accessed by a trading user.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person {external_id: $token.sub})-[:WORKS_IN]->(department:Department)-[:CAN_ACCESS|CONTAINS*..2]->(customer:Customer {external_id: $customer_external_id})-[:OWNS]-(account:Account)-[:IS_TIER]->(tier:AccountTier) WHERE (account)-[:IS_TYPE]->(:InvestmentCategory {external_id: 'cat_stocks'})",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "customer.*",
+            "account.*",
+            "tier.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "ibac",
+        "trading",
+        "threshold"
+      ]
+    },
+    {
+      "slot": "4",
+      "name": "get-internal-documents",
+      "display_name": "Get Internal Documents",
+      "description": "Return internal documents reachable from the caller filtered by taxonomy.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person {external_id: $token.sub})-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(document:Document)-[:IS_TYPE]->(taxonomy:Taxonomy {external_id: $taxonomy_external_id})",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "document.*",
+            "taxonomy.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "ibac",
+        "documents",
+        "taxonomy"
+      ]
+    },
+    {
+      "slot": "5",
+      "name": "get-customer-facing-documents",
+      "display_name": "Get Customer Facing Documents",
+      "description": "List customer facing documents together with their regulatory agreements and investment categories.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "_Application"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:_Application {external_id: $_appId}) WITH subject MATCH (doc:Document)-[:SUBJECT_TO]->(ra:RegulatoryAgreement), (doc)-[:CLASSIFIED_AS]->(ic:InvestmentCategory)",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "doc.*",
+            "ra.*",
+            "ic.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "ibac",
+        "documents",
+        "customer"
+      ]
+    },
+    {
+      "slot": "6",
+      "name": "get-regulatory-agreements",
+      "display_name": "Get Regulatory Agreements",
+      "description": "List all regulatory agreements known to the graph.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "_Application"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:_Application {external_id: $_appId}) WITH subject MATCH (ra:RegulatoryAgreement)",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "ra",
+            "ra.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "ibac",
+        "regulatory"
+      ]
+    },
+    {
+      "slot": "7",
+      "name": "get-decisions",
+      "display_name": "Get Decisions",
+      "description": "Given a document, return the decisions that referenced it along with the ticket, the customer and the affected account.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person {external_id: $token.sub})-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(document:Document {external_id: $document_external_id})<-[document_applied]-(decision:Decision)<--(ticket:Ticket)-[:REGARDING]->(account:Account), (ticket)-[:CREATED_BY]-(customer:Customer), (decision)<-[:MADE]-(actor:Person)",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "actor.*",
+            "document.*",
+            "decision",
+            "decision.*",
+            "ticket.*",
+            "account.*",
+            "customer.*"
+          ],
+          "relationships": [
+            "document_applied.*"
+          ],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "ibac",
+        "decisions",
+        "tickets"
+      ]
+    },
+    {
+      "slot": "9",
+      "name": "get-hq-weather",
+      "display_name": "Get HQ Weather",
+      "description": "Return the current weather reading for CanBank's London headquarters. The hq_weather Weather node's temperature property is populated at query time by the `weather` external data resolver, which calls open-meteo.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person {external_id: $token.sub}) WITH subject MATCH (weather:Weather {external_id: 'hq_weather'})",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "weather.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "ibac",
+        "weather"
+      ]
+    },
+    {
+      "slot": "10",
+      "name": "store-decision",
+      "display_name": "Store Decision",
+      "description": "Create a new Decision node and wire it to the document it applies (APPLIES), the ticket it closes (CLOSED_BY) and the authenticated user who made it (MADE) in one atomic CIQ upsert.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person {external_id: $token.sub}) MATCH (document:Document {external_id: $document_external_id}) MATCH (ticket:Ticket {external_id: $ticket_external_id})",
+          "filter": []
+        },
+        "allowed_upserts": {
+          "nodes": {
+            "node_types": [
+              "Decision"
+            ]
+          },
+          "relationships": {
+            "relationship_types": [
+              {
+                "type": "APPLIES",
+                "source_node_label": "Decision",
+                "target_node_label": "Document"
+              },
+              {
+                "type": "MADE",
+                "source_node_label": "Person",
+                "target_node_label": "Decision"
+              },
+              {
+                "type": "CLOSED_BY",
+                "source_node_label": "Ticket",
+                "target_node_label": "Decision"
+              }
+            ]
+          }
+        }
+      },
+      "tags": [
+        "ibac",
+        "decisions",
+        "write"
+      ]
+    },
+    {
+      "slot": "11",
+      "name": "explain-staff-workflow-access",
+      "display_name": "Explain Staff Workflow Access",
+      "description": "Read the User-Department-Workflow authorization path for the console explainer (CanBank).",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "_Application"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:_Application) MATCH (u:Person {external_id: $subject_id})-[w:WORKS_IN]->(d:Department)-[t:CAN_TRIGGER]->(wf:Workflow {external_id: $workflow_id})",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "u.*",
+            "d.*",
+            "wf.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "explain",
+        "authorization"
+      ]
+    },
+    {
+      "slot": "12",
+      "name": "explain-direct-workflow-access",
+      "display_name": "Explain Direct Workflow Access",
+      "description": "Read the direct User-Workflow CAN_TRIGGER edge for the console explainer (CanBank).",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "_Application"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:_Application) MATCH (u:Person {external_id: $subject_id})-[t:CAN_TRIGGER]->(wf:Workflow {external_id: $workflow_id})",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "u.*",
+            "wf.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "explain",
+        "authorization"
+      ]
+    },
+    {
+      "slot": "13",
+      "name": "get-internal-documents-chained",
+      "display_name": "Get Internal Documents (chain-guarded)",
+      "description": "Return internal documents filtered by taxonomy, but only when the request carries the full ITS delegation chain of the console->orchestrator->retriever->mcp route.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person {external_id: $token.sub})-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(document:Document)-[:IS_TYPE]->(taxonomy:Taxonomy {external_id: $taxonomy_external_id})",
+          "filter": [],
+          "token_filter": {
+            "attribute": "$ik_token.act.act.act.sub",
+            "operator": "=",
+            "value": "${AUTH0_SUB_ORCHESTRATOR}",
+            "advice": {
+              "error": "invalid_delegation_chain",
+              "error_description": "Expected a depth-3 delegation chain with the orchestrator agent as the innermost actor ($ik_token.act.act.act.sub)"
+            }
+          }
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "document.*",
+            "taxonomy.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "ibac",
+        "documents",
+        "delegation",
+        "chain"
+      ]
+    },
+    {
+      "slot": "14",
+      "name": "get-my-family",
+      "display_name": "Get My Family",
+      "description": "The logged-in person's household: spouse or partner, children with their age group, and the accounts of children who are minors.",
+      "tags": [
+        "ibac",
+        "family",
+        "guardian"
+      ],
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person {external_id: $token.sub}) OPTIONAL MATCH (subject)-[r_spouse:MARRIED_TO|PARTNERS|CO_PARENTS]-(spouse:Person) OPTIONAL MATCH (subject)-[r_parent:PARENT_OF]->(child:Person)-[:IS_AGE_GROUP]->(ageGroup:AgeGroup) OPTIONAL MATCH (child)-[:IS_CUSTOMER]->(:Customer)-[r_owns:OWNS]->(account:Account) WHERE ageGroup.external_id = 'minor'",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "spouse.external_id",
+            "spouse.property.name",
+            "child.external_id",
+            "child.property.name",
+            "child.property.age",
+            "ageGroup.external_id",
+            "account.*"
+          ],
+          "relationships": [
+            "r_spouse",
+            "r_parent",
+            "r_owns"
+          ],
+          "aggregate_values": []
+        }
+      }
+    }
+  ],
+  "resolvers": [
+    {
+      "slot": "1",
+      "name": "weather",
+      "display_name": "Current Weather",
+      "description": "Fetches the current weather block (temperature, apparent temperature, wind speed and weather code) for the latitude/longitude passed via input_params. Defaults to CanBank's London HQ (51.5072, -0.1276) when input_params are absent. Use this as the `external_value` on a Weather node property. Pair with the `weather-units` resolver to also retrieve the unit labels.",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude={$latitude || 51.5072}&longitude={$longitude || -0.1276}&current=temperature_2m,apparent_temperature,wind_speed_10m,weather_code&timezone=auto",
+      "method": "GET",
+      "headers": {},
+      "request_payload": "",
+      "request_content_type": "JSON",
+      "response_content_type": "JSON",
+      "response_selector": ".current"
+    },
+    {
+      "slot": "2",
+      "name": "weather-units",
+      "display_name": "Current Weather Units",
+      "description": "Fetches the unit labels (e.g. \u00b0C, km/h) for the current weather block at the latitude/longitude passed via input_params (defaults to London HQ).",
+      "url": "https://api.open-meteo.com/v1/forecast?latitude={$latitude || 51.5072}&longitude={$longitude || -0.1276}&current=temperature_2m,apparent_temperature,wind_speed_10m,weather_code&timezone=auto",
+      "method": "GET",
+      "headers": {},
+      "request_payload": "",
+      "request_content_type": "JSON",
+      "response_content_type": "JSON",
+      "response_selector": ".current_units"
+    },
+    {
+      "slot": "3",
+      "name": "stock-quote",
+      "display_name": "Stock Quote",
+      "description": "Returns the current market price for the ticker symbol passed via the knowledge query's `ticker` input parameter. Bound to the price property of the stock_quote Quote node and consumed by the iag-demo retriever_agent's max-purchase-amount tool. Backed by Yahoo Finance's public chart endpoint; no API key required.",
+      "url": "https://query1.finance.yahoo.com/v8/finance/chart/{$ticker}?interval=1d",
+      "method": "GET",
+      "headers": {},
+      "request_payload": "",
+      "request_content_type": "JSON",
+      "response_content_type": "JSON",
+      "response_selector": ".chart.result[0].meta.regularMarketPrice"
+    }
+  ],
+  "app_agent": {
+    "name": "ibac-agent",
+    "display_name": "IBAC Agent",
+    "description": "App agent for the IBAC demo: gateways (whoami, AuthZEN admission), console (explain queries), ERP (search/resource) and the Intent Agent (data schema + policy listing)",
+    "api_permissions": [
+      "Authorization",
+      "Capture",
+      "ContXIQ",
+      "ReadAuthZConfigs",
+      "EntityMatching",
+      "ReadDataSchema",
+      "Audit"
+    ],
+    "credentials_expire_days": 180
+  },
+  "audit_signing": {
+    "name": "audit-signing-default",
+    "display_name": "Audit Signing",
+    "description": "Platform-managed key signs the project's tamper-proof audit chain",
+    "provider": "PLATFORM_MANAGED"
+  },
+  "event_sink": {
+    "name": "audit-events-pubsub",
+    "display_name": "Audit Events to Pub/Sub",
+    "description": "Delivers the project's audit events to Google Cloud Pub/Sub; delivered events are chained",
+    "include_cdc_events": false,
+    "providers": {
+      "pubsub-provider": {
+        "pubsub": {
+          "project_id": "${PUBSUB_GCP_PROJECT}",
+          "topic_name": "${PUBSUB_TOPIC}"
+        }
+      }
+    },
+    "routes": [
+      {
+        "provider_id": "pubsub-provider",
+        "route_id": "all-audit-events",
+        "display_name": "All Audit Events",
+        "stop_processing": true,
+        "event_type_key_values_filter": {
+          "event_type": "indykite.audit.*"
+        }
+      }
+    ]
+  },
+  "mcp_server": {
+    "name": "ibac-mcp-server",
+    "display_name": "IBAC MCP Server",
+    "description": "MCP Server configuration for the IBAC demo - binds the App Agent and the Auth0 Person Token Introspect used to authenticate inbound MCP traffic.",
+    "enabled": true,
+    "scopes_supported": [
+      "email"
+    ]
+  },
+  "token_introspect": [
+    {
+      "name": "auth0-person-introspect",
+      "display_name": "Auth0 Person Token Introspect",
+      "description": "Auth0 access tokens of the console login (audience ibac-console), validated offline against the tenant JWKS; the token sub is the Person external_id. The issuer comes from .env (AUTH0_ISSUER, e.g. https://<tenant>.auth0.com/).",
+      "ikg_node_type": "Person",
+      "jwt_matcher": {
+        "issuer": "${AUTH0_ISSUER}",
+        "audience": "ibac-console"
+      },
+      "claims_mapping": {},
+      "offline_validation": {},
+      "perform_upsert": true
+    },
+    {
+      "name": "token-service-https-ibac-console",
+      "display_name": "Token Service Delegations (ibac-console audience)",
+      "description": "Token-service-minted delegation JWTs arriving in X-IK-Token; audience inherited from the user subject token. The public JWK comes from .env (TOKEN_SERVICE_PUBLIC_JWK) - fetch it from the running service's /.well-known/jwks.json and strip it to kty/n/e/alg/kid/use.",
+      "ikg_node_type": "Person",
+      "jwt_matcher": {
+        "issuer": "https://token-service.ibac-demo.local",
+        "audience": "ibac-console"
+      },
+      "claims_mapping": {},
+      "offline_validation": {
+        "public_jwks": [
+          "${TOKEN_SERVICE_PUBLIC_JWK}"
+        ]
+      },
+      "perform_upsert": true
+    }
+  ],
+  "kbac": [
+    {
+      "name": "person-can-trigger-workflow",
+      "display_name": "Person can trigger workflow",
+      "description": "A person can trigger an agentic workflow when their department can trigger it OR they have been assigned to it directly.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_TRIGGER"
+        ],
+        "resource": {
+          "type": "Workflow"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN|CAN_TRIGGER*..3]->(resource:Workflow)"
+        }
+      }
+    },
+    {
+      "name": "person-can-retrieve-quote",
+      "display_name": "Person can retrieve stock quote",
+      "description": "Staff in a department allowed to retrieve a quote. Evaluations carrying a user bearer token are bound to the token's subject.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_RETRIEVE",
+          "GET_PRICE"
+        ],
+        "resource": {
+          "type": "Quote"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN]->(:Department)-[:CAN_RETRIEVE]->(resource:Quote)"
+        }
+      }
+    },
+    {
+      "name": "staff-can-view-invoice",
+      "display_name": "Staff can view invoice",
+      "description": "Staff can view the invoices of the customers their department serves (ERP search/resource).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_VIEW"
+        ],
+        "resource": {
+          "type": "Invoice"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN]->(:Department)-[:SERVES]->(:Customer)-[:HAS_INVOICE]->(resource:Invoice)"
+        }
+      }
+    },
+    {
+      "name": "customer-own-invoice",
+      "display_name": "Customer sees own invoice",
+      "description": "A logged-in person may view the invoices of the customer record they own (ERP search/resource).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_VIEW"
+        ],
+        "resource": {
+          "type": "Invoice"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:IS_CUSTOMER]->(:Customer)-[:HAS_INVOICE]->(resource:Invoice)"
+        }
+      }
+    },
+    {
+      "name": "guardian-can-view-dependent-invoice",
+      "display_name": "Guardian sees a minor child's invoice",
+      "description": "A parent may view the invoices of a child who is a minor; the age band is the IS_AGE_GROUP relationship, not a property.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_VIEW"
+        ],
+        "resource": {
+          "type": "Invoice"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:PARENT_OF]->(child:Person)-[:IS_AGE_GROUP]->(:AgeGroup {external_id: 'minor'}) MATCH (child)-[:IS_CUSTOMER]->(:Customer)-[:HAS_INVOICE]->(resource:Invoice)"
+        }
+      }
+    },
+    {
+      "name": "person-can-disclose-document-chained",
+      "display_name": "Person can disclose document (chain-guarded)",
+      "description": "Allow a person to DISCLOSE a document they can reach through their department only when the full console->orchestrator->retriever->mcp Token Service delegation chain is presented.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_DISCLOSE"
+        ],
+        "resource": {
+          "type": "Document"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(resource:Document)",
+          "filter": {
+            "attribute": "$ik_token.act.act.act.sub",
+            "operator": "=",
+            "value": "${AUTH0_SUB_ORCHESTRATOR}"
+          }
+        }
+      }
+    },
+    {
+      "name": "person-works-in-department",
+      "display_name": "Works in department",
+      "description": "The department a person works in directly.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "WORKS_IN"
+        ],
+        "resource": {
+          "type": "Department"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN]->(resource:Department)"
+        }
+      }
+    },
+    {
+      "name": "person-works-under-department",
+      "display_name": "Works under department ($department)",
+      "description": "Whether the person works under the department named by $department (required input param).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "WORKS_UNDER_DEPARTMENT"
+        ],
+        "resource": {
+          "type": "Department"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN]->(:Department)<-[:CONTAINS*1..]-(resource:Department) WHERE resource.external_id = $department"
+        }
+      }
+    },
+    {
+      "name": "person-works-under-departments",
+      "display_name": "Works under departments",
+      "description": "Every department above the person's own in the org tree; the parameter-less twin of WORKS_UNDER_DEPARTMENT.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "WORKS_UNDER"
+        ],
+        "resource": {
+          "type": "Department"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN]->(:Department)<-[:CONTAINS*1..]-(resource:Department)"
+        }
+      }
+    },
+    {
+      "name": "person-reports-to",
+      "display_name": "Reports to",
+      "description": "The person's direct manager.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "REPORTS_TO"
+        ],
+        "resource": {
+          "type": "Person"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:REPORTS_TO]->(resource:Person)"
+        }
+      }
+    },
+    {
+      "name": "person-reports-to-indirectly",
+      "display_name": "Reports to indirectly",
+      "description": "Managers two or more levels above the person.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "REPORTS_TO_INDIRECTLY"
+        ],
+        "resource": {
+          "type": "Person"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:REPORTS_TO*2..]->(resource:Person)"
+        }
+      }
+    },
+    {
+      "name": "person-can-query-colleague",
+      "display_name": "Can query colleague",
+      "description": "Gate for questions about another person: staff may ask about colleagues of their own department.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_QUERY_PERSON"
+        ],
+        "resource": {
+          "type": "Person"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN]->(:Department)<-[:WORKS_IN]-(resource:Person)"
+        }
+      }
+    },
+    {
+      "name": "person-can-access-folder",
+      "display_name": "Can access folder",
+      "description": "Folders the person's department can access.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_ACCESS"
+        ],
+        "resource": {
+          "type": "Folder"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN]->(:Department)-[:CAN_ACCESS]->(resource:Folder)"
+        }
+      }
+    },
+    {
+      "name": "person-can-access-folder-document",
+      "display_name": "Can access folder document",
+      "description": "Documents inside the folders the person's department can access.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_ACCESS_FOLDER_DOCUMENT"
+        ],
+        "resource": {
+          "type": "Document"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN]->(:Department)-[:CAN_ACCESS]->(:Folder)-[:CONTAINS]->(resource:Document)"
+        }
+      }
+    },
+    {
+      "name": "person-can-disclose-document",
+      "display_name": "Can disclose document",
+      "description": "Documents reachable through the person's department, folders and containers (unguarded twin of the chained policy).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_DISCLOSE_UNCHAINED"
+        ],
+        "resource": {
+          "type": "Document"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(resource:Document)"
+        }
+      }
+    },
+    {
+      "name": "staff-can-access-customer",
+      "display_name": "Can access customer ($system)",
+      "description": "Customers contained in the system named by $system (required input param) that the person's department can access.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_ACCESS_CUSTOMER"
+        ],
+        "resource": {
+          "type": "Customer"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN]->(:Department)-[:CAN_ACCESS]->(system:System)-[:CONTAINS]->(resource:Customer) WHERE system.external_id = $system"
+        }
+      }
+    },
+    {
+      "name": "staff-can-list-customers",
+      "display_name": "Can list customers",
+      "description": "Customers in any system the person's department can access; the parameter-less twin of CAN_ACCESS_CUSTOMER.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_LIST_CUSTOMER"
+        ],
+        "resource": {
+          "type": "Customer"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN]->(:Department)-[:CAN_ACCESS]->(:System)-[:CONTAINS]->(resource:Customer)"
+        }
+      }
+    },
+    {
+      "name": "staff-serves-customer",
+      "display_name": "Serves customer",
+      "description": "Customers served by the person's department.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "SERVES"
+        ],
+        "resource": {
+          "type": "Customer"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN]->(:Department)-[:SERVES]->(resource:Customer)"
+        }
+      }
+    },
+    {
+      "name": "staff-affected-account",
+      "display_name": "Affected account",
+      "description": "Accounts touched by a decision the person made (decision closed a ticket regarding the account).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "AFFECTED"
+        ],
+        "resource": {
+          "type": "Account"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:MADE]->(:Decision)<-[:CLOSED_BY]-(:Ticket)-[:REGARDING]->(resource:Account)"
+        }
+      }
+    },
+    {
+      "name": "customer-record",
+      "display_name": "Own customer record",
+      "description": "The customer record the person owns in the core banking system.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "IS_CUSTOMER"
+        ],
+        "resource": {
+          "type": "Customer"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:IS_CUSTOMER]->(resource:Customer)"
+        }
+      }
+    },
+    {
+      "name": "customer-can-query-fellow-customer",
+      "display_name": "Can query fellow customer",
+      "description": "Gate for questions about another customer: customers served by the same department.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_QUERY_CUSTOMER"
+        ],
+        "resource": {
+          "type": "Customer"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:IS_CUSTOMER]->(:Customer)<-[:SERVES]-(:Department)-[:SERVES]->(resource:Customer)"
+        }
+      }
+    },
+    {
+      "name": "customer-owns-account",
+      "display_name": "Owns account",
+      "description": "The person's own accounts.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "OWNS",
+          "VIEW_BALANCE"
+        ],
+        "resource": {
+          "type": "Account"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:IS_CUSTOMER]->(:Customer)-[:OWNS]->(resource:Account)"
+        }
+      }
+    },
+    {
+      "name": "customer-has-account-tier",
+      "display_name": "Has account tier ($tier)",
+      "description": "Whether the person owns an account of the tier named by $tier (required input param).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "HAS"
+        ],
+        "resource": {
+          "type": "AccountTier"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:IS_CUSTOMER]->(:Customer)-[:OWNS]->(:Account)-[:IS_TIER]->(resource:AccountTier) WHERE resource.external_id = $tier"
+        }
+      }
+    },
+    {
+      "name": "customer-has-account-tiers",
+      "display_name": "Has account tiers",
+      "description": "Tiers of every account the person owns; the parameter-less twin of HAS.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "HAS_TIER"
+        ],
+        "resource": {
+          "type": "AccountTier"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:IS_CUSTOMER]->(:Customer)-[:OWNS]->(:Account)-[:IS_TIER]->(resource:AccountTier)"
+        }
+      }
+    },
+    {
+      "name": "customer-views-invoice",
+      "display_name": "Views invoice",
+      "description": "The person's own invoices.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "VIEW_INVOICE"
+        ],
+        "resource": {
+          "type": "Invoice"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:IS_CUSTOMER]->(:Customer)-[:HAS_INVOICE]->(resource:Invoice)"
+        }
+      }
+    },
+    {
+      "name": "customer-views-unpaid-invoice",
+      "display_name": "Views unpaid invoice",
+      "description": "The person's open invoices: the invoice's state is a HAS_STATUS relationship to an InvoiceStatus node.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "VIEW_UNPAID_INVOICE"
+        ],
+        "resource": {
+          "type": "Invoice"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:IS_CUSTOMER]->(:Customer)-[:HAS_INVOICE]->(resource:Invoice)-[:HAS_STATUS]->(status:InvoiceStatus) WHERE status.external_id = 'open'"
+        }
+      }
+    },
+    {
+      "name": "customer-views-account-category",
+      "display_name": "Views account category",
+      "description": "Investment categories of the accounts the person owns.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "VIEW_ACCOUNT_CATEGORY"
+        ],
+        "resource": {
+          "type": "InvestmentCategory"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:IS_CUSTOMER]->(:Customer)-[:OWNS]->(:Account)-[:IS_TYPE]->(resource:InvestmentCategory)"
+        }
+      }
+    },
+    {
+      "name": "customer-views-product-document",
+      "display_name": "Views product document",
+      "description": "Documents classified under an investment category the person holds an account in.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "VIEW_PRODUCT_DOCUMENT"
+        ],
+        "resource": {
+          "type": "Document"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:IS_CUSTOMER]->(:Customer)-[:OWNS]->(:Account)-[:IS_TYPE]->(:InvestmentCategory)<-[:CLASSIFIED_AS]-(resource:Document)"
+        }
+      }
+    },
+    {
+      "name": "customer-views-ticket-decision",
+      "display_name": "Views ticket decision",
+      "description": "Decisions that closed a ticket the person opened.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "VIEW_TICKET_DECISION"
+        ],
+        "resource": {
+          "type": "Decision"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:IS_CUSTOMER]->(:Customer)<-[:CREATED_BY]-(:Ticket)-[:CLOSED_BY]->(resource:Decision)"
+        }
+      }
+    },
+    {
+      "name": "person-parent-of",
+      "display_name": "Parent of",
+      "description": "The person's children.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "PARENT_OF"
+        ],
+        "resource": {
+          "type": "Person"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:PARENT_OF]->(resource:Person)"
+        }
+      }
+    },
+    {
+      "name": "person-household-member",
+      "display_name": "Household member",
+      "description": "Spouse, partner, co-parent, parents and children of the person.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "HOUSEHOLD_WITH"
+        ],
+        "resource": {
+          "type": "Person"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:MARRIED_TO|PARTNERS|CO_PARENTS|PARENT_OF]-(resource:Person)"
+        }
+      }
+    },
+    {
+      "name": "guardian-views-dependent-account",
+      "display_name": "Guardian views a minor child's account",
+      "description": "Accounts of a child who is a minor (IS_AGE_GROUP minor); adult children's accounts are their own business.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "VIEW_DEPENDENT_ACCOUNT"
+        ],
+        "resource": {
+          "type": "Account"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:PARENT_OF]->(child:Person)-[:IS_AGE_GROUP]->(:AgeGroup {external_id: 'minor'}) MATCH (child)-[:IS_CUSTOMER]->(:Customer)-[:OWNS]->(resource:Account)"
+        }
+      }
+    },
+    {
+      "name": "guardian-of-minor",
+      "display_name": "Guardian of minor",
+      "description": "Children of the person who are minors.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "GUARDIAN_OF"
+        ],
+        "resource": {
+          "type": "Person"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:PARENT_OF]->(resource:Person)-[:IS_AGE_GROUP]->(:AgeGroup {external_id: 'minor'})"
+        }
+      }
+    },
+    {
+      "name": "person-can-reach-agent",
+      "display_name": "Person can reach agent (gateway admission)",
+      "description": "The Agent Gateway's admission check: the subject may reach the protected agent (the newest hop of the delegation chain, resource type Agent) when a workflow they can trigger - directly or through their department - has exactly the delegation chain as its path of agents ($ik_token.act_chain, sent by the gateway in X-IK-Token). One policy serves every gateway; a chain from another workflow, or one that does not end at this agent, is refused.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_TRIGGER"
+        ],
+        "resource": {
+          "type": "Agent"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN|CAN_TRIGGER*..3]->(wf:Workflow) MATCH (wf)-[rels:INVOKES*]->(resource:Agent) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain"
+        }
+      }
+    }
+  ],
+  "application": {
+    "name": "ibac-app",
+    "display_name": "IBAC App",
+    "description": "Banking application whose agents are governed by the Agent Gateway, the Token Service and the Intent Agent"
+  },
+  "project": {
+    "name": "ibac-demo",
+    "display_name": "IBAC Demo",
+    "description": "CanBank graph with Auth0 people for the IBAC demo (Agent Gateway, Token Service, Intent Agent)",
+    "region": "europe-west1",
+    "db_connection": {
+      "name": "",
+      "password": "",
+      "url": "",
+      "username": ""
+    }
+  }
+}

@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Guardian Can View Dependent Invoice
+  type: http
+  seq: 5
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "guardian-can-view-dependent-invoice",
+        "display_name": "Guardian sees a minor child's invoice",
+        "description": "A parent may view the invoices of a child who is a minor; the age band is the IS_AGE_GROUP relationship, not a property.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"CAN_VIEW\"],\"resource\":{\"type\":\"Invoice\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:PARENT_OF]->(child:Person)-[:IS_AGE_GROUP]->(:AgeGroup {external_id: 'minor'}) MATCH (child)-[:IS_CUSTOMER]->(:Customer)-[:HAS_INVOICE]->(resource:Invoice)\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_guardian_can_view_dependent_invoice", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

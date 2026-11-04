@@ -1,0 +1,42 @@
+---
+info:
+  name: Create Get Customer Facing Documents Policy
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "get-customer-facing-documents",
+        "display_name": "Get Customer Facing Documents",
+        "description": "List customer facing documents together with their regulatory agreements and investment categories.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"_Application\"},\"condition\":{\"cypher\":\"MATCH (subject:_Application {external_id: $_appId}) WITH subject MATCH (doc:Document)-[:SUBJECT_TO]->(ra:RegulatoryAgreement), (doc)-[:CLASSIFIED_AS]->(ic:InvestmentCategory)\",\"filter\":[]},\"allowed_reads\":{\"nodes\":[\"doc.*\",\"ra.*\",\"ic.*\"],\"relationships\":[],\"aggregate_values\":[]}}",
+        "status": "ACTIVE",
+        "tags": [
+          "ibac",
+          "documents",
+          "customer"
+        ]
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("get_customer_facing_documents_policy", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

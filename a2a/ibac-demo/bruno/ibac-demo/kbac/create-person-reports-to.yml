@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Person Reports To
+  type: http
+  seq: 10
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "person-reports-to",
+        "display_name": "Reports to",
+        "description": "The person's direct manager.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"REPORTS_TO\"],\"resource\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:REPORTS_TO]->(resource:Person)\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_person_reports_to", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,21 @@
+---
+info:
+  name: ciq-context
+  type: folder
+  seq: 5
+
+request:
+  headers:
+    - name: Accept
+      value: application/json
+  auth:
+    type: bearer
+    token: "{{service_token}}"
+
+docs: |-
+  One folder per knowledge query of the ibac dataset (instant-stack data/ibac
+  manifest.json, ciq_policies + ciq_queries): create the policy, record its gid,
+  create the query bound to it, execute it. Person-subject queries execute with
+  a person's Auth0 access token ({{user_token}}) plus the app agent key;
+  _Application queries with the app agent key only. The chained query needs
+  the depth-3 delegation from the chain-guard folder in X-IK-Token.

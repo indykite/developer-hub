@@ -1,0 +1,38 @@
+---
+info:
+  name: Create Get Customer Facing Documents Query
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/knowledge-queries"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "get-customer-facing-documents",
+        "display_name": "Get Customer Facing Documents",
+        "description": "Retrieve customer facing documents with their regulatory agreements and investment categories. Example: { \"id\": \"get-customer-facing-documents\", \"input_params\": { } }.",
+        "project_id": "{{project_id}}",
+        "policy_id": "{{get_customer_facing_documents_policy}}",
+        "query": "{\"nodes\":[\"doc.external_id\",\"doc.property.name\",\"ra.property.name\",\"ic.property.name\"],\"relationships\":[],\"aggregate_values\":[]}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("get_customer_facing_documents_query", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

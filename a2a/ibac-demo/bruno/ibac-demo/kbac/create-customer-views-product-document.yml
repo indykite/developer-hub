@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Customer Views Product Document
+  type: http
+  seq: 28
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "customer-views-product-document",
+        "display_name": "Views product document",
+        "description": "Documents classified under an investment category the person holds an account in.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"VIEW_PRODUCT_DOCUMENT\"],\"resource\":{\"type\":\"Document\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:IS_CUSTOMER]->(:Customer)-[:OWNS]->(:Account)-[:IS_TYPE]->(:InvestmentCategory)<-[:CLASSIFIED_AS]-(resource:Document)\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_customer_views_product_document", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

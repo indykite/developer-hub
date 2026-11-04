@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Customer Views Account Category
+  type: http
+  seq: 27
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "customer-views-account-category",
+        "display_name": "Views account category",
+        "description": "Investment categories of the accounts the person owns.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"VIEW_ACCOUNT_CATEGORY\"],\"resource\":{\"type\":\"InvestmentCategory\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:IS_CUSTOMER]->(:Customer)-[:OWNS]->(:Account)-[:IS_TYPE]->(resource:InvestmentCategory)\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_customer_views_account_category", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

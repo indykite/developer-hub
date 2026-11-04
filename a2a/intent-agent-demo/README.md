@@ -57,10 +57,11 @@ What the console shows, live:
 | `chart/` | Helm chart: console, token-service, intent-agent, redis. |
 | `docker-compose.yaml`, `makefile`, `.example.env` | The compose stack and its knobs. |
 
-The Intent Agent itself is not vendored: it is the public
-[`indykite/intent-agent`](https://github.com/indykite/intent-agent) image,
-built locally until the Docker Hub tag is published. The graph and policies it
-works against are the `instant-stack` dataset `data/intent`.
+The Intent Agent itself is not vendored: it is the published
+[`indykite/intent-agent`](https://hub.docker.com/r/indykite/intent-agent)
+image from Docker Hub (source: [github.com/indykite/intent-agent](https://github.com/indykite/intent-agent)).
+The graph and policies it works against are the `instant-stack` dataset
+`data/intent`.
 
 ## Run with docker compose
 
@@ -86,34 +87,20 @@ supports has a policy to land on.
 Wait a minute after provisioning: the data schema is persisted at most once a
 minute and the Intent Agent refuses prompts until it can read it.
 
-### 2. Get the Intent Agent image
+### 2. The Intent Agent image
 
-The demo runs whatever image `INTENT_AGENT_IMAGE` in `.env` names. Until the
-image is on Docker Hub, use one of these:
+The stack runs the published image, `indykite/intent-agent:1.0.0` from
+Docker Hub, pinned by digest in `docker-compose.yaml` and in the chart.
+Nothing to do: `make up` pulls it.
 
-- **From a registry you have access to** (the build an existing environment
-  runs). Pull it, then give it a short local name you can type:
+To test an unreleased agent instead, build it from a clean checkout of the
+public repo (never your working copy) and name it in `.env`:
 
-  ```sh
-  docker pull <registry>/intent-agent:<tag>
-  docker tag <registry>/intent-agent:<tag> intent-agent:<tag>
-  ```
+```sh
+make intent-agent-image INTENT_AGENT_SRC=/path/to/intent-agent INTENT_AGENT_IMAGE=intent-agent:<version>
+```
 
-  and set `INTENT_AGENT_IMAGE=intent-agent:<tag>` in `.env` (step 3). If you
-  pulled by digest the tag column shows `<none>`: tag it by image ID instead,
-  `docker tag <image id> intent-agent:<tag>`. If a pull answers "unsupported
-  media type application/vnd.cncf.helm.config.v1+json", that reference is the
-  Helm chart artifact, not the container image.
-
-- **From the public source** (a clean checkout of a release tag, never your
-  working copy):
-
-  ```sh
-  make intent-agent-image INTENT_AGENT_SRC=/path/to/intent-agent INTENT_AGENT_IMAGE=intent-agent:<version>
-  ```
-
-When the published image is available, set
-`INTENT_AGENT_IMAGE=indykite/intent-agent:<version>` and skip this step.
+then set `INTENT_AGENT_IMAGE=intent-agent:<version>` in `.env` (step 3).
 
 ### 3. Configure
 
@@ -121,9 +108,10 @@ When the published image is available, set
 cp .example.env .env
 ```
 
-Fill in `INDYKITE_BASE_URL`, `APP_AGENT_CREDENTIALS_TOKEN`, `GEMINI_API_KEY`
-and `INTENT_AGENT_IMAGE` (the name from step 2). Leave the two generated
-values for the next step.
+Fill in `INDYKITE_BASE_URL`, `APP_AGENT_CREDENTIALS_TOKEN` and
+`GEMINI_API_KEY`. Leave `INTENT_AGENT_IMAGE` on the published image unless
+step 2 built a local one, and leave the two generated values for the next
+step.
 
 ### 4. Generate the key material
 
@@ -192,15 +180,17 @@ share ports. All commands run from `a2a/intent-agent-demo`.
    minikube start
    ```
 
-2. Load the two local images. Minikube has its own image store and no access
-   to your registry, so you hand it the images you already have (the Token
-   Service and Redis images are public on Docker Hub and the cluster pulls
-   them itself). Use the agent name you set as `INTENT_AGENT_IMAGE`:
+2. Load the console image. Minikube has its own image store, so you hand it
+   the one image built locally; the Intent Agent, the Token Service and Redis
+   are public on Docker Hub and the cluster pulls them itself:
 
    ```sh
-   minikube image load intent-agent:<tag>
    minikube image load intent-demo-console:local
    ```
+
+   If you are testing a local agent build, load it too
+   (`minikube image load intent-agent:<tag>`) and pass its name to
+   `helm install` in step 4 with `--set intentAgent.image.repository=intent-agent --set intentAgent.image.tag=<tag>`.
 
 3. Create the namespace and the two Secrets. The chart reads secrets only from
    Kubernetes Secrets, never from values. The first is `.env` as is (the chart
@@ -223,14 +213,12 @@ share ports. All commands run from `a2a/intent-agent-demo`.
    `intent-demo-console` is `<release name>-console`; change it if you install
    under another release name in step 4.
 
-4. Install the chart, naming your platform region and the agent image you
-   loaded (the chart defaults are `intent-agent:local`):
+4. Install the chart, naming your platform region (the agent image defaults
+   to the published `indykite/intent-agent:1.0.0`):
 
    ```sh
    helm install intent-demo chart -n intent-demo \
-     --set platform.indykiteBaseUrl=<your INDYKITE_BASE_URL> \
-     --set intentAgent.image.repository=intent-agent \
-     --set intentAgent.image.tag=<tag>
+     --set platform.indykiteBaseUrl=<your INDYKITE_BASE_URL>
    ```
 
    The release name is what the service names, and therefore the audit URL in
