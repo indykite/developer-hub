@@ -4,7 +4,7 @@ version: '3.9'
 services:
   iag-base:
     # The gateway image is loaded locally, not pulled: the release this demo
-    # needs (2.91) is not on Docker Hub yet. Load it from your registry and
+    # needs (2.94) is not on Docker Hub yet. Load it from your registry and
     # tag it `agent-gateway:latest`, or name it in .env as AGENT_GATEWAY_IMAGE;
     # pull_policy never makes compose fail loudly instead of pulling. What the
     # demo relies on: MCP proxying (JARVIS_PROTECTED_AGENT_PROTOCOL: mcp, used

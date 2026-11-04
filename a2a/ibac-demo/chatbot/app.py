@@ -338,6 +338,10 @@ def push_update():
 @app.route("/api/updates")
 def updates_sse():
     """Stream queued audit events to the browser as Server-Sent Events."""
+    # The stream carries every user's prompts and decisions: when the console
+    # has a login flow, only a logged-in session may subscribe.
+    if ID_SERVER_BASE_URL and not session.get("access_token"):
+        return jsonify({"error": "authentication required"}), 401
 
     def event_stream():
         # Per-client queue registered for the broadcast fan-out.

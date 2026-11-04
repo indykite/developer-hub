@@ -26,7 +26,7 @@ http:
         "claims_mapping": {},
         "offline_validation": {
           "public_jwks": [
-            "{{token_service_public_jwk}}"
+            "{{token_service_public_jwk_escaped}}"
           ]
         },
         "perform_upsert": true
@@ -35,6 +35,13 @@ http:
 
 runtime:
   scripts:
+    - type: before-request
+      code: |
+        // The API takes the JWK as a JSON string inside the array; the env var
+        // holds the raw JWK JSON, so its quotes must be escaped before it is
+        // interpolated into the body.
+        var jwk = bru.getEnvVar("token_service_public_jwk") || "";
+        bru.setVar("token_service_public_jwk_escaped", JSON.stringify(jwk).slice(1, -1));
     - type: after-response
       code: |
         test("Status code is 200", function () { expect(res.status).to.equal(200); });

@@ -316,9 +316,10 @@ block from [`iag-base-docker.yaml`](iag-base-docker.yaml). Details in
 to the next gateway. The CRM agent and the ERP MCP server read the subject
 and the `act` chain from `X-IK-Token`. The chain-guarded knowledge query
 (`get-internal-documents-chained`) and the `person-can-disclose-document-chained`
-policy require `$ik_token.act.act.act.sub` to be the orchestrator's subject
-(`AUTH0_SUB_ORCHESTRATOR`), i.e. exactly the console → orchestrator →
-retriever → mcp route. Prompt *"Use get-internal-documents-chained to list
+policy require `$ik_token.act_chain`, the hops of the delegation oldest
+first, to equal `[AUTH0_SUB_ORCHESTRATOR, AUTH0_SUB_RETRIEVER, AUTH0_SUB_MCP]`,
+i.e. exactly the console → orchestrator → retriever → mcp route; a chain of
+the same depth over other agents is refused. Prompt *"Use get-internal-documents-chained to list
 the policy documents"* and the query answers; the same query over a shorter
 chain is refused with `invalid_delegation_chain`.
 

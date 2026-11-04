@@ -16,9 +16,9 @@ http:
       {
         "name": "store-decision",
         "display_name": "Store Decision",
-        "description": "Create a new Decision node and wire it to the document it applies (APPLIES), the ticket it closes (CLOSED_BY) and the authenticated user who made it (MADE) in one atomic CIQ upsert.",
+        "description": "Create a new Decision node and wire it to the document it applies (APPLIES), the ticket it closes (CLOSED_BY) and the authenticated user who made it (MADE) in one atomic CIQ upsert. Allowed only to staff who reach the document through their department and whose department the ticket is assigned to (ASSIGNED_TO).",
         "project_id": "{{project_id}}",
-        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person {external_id: $token.sub}) MATCH (document:Document {external_id: $document_external_id}) MATCH (ticket:Ticket {external_id: $ticket_external_id})\",\"filter\":[]},\"allowed_upserts\":{\"nodes\":{\"node_types\":[\"Decision\"]},\"relationships\":{\"relationship_types\":[{\"type\":\"APPLIES\",\"source_node_label\":\"Decision\",\"target_node_label\":\"Document\"},{\"type\":\"MADE\",\"source_node_label\":\"Person\",\"target_node_label\":\"Decision\"},{\"type\":\"CLOSED_BY\",\"source_node_label\":\"Ticket\",\"target_node_label\":\"Decision\"}]}}}",
+        "policy": "{\"meta\":{\"policy_version\":\"1.0-ciq\"},\"subject\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person {external_id: $token.sub})-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(document:Document {external_id: $document_external_id}) MATCH (subject)-[:WORKS_IN]->(:Department)<-[:ASSIGNED_TO]-(ticket:Ticket {external_id: $ticket_external_id})\",\"filter\":[]},\"allowed_upserts\":{\"nodes\":{\"node_types\":[\"Decision\"]},\"relationships\":{\"relationship_types\":[{\"type\":\"APPLIES\",\"source_node_label\":\"Decision\",\"target_node_label\":\"Document\"},{\"type\":\"MADE\",\"source_node_label\":\"Person\",\"target_node_label\":\"Decision\"},{\"type\":\"CLOSED_BY\",\"source_node_label\":\"Ticket\",\"target_node_label\":\"Decision\"}]}}}",
         "status": "ACTIVE",
         "tags": [
           "ibac",

@@ -11,13 +11,15 @@ docs: |-
   Deterministic probes for the chain-guarded CIQ query
   get-internal-documents-chained.
 
-  The query's CIQ policy carries a token_filter on $ik_token.act.act.act.sub =
-  the orchestrator's subject ({{auth0_sub_orchestrator}}, the <client_id>@clients
-  of its Auth0 M2M application): only a delegation chain of depth 3 whose
-  innermost actor is the orchestrator - the full console -> orchestrator ->
-  retriever -> mcp route - may read the documents. token_filter is evaluated
-  against the token claims in-process, so a shorter or absent chain is refused
-  before the graph is ever touched.
+  The query's CIQ policy guards the route twice. A token_filter on
+  $ik_token.act.act.act.sub = the orchestrator's subject
+  ({{auth0_sub_orchestrator}}, the <client_id>@clients of its Auth0 M2M
+  application) is evaluated against the token claims in-process, so a shorter
+  or absent chain is refused with its advice before the graph is ever touched.
+  The cypher then requires $ik_token.act_chain (the hops, oldest first) to
+  equal [orchestrator, retriever, mcp]: only the full console -> orchestrator
+  -> retriever -> mcp route reads documents, and a depth-3 chain over other
+  agents gets an empty answer.
 
   Rather than drive the live agents (whose gateway also enforces a separate
   workflow-authorization check, and whose LLM tool choice is nondeterministic),

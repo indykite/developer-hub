@@ -1,7 +1,7 @@
 # token-service
 
 The self-hosted issuer of exchanged (delegation) tokens for this demo - the
-jarvis `token-service` (an RFC 8693 token-exchange endpoint with OIDC
+IndyKite `token-service` (an RFC 8693 token-exchange endpoint with OIDC
 discovery, JWKS, introspection, and audited delegations). Every gateway
 exchanges against it instead of the external IdP, and the platform validates
 its tokens through the project's Token Introspect configurations (see
