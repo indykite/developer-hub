@@ -421,21 +421,16 @@ async def _ibac(
     if decide:
         for usage in run["usage"]:
             if usage["requests"]:
-                usage["plans"] = await _decide_generated(ctx, usage["requests"], params["parameters"], persona)
+                usage["plans"] = await _decide_generated(ctx, usage["requests"], persona)
     return run
 
 
-async def _decide_generated(
-    ctx: State,
-    requests: list[dict[str, Any]],
-    parameters: dict[str, Any],
-    persona: Persona,
-) -> list[dict[str, Any]]:
+async def _decide_generated(ctx: State, requests: list[dict[str, Any]], persona: Persona) -> list[dict[str, Any]]:
     """Send the engine's generated AuthZEN requests to the platform through the same mapper as the intent.
 
-    The engine puts the whole params map in `context.input_params`; the platform reads scalar
-    `input_params` a policy declares as `$name`, so the requests go through `plan_decisions`
-    with the intent's parameters as their context, exactly like the intent's own evaluations.
+    The engine puts the params map of its call in `context.input_params`; the platform reads scalar
+    `input_params` a policy declares as `$name`, so each request goes through `plan_decisions` with
+    the parameters it was generated from as its context, exactly like the intent's own evaluations.
     """
     # One plan per request, in the order of the requests: the UI pairs them by position.
     plans: list[dict[str, Any] | None] = [None] * len(requests)
@@ -443,7 +438,8 @@ async def _decide_generated(
     shaped: list[dict[str, Any]] = []
     for position, req in enumerate(requests):
         one = {k: v for k, v in req.items() if k in ("subject", "action", "resource")}
-        one["context"] = {"parameters": dict(parameters)}
+        generated_from = ((req.get("context") or {}).get("input_params") or {}).get("parameters") or {}
+        one["context"] = {"parameters": dict(generated_from)}
         shaped.append(one)
         by_type.setdefault((req.get("subject") or {}).get("type", ""), []).append(position)
     for subject_type, positions in by_type.items():
@@ -483,7 +479,7 @@ async def ibac_usage(request: Request, body: UsageRequest) -> dict[str, Any]:
     params = engine_params(persona.type, persona.id, body.token_claims, body.intent.get("evaluations") or [])
     usage = ctx.fleet.usage(agent.id, body.skill, intent, params, _audit_options(ctx, intent, persona))
     if body.decide and usage["requests"]:
-        usage["plans"] = await _decide_generated(ctx, usage["requests"], params["parameters"], persona)
+        usage["plans"] = await _decide_generated(ctx, usage["requests"], persona)
     return {"params": params, "usage": usage}
 
 

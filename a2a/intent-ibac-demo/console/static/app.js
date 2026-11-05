@@ -531,7 +531,7 @@ function renderHandoff(trace) {
   // 2. IBAC engine, in.
   if (ib) {
     const params = ib.params || {};
-    const named = Object.keys(params.parameters || {});
+    const named = [...new Set((params.evaluations || []).flatMap((e) => Object.keys(e.parameters || {})))];
     lane.append(stage("ibac", "IBAC engine · in", "three inputs", [
       ["intent", `${n} evaluation${n === 1 ? "" : "s"}: subject type, action, resource type each`],
       ["cards", `${ib.summary.agents} agent cards, ${ib.discovery.reduce((s, d) => s + d.skill_ids.length, 0)} skills with their x-coaz-mappings`],
@@ -1419,9 +1419,14 @@ function renderUsage(u, params, whatIf) {
     ["$token.act.sub", params.token?.act?.sub],
     ["$subject", `${params.subject?.type} · ${params.subject?.id}`],
   ];
-  const named = Object.entries(params.parameters || {});
-  if (named.length) named.forEach(([k, v]) => rows.push([`$parameters.${k}`, JSON.stringify(v)]));
-  else rows.push(["$parameters.*", "none in this intent"]);
+  let anyNamed = false;
+  (params.evaluations || []).forEach((e, i) => {
+    Object.entries(e.parameters || {}).forEach(([k, v]) => {
+      anyNamed = true;
+      rows.push([`$parameters.${k}`, `${JSON.stringify(v)}  (evaluation ${String(i + 1).padStart(2, "0")})`]);
+    });
+  });
+  if (!anyNamed) rows.push(["$parameters.*", "none in this intent"]);
   p.append(kv(rows));
   wrap.append(p);
 }
@@ -1448,6 +1453,9 @@ function entityChips(list, params, hitType) {
 }
 
 // The evaluation's three fields drawn over each mapping of the skill, with the ids resolved as usage saw them.
+// The params map of one evaluation, as the engine saw it: shared token and subject, that evaluation's parameters.
+const paramsFor = (params, i) => ({ ...params, parameters: params?.evaluations?.[i]?.parameters || {} });
+
 function mappingComparison(u, params) {
   const box = el("div", "cmp");
   const mappings = skillMappings(u.agent, u.skill);
@@ -1485,13 +1493,13 @@ function mappingComparison(u, params) {
       else acts.append(el("span", "act any", "any action"));
       triple.append(
         el("i", `mark ${s ? "ok" : "no"}`, s ? "✓" : "✗"),
-        entityChips(m.subject, params, s ? e.subject?.type : null),
+        entityChips(m.subject, paramsFor(params, i), s ? e.subject?.type : null),
         el("span", "cmp-arrow", "→"),
         el("i", `mark ${a ? "ok" : "no"}`, a ? "✓" : "✗"),
         acts,
         el("span", "cmp-arrow", "→"),
         el("i", `mark ${r ? "ok" : "no"}`, r ? "✓" : "✗"),
-        entityChips(m.resource, params, r ? e.resource?.type : null),
+        entityChips(m.resource, paramsFor(params, i), r ? e.resource?.type : null),
       );
       row.append(el("span", "cmp-k", `mapping ${j + 1}${s && r && a ? " · match" : ""}`), triple);
       block.append(row);

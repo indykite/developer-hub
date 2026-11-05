@@ -131,9 +131,15 @@ class Fleet:
         params: dict[str, Any],
         options: ibac.AuditOptions,
     ) -> dict[str, Any]:
-        """Run the usage flow for one skill of one agent and return it with its audit record."""
+        """Run the usage flow for one skill of one agent and return it with its audit record.
+
+        The engine takes one params map per call, and a prompt's evaluations may each carry their own
+        parameters (two tiers in one question), so the skill is confirmed once per evaluation with that
+        evaluation's parameters and the answers are folded into one response: every generated request,
+        one reason code, one record - what a gateway writes for the skill.
+        """
         capability = self.capabilities[agent_id].with_skill(skill_id)
-        response = ibac.evaluate_usage(intent, capability, params)
+        response = _usage_per_evaluation(intent, capability, params)
         record = ibac.usage_audit_record(response, capability, options)
         generated = response.context.generated_request
         skill = capability.skills[0] if capability.skills else None
@@ -148,6 +154,44 @@ class Fleet:
             "requests": [r.as_dict() for r in generated.authzen_requests] if generated else [],
             "record": record,
         }
+
+
+# Reason codes that describe the intent or the card as a whole; one of them ends the usage flow.
+_STRUCTURAL = frozenset(
+    {
+        ibac.REASON_INVALID_INTENT,
+        ibac.REASON_INVALID_CAPABILITY,
+        ibac.REASON_MISSING_MAPPING,
+        ibac.REASON_INCORRECT_NUM_SKILLS,
+    },
+)
+
+
+def _usage_per_evaluation(intent: ibac.Intent, capability: ibac.Capability, params: dict[str, Any]) -> ibac.Response:
+    """Confirm the skill against each evaluation with its own parameters and fold the answers into one response."""
+    if not intent.evaluations:
+        return ibac.evaluate_usage(intent, capability, params_for(params, 0))
+    requests: list[ibac.Evaluation] = []
+    matched = False
+    for index, evaluation in enumerate(intent.evaluations):
+        one = ibac.Intent(prompt=intent.prompt, evaluations=[evaluation])
+        response = ibac.evaluate_usage(one, capability, params_for(params, index))
+        if response.context.reason_code in _STRUCTURAL:
+            return response
+        matched = matched or response.decision
+        if response.context.generated_request:
+            requests.extend(response.context.generated_request.authzen_requests)
+    if not matched:
+        return ibac.Response(decision=False, context=ibac.ResponseContext(reason_code=ibac.REASON_INTENT_MISMATCH))
+    if requests:
+        return ibac.Response(
+            decision=True,
+            context=ibac.ResponseContext(
+                reason_code=ibac.REASON_INTENT_MATCH_AUTHZEN_REQUIRED,
+                generated_request=ibac.GeneratedRequest(skill_id=capability.skills[0].id, authzen_requests=requests),
+            ),
+        )
+    return ibac.Response(decision=True, context=ibac.ResponseContext(reason_code=ibac.REASON_INTENT_MATCH_SEARCH))
 
 
 def load_fleet(path: Path) -> Fleet:
@@ -186,20 +230,25 @@ def engine_params(
     """Build what the engine resolves `$references` from for one prompt.
 
     `token` is the delegation token's claims (so `$token.sub` is the persona), `subject` the bound
-    subject, and `parameters` the union of the `context.parameters` of the intent's evaluations with
-    the agent's own markers removed (so `$parameters.tier` is the tier the prompt named).
+    subject, and `evaluations[i].parameters` the `context.parameters` of the intent's i-th evaluation
+    with the agent's own markers removed (so `$parameters.tier` is the tier that evaluation named,
+    never one borrowed from another evaluation of the same prompt).
     """
-    parameters: dict[str, Any] = {}
+    scoped: list[dict[str, Any]] = []
     for evaluation in evaluations:
         # The intent may come from the what-if endpoint, so nothing about its shape is trusted.
         context = evaluation.get("context") if isinstance(evaluation, dict) else None
         named = context.get("parameters") if isinstance(context, dict) else None
-        if not isinstance(named, dict):
-            continue
-        for key, value in named.items():
-            if key not in MARKERS and key not in parameters:
-                parameters[key] = value
+        parameters = {k: v for k, v in named.items() if k not in MARKERS} if isinstance(named, dict) else {}
+        scoped.append({"parameters": parameters})
     token = {claim: token_claims[claim] for claim in _TOKEN_CLAIMS if claim in token_claims}
     if "sub" not in token:
         token["sub"] = persona_id
-    return {"token": token, "subject": {"type": persona_type, "id": persona_id}, "parameters": parameters}
+    return {"token": token, "subject": {"type": persona_type, "id": persona_id}, "evaluations": scoped}
+
+
+def params_for(params: dict[str, Any], index: int) -> dict[str, Any]:
+    """Return the params map of one evaluation: the shared token and subject plus that evaluation's parameters."""
+    scoped = params.get("evaluations") or []
+    parameters = scoped[index].get("parameters", {}) if index < len(scoped) else {}
+    return {"token": params.get("token", {}), "subject": params.get("subject", {}), "parameters": parameters}

@@ -23,6 +23,7 @@ from app.ibac import (
 
 
 def ev(subject_type, resource_type, action, parameters=None):
+    """Ev."""
     return Evaluation(
         subject=Entity(type=subject_type),
         resource=Entity(type=resource_type),
@@ -32,10 +33,12 @@ def ev(subject_type, resource_type, action, parameters=None):
 
 
 def skill(skill_id, *mappings):
+    """Skill."""
     return Skill(id=skill_id, name=f"Skill {skill_id}", mappings=list(mappings))
 
 
 def mapping(subject_type, resource_type, *actions):
+    """Mapping."""
     return CoazMapping(
         subject=[Entity(type=subject_type)],
         resource=[Entity(type=resource_type)],
@@ -44,6 +47,7 @@ def mapping(subject_type, resource_type, *actions):
 
 
 def mapping_with_ids(subject_id, resource_id, context=None):
+    """Mapping with ids."""
     return CoazMapping(
         context=context or {},
         subject=[Entity(type="User", id=subject_id)],
@@ -52,14 +56,17 @@ def mapping_with_ids(subject_id, resource_id, context=None):
 
 
 def capability(*mappings):
+    """Capability."""
     return Capability(name="Docs", skills=[skill("skill-1", *mappings)])
 
 
 def intent(*evaluations):
+    """Intent."""
     return Intent(prompt="read the document", evaluations=list(evaluations))
 
 
 def request(subject_id, resource_id, action, input_params=None):
+    """Request."""
     return {
         "subject": {"type": "User", "id": subject_id},
         "resource": {"type": "Document", "id": resource_id},
@@ -69,6 +76,7 @@ def request(subject_id, resource_id, action, input_params=None):
 
 
 def requests_of(response):
+    """Requests of."""
     return [r.as_dict() for r in response.context.generated_request.authzen_requests]
 
 
@@ -76,6 +84,7 @@ def requests_of(response):
 
 
 def test_usage_rejects_an_invalid_intent():
+    """Usage rejects an invalid intent."""
     bad = Intent(evaluations=[Evaluation(action=Action(name="read"))])
     resp = evaluate_usage(bad, capability(mapping("User", "Document")))
     assert resp.decision is False
@@ -84,6 +93,7 @@ def test_usage_rejects_an_invalid_intent():
 
 
 def test_usage_rejects_an_invalid_capability():
+    """Usage rejects an invalid capability."""
     cap = Capability(skills=[Skill(name="no id", mappings=[mapping("User", "Document")])])
     resp = evaluate_usage(intent(ev("User", "Document", "read")), cap)
     assert resp.decision is False
@@ -91,6 +101,7 @@ def test_usage_rejects_an_invalid_capability():
 
 
 def test_usage_needs_exactly_one_skill():
+    """Usage needs exactly one skill."""
     resp = evaluate_usage(intent(ev("User", "Document", "read")), Capability())
     assert resp.context.reason_code == ibac.REASON_MISSING_MAPPING
     two = Capability(
@@ -103,6 +114,7 @@ def test_usage_needs_exactly_one_skill():
 
 
 def test_usage_without_mappings_is_a_missing_mapping():
+    """Usage without mappings is a missing mapping."""
     resp = evaluate_usage(intent(ev("User", "Document", "read")), capability())
     assert resp.decision is False
     assert resp.context.reason_code == ibac.REASON_MISSING_MAPPING
@@ -119,6 +131,7 @@ def test_usage_without_mappings_is_a_missing_mapping():
     ids=["subject type differs", "resource type differs", "action not allowed"],
 )
 def test_usage_mismatch(evaluation, coaz):
+    """Usage mismatch."""
     resp = evaluate_usage(intent(evaluation), capability(coaz))
     assert resp.decision is False
     assert resp.context.reason_code == ibac.REASON_INTENT_MISMATCH
@@ -126,12 +139,14 @@ def test_usage_mismatch(evaluation, coaz):
 
 
 def test_usage_of_an_empty_intent_is_a_mismatch():
+    """Usage of an empty intent is a mismatch."""
     resp = evaluate_usage(Intent(), capability(mapping("User", "Document")))
     assert resp.decision is False
     assert resp.context.reason_code == ibac.REASON_INTENT_MISMATCH
 
 
 def test_usage_builds_the_request_from_literal_ids():
+    """Usage builds the request from literal ids."""
     resp = evaluate_usage(
         intent(ev("User", "Document", "read", {"foo": "bar"})),
         capability(mapping_with_ids("user-1", "doc-1")),
@@ -143,6 +158,7 @@ def test_usage_builds_the_request_from_literal_ids():
 
 
 def test_usage_matches_any_action_when_the_mapping_names_none_and_one_of_several_otherwise():
+    """Usage matches any action when the mapping names none and one of several otherwise."""
     resp = evaluate_usage(intent(ev("User", "Document", "read")), capability(mapping_with_ids("user-1", "doc-1")))
     assert len(requests_of(resp)) == 1
     coaz = mapping_with_ids("user-1", "doc-1")
@@ -153,6 +169,7 @@ def test_usage_matches_any_action_when_the_mapping_names_none_and_one_of_several
 
 
 def test_usage_matches_when_any_one_of_several_mappings_matches():
+    """Usage matches when any one of several mappings matches."""
     resp = evaluate_usage(
         intent(ev("User", "Document", "read")),
         capability(mapping("Service", "Document"), mapping_with_ids("user-1", "doc-1")),
@@ -162,6 +179,7 @@ def test_usage_matches_when_any_one_of_several_mappings_matches():
 
 
 def test_usage_tolerates_an_evaluation_without_a_context():
+    """Usage tolerates an evaluation without a context."""
     evaluation = ev("User", "Document", "read")
     evaluation.context = None
     resp = evaluate_usage(intent(evaluation), capability(mapping_with_ids("user-1", "doc-1")))
@@ -169,6 +187,7 @@ def test_usage_tolerates_an_evaluation_without_a_context():
 
 
 def test_usage_resolves_parameter_references():
+    """Usage resolves parameter references."""
     params = {"sub": "user-2", "docId": "doc-2"}
     resp = evaluate_usage(
         intent(ev("User", "Document", "read", {"docId": "doc-1"})),
@@ -187,6 +206,7 @@ def test_usage_resolves_parameter_references():
 
 
 def test_usage_resolves_dotted_paths_into_nested_maps():
+    """Usage resolves dotted paths into nested maps."""
     params = {"user": {"profile": {"id": "user-1"}}}
     resp = evaluate_usage(
         intent(ev("User", "Document", "read")),
@@ -197,6 +217,7 @@ def test_usage_resolves_dotted_paths_into_nested_maps():
 
 
 def test_usage_builds_one_request_per_subject_and_resource_pair():
+    """Usage builds one request per subject and resource pair."""
     coaz = CoazMapping(
         subject=[Entity("User", "user-1"), Entity("User", "user-2")],
         resource=[Entity("Document", "doc-1"), Entity("Document", "doc-2")],
@@ -233,6 +254,7 @@ def test_usage_builds_one_request_per_subject_and_resource_pair():
     ],
 )
 def test_usage_drops_an_entity_whose_id_cannot_be_resolved(subject_id, resource_id, eval_params, params):
+    """Usage drops an entity whose id cannot be resolved."""
     resp = evaluate_usage(
         intent(ev("User", "Document", "read", eval_params)),
         capability(mapping_with_ids(subject_id, resource_id)),
@@ -244,6 +266,7 @@ def test_usage_drops_an_entity_whose_id_cannot_be_resolved(subject_id, resource_
 
 
 def test_usage_keeps_the_resolvable_entities_of_the_same_mapping():
+    """Usage keeps the resolvable entities of the same mapping."""
     coaz = CoazMapping(
         subject=[Entity("User", "$sub"), Entity("User", "user-2")],
         resource=[Entity("Document", "doc-1")],
@@ -255,6 +278,7 @@ def test_usage_keeps_the_resolvable_entities_of_the_same_mapping():
 
 @pytest.mark.parametrize(("subject_id", "resource_id"), [("", "doc-1"), ("user-1", ""), ("", "")])
 def test_usage_with_an_empty_literal_id_is_a_search_match(subject_id, resource_id):
+    """Usage with an empty literal id is a search match."""
     resp = evaluate_usage(intent(ev("User", "Document", "read")), capability(mapping_with_ids(subject_id, resource_id)))
     assert resp.decision is True
     assert resp.context.reason_code == ibac.REASON_INTENT_MATCH_SEARCH
@@ -262,6 +286,7 @@ def test_usage_with_an_empty_literal_id_is_a_search_match(subject_id, resource_i
 
 
 def test_usage_returns_only_the_requests_with_complete_ids():
+    """Usage returns only the requests with complete ids."""
     valid = CoazMapping(subject=[Entity("Service", "service-1")], resource=[Entity("Folder", "folder-1")])
     resp = evaluate_usage(
         intent(ev("User", "Document", "read"), ev("Service", "Folder", "read")),
@@ -273,6 +298,7 @@ def test_usage_returns_only_the_requests_with_complete_ids():
 
 
 def test_usage_collects_the_requests_of_every_matching_evaluation_only():
+    """Usage collects the requests of every matching evaluation only."""
     resp = evaluate_usage(
         intent(ev("User", "Document", "read"), ev("Service", "Folder", "read")),
         capability(mapping_with_ids("user-1", "doc-1")),
@@ -286,6 +312,7 @@ def test_usage_collects_the_requests_of_every_matching_evaluation_only():
 
 
 def test_usage_without_an_action_matches_only_an_unrestricted_mapping_and_as_a_search():
+    """Usage without an action matches only an unrestricted mapping and as a search."""
     search = evaluate_usage(intent(ev("User", "Document", None)), capability(mapping_with_ids("user-1", "doc-1")))
     assert search.decision is True
     assert search.context.reason_code == ibac.REASON_INTENT_MATCH_SEARCH
@@ -297,10 +324,12 @@ def test_usage_without_an_action_matches_only_an_unrestricted_mapping_and_as_a_s
 
 
 def matched(response):
+    """Matched."""
     return [e.matched_skills for e in response.context.evaluations]
 
 
 def test_discovery_without_mappings_is_a_missing_mapping():
+    """Discovery without mappings is a missing mapping."""
     one = Intent(evaluations=[ev("User", "Document", "read")])
     resp = evaluate_discovery(one, Capability(skills=[skill("skill-1")]))
     assert resp.decision is False
@@ -310,6 +339,7 @@ def test_discovery_without_mappings_is_a_missing_mapping():
 
 
 def test_discovery_mismatch_lists_every_evaluation_with_no_skills():
+    """Discovery mismatch lists every evaluation with no skills."""
     one = Intent(evaluations=[ev("User", "Document", "read")])
     resp = evaluate_discovery(one, Capability(skills=[skill("skill-1", mapping("Service", "Document"))]))
     assert resp.decision is False
@@ -322,6 +352,7 @@ def test_discovery_mismatch_lists_every_evaluation_with_no_skills():
 
 
 def test_discovery_lists_every_evaluation_and_the_skills_that_matched_it():
+    """Discovery lists every evaluation and the skills that matched it."""
     two = Intent(evaluations=[ev("User", "Document", "read"), ev("Service", "Report", "delete")])
     cap = Capability(
         skills=[
@@ -337,12 +368,14 @@ def test_discovery_lists_every_evaluation_and_the_skills_that_matched_it():
 
 
 def test_discovery_matches_the_same_skill_under_several_evaluations():
+    """Discovery matches the same skill under several evaluations."""
     two = Intent(evaluations=[ev("User", "Document", "read"), ev("User", "Document", "write")])
     resp = evaluate_discovery(two, Capability(skills=[skill("skill-1", mapping("User", "Document"))]))
     assert matched(resp) == [["skill-1"], ["skill-1"]]
 
 
 def test_discovery_collects_skills_per_evaluation_and_in_capability_order():
+    """Discovery collects skills per evaluation and in capability order."""
     two = Intent(evaluations=[ev("User", "Document", "read"), ev("Service", "Document", "write")])
     cap = Capability(
         skills=[
@@ -363,12 +396,14 @@ def test_discovery_collects_skills_per_evaluation_and_in_capability_order():
 
 
 def test_discovery_of_an_empty_intent_is_a_mismatch():
+    """Discovery of an empty intent is a mismatch."""
     resp = evaluate_discovery(Intent(), Capability(skills=[skill("skill-1", mapping("User", "Document"))]))
     assert resp.decision is False
     assert resp.context.reason_code == ibac.REASON_INTENT_MISMATCH
 
 
 def test_discovery_ignores_ids():
+    """Discovery ignores ids."""
     evaluation = ev("User", "Document", "read")
     evaluation.subject.id = "user-1"
     coaz = mapping("User", "Document")
@@ -381,6 +416,7 @@ def test_discovery_ignores_ids():
 
 
 def test_discovery_record_names_the_skills_in_order_and_the_matches_per_evaluation():
+    """Discovery record names the skills in order and the matches per evaluation."""
     cap = Capability(
         name="Docs",
         skills=[skill("b", mapping("User", "Folder", "read")), skill("a", mapping("User", "Document", "read"))],
@@ -407,6 +443,7 @@ def test_discovery_record_names_the_skills_in_order_and_the_matches_per_evaluati
 
 
 def test_usage_record_names_the_skill_and_the_reason_code():
+    """Usage record names the skill and the reason code."""
     cap = capability(mapping_with_ids("u1", "d1"))
     record = ibac.usage_audit_record(evaluate_usage(intent(ev("User", "Document", "read")), cap), cap)
     assert record["decision"] == "AUTHORIZED"
@@ -440,6 +477,7 @@ RAW = [
 
 
 def test_read_mappings_from_an_mcp_entry_and_from_an_a2a_skill():
+    """Read mappings from an mcp entry and from an a2a skill."""
     mcp = {"name": "read_document", "inputSchema": {"type": "object"}, "_meta": {"x-coaz-mappings": RAW}}
     assert read_mappings(mcp) == [WANT]
     a2a = {"id": "skill-1", "name": "Skill One", "x-coaz-mappings": RAW}
@@ -460,6 +498,7 @@ def test_read_mappings_from_an_mcp_entry_and_from_an_a2a_skill():
     ],
 )
 def test_read_mappings_returns_none_without_an_error(entry):
+    """Read mappings returns none without an error."""
     assert read_mappings(entry) == []
 
 
@@ -486,11 +525,13 @@ def test_read_mappings_returns_none_without_an_error(entry):
     ],
 )
 def test_read_mappings_rejects_what_cannot_be_read(entry, want):
+    """Read mappings rejects what cannot be read."""
     with pytest.raises(ibac.ValidationError, match=re.escape(want)):
         read_mappings(entry)
 
 
 def test_capability_from_card_reads_every_skill():
+    """Capability from card reads every skill."""
     card = {
         "name": "Docs",
         "skills": [
@@ -507,6 +548,7 @@ def test_capability_from_card_reads_every_skill():
 
 
 def test_intent_from_dict_reads_the_agent_artifact():
+    """Intent from dict reads the agent artifact."""
     raw = {
         "prompt": "p",
         "evaluations": [

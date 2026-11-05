@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 from app import ibac
-from app.fleet import engine_params, load_fleet
+from app.fleet import engine_params, load_fleet, params_for
 
 FLEET = Path(__file__).resolve().parent.parent / "data" / "fleet.json"
 # The dataset the fleet speaks the vocabulary of, when the repository checkout has it.
@@ -15,6 +15,7 @@ MANIFEST = Path(__file__).resolve().parents[4] / "instant-stack" / "data" / "int
 
 
 def intent(*evaluations, prompt="p"):
+    """Intent."""
     return ibac.Intent.from_dict({"prompt": prompt, "evaluations": list(evaluations)})
 
 
@@ -31,6 +32,7 @@ def evaluation(subject, action, resource, parameters=None):
 
 
 def test_shipped_fleet_loads_with_unique_ids_and_readable_mappings():
+    """Shipped fleet loads with unique ids and readable mappings."""
     fleet = load_fleet(FLEET)
     ids = [a.id for a in fleet.agents]
     assert len(ids) == len(set(ids))
@@ -64,6 +66,7 @@ def test_every_mapping_is_a_granted_triple_of_the_intent_dataset():
 
 
 def test_subjects_reference_the_token_and_resources_are_literal_empty_or_parameters():
+    """Subjects reference the token and resources are literal empty or parameters."""
     fleet = load_fleet(FLEET)
     for capability in fleet.capabilities.values():
         for skill in capability.skills:
@@ -78,11 +81,13 @@ def test_subjects_reference_the_token_and_resources_are_literal_empty_or_paramet
 
 
 def run(fleet, persona_type, persona_id, *evaluations):
+    """Run."""
     params = engine_params(persona_type, persona_id, {"sub": persona_id, "aud": "intent_agent"}, list(evaluations))
     return fleet.run(intent(*evaluations), params, ibac.AuditOptions(subject=persona_id, actors_chain=("console",)))
 
 
 def test_a_quote_prompt_routes_to_the_trading_desk_and_generates_a_concrete_request():
+    """A quote prompt routes to the trading desk and generates a concrete request."""
     fleet = load_fleet(FLEET)
     result = run(fleet, "User", "roy", evaluation(("User", "roy"), "CAN_RETRIEVE", ("Quote", "stock_quote")))
     by_agent = {d["agent"]: d for d in result["discovery"]}
@@ -109,6 +114,7 @@ def test_a_quote_prompt_routes_to_the_trading_desk_and_generates_a_concrete_requ
 
 
 def test_a_parameter_reference_resolves_from_the_intent():
+    """A parameter reference resolves from the intent."""
     fleet = load_fleet(FLEET)
     result = run(
         fleet,
@@ -124,12 +130,13 @@ def test_a_parameter_reference_resolves_from_the_intent():
             "subject": {"type": "Customer", "id": "bob"},
             "resource": {"type": "AccountTier", "id": "tier_1"},
             "action": {"name": "HAS"},
-            "context": {"input_params": result["params"]},
+            "context": {"input_params": params_for(result["params"], 0)},
         },
     ]
 
 
 def test_a_search_shaped_intent_matches_as_a_search():
+    """A search shaped intent matches as a search."""
     fleet = load_fleet(FLEET)
     result = run(fleet, "User", "leslie", evaluation(("User", "leslie"), "CAN_VIEW", ("Invoice",)))
     [usage] = result["usage"]
@@ -139,13 +146,15 @@ def test_a_search_shaped_intent_matches_as_a_search():
 
 
 def test_an_unmapped_action_matches_nobody():
+    """An unmapped action matches nobody."""
     fleet = load_fleet(FLEET)
     result = run(fleet, "User", "flo", evaluation(("User", "flo"), "AFFECTED", ("Account",)))
     assert result["summary"]["matched_agents"] == []
     assert result["usage"] == []
 
 
-def test_engine_params_merge_the_intent_parameters_without_the_markers():
+def test_engine_params_scope_the_parameters_to_their_evaluation_without_the_markers():
+    """Each evaluation keeps its own parameters; the agent's markers and unknown token claims are dropped."""
     params = engine_params(
         "Customer",
         "rebecca",
@@ -157,10 +166,37 @@ def test_engine_params_merge_the_intent_parameters_without_the_markers():
     )
     assert params["token"] == {"sub": "rebecca", "act": {"sub": "console"}}
     assert params["subject"] == {"type": "Customer", "id": "rebecca"}
-    assert params["parameters"] == {"tier": "tier_3", "attribute": "price"}
+    assert [e["parameters"] for e in params["evaluations"]] == [
+        {"tier": "tier_3"},
+        {"tier": "tier_1", "attribute": "price"},
+    ]
+    assert params_for(params, 1)["parameters"] == {"tier": "tier_1", "attribute": "price"}
+    assert params_for(params, 7)["parameters"] == {}
+
+
+def test_two_evaluations_with_the_same_parameter_name_generate_two_distinct_requests():
+    """'tier_1 for me, tier_3 for ted' must not become tier_1 twice: each request carries its own tier."""
+    fleet = load_fleet(FLEET)
+    result = run(
+        fleet,
+        "Customer",
+        "bob",
+        evaluation(("Customer", "bob"), "HAS", ("AccountTier",), parameters={"tier": "tier_1"}),
+        evaluation(("Customer", "bob"), "HAS", ("AccountTier",), parameters={"tier": "tier_3"}),
+    )
+    [usage] = result["usage"]
+    assert usage["reason_code"] == ibac.REASON_INTENT_MATCH_AUTHZEN_REQUIRED
+    assert [r["resource"]["id"] for r in usage["requests"]] == ["tier_1", "tier_3"]
+    assert [r["context"]["input_params"]["parameters"] for r in usage["requests"]] == [
+        {"tier": "tier_1"},
+        {"tier": "tier_3"},
+    ]
+    # One record for the skill, however many evaluations it was confirmed against.
+    assert sum(1 for r in result["records"] if r["action"] == "IBAC_USAGE") == 1
 
 
 def test_a_fleet_with_a_bad_mapping_is_refused(tmp_path):
+    """A fleet with a bad mapping is refused."""
     bad = tmp_path / "fleet.json"
     bad.write_text(
         json.dumps(
@@ -195,4 +231,4 @@ def test_engine_params_ignore_a_malformed_context():
             {"context": {"parameters": {"tier": "tier_1"}}},
         ],
     )
-    assert params["parameters"] == {"tier": "tier_1"}
+    assert [e["parameters"] for e in params["evaluations"]] == [{}, {}, {}, {}, {"tier": "tier_1"}]
