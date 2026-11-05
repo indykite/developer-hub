@@ -316,11 +316,15 @@ def push_update():
         "timestamp": timestamp,
         "service": service,
     }
-    # Gateway records of the Intent Agent call (action INTENT) and of the IBAC
-    # engine (IBAC_DISCOVERY / IBAC_USAGE) carry more than the classic seven
-    # fields: the prompt (with audit.include_prompt), the call duration, the
-    # capability and skill the intent was matched against.
+    # Every gateway record names the delegation chain of the hop (oldest actor
+    # first), the trace and the token it is about. Records of the Intent Agent
+    # call (action INTENT) and of the IBAC engine (IBAC_DISCOVERY / IBAC_USAGE)
+    # carry more: the prompt (with audit.include_prompt), the call duration,
+    # the capability and skill the intent was matched against.
     for key, out in (
+        ("actorsChain", "actors_chain"),
+        ("traceID", "trace_id"),
+        ("tokenID", "token_id"),
         ("prompt", "prompt"),
         ("durationMs", "duration_ms"),
         ("capabilityName", "capability_name"),

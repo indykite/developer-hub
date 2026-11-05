@@ -224,10 +224,14 @@ function renderGallery() {
   for (const p of cat?.prompts ?? []) {
     const persona = state.config.personas.find((x) => x.id === p.persona);
     const card = el("button", "card");
+    const text = el("div", "text", p.text);
+    text.title = p.text;
+    const expect = el("div", "expect", p.expect ? `→ ${p.expect}` : "");
+    if (p.expect) expect.title = p.expect;
     card.append(
       el("div", "who", `${persona?.name ?? p.persona} · ${persona?.type ?? ""}${p.auth_mode !== "delegation" ? ` · ${p.auth_mode.replace("_", " ")}` : ""}`),
-      el("div", "text", p.text),
-      el("div", "expect", p.expect ? `→ ${p.expect}` : ""),
+      text,
+      expect,
     );
     card.addEventListener("click", () => {
       state.persona = persona;
@@ -933,16 +937,16 @@ function graphStyle() {
     { selector: "node", style: {
       shape: "ellipse", width: "data(size)", height: "data(size)",
       "background-color": t.tealSoft, "border-width": 2, "border-color": t.teal,
-      label: "data(label)", "font-family": "Inter, Arial, sans-serif", "font-size": 11, color: t.text,
-      "text-valign": "bottom", "text-margin-y": 6, "text-wrap": "ellipsis", "text-max-width": 120,
+      label: "data(label)", "font-family": "Inter, Arial, sans-serif", "font-size": 14, "font-weight": 500, color: t.text,
+      "text-valign": "bottom", "text-margin-y": 7, "text-wrap": "ellipsis", "text-max-width": 160,
       "text-background-color": t.card, "text-background-opacity": 0.85, "text-background-padding": 2, "text-background-shape": "round-rectangle",
       "transition-property": "border-width, opacity", "transition-duration": "0.15s",
     } },
     { selector: "node[?identity]", style: { "background-color": t.blueSoft, "border-color": t.blue, "outline-width": 1, "outline-color": t.blue, "outline-offset": 3, "outline-opacity": 0.45 } },
-    { selector: "node[kind = 'persona']", style: { "background-color": t.blue, "border-color": t.blue, color: t.text, "font-weight": 600, "font-size": 12, "text-max-width": 220 } },
+    { selector: "node[kind = 'persona']", style: { "background-color": t.blue, "border-color": t.blue, color: t.text, "font-weight": 600, "font-size": 15, "text-max-width": 220 } },
     { selector: "edge", style: {
       "curve-style": "bezier", width: 1.2, "line-color": t.line, "target-arrow-shape": "triangle", "target-arrow-color": t.line, "arrow-scale": 0.8,
-      label: "data(label)", "font-family": "JetBrains Mono, monospace", "font-size": 9, color: t.sub, "text-rotation": "autorotate",
+      label: "data(label)", "font-family": "JetBrains Mono, monospace", "font-size": 11, color: t.sub, "text-rotation": "autorotate",
       "text-background-color": t.card, "text-background-opacity": 0.9, "text-background-padding": 2, "text-background-shape": "round-rectangle",
     } },
     // Policy edges are dense around the identity types: their labels appear for the node you click.
@@ -954,7 +958,8 @@ function graphStyle() {
   ];
 }
 
-const nodeSize = (count) => Math.max(26, Math.min(70, 22 + 7 * Math.sqrt(count || 1)));
+// Type nodes are large enough to read from the back of a room: 44 px for a single instance, up to 96 px.
+const nodeSize = (count) => Math.max(44, Math.min(96, 36 + 9 * Math.sqrt(count || 1)));
 
 async function schemaElements(withPolicies) {
   const schema = state.schema || (await fetch("/api/schema").then((r) => (r.ok ? r.json() : Promise.reject(r))));
@@ -1079,7 +1084,7 @@ function bindGraphControls() {
     state.graph.persona = state.config.personas.find((p) => p.id === select.value);
     renderGraph();
   });
-  $("#graphRelayout").addEventListener("click", () => state.graph.cy?.layout(graphLayout()).run());
+  $("#graphRelayout").addEventListener("click", () => state.graph.cy && runLayout(state.graph.cy));
   // Keyboard route into the canvas: the picker opens the same details panel a tap on a node does.
   $("#graphNodePick").addEventListener("change", (e) => {
     const cy = state.graph.cy;
@@ -1116,8 +1121,21 @@ function fillNodePicker(nodes) {
 }
 
 const graphLayout = () => (window.cytoscapeFcose
-  ? { name: "fcose", animate: false, fit: true, padding: 40, idealEdgeLength: 110, nodeRepulsion: 9000, quality: "default", randomize: true }
-  : { name: "cose", animate: false, fit: true, padding: 40 });
+  ? { name: "fcose", animate: false, fit: true, padding: 24, idealEdgeLength: 150, nodeRepulsion: 14000, quality: "default", randomize: true }
+  : { name: "cose", animate: false, fit: true, padding: 24 });
+
+// Opening zoom: fit, then never start below 1:1 so the type names are readable at once;
+// a graph that does not fit at 1:1 is centred and left to pan.
+const MIN_OPENING_ZOOM = 1.0;
+
+function runLayout(cy) {
+  cy.layout(graphLayout()).run();
+  cy.fit(undefined, 24);
+  if (cy.zoom() < MIN_OPENING_ZOOM) {
+    cy.zoom({ level: MIN_OPENING_ZOOM, renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 } });
+    cy.center();
+  }
+}
 
 async function renderGraph() {
   bindGraphControls();
@@ -1151,7 +1169,7 @@ async function renderGraph() {
   if (render !== g.render) return;
   if (g.cy) g.cy.destroy();
   g.cy = window.cytoscape({ container: $("#graphCanvas"), elements: [...elements.nodes, ...elements.edges], style: graphStyle(), wheelSensitivity: 0.2 });
-  g.cy.layout(graphLayout()).run();
+  runLayout(g.cy);
   fillNodePicker(elements.nodes);
   g.cy.on("tap", "node", (e) => {
     focusGraphNode(g.cy, e.target);

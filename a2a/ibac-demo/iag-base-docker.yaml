@@ -4,7 +4,7 @@ version: '3.9'
 services:
   iag-base:
     # The gateway image is loaded locally, not pulled: the release this demo
-    # needs (2.94) is not on Docker Hub yet. Load it from your registry and
+    # needs (2.99) is not on Docker Hub yet. Load it from your registry and
     # tag it `agent-gateway:latest`, or name it in .env as AGENT_GATEWAY_IMAGE;
     # pull_policy never makes compose fail loudly instead of pulling. What the
     # demo relies on: MCP proxying (JARVIS_PROTECTED_AGENT_PROTOCOL: mcp, used
@@ -17,7 +17,10 @@ services:
     # before their expires_in from 2.91; admission decided by ONE AuthZEN
     # evaluation over the delegation chain ($ik_token.act_chain, policy
     # person-can-reach-agent in the dataset) instead of the CIQ workflow lookup,
-    # and MCP gateways serving one endpoint with OAuth discovery, from 2.93.
+    # and MCP gateways serving one endpoint with OAuth discovery, from 2.93;
+    # the delegated token extension declared on the agent cards, the MCP
+    # capabilities and the protected resource metadata, and named in
+    # A2A-Extensions on every forwarded call, from 2.99.
     # All gateways share this image.
     image: ${AGENT_GATEWAY_IMAGE:-agent-gateway:latest}
     pull_policy: never

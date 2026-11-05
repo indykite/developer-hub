@@ -43,6 +43,71 @@ Support, each with action cards that send the prompts below (see
 things: customers also get a **Family** group, staff get the Trading desk
 and the Support inbox.
 
+## The gateway on stage (release 2.99)
+
+Every agent sits behind the Agent Gateway release 2.99 (loaded locally, see
+the README). What a gateway does on each hop, and where the audience sees
+it in this script:
+
+| Gateway behaviour | Since | Where to see it |
+| --- | --- | --- |
+| Token Service mode | 2.89 | The TOKEN card of every hop (two in a row in Act 7); the **chain** line under every card; Bruno `chain-guard` |
+| One admission question per hop | 2.93 | Every AUTHORIZED / NOT AUTHORIZED card; Act 4: deny, grant, allow with no gateway touched |
+| The subject comes from the graph | 2.82 | "who am I" in every act; the subject on the cards is the Auth0 `sub` |
+| Tokens reused | 2.91 | Stagecraft, *the token-reuse beat* |
+| The agent card at the gateway | 2.87 | Stagecraft, *the card beat* |
+| The delegated token extension | 2.99 | Stagecraft, *the card beat* and *the discovery beat*: `capabilities.extensions` and `mcp_extensions` |
+| MCP front door | 2.93, 2.94 | Stagecraft, *the discovery beat*; Act 5 (two people, one MCP gateway) |
+| IBAC switch | 2.90 | Stagecraft, *the intent beat* |
+| The chain in every audit record | audit | The chain line under every card; the trace id is its tooltip |
+| No clock on the answer | 2.82 | Act 2 step 2 and Act 4 step 3: slow composite answers arrive whole |
+
+What each line means:
+
+- **Token Service mode**: the person's Auth0 token stays in `Authorization`;
+  the delegation travels in `X-IK-Token` and nests the chain hop by hop; one
+  shared audience; a workflow starts only at the agent the token was issued
+  for, so a person's token sent to a later gateway directly is refused.
+- **One admission question per hop**: may this subject `CAN_TRIGGER` *this*
+  agent over *this* chain? The gateway asks AuthZEN once; the dataset's
+  `person-can-reach-agent` policy compares `$ik_token.act_chain` with a
+  workflow path in the graph. The gateway keeps no workflow list.
+- **The subject comes from the graph**: whoami resolves the token through the
+  Token Introspect to a `Person`; no subject type is configured on a gateway.
+- **Tokens reused**: a gateway keeps its client-credentials token until
+  shortly before `expires_in`, one Auth0 grant per audience per lifetime.
+- **The agent card at the gateway**: `/.well-known/agent-card.json` with the
+  interfaces pointing at the gateway and Auth0 as security scheme; the skills
+  only with a token.
+- **The delegated token extension**: a gateway with a Token Service tells
+  callers that the target takes an `X-IK-Token`. On the agent cards it serves
+  it is `https://indykite.com/extensions/delegated-token/v1` in
+  `capabilities.extensions` (not required: a caller without a delegation
+  still gets in with its own token), and every call it forwards names it in
+  `A2A-Extensions`. In front of an MCP server it is
+  `com.indykite/delegated-token` in the server's capabilities and in
+  `mcp_extensions` of the protected resource metadata. The declaration is
+  the contract behind the chain line: an agent that sees it knows which
+  header carries the delegation to pass on.
+- **MCP front door**: one endpoint at `service.base_url`, protocol revisions
+  enforced (2025-06-18 to 2026-07-28), RFC 9728 protected-resource metadata
+  and a `WWW-Authenticate` that points at it; since 2.94 the server's
+  `initialize` answer is checked too.
+- **IBAC switch**: with `ibac.enabled` every prompt goes to the Intent Agent
+  first; a prompt without an intent is answered by the gateway itself, with
+  `intent_error`, and audited as `INTENT`.
+- **The chain in every audit record**: `actorsChain`, `traceID` and the
+  `tokenID` it concerns.
+- **No clock on the answer**: a long agent answer is never cut by the gateway.
+
+Not in 2.99: the IBAC discovery engine (`IBAC_DISCOVERY` records, the
+`x-coaz-mappings` of the agent cards matched against the intent) is in the
+gateway's source but not linked into the binary. The console's "IBAC
+discovery preview" line shows what it would decide.
+
+Each act below ends with a **Spot the gateway** line: the one thing on the
+terminal that is the gateway's work in that act.
+
 ## Prerequisites
 
 1. **Dataset provisioned**: instant-stack `data/ibac` (`DATASET=ibac`) with
@@ -121,6 +186,11 @@ with that id in the tenant and they can log in.
 6. Click **why?** on a green card
    → `Vivienne → support → CAN_TRIGGER → wf1`, drawn live from the graph.
 
+**Spot the gateway**: the first card of the day. The subject is Vivienne's
+Auth0 `sub` (whoami resolved it to her Person node), the chain line reads
+`orchestrator`, and the badge is one AuthZEN answer: `person-can-reach-agent`
+found `wf1 -INVOKES-> orchestrator` behind her department.
+
 ## Act 2 - Trading desk: quotes and authorization (log in as Millicent)
 
 1. **"What is the price of META?"**
@@ -148,6 +218,11 @@ Note: evaluations through the console carry the logged-in person's token
 and the platform binds them to that token's subject - asking about a
 *different* person always returns `false` by design.
 
+**Spot the gateway**: on the retriever's card the chain line reads
+`orchestrator → retriever`; on the MCP gateway's, `orchestrator → retriever
+→ mcp`. Each hop asked its own question, for its own agent, with the chain
+one hop longer - the same person, three decisions.
+
 ## Act 3 - Weather: two paths (any login)
 
 1. **"What's the weather in London?"** → the weather agent, direct
@@ -155,6 +230,11 @@ and the platform binds them to that token's subject - asking about a
 2. **"What's the weather at CanBank HQ?"** → the HQ keyword routes to
    `get-hq-weather` through the IndyKite MCP server: the `hq_weather` node's
    `current` and `units` are populated live by the external data resolvers.
+
+**Spot the gateway**: two prompts, two chains. The London prompt ends at
+`weather`; the HQ prompt ends one hop further, at `mcp`. A chain is a
+different resource for the admission question, so the graph needs a
+workflow path for each.
 
 ## Act 4 - Google Drive and the grant (profile `drive`; Millicent + Cookie)
 
@@ -181,6 +261,11 @@ The deny → remediate → allow beat: second browser logged in as **Cookie**
    prompt → **green**. *Authorization is data.*
 5. Millicent clicks **revoke access**; Cookie's retry is red again.
 
+**Spot the gateway**: between Cookie's red card and her green one no
+gateway was touched. One edge was written, and the next admission question
+got another answer once the 30 s decision cache (`IAG_AUTHZEN_CACHE_TTL`)
+had turned over.
+
 ## Act 5 - Parallel multi-agent MCP (Millicent + Marmaduke)
 
 Two people, two agents, one MCP gateway, at the same time: in two browsers
@@ -190,6 +275,10 @@ action_name CAN_TRIGGER. Report the raw decision."** (each with their own
 subject from "who am I"). Millicent is **allowed**, Marmaduke **denied** -
 same retriever, same `mcp-iag`, separate MCP sessions, decisions bound to
 each token.
+
+**Spot the gateway**: one MCP gateway, one endpoint, two sessions whose
+chains both end at `mcp`. Decisions are cached per subject and chain, so
+Millicent's allow never leaks to Marmaduke.
 
 ## Act 6 - Customers and guardians
 
@@ -226,6 +315,11 @@ each token.
    → red **NOT AUTHORIZED** on `crm-iag`: no `CAN_TRIGGER` path from a
    customer to `wf-crm`. The why? modal draws the two disconnected nodes.
 
+**Spot the gateway**: `crm-iag`'s card carries the chain `orchestrator →
+crm`, the delegation the gateway minted. The second TOKEN card is the CRM
+agent's own exchange at Salesforce (RFC 7523), a trust domain the gateway
+never enters.
+
 ## Stagecraft
 
 - **The contrast shot** (erp): the database hides nothing -
@@ -250,6 +344,47 @@ each token.
   never reaches the orchestrator: greetings, weather and Drive prompts have
   no policy vocabulary, so run those beats with IBAC off, or show the
   refusal as the beat.
+- **The card beat** (gateway 2.87): the gateway serves the protected
+  agent's card itself -
+
+  ```bash
+  curl -s http://localhost:9881/.well-known/agent-card.json | jq .
+  ```
+
+  the orchestrator's card with every interface URL rewritten to the
+  gateway, Auth0 as the security scheme and **no skills**: the public card.
+  Under `capabilities.extensions` sits the delegated token extension
+  (`https://indykite.com/extensions/delegated-token/v1`, gateway 2.99): the
+  gateway's promise that this agent takes an `X-IK-Token`. Add
+  `-H "Authorization: Bearer <a person's token>"` (copied from the console
+  session, as for Bruno) and the skills appear - after the same admission
+  question as any prompt.
+- **The discovery beat** (gateway 2.93): the MCP gateway tells a client
+  where to get a token, as the MCP authorization specification asks -
+
+  ```bash
+  curl -s http://localhost:9886/.well-known/oauth-protected-resource/mcp/v1/gid:<PROJECT_GID> | jq .
+  curl -si -X POST http://localhost:9886/mcp/v1/gid:<PROJECT_GID> \
+    -H 'Content-Type: application/json' -H 'Mcp-Protocol-Version: 2025-11-25' \
+    -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' | head -8
+  ```
+
+  The first answers the RFC 9728 metadata without any token: `resource` is
+  the gateway's `service.base_url`, `authorization_servers` the Auth0
+  issuer, and `mcp_extensions` lists `com.indykite/delegated-token` (gateway
+  2.99). The second, tokenless, is a `401` whose `WWW-Authenticate` names
+  that metadata URL. Any other path on that port is a `404` before a token
+  is read: the gateway serves one MCP endpoint.
+- **The token-reuse beat** (gateway 2.91):
+
+  ```bash
+  docker logs ibac-demo-auth0-bridge-1 2>&1 | grep "token caller"
+  ```
+
+  one `grant=client_credentials` line per gateway per token lifetime. Send
+  three more prompts: cards appear, no new line - the gateway kept its
+  token.
 - The first prompt per login is slower (MCP sessions open); warm for
-  `MCP_SESSION_TTL` afterwards. Gateways cache each subject's workflow set
-  for `IAG_AUTHZEN_CACHE_TTL` (30 s), which paces the grant/revoke beats.
+  `MCP_SESSION_TTL` afterwards. Gateways cache each admission decision per
+  subject and chain for `IAG_AUTHZEN_CACHE_TTL` (30 s), which paces the
+  grant/revoke beats.

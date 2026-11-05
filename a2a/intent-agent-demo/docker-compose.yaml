@@ -76,7 +76,7 @@ services:
   # in .example.env). Distroless, non-root, nothing writable but /tmp - audit
   # goes to the console webhook.
   intent-agent:
-    image: ${INTENT_AGENT_IMAGE:-docker.io/indykite/intent-agent:1.0.0@sha256:0b857bc6edcf5ab5f206b7111471c11f9e5d9854a09e818e0081172179b4fe3c}
+    image: ${INTENT_AGENT_IMAGE:-docker.io/indykite/intent-agent:1.1.0@sha256:a9e8271ada04e13f52218046df0c88641274fdf7658bacd50e4c4bda6ee3d71c}
     expose:
       - "6003"
       - "8001"
@@ -116,7 +116,7 @@ services:
   # Second instance + balancer (profile "cluster"): both instances share one
   # schema/policy cache entry in Redis; the console then talks to the balancer.
   intent-agent-2:
-    image: ${INTENT_AGENT_IMAGE:-docker.io/indykite/intent-agent:1.0.0@sha256:0b857bc6edcf5ab5f206b7111471c11f9e5d9854a09e818e0081172179b4fe3c}
+    image: ${INTENT_AGENT_IMAGE:-docker.io/indykite/intent-agent:1.1.0@sha256:a9e8271ada04e13f52218046df0c88641274fdf7658bacd50e4c4bda6ee3d71c}
     profiles: ["cluster"]
     expose:
       - "6003"

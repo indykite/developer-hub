@@ -34,6 +34,7 @@ What the console shows, live:
   literally everything the agent is allowed to say.
 - **Audit** - every record the Intent Agent and the Token Service delivered to
   the console's webhook, streamed as it arrives.
+- **Ontology** - the schema graph and the reach of one identity, drawn.
 - **Architecture** - the diagram and the eight numbered steps.
 
 ## Contents
@@ -89,7 +90,7 @@ minute and the Intent Agent refuses prompts until it can read it.
 
 ### 2. The Intent Agent image
 
-The stack runs the published image, `indykite/intent-agent:1.0.0` from
+The stack runs the published image, `indykite/intent-agent:1.1.0` from
 Docker Hub, pinned by digest in `docker-compose.yaml` and in the chart.
 Nothing to do: `make up` pulls it.
 
@@ -214,7 +215,7 @@ share ports. All commands run from `a2a/intent-agent-demo`.
    under another release name in step 4.
 
 4. Install the chart, naming your platform region (the agent image defaults
-   to the published `indykite/intent-agent:1.0.0`):
+   to the published `indykite/intent-agent:1.1.0`):
 
    ```sh
    helm install intent-demo chart -n intent-demo \

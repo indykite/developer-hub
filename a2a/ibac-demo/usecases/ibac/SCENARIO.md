@@ -35,6 +35,11 @@ times - it is the co-star.
    graph, before any SQL ran."
 5. **Click** **why?** on a green card → `Vivienne → support → CAN_TRIGGER →
    wf1`.
+6. **Point** at the chain line under the cards: `orchestrator`, then
+   `orchestrator → retriever`, then `orchestrator → retriever → mcp`.
+   *Say*: "Each gateway asked one question: may Vivienne reach *this* agent
+   over exactly *this* chain? The graph answered. No gateway holds a list of
+   who may do what."
 
 ## Scene 2 - The handoff (Vivienne fails, Millicent delivers)
 
@@ -63,7 +68,9 @@ times - it is the co-star.
 3. Cookie clicks **request access**; Millicent clicks **grant access** on
    the same card. *Say*: "One relationship was just written."
 4. Cookie, ~30 s later, **type** the same → **green**. *Say the punchline*:
-   "**Authorization is data.** We changed the graph; the behavior changed."
+   "**Authorization is data.** We changed the graph; the behavior changed.
+   The gateway asked the same question it always asks - the graph gave a
+   new answer."
 5. Millicent clicks **revoke access** → the world resets.
 
 ## Scene 4 - The customers (Cashmere, Cornelius, Marmaduke)

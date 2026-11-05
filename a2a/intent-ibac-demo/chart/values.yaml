@@ -1,0 +1,79 @@
+# intent-ibac-demo chart values.
+#
+# Secrets are never in values: two Secrets are created from the same files the
+# compose stack uses, before `helm install` (see README, "Run on minikube"):
+#   envSecret   - keys GEMINI_API_KEY, APP_AGENT_CREDENTIALS_TOKEN,
+#                 TOKEN_SERVICE_CLIENT_SECRET, AUDIT_WEBHOOK_API_KEY
+#                 (kubectl create secret generic ... --from-env-file=.env)
+#   filesSecret - keys token-service.yaml and demo-idp.key
+#                 (kubectl create secret generic ... --from-file=...)
+
+---
+# Names of Kubernetes Secret objects (created before install), not credentials.
+secrets:
+  envSecret: intent-ibac-secrets # skipcq: SCT-A000
+  filesSecret: intent-ibac-files # skipcq: SCT-A000
+  # Bump after re-creating either Secret: the console and the Token Service roll together
+  # (a Secret's name never changes, so the pods would otherwise keep the old contents).
+  revision: "1"
+
+# Public, non-secret platform settings.
+platform:
+  indykiteBaseUrl: https://eu.api.indykite.com
+
+intentAgent:
+  image:
+    repository: docker.io/indykite/intent-agent
+    tag: "1.1.0@sha256:a9e8271ada04e13f52218046df0c88641274fdf7658bacd50e4c4bda6ee3d71c"
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  intentPort: 6003
+  healthPort: 8001
+  logLevel: INFO
+  geminiModel: gemini-3.5-flash-lite
+  expectedTokenAudience: intent_agent
+  requestTimeoutSeconds: "10.0"
+  llmTimeoutSeconds: "3.0"
+  validationMaxRetries: "1"
+  resources:
+    requests: {cpu: 100m, memory: 256Mi}
+    limits: {cpu: "1", memory: 512Mi}
+
+tokenService:
+  image:
+    repository: docker.io/indykite/token-service
+    tag: "1.0.0@sha256:a1248b73ab22fb939e533455a89468b7112b2b938486d8feca818e17776a97e2"
+    pullPolicy: IfNotPresent
+  port: 8102
+  # Must equal idp.client_auth.client_id inside token-service.yaml.
+  clientId: intent-ibac
+  resources:
+    requests: {cpu: 50m, memory: 64Mi}
+    limits: {cpu: 500m, memory: 256Mi}
+
+console:
+  image:
+    repository: intent-ibac-console
+    tag: local
+    pullPolicy: IfNotPresent
+  port: 3400
+  logLevel: INFO
+  service:
+    # ClusterIP: the console's API has no caller authentication, so it is reached
+    # through `kubectl port-forward` on loopback. Set NodePort to expose it on the
+    # cluster's nodes deliberately (then `minikube service <release>-console --url`).
+    type: ClusterIP
+    # 32001 leaves 32000 to intent-agent-demo, so both charts can use NodePort on one cluster.
+    nodePort: 32001
+  resources:
+    requests: {cpu: 50m, memory: 128Mi}
+    limits: {cpu: 500m, memory: 256Mi}
+
+redis:
+  image:
+    repository: redis
+    tag: 8-alpine@sha256:21090af93f8324db2f0f0f4f38a7c60369d47d917e000c3423d89d2ae2883537
+    pullPolicy: IfNotPresent
+  resources:
+    requests: {cpu: 50m, memory: 64Mi}
+    limits: {cpu: 250m, memory: 128Mi}

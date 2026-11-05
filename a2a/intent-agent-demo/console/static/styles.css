@@ -397,10 +397,10 @@ textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px
 .graph-select { font: inherit; font-size: 13px; padding: 5px 10px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--card); color: var(--text); }
 .graph-btn { font-size: 12.5px; padding: 5px 11px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--sub); }
 .graph-btn:hover { color: var(--blue); border-color: var(--blue); }
-.graph-shell { display: grid; grid-template-columns: 1fr 300px; gap: 14px; min-height: 560px; }
+.graph-shell { display: grid; grid-template-columns: 1fr 300px; gap: 14px; min-height: 680px; }
 @media (max-width: 1000px) { .graph-shell { grid-template-columns: 1fr; } }
 .graph-canvas {
-  border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); box-shadow: var(--shadow); min-height: 560px;
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); box-shadow: var(--shadow); min-height: 680px;
   background-image: linear-gradient(var(--muted-bg) 1px, transparent 1px), linear-gradient(90deg, var(--muted-bg) 1px, transparent 1px);
   background-size: 28px 28px;
 }
@@ -417,3 +417,20 @@ textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px
 .graph-side .pol small { display: block; color: var(--sub); font-family: var(--mono); font-size: 10.5px; white-space: pre-wrap; word-break: break-word; margin-top: 2px; }
 .graph-legend { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; font-size: 11.5px; color: var(--sub); }
 .graph-legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; background: var(--dot); }
+
+/* the identity's live facts fold away above the prompt, closed by default */
+.facts-toggle { min-width: 0; flex: 1; }
+.facts-toggle > summary { list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 500; color: var(--text); padding: 4px 10px 4px 6px; border-radius: 999px; border: 1px solid transparent; }
+.facts-toggle > summary::-webkit-details-marker { display: none; }
+.facts-toggle > summary:hover { background: var(--card); border-color: var(--line); }
+.facts-toggle[open] > summary { color: var(--blue); }
+.facts-caret { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid var(--sub); transform: rotate(-90deg); transition: transform .15s; }
+.facts-toggle[open] .facts-caret { transform: none; border-top-color: var(--blue); }
+.facts-toggle .facts-wrap { margin-top: 8px; }
+
+/* gallery cards: long action names and expectations wrap inside the card, never spill out of it */
+.card { min-width: 0; overflow: hidden; display: flex; flex-direction: column; }
+.card .who, .card .text, .card .expect { min-width: 0; overflow-wrap: anywhere; word-break: break-word; }
+.card .text { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.card .expect { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; }
+.gallery-cards { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
