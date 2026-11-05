@@ -193,3 +193,19 @@ def test_markers_cover_every_bookkeeping_key_of_the_agent():
     assert plan.input_params == {"tier": "tier_1"}
     assert plan.carried == {}
     assert {"subject_source", "resource_source", "policy_fetch_failed"} <= MARKERS
+
+
+@pytest.mark.asyncio
+async def test_a_chain_of_gates_runs_in_order():
+    """Ask about leslie, then as leslie ask about flo, then as flo: the third waits for the second's answer."""
+    me = {"type": "User", "id": "millicent"}
+    gate1 = _ev(me, "CAN_QUERY_USER", {"type": "User", "id": "leslie"})
+    gate2 = _ev({"type": "User", "id": "leslie"}, "CAN_QUERY_USER", {"type": "User", "id": "flo"})
+    as_flo = _ev({"type": "User", "id": "flo"}, "WORKS_IN", {"type": "Department"})
+    plans = plan_decisions([gate1, gate2, as_flo], POLICIES, me)
+    assert [p.depends_on for p in plans] == [None, 0, 1]
+    platform = FakePlatform(gate_decision=True)
+    plans = await execute_plans(platform, plans)
+    assert [p.skipped for p in plans] == [None, None, None]
+    assert plans[2].result == {"results": [{"type": "Account", "id": "acc"}]}
+    assert [c[0] for c in platform.calls] == ["evaluations", "evaluations", "search_resource"]

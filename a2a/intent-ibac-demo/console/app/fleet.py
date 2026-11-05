@@ -168,8 +168,12 @@ _STRUCTURAL = frozenset(
 
 
 def _usage_per_evaluation(intent: ibac.Intent, capability: ibac.Capability, params: dict[str, Any]) -> ibac.Response:
-    """Confirm the skill against each evaluation with its own parameters and fold the answers into one response."""
-    if not intent.evaluations:
+    """Confirm the skill against each evaluation with its own parameters and fold the answers into one response.
+
+    The whole intent is still bounded by the engine's limit: an intent too large to be valid is refused as
+    one (`invalid_intent`), never confirmed piecewise.
+    """
+    if not intent.evaluations or len(intent.evaluations) > ibac.MAX_EVALUATIONS:
         return ibac.evaluate_usage(intent, capability, params_for(params, 0))
     requests: list[ibac.Evaluation] = []
     matched = False
