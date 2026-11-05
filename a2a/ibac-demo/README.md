@@ -374,7 +374,7 @@ local build of the [public repo](https://github.com/indykite/intent-agent).
 
 ### 7. Load the Agent Gateway image
 
-The gateway release this demo needs, **2.91**, is not on Docker Hub yet, so
+The gateway release this demo needs, **2.99**, is not on Docker Hub yet, so
 [`iag-base-docker.yaml`](iag-base-docker.yaml) runs a locally loaded image
 and never pulls (`pull_policy: never`): `AGENT_GATEWAY_IMAGE` in `.env`,
 `agent-gateway:latest` by default, inherited by all gateways. Load the
@@ -382,7 +382,7 @@ release from your registry and tag it:
 
 ```sh
 docker tag <your-registry>/agent-gateway:<version> agent-gateway:latest
-docker image inspect agent-gateway:latest --format '{{index .Config.Labels "org.opencontainers.image.version"}}'   # 2.91 or newer
+docker image inspect agent-gateway:latest --format '{{index .Config.Labels "org.opencontainers.image.version"}}'   # 2.99 or newer
 ```
 
 or set `AGENT_GATEWAY_IMAGE` to the loaded name as is. What the demo relies
@@ -392,7 +392,16 @@ on: Token Service mode with hop-by-hop nesting (2.47+), MCP proxying
 audit records (2.90), and the reuse of client-credentials tokens until
 shortly before their `expires_in` (2.91: one Auth0 grant per audience per
 token lifetime instead of one per request; a refused exchange or a 401 from
-the Intent Agent renews the token once). On Apple Silicon add
+the Intent Agent renews the token once), admission as one AuthZEN evaluation
+over the delegation chain with MCP gateways serving one endpoint and OAuth
+discovery (2.93), and the check of the MCP server's protocol revision on
+`initialize` (2.94), and the delegated token extension (2.99): with a Token
+Service every gateway declares `https://indykite.com/extensions/delegated-token/v1`
+in `capabilities.extensions` of the agent cards it serves and names it in
+`A2A-Extensions` on every call it forwards; the MCP gateways declare
+`com.indykite/delegated-token` in the server capabilities and in
+`mcp_extensions` of their protected resource metadata. Releases 2.95 to
+2.98 change nothing the gateway does at run time. On Apple Silicon add
 `platform: linux/amd64` to `iag-base`.
 
 ### 8. Start the stack
@@ -534,7 +543,7 @@ matches" for an intent outside the agent's declared skills. Note what
 no intent for never reaches the agent - greetings, weather and web-search
 prompts included, because the policies have no vocabulary for them. Keep
 IBAC off for the weather and Drive beats, or accept the gateway's answer
-as the beat. See [`PLAN.md`](PLAN.md) part 3.
+as the beat.
 
 ### Protecting MCP traffic (`mcp-iag`)
 

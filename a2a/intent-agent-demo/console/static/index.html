@@ -26,7 +26,7 @@
       <button class="nav-item" data-view="vocabulary"><span class="nav-index">03</span>Vocabulary</button>
       <button class="nav-item" data-view="audit"><span class="nav-index">04</span>Audit<span class="nav-count" id="auditCount"></span></button>
       <button class="nav-item" data-view="agents"><span class="nav-index">05</span>Agents</button>
-      <button class="nav-item" data-view="graph"><span class="nav-index">06</span>Graph</button>
+      <button class="nav-item" data-view="graph"><span class="nav-index">06</span>Ontology</button>
       <a class="nav-item" href="/architecture"><span class="nav-index">07</span>Architecture</a>
     </nav>
     <div class="rail-status">
@@ -48,13 +48,16 @@
 
       <div class="composer">
         <div class="composer-top">
-          <div class="facts-wrap">
-            <div class="persona-facts" id="personaFacts"></div>
-            <details class="hint">
-              <summary title="What are these chips?">?</summary>
-              <p>Read live from the graph: for every policy of this identity's type, an AuthZEN <code>search/resource</code> says which resources it reaches right now. A prompt inside these facts should extract and decide ALLOW; one outside them should be refused or decide DENY, which is just as telling.</p>
-            </details>
-          </div>
+          <details class="facts-toggle" id="factsToggle">
+            <summary><span class="facts-caret" aria-hidden="true"></span>What this identity reaches <span class="muted">· read live from the graph</span></summary>
+            <div class="facts-wrap">
+              <div class="persona-facts" id="personaFacts"></div>
+              <details class="hint">
+                <summary title="What are these chips?">?</summary>
+                <p>Read live from the graph: for every policy of this identity's type, an AuthZEN <code>search/resource</code> says which resources it reaches right now. A prompt inside these facts should extract and decide ALLOW; one outside them should be refused or decide DENY, which is just as telling.</p>
+              </details>
+            </div>
+          </details>
           <div class="auth-wrap">
             <div class="auth-mode" id="authMode">
               <button data-mode="delegation" class="active" title="Exchange at the Token Service for audience intent_agent - the normal path">delegation token</button>
@@ -153,7 +156,7 @@
     <!-- Graph -->
     <section class="view" id="view-graph" hidden>
       <header class="view-head">
-        <h1 class="display">The graph, as the agent sees it.</h1>
+        <h1 class="display">The ontology, as the agent sees it.</h1>
         <p class="lede" id="graphLede">Schema: one node per type, sized by how many instances the project holds, linked by the relationship kinds the platform observed. Switch on the policies to see the only relationships the agent may ever name as actions.</p>
       </header>
       <div class="graph-toolbar">

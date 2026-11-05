@@ -84,6 +84,10 @@
         .legend { list-style: none; }
         .legend li { display: flex; align-items: center; gap: 10px; color: var(--text-sub); font-size: 13px; }
         .legend li b { color: var(--text-ink); }
+        .panel.wide { grid-column: 1 / -1; }
+        .features { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 6px 24px; }
+        .features li { display: flex; align-items: flex-start; gap: 10px; }
+        .chip { font-family: monospace; font-size: 11px; line-height: 1.6; border: 1px solid var(--line); border-radius: 999px; padding: 0 8px; color: var(--text-sub); white-space: nowrap; margin-top: 1px; }
         .swatch { width: 22px; height: 14px; border-radius: 4px; background: var(--ink-800); border: 2px solid; flex: none; }
         .sw-gateway { border-color: var(--accent); }
         .sw-agent { border-color: var(--agent); }
@@ -360,7 +364,7 @@
                 <li><b>Login &amp; prompt</b>: the user logs in at the console through Auth0's Authorization Code flow (PKCE, audience <code>ibac-console</code>), comes back with a JWT access token whose <code>sub</code> is their Person node, and sends a prompt.</li>
                 <li><b>Token services</b>: every gateway introspects the user's token through the <b>auth0-bridge</b> (Auth0 publishes no RFC 7662 endpoint; the bridge verifies the JWT against the tenant keys) and calls the self-hosted <b>IndyKite Token Service</b> (RFC 8693) to mint a fresh delegation token &#8212; user as subject, agent chain in <code>act</code> &#8212; carried in <code>X-IK-Token</code> to the next hop while the user's own token stays in <code>Authorization</code>.</li>
                 <li><b>Console &#8594; orchestrator</b>: each prompt is forwarded with the <i>user's</i> token to <b>orchestrator-iag</b>.</li>
-                <li><b>Gateway checks (every hop)</b>: the gateway introspects the token, matches the call's actor chain against a Workflow in the knowledge graph, runs the AuthZEN <code>CAN_TRIGGER</code> check, emits an audit event, and exchanges the token (step 2) before forwarding.</li>
+                <li><b>Gateway checks (every hop)</b>: the gateway introspects the token, asks ContX IQ <i>whoami</i> which Person is asking, asks AuthZEN one question &#8212; may this subject <code>CAN_TRIGGER</code> this agent over this delegation chain (<code>$ik_token.act_chain</code>, compared with a workflow path in the graph) &#8212; emits an audit record that names the chain, and exchanges the token (step 2) before forwarding.</li>
                 <li><b>Orchestrator routes</b>: the LLM picks a tool; the A2A call goes to the chosen agent's gateway, where the same checks run again on the new chain.</li>
                 <li><b>Agents fetch data</b>: retriever/analyst/weather use MCP through <b>mcp-iag</b> to the hosted IndyKite MCP server; the analyst additionally reaches Google Drive via <b>drive-mcp-iag</b> and the ERP via <b>erp-mcp-iag</b>.</li>
                 <li><b>External parties</b>: Google Drive (server-side OAuth identity), Salesforce (the crm agent swaps its IndyKite delegation token for a Salesforce access token via RFC 7523 JWT Bearer — a second, independent trust domain), Open-Meteo, and the configured LLM.</li>
@@ -384,6 +388,21 @@
                 <li id="lg-drive"><span class="swatch sw-gateway"></span><span><b>drive</b>: Google Drive MCP behind a gateway</span></li>
                 <li id="lg-crm"><span class="swatch sw-gateway"></span><span><b>crm</b>: Salesforce Cases on behalf of the user</span></li>
                 <li id="lg-erp"><span class="swatch sw-gateway"></span><span><b>erp</b>: Postgres invoices, graph-filtered rows</span></li>
+            </ul>
+        </div>
+        <div class="panel wide">
+            <h2>What the gateways run (release 2.99)</h2>
+            <ul class="features">
+                <li><span class="chip">2.89</span><span><b>Token Service mode</b>: the person's token stays in <code>Authorization</code>, the delegation travels in <code>X-IK-Token</code> and nests the chain hop by hop; one shared audience; a workflow starts only at the agent the token was issued for.</span></li>
+                <li><span class="chip">2.93</span><span><b>One admission question per hop</b>: may this subject <code>CAN_TRIGGER</code> this agent over this chain? The policy <code>person-can-reach-agent</code> compares <code>$ik_token.act_chain</code> with a workflow path; the gateway keeps no workflow list.</span></li>
+                <li><span class="chip">2.82</span><span><b>The subject comes from the graph</b>: whoami resolves the token through the Token Introspect to a <code>Person</code>; no subject type is configured on a gateway.</span></li>
+                <li><span class="chip">2.91</span><span><b>Tokens reused</b>: a gateway keeps its client-credentials token until shortly before <code>expires_in</code>, so Auth0 sees one grant per audience per token lifetime.</span></li>
+                <li><span class="chip">2.87</span><span><b>The agent card at the gateway</b>: <code>/.well-known/agent-card.json</code> with the interfaces pointing at the gateway and Auth0 as security scheme; the skills only with a token.</span></li>
+                <li><span class="chip">2.99</span><span><b>The delegated token extension</b>: with a Token Service the gateway declares <code>https://indykite.com/extensions/delegated-token/v1</code> in <code>capabilities.extensions</code> of the cards it serves and names it in <code>A2A-Extensions</code> on every forwarded call; MCP gateways declare <code>com.indykite/delegated-token</code> in the server capabilities and in <code>mcp_extensions</code> of the protected resource metadata. A caller that sees it knows the target takes an <code>X-IK-Token</code>.</span></li>
+                <li><span class="chip">2.93</span><span><b>MCP front door</b>: one endpoint at <code>service.base_url</code>, protocol revisions enforced, RFC 9728 protected-resource metadata and a <code>WWW-Authenticate</code> that points at it; since 2.94 the server's <code>initialize</code> answer is checked too.</span></li>
+                <li><span class="chip">2.90</span><span><b>IBAC switch</b>: with <code>ibac.enabled</code> every prompt goes to the Intent Agent first; a prompt without an intent is answered by the gateway itself (<code>intent_error</code>) and audited as <code>INTENT</code>.</span></li>
+                <li><span class="chip">audit</span><span><b>The chain in every record</b>: <code>actorsChain</code>, <code>traceID</code> and <code>tokenID</code>; the console shows the chain under each card, the trace as a tooltip.</span></li>
+                <li><span class="chip">later</span><span><b>IBAC discovery</b> (<code>x-coaz-mappings</code> matched against the intent) is in the gateway's source but not linked into 2.99; the console previews what it would decide.</span></li>
             </ul>
         </div>
     </div>

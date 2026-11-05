@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intent Agent + IBAC · demo console</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%239333EA'/%3E%3Crect x='7' y='9' width='18' height='3' rx='1.5' fill='%23FFFFFF'/%3E%3Crect x='7' y='15' width='11' height='3' rx='1.5' fill='%23FFFFFF'/%3E%3Crect x='7' y='21' width='15' height='3' rx='1.5' fill='%23FFFFFF'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..700,50&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="rail">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div>
+        <div class="brand-title">Intent + IBAC</div>
+        <div class="brand-sub">prompt → intent → skill → decision</div>
+      </div>
+    </div>
+    <nav class="nav" id="nav">
+      <button class="nav-item active" data-view="playground"><span class="nav-index">01</span>Playground</button>
+      <button class="nav-item" data-view="guardrails"><span class="nav-index">02</span>Guardrails</button>
+      <button class="nav-item" data-view="vocabulary"><span class="nav-index">03</span>Vocabulary</button>
+      <button class="nav-item" data-view="graph"><span class="nav-index">04</span>Ontology</button>
+      <button class="nav-item" data-view="agents"><span class="nav-index">05</span>Intent Agent fleet</button>
+      <button class="nav-item" data-view="fleet"><span class="nav-index">06</span>IBAC fleet</button>
+      <button class="nav-item" data-view="howibac"><span class="nav-index">07</span>How IBAC works</button>
+      <button class="nav-item" data-view="audit"><span class="nav-index">08</span>Audit<span class="nav-count" id="auditCount"></span></button>
+      <a class="nav-item" href="/architecture"><span class="nav-index">09</span>Architecture</a>
+    </nav>
+    <div class="rail-status">
+      <div class="status-row"><span class="dot" id="dotAgent"></span>Intent Agent</div>
+      <div class="status-row"><span class="dot" id="dotIts"></span>Token Service</div>
+      <div class="status-row"><span class="dot up" id="dotIbac"></span>IBAC engine <span class="status-note" id="railFleet"></span></div>
+      <div class="status-metrics" id="railMetrics">—</div>
+    </div>
+  </aside>
+
+  <main class="stage">
+    <!-- Playground / Guardrails -->
+    <section class="view" id="view-playground">
+      <header class="view-head">
+        <h1 class="display" id="viewTitle">Ask as someone. Watch the intent find its agent.</h1>
+        <p class="lede" id="viewLede">Pick an identity, send a sentence. The Intent Agent turns it into AuthZEN evaluations; the IBAC engine matches them against what every agent in the fleet declares it can do; the platform decides.</p>
+      </header>
+
+      <div class="personas" id="personas"></div>
+
+      <div class="composer">
+        <div class="composer-top">
+          <details class="facts-toggle" id="factsToggle">
+            <summary><span class="facts-caret" aria-hidden="true"></span>What this identity reaches <span class="muted">· read live from the graph</span></summary>
+            <div class="facts-wrap">
+              <div class="persona-facts" id="personaFacts"></div>
+              <details class="hint">
+                <summary title="What are these chips?">?</summary>
+                <p>Read live from the graph: for every policy of this identity's type, an AuthZEN <code>search/resource</code> says which resources it reaches right now. A prompt inside these facts should extract and decide ALLOW; one outside them should be refused or decide DENY, which is just as telling.</p>
+              </details>
+            </div>
+          </details>
+          <div class="auth-wrap">
+            <div class="auth-mode" id="authMode">
+              <button data-mode="delegation" class="active" title="Exchange at the Token Service for audience intent_agent - the normal path">delegation token</button>
+              <button data-mode="wrong_audience" title="Exchange for another audience - the agent answers 401 'not valid for this agent'">wrong audience</button>
+              <button data-mode="raw_subject" title="Send the persona's own JWT, never exchanged - introspection says inactive, 401">raw subject token</button>
+              <button data-mode="none" title="No Authorization header - 401 'Authorization required'">no token</button>
+            </div>
+            <details class="hint">
+              <summary title="What is this switch?">?</summary>
+              <p>What goes in the <code>Authorization</code> header. Only a Token Service delegation for audience <code>intent_agent</code> passes introspection; the other three stop at the Introspect step, before the prompt is read, and are still audited. Switch back to <em>delegation token</em> afterwards.</p>
+            </details>
+          </div>
+        </div>
+        <div class="composer-row">
+          <textarea id="promptText" rows="2" placeholder="Type a question as this identity, or pick a card below"></textarea>
+          <button class="send" id="sendBtn"><span>Send</span><kbd>Enter</kbd></button>
+        </div>
+      </div>
+
+      <div class="gallery">
+        <div class="gallery-tabs" id="galleryTabs"></div>
+        <p class="gallery-blurb" id="galleryBlurb"></p>
+        <div class="gallery-cards" id="galleryCards"></div>
+      </div>
+
+      <div class="pipeline" id="pipeline">
+        <div class="pipe-node" data-step="issue"><i></i><b>Issue</b><small>demo issuer · subject + actor JWT</small><em></em></div>
+        <div class="pipe-node" data-step="exchange"><i></i><b>Exchange</b><small>Token Service · RFC 8693</small><em></em></div>
+        <div class="pipe-node" data-step="introspect"><i></i><b>Introspect</b><small>agent → Token Service · RFC 7662</small><em></em></div>
+        <div class="pipe-node" data-step="bind"><i></i><b>Bind subject</b><small>metadata, never the prompt</small><em></em></div>
+        <div class="pipe-node" data-step="vocab"><i></i><b>Vocabulary</b><small>data schema + policies</small><em></em></div>
+        <div class="pipe-node" data-step="extract"><i></i><b>Extract</b><small>Gemini, structured output</small><em></em></div>
+        <div class="pipe-node" data-step="validate"><i></i><b>Validate</b><small>schema · policies · CEL</small><em></em></div>
+        <div class="pipe-node ibac-step" data-step="discover" title="Discovery: the intent is compared with every skill of every agent card. A skill matches when one of its mappings agrees on subject type, resource type and action. Ids are not looked at yet."><i></i><b>Discover</b><small>IBAC · intent vs every card</small><em></em></div>
+        <div class="pipe-node ibac-step" data-step="confirm" title="Usage: for each matched skill the mapping's ids are resolved ($token.sub = the caller, $parameters.x = a value from the intent) and one AuthZEN request is built per subject and resource pair. An id left empty means a search match: nothing is generated, the intent's own evaluation decides."><i></i><b>Confirm</b><small>IBAC · usage on the matched skill</small><em></em></div>
+        <div class="pipe-node" data-step="audit"><i></i><b>Audit</b><small>one record per call</small><em></em></div>
+      </div>
+
+      <div class="result" id="result" hidden>
+        <div class="result-head">
+          <div class="result-verdict" id="verdict"></div>
+          <div class="result-meta" id="resultMeta"></div>
+        </div>
+        <!-- Part 1: the Intent Agent, from prompt to intent -->
+        <div class="zone zone-agent" id="zoneAgent">
+          <div class="zone-head">
+            <span class="zone-n">1</span>
+            <div>
+              <b>Intent Agent</b><span class="zone-sub">from the prompt to an intent: who talked to whom, the tokens, the evaluations and the platform's decision on each</span>
+            </div>
+          </div>
+          <div class="actors" id="actors"></div>
+          <div class="chain" id="chain"></div>
+          <div class="tickets" id="tickets"></div>
+          <div class="refusal" id="refusal" hidden></div>
+        </div>
+
+        <!-- Part 2: the IBAC engine, from the intent to an agent -->
+        <div class="zone zone-ibac" id="zoneIbac">
+          <div class="zone-head">
+            <span class="zone-n">2</span>
+            <div>
+              <b>IBAC engine</b><span class="zone-sub">from the intent to an agent: what the engine takes in, what it gives back, and what a gateway does with it</span>
+            </div>
+          </div>
+          <div class="io">
+            <div class="io-col">
+              <h4>takes in</h4>
+              <ul>
+                <li><b>the intent</b> - the Intent Agent's artifact, <code>{prompt, evaluations[]}</code>. Of each evaluation it compares the <i>subject type</i>, the <i>action name</i> and the <i>resource type</i>; ids are read only at usage, the prompt text never.</li>
+                <li><b>a capability</b> - an agent card reduced to its name and its skills: <code>id</code>, <code>name</code> and the skill's <code>x-coaz-mappings</code>. One per agent; the console gives it every card of the fleet in turn.</li>
+                <li><b>params</b> - what <code>$references</code> in the mappings resolve from. Here: the delegation token's claims (<code>$token.sub</code> is the caller), the bound subject, and the <code>context.parameters</code> of the intent (<code>$parameters.tier</code>).</li>
+              </ul>
+            </div>
+            <div class="io-col">
+              <h4>gives back</h4>
+              <ul>
+                <li><b>a decision</b> - <code>true</code> or <code>false</code>, with a <i>reason code</i> and, when negative, a reason sentence.</li>
+                <li><b>discovery</b> - for every evaluation, the ids of the skills that matched it; the card is AUTHORIZED when any evaluation matched any skill.</li>
+                <li><b>usage</b> - for the one skill it was given, either the <i>generated AuthZEN requests</i> (<code>{subject, action, resource, context.input_params}</code>, ids resolved) or nothing when the match is a search.</li>
+                <li><b>one audit record per call</b> - <code>IBAC_DISCOVERY</code> with the skills matched per evaluation, <code>IBAC_USAGE</code> with the skill id and the reason code.</li>
+              </ul>
+            </div>
+            <div class="io-col io-not">
+              <h4>never</h4>
+              <ul>
+                <li>an ALLOW or DENY: that is the platform's answer to the generated requests</li>
+                <li>a change to the intent or to the message</li>
+                <li>a look at the prompt text, the token signature or the graph</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Handoffs: where the Intent Agent ends, where the engine begins and ends, what a gateway does with it -->
+          <section class="handoff" id="handoff" hidden></section>
+
+          <!-- IBAC: the intent against the fleet -->
+          <section class="ibac" id="ibac" hidden>
+            <div class="ibac-head">
+              <div>
+                <h2>Who may serve this intent?</h2>
+                <p class="ibac-lede" id="ibacLede"></p>
+              </div>
+              <div class="ibac-summary" id="ibacSummary"></div>
+            </div>
+            <div class="ibac-board" id="ibacBoard"></div>
+            <details class="ibac-matrix-wrap" id="ibacMatrixWrap">
+              <summary>Match matrix <span class="muted">· every skill against every evaluation, field by field</span></summary>
+              <div class="ibac-matrix" id="ibacMatrix"></div>
+            </details>
+            <div class="ibac-usage" id="ibacUsage"></div>
+          </section>
+        </div>
+
+        <div class="wire">
+          <div class="wire-tabs" id="wireTabs">
+            <button data-tab="request" class="active">A2A request</button>
+            <button data-tab="envelope">Task envelope</button>
+            <button data-tab="payload">Artifact</button>
+            <button data-tab="ibac">IBAC</button>
+            <button data-tab="tokens">Tokens</button>
+            <button data-tab="audit">Audit record</button>
+            <button data-tab="decisions">Decision calls</button>
+          </div>
+          <pre class="wire-body" id="wireBody"></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- How IBAC works -->
+    <section class="view" id="view-howibac" hidden>
+      <header class="view-head">
+        <h1 class="display">Intent-Based Access Control, in five steps.</h1>
+        <p class="lede">An agent says what it can do. A prompt says what someone wants. IBAC checks that the two agree before a message is forwarded to an agent, and names the exact permission to verify. Every example below uses the real cards and policies of this demo.</p>
+      </header>
+
+      <div class="how">
+        <article class="how-step">
+          <div class="how-n">1</div>
+          <div class="how-body">
+            <h2>Two sides of one question</h2>
+            <p>On one side, the <b>Intent Agent</b> has turned the prompt into an <b>intent</b>: one or more evaluations of the form <i>subject → action → resource</i>, in the vocabulary of the graph's policies. On the other side, every agent publishes an <b>agent card</b> that lists its <b>skills</b>. IBAC adds one thing to each skill: a declaration of which subjects may do which actions on which resources through it. The engine never reads the prompt. It reads the intent and the declarations.</p>
+            <div class="how-two">
+              <div class="how-box">
+                <div class="how-box-title">the intent (from the prompt)</div>
+                <div class="how-quote">"What is the price of the quote stock_quote?" <span class="muted">— asked by Roy, a User</span></div>
+                <div class="triple">
+                  <div class="triple-part subject"><span class="lbl">subject</span><span class="val">User · roy</span></div>
+                  <div class="arrow">→</div>
+                  <div class="triple-part action"><span class="lbl">action</span><span class="val">GET_PRICE</span></div>
+                  <div class="arrow">→</div>
+                  <div class="triple-part resource"><span class="lbl">resource</span><span class="val">Quote · stock_quote</span></div>
+                </div>
+              </div>
+              <div class="how-box">
+                <div class="how-box-title">the declaration (from the card)</div>
+                <div class="how-quote">Trading Desk Agent · skill <span class="mono">quote-lookup</span></div>
+                <div class="map">
+                  <span class="map-ents subject"><span class="ent"><b>User</b><i class="id ref">$token.sub</i></span></span>
+                  <span class="arrow">→</span>
+                  <span class="map-acts"><span class="act">CAN_RETRIEVE</span><span class="act">GET_PRICE</span></span>
+                  <span class="arrow">→</span>
+                  <span class="map-ents resource"><span class="ent"><b>Quote</b><i class="id lit">stock_quote</i></span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="how-step">
+          <div class="how-n">2</div>
+          <div class="how-body">
+            <h2>A mapping, field by field</h2>
+            <p>The declaration lives on the skill under the key <code>x-coaz-mappings</code> (coarse authorization mappings). A skill can carry several; each one is a small table with three columns and one optional context.</p>
+            <div class="how-two">
+<pre class="how-code">{
+  "id": "quote-lookup",
+  "name": "Quote lookup",
+  "x-coaz-mappings": [
+    {
+      "subject":  [{"type": "User",  "id": "$token.sub"}],
+      "resource": [{"type": "Quote", "id": "stock_quote"}],
+      "action":   [{"name": "CAN_RETRIEVE"}, {"name": "GET_PRICE"}]
+    }
+  ]
+}</pre>
+              <div class="how-fields">
+                <div class="how-field"><b>subject</b><span>One or more <i>types</i> of caller the skill serves (User, Customer). The id is almost always <code>$token.sub</code>: whoever is in the token.</span></div>
+                <div class="how-field"><b>resource</b><span>One or more types of thing the skill touches. The id is a <span class="ent"><i class="id lit">literal</i></span> when the skill is bound to one resource, a <span class="ent"><i class="id ref">$reference</i></span> when the prompt names it, or <span class="ent"><i class="id search">empty</i></span> when the skill works on "whichever ones you may".</span></div>
+                <div class="how-field"><b>action</b><span>The actions, named exactly as the graph's policies name them. No action listed means <i>any</i> action.</span></div>
+                <div class="how-field"><b>context</b><span>Free-form notes for the operator; the engine does not read it.</span></div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="how-step">
+          <div class="how-n">3</div>
+          <div class="how-body">
+            <h2>Discovery: who could serve this?</h2>
+            <p>The engine takes each evaluation of the intent and asks every skill of every card the same three yes/no questions. <b>Three yes</b> on one mapping and the skill is a match. Ids are deliberately ignored at this stage: discovery runs before anyone has resolved who exactly is asking about what. One matching skill anywhere makes the card <span class="pill yes">AUTHORIZED</span>; none makes it <span class="pill no">NOT_AUTHORIZED</span> with the reason <code>intent_mismatch</code>; a card with no mappings at all answers <code>missing_coaz_mapping</code> and can never match.</p>
+            <table class="how-table">
+              <thead><tr><th>Roy's evaluation vs…</th><th>subject type<br><small>User = ?</small></th><th>resource type<br><small>Quote = ?</small></th><th>action<br><small>GET_PRICE ∈ ?</small></th><th>result</th></tr></thead>
+              <tbody>
+                <tr><td>Trading Desk · <span class="mono">quote-lookup</span></td><td class="ok">User ✓</td><td class="ok">Quote ✓</td><td class="ok">{CAN_RETRIEVE, GET_PRICE} ✓</td><td class="ok">match</td></tr>
+                <tr><td>People Directory · <span class="mono">org-chart</span></td><td class="ok">User ✓</td><td class="no">User, Department ✗</td><td class="no">REPORTS_TO, … ✗</td><td class="no">no</td></tr>
+                <tr><td>Billing · <span class="mono">my-invoices</span></td><td class="no">Customer ✗</td><td class="no">Invoice ✗</td><td class="no">VIEW_INVOICE, … ✗</td><td class="no">no</td></tr>
+                <tr><td>Weather · <span class="mono">forecast</span></td><td colspan="3" class="no">no mappings published</td><td class="no">missing_coaz_mapping</td></tr>
+              </tbody>
+            </table>
+            <p class="how-note">On the Playground this is the board under the tickets: each card lit or not, each matched skill carrying the numbers of the evaluations it matched. Open any skill's <em>why?</em> to see these same three questions answered for that skill.</p>
+          </div>
+        </article>
+
+        <article class="how-step">
+          <div class="how-n">4</div>
+          <div class="how-body">
+            <h2>Usage: what exactly must be checked?</h2>
+            <p>Discovery found the skill; usage confirms the intent against that one skill and turns the mapping into concrete AuthZEN requests. Now the ids matter. A literal stays as it is. A <code>$reference</code> is looked up in what the request carried: <code>$token.sub</code> in the delegation token's claims, <code>$parameters.tier</code> in the parameters the Intent Agent extracted. One request is built per resolved (subject, resource) pair, with the evaluation's action.</p>
+            <div class="how-two">
+              <div class="how-box">
+                <div class="how-box-title">resolved: a request is generated</div>
+                <div class="how-quote">"Do I have a tier_1 account?" <span class="muted">— Bob, a Customer</span></div>
+                <div class="how-resolve">
+                  <div><span class="k">mapping</span><span class="v">Customer <i class="id ref">$token.sub</i> → HAS → AccountTier <i class="id ref">$parameters.tier</i></span></div>
+                  <div><span class="k">$token.sub</span><span class="v">bob <small>(the delegation token's sub)</small></span></div>
+                  <div><span class="k">$parameters.tier</span><span class="v">tier_1 <small>(the intent's context.parameters)</small></span></div>
+                  <div><span class="k">generated</span><span class="v"><b>Customer bob → HAS → AccountTier tier_1</b></span></div>
+                  <div><span class="k">reason code</span><span class="v mono">intent_match_authzen_required</span></div>
+                </div>
+              </div>
+              <div class="how-box">
+                <div class="how-box-title">empty id: a search match</div>
+                <div class="how-quote">"Which invoices can I view?" <span class="muted">— Leslie, a User</span></div>
+                <div class="how-resolve">
+                  <div><span class="k">mapping</span><span class="v">User <i class="id ref">$token.sub</i> → CAN_VIEW → Invoice <i class="id search">(empty)</i></span></div>
+                  <div><span class="k">resource id</span><span class="v">stays empty: the skill serves whichever invoices the caller may view</span></div>
+                  <div><span class="k">generated</span><span class="v"><b>nothing</b>; the intent's own evaluation, a resource search, is what the platform answers</span></div>
+                  <div><span class="k">reason code</span><span class="v mono">intent_match_search</span></div>
+                </div>
+              </div>
+            </div>
+            <p class="how-note">A reference that cannot be resolved drops that entity, and the mapping does not match: a skill bound to <code>$parameters.tier</code> is not a match for a prompt that named no tier. Note also that the subject always comes from the mapping, so a prompt about someone else ("does ted have…") generates a request about the caller; the board says so when it happens.</p>
+          </div>
+        </article>
+
+        <article class="how-step">
+          <div class="how-n">5</div>
+          <div class="how-body">
+            <h2>Where the engine stops</h2>
+            <p>The engine answers one question: <em>does this agent declare the skill this intent needs, and which permission does that come down to?</em> It makes no authorization decision. The generated requests go to the platform's AuthZEN API, which evaluates the graph policies and answers ALLOW or DENY; a search match is decided from the intent's own evaluation. Every engine call is audited: one <code>IBAC_DISCOVERY</code> record per card, with the skills matched per evaluation, and one <code>IBAC_USAGE</code> record per confirmed skill, with its reason code.</p>
+            <table class="how-table codes">
+              <thead><tr><th>reason code</th><th>flow</th><th>meaning</th></tr></thead>
+              <tbody>
+                <tr><td class="mono">intent_match_search</td><td>discovery</td><td>at least one skill matched (discovery never resolves ids, so it is always a "search" match)</td></tr>
+                <tr><td class="mono">intent_match_search</td><td>usage</td><td>the skill matched, but an id stayed empty: nothing generated, the intent's evaluation decides</td></tr>
+                <tr><td class="mono">intent_match_authzen_required</td><td>usage</td><td>the skill matched and the ids resolved: these requests must be checked by AuthZEN</td></tr>
+                <tr><td class="mono">intent_mismatch</td><td>both</td><td>no mapping agreed on subject type, resource type and action</td></tr>
+                <tr><td class="mono">missing_coaz_mapping</td><td>both</td><td>the card publishes no mappings at all</td></tr>
+                <tr><td class="mono">invalid_intent · invalid_capability</td><td>both</td><td>the intent or the card does not pass validation (a missing subject, a type that is not a node type, a skill without an id)</td></tr>
+                <tr><td class="mono">incorrect_num_skills</td><td>usage</td><td>usage was given a capability with more or fewer than one skill</td></tr>
+              </tbody>
+            </table>
+            <p class="how-note">In production the engine runs inside the IndyKite Agent Gateway that sits in front of each agent, and reads that one agent's card. This console runs the same rules over six cards at once so one prompt shows the whole routing. The IBAC fleet page lists every card and every mapping the engine works from.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Fleet -->
+    <section class="view" id="view-fleet" hidden>
+      <header class="view-head">
+        <h1 class="display">What each agent declares it can do.</h1>
+        <p class="lede">Six agent cards. Every skill carries <code>x-coaz-mappings</code>: the subject types, resource types and actions it serves, in the vocabulary of the project's policies. The IBAC engine never reads a prompt - it reads these.</p>
+      </header>
+      <div class="fleet-rules">
+        <div class="rule">
+          <span class="rule-n">1</span>
+          <h3>Discovery</h3>
+          <p>The intent against <b>every skill</b> of a card. A skill matches an evaluation when one of its mappings agrees on the <b>subject type</b>, the <b>resource type</b> and the <b>action</b>. Ids are not compared yet. One match anywhere is a positive decision; a card without mappings never matches (<code>missing_coaz_mapping</code>).</p>
+        </div>
+        <div class="rule">
+          <span class="rule-n">2</span>
+          <h3>Usage</h3>
+          <p>The intent against the <b>one skill</b> discovery picked. The matching mapping's ids are resolved and one AuthZEN request is built per (subject, resource) pair: <code>intent_match_authzen_required</code>. Ids left empty mean a <b>search</b> match, <code>intent_match_search</code>: nothing is generated, the intent's own evaluation decides.</p>
+        </div>
+        <div class="rule">
+          <span class="rule-n">$</span>
+          <h3>References</h3>
+          <p>An id starting with <code>$</code> is looked up in the request's parameters: <code>$token.sub</code> is the caller from the delegation token, <code>$parameters.tier</code> a value the intent carried. A reference that does not resolve drops the entity, and the mapping does not match.</p>
+        </div>
+      </div>
+      <section class="coaz-about">
+        <div class="coaz-text">
+          <h2>What a coaz mapping is</h2>
+          <p><b>coaz</b> is short for <b>co</b>arse <b>a</b>uthori<b>z</b>ation: a statement on a skill of what it is for, coarse because it names <i>types</i>, not instances. A skill carries them as a list under the key <code>x-coaz-mappings</code>, next to its id, name and description on the A2A agent card. An MCP tool, resource or prompt carries the same list in its <code>_meta</code>. The key starts with <code>x-</code> because it is an extension the card format does not know; a client that does not understand it ignores it, a gateway that does reads it before forwarding anything.</p>
+          <p>One mapping says: <i>callers of these subject types may perform these actions on resources of these resource types through this skill.</i> Several entities in one list are a cross product (two subject types and two resource types make four combinations). Several mappings on one skill are alternatives: the skill matches when any one of them does.</p>
+          <div class="coaz-rules">
+            <div><b>subject</b><span>at least one entity; <code>type</code> is a node type of the graph (a letter or underscore then word characters, 2 to 64), <code>id</code> optional</span></div>
+            <div><b>resource</b><span>same rules as subject</span></div>
+            <div><b>action</b><span>zero or more names, exactly as the policies spell them; none means any action</span></div>
+            <div><b>context</b><span>an optional map for operators; the engine does not read it</span></div>
+            <div><b>ids</b><span><span class="ent"><i class="id lit">literal</i></span> bound to one instance · <span class="ent"><i class="id ref">$reference</i></span> resolved at usage from the token or the intent · <span class="ent"><i class="id search">empty</i></span> any instance, a search</span></div>
+            <div><b>limits</b><span>64 mappings per skill, 64 entities per list, 64 actions; an invalid mapping makes the gateway refuse the whole card</span></div>
+          </div>
+        </div>
+        <div class="coaz-text">
+          <h2>How to write one</h2>
+          <p>Start from the policies, not from the prompt: every (subject type, action, resource type) in a mapping must exist as a policy, or the Intent Agent will never emit it and the mapping is dead weight. Bind the subject to <code>$token.sub</code>: the caller is whoever the delegation token says, never a value from the prompt. Pin the resource id only when the skill really serves one instance (<code>stock_quote</code>, <code>cs_policy</code>); use a <code>$parameters.&lt;name&gt;</code> reference when the policy declares that parameter; leave it empty when the skill answers "which ones may I".</p>
+          <p>Keep a skill's mappings narrow. A mapping with no actions matches every action on those types, which is rarely what a skill means. Group by what the skill does, not by what the agent could do: discovery routes to <em>skills</em>, and a card whose one skill maps everything tells the engine nothing.</p>
+<pre class="how-code">"skills": [{
+  "id": "my-accounts",
+  "name": "My accounts",
+  "x-coaz-mappings": [
+    { "subject":  [{"type": "Customer", "id": "$token.sub"}],
+      "resource": [{"type": "AccountTier", "id": "$parameters.tier"}],
+      "action":   [{"name": "HAS"}] },
+    { "subject":  [{"type": "Customer", "id": "$token.sub"}],
+      "resource": [{"type": "AccountTier"}],
+      "action":   [{"name": "HAS_TIER"}] }
+  ]
+}]</pre>
+        </div>
+      </section>
+
+      <section class="panel coaz-coverage">
+        <h2>What the fleet declares <span class="muted">→ coverage by subject type and resource type</span></h2>
+        <p class="muted coaz-coverage-lede">Every cell is an action some skill declares for that subject type on that resource type, with the skill that declares it. A policy triple with no cell is an intent no agent in the fleet may serve.</p>
+        <div id="coazCoverage" class="coverage"><div class="empty">loading…</div></div>
+      </section>
+
+      <div class="fleet-grid" id="fleetCards"><div class="empty">loading…</div></div>
+    </section>
+
+    <!-- Vocabulary -->
+    <section class="view" id="view-vocabulary" hidden>
+      <header class="view-head">
+        <h1 class="display">Everything the agent is allowed to say.</h1>
+        <p class="lede">The output vocabulary is not prompt-engineered: it is the project's data schema and the ACTIVE KBAC policies of the caller's subject type, fetched from the platform. Graph relationships are never actions; a policy is. The fleet's mappings use the same words.</p>
+      </header>
+      <div class="vocab-controls">
+        <div class="seg" id="vocabSubject">
+          <button data-type="User" class="active">User</button>
+          <button data-type="Customer">Customer</button>
+        </div>
+        <span class="muted" id="vocabInfo"></span>
+      </div>
+      <div class="vocab-grid">
+        <div class="panel">
+          <h2>Policies <span class="muted">→ granted triples</span></h2>
+          <div id="policyList" class="policy-list"></div>
+        </div>
+        <div class="panel">
+          <h2>Data schema <span class="muted">→ node types and relationships</span></h2>
+          <div id="schemaNodes" class="schema-nodes"></div>
+          <h3>Relationships</h3>
+          <div id="schemaRelationships" class="schema-edges"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Audit -->
+    <section class="view" id="view-audit" hidden>
+      <header class="view-head">
+        <h1 class="display">Every call leaves a record.</h1>
+        <p class="lede">The Intent Agent and the Token Service deliver their audit records to this console's webhook; the IBAC engine writes one record per discovery and per usage, in the same shape a gateway writes. Nothing here is reconstructed from a response.</p>
+      </header>
+      <div class="audit-list" id="auditList"></div>
+    </section>
+
+    <!-- Graph -->
+    <section class="view" id="view-graph" hidden>
+      <header class="view-head">
+        <h1 class="display">The ontology, as the agent sees it.</h1>
+        <p class="lede" id="graphLede">Schema: one node per type, sized by how many instances the project holds, linked by the relationship kinds the platform observed. Switch on the policies to see the only relationships the agent may ever name as actions.</p>
+      </header>
+      <div class="graph-toolbar">
+        <div class="seg" id="graphMode">
+          <button data-mode="schema" class="active">Schema</button>
+          <button data-mode="reach">Reach</button>
+        </div>
+        <label class="graph-opt" id="graphPolicyOpt"><input type="checkbox" id="graphPolicies"> policies as relationships</label>
+        <select id="graphPersona" class="graph-select" aria-label="Reach persona" hidden></select>
+        <button class="graph-btn" id="graphRelayout" title="Run the force layout again">re-layout</button>
+        <select id="graphNodePick" class="graph-select" aria-label="Inspect a node"><option value="">inspect node…</option></select>
+        <span class="muted" id="graphInfo"></span>
+      </div>
+      <div class="graph-shell">
+        <div class="graph-canvas" id="graphCanvas"></div>
+        <aside class="graph-side" id="graphSide">
+          <div class="empty">Click a node, or pick one in the toolbar, for its details.</div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Agents -->
+    <section class="view" id="view-agents" hidden>
+      <header class="view-head">
+        <h1 class="display">The parties, as they present themselves.</h1>
+        <p class="lede">What a gateway would discover before sending anything: the Intent Agent's public card, the Token Service's discovery document and keys, and the identity this console acts under. The fleet's own cards are on the IBAC fleet page.</p>
+      </header>
+      <div class="agents-grid">
+        <div class="panel" id="agentCardPanel"><h2>Intent Agent <span class="muted">→ agent card</span></h2><div class="empty">loading…</div></div>
+        <div>
+          <div class="panel" id="tokenServicePanel"><h2>Token Service <span class="muted">→ discovery</span></h2><div class="empty">loading…</div></div>
+          <div class="panel" id="consolePanel" style="margin-top:16px"><h2>Console <span class="muted">→ the actor</span></h2></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<template id="ticketTpl">
+  <article class="ticket">
+    <div class="ticket-index"></div>
+    <div class="ticket-body">
+      <div class="triple">
+        <div class="triple-part subject"><span class="lbl">subject</span><span class="val"></span></div>
+        <div class="arrow">→</div>
+        <div class="triple-part action"><span class="lbl">action</span><span class="val"></span></div>
+        <div class="arrow">→</div>
+        <div class="triple-part resource"><span class="lbl">resource</span><span class="val"></span></div>
+      </div>
+      <div class="ticket-tags"></div>
+      <div class="ticket-context"></div>
+    </div>
+    <div class="ticket-decision"></div>
+  </article>
+</template>
+<script src="/static/app.js"></script>
+</body>
+</html>

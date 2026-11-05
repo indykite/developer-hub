@@ -585,7 +585,7 @@
     "description": "Application that fronts the Intent Agent demo console"
   },
   "project": {
-    "name": "intent-demo",
+    "name": "intent-demo2",
     "display_name": "Intent Agent Demo",
     "description": "Project for the Intent Agent demo: CanBank graph plus the KBAC policies the agent derives intent from",
     "region": "europe-west1",

@@ -1269,6 +1269,34 @@
         }
     }
 
+    // Every gateway record names the actors of the delegation token, oldest
+    // first (actorsChain). Shown as one line of display names; the trace id
+    // of the request is the tooltip.
+    function attachChain(card, event) {
+        const chain = Array.isArray(event.actors_chain) ? event.actors_chain.filter(Boolean) : [];
+        if (!chain.length) return;
+        const line = document.createElement('div');
+        line.className = 'audit-chain';
+        const label = document.createElement('span');
+        label.className = 'audit-chain-label';
+        label.textContent = 'chain';
+        line.appendChild(label);
+        chain.forEach((hop, i) => {
+            if (i) {
+                const sep = document.createElement('span');
+                sep.className = 'audit-arrow';
+                sep.textContent = '→';
+                line.appendChild(sep);
+            }
+            const el = document.createElement('span');
+            el.className = 'audit-principal';
+            setPrincipal(el, hop);
+            line.appendChild(el);
+        });
+        if (event.trace_id) line.title = `trace ${event.trace_id}`;
+        card.appendChild(line);
+    }
+
     // The Intent Agent's answer for one prompt: each evaluation as one line,
     // subject -> action -> resource, with its context keys when present.
     function attachIntent(card, event) {
@@ -1351,6 +1379,9 @@
         flow.append(subject, arrow, actor, badge);
 
         card.append(head, flow);
+        // The delegation chain of the hop, oldest actor first: the list the
+        // admission policy compared with a workflow path in the graph.
+        attachChain(card, event);
         if (decision.startsWith('intent_')) {
             if (event.service === 'intent-agent') {
                 // The Intent Agent's own record: prompt + evaluations (+ preview).
