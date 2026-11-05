@@ -232,3 +232,17 @@ def test_engine_params_ignore_a_malformed_context():
         ],
     )
     assert [e["parameters"] for e in params["evaluations"]] == [{}, {}, {}, {}, {"tier": "tier_1"}]
+
+
+def test_an_oversized_intent_is_refused_whole_at_usage():
+    """Sixty-five evaluations are invalid for the engine; splitting per evaluation must not slip past that."""
+    fleet = load_fleet(FLEET)
+    too_many = [evaluation(("User", "roy"), "CAN_RETRIEVE", ("Quote", "stock_quote"))] * (ibac.MAX_EVALUATIONS + 1)
+    result = run(fleet, "User", "roy", *too_many)
+    assert result["usage"] == []
+    assert all(d["reason_code"] == ibac.REASON_INVALID_INTENT for d in result["discovery"])
+    params = engine_params("User", "roy", {"sub": "roy"}, too_many)
+    usage = fleet.usage("trading-desk", "quote-lookup", intent(*too_many), params, ibac.AuditOptions())
+    assert usage["decision"] is False
+    assert usage["reason_code"] == ibac.REASON_INVALID_INTENT
+    assert usage["requests"] == []

@@ -244,14 +244,13 @@ async def execute_plans(platform: PlatformClient, plans: list[DecisionPlan]) -> 
     """
     by_index = {plan.index: plan for plan in plans}
     await _run_batch(platform, [plan for plan in plans if plan.depends_on is None])
-    dependents = [plan for plan in plans if plan.depends_on is not None]
-    runnable: list[DecisionPlan] = []
-    for plan in dependents:
+    # A gate can itself depend on an earlier gate (ask about X, then as X ask about Y, then as Y), so the
+    # dependents run one by one in intent order: each sees its gate's answer before it is checked.
+    for plan in sorted((p for p in plans if p.depends_on is not None), key=lambda p: p.index):
         gate = by_index.get(plan.depends_on)
         if gate is None or not _gate_allowed(gate):
             why = "denied" if gate is not None and gate.result is not None and gate.error is None else "unanswered"
             plan.skipped = f"gate (evaluation {plan.depends_on + 1}) {why}: not sent to the platform"
         else:
-            runnable.append(plan)
-    await _run_batch(platform, runnable)
+            await _run_batch(platform, [plan])
     return plans
