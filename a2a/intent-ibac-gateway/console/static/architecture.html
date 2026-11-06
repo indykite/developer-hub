@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture · Intent Agent + IBAC demo</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%239333EA'/%3E%3Crect x='7' y='9' width='18' height='3' rx='1.5' fill='%23FFFFFF'/%3E%3Crect x='7' y='15' width='11' height='3' rx='1.5' fill='%23FFFFFF'/%3E%3Crect x='7' y='21' width='15' height='3' rx='1.5' fill='%23FFFFFF'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,300..700,50&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+  <style>
+    .page { max-width: 1240px; margin: 0 auto; padding: 32px 44px 80px; }
+    .page-head { display: flex; align-items: baseline; gap: 18px; flex-wrap: wrap; margin-bottom: 18px; }
+    .page-head a { color: var(--sub); font-size: 13px; }
+    .page-head a:hover { color: var(--blue); }
+    .plate { border: 1px solid var(--line); border-top: 3px solid var(--plum); border-radius: var(--radius); background: var(--card); box-shadow: var(--shadow); padding: 12px; overflow-x: auto; }
+    svg { width: 100%; min-width: 1080px; height: auto; display: block; }
+    .box { fill: var(--card); stroke-width: 1.5; rx: 10; }
+    .b-console { stroke: var(--blue); fill: var(--blue-soft); }
+    .b-ibac { stroke: var(--plum); fill: var(--plum-soft); }
+    .b-agent { stroke: var(--orange); fill: var(--orange-soft); }
+    .b-its { stroke: var(--blue); }
+    .b-data { stroke: var(--teal); fill: var(--teal-soft); }
+    .b-ext { stroke: var(--line-strong); fill: var(--muted-bg); }
+    .b-card { stroke: var(--plum); fill: var(--card); stroke-dasharray: 4 3; }
+    .boundary { fill: none; stroke: var(--line-strong); stroke-dasharray: 7 5; rx: 14; }
+    .t { fill: var(--text); font-family: var(--sans); font-size: 13px; font-weight: 600; }
+    .t-sub { fill: var(--sub); font-family: var(--sans); font-size: 10.5px; }
+    .t-mono { fill: var(--sub); font-family: var(--mono); font-size: 10px; }
+    .t-bound { fill: var(--faint); font-family: var(--serif); font-style: italic; font-size: 12px; }
+    .t-edge { fill: var(--text); font-family: var(--mono); font-size: 10px; }
+    .edge { stroke: var(--sub); stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+    .edge-plum { stroke: var(--plum); stroke-width: 1.5; fill: none; marker-end: url(#arrow-plum); }
+    .edge-soft { stroke: var(--faint); stroke-width: 1.2; stroke-dasharray: 3 4; fill: none; marker-end: url(#arrow-soft); }
+    .below { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; margin-top: 18px; }
+    @media (max-width: 900px) { .below { grid-template-columns: 1fr; } .page { padding: 20px 16px 60px; } }
+    .below ol { padding-left: 20px; color: var(--sub); }
+    .below li { margin-bottom: 7px; }
+    .below li b { color: var(--text); font-weight: 500; }
+    .below li.ibac-step::marker { color: var(--plum); font-weight: 600; }
+    .below code { font-size: 12px; color: var(--text); background: var(--muted-bg); padding: 1px 4px; border-radius: 4px; }
+    .note { border-left: 3px solid var(--orange); padding-left: 12px; color: var(--sub); margin-top: 12px; }
+    .note.plum { border-left-color: var(--plum); }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="page-head">
+    <h1 class="display" style="font-size:30px">How the pieces fit</h1>
+    <a href="/">← back to the console</a>
+  </div>
+  <div class="plate">
+    <svg viewBox="0 0 1240 780" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Architecture of the Intent Agent + IBAC demo">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#6B7280"/></marker>
+        <marker id="arrow-plum" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9333EA"/></marker>
+        <marker id="arrow-soft" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9AA3B2"/></marker>
+      </defs>
+
+      <!-- boundaries -->
+      <rect class="boundary" x="20" y="20" width="770" height="740"/>
+      <text class="t-bound" x="36" y="42">docker compose — everything local</text>
+      <rect class="boundary" x="820" y="20" width="360" height="160"/>
+      <text class="t-bound" x="836" y="42">identity provider — the bridge is local, the tenant hosted</text>
+      <rect class="boundary" x="820" y="210" width="360" height="390"/>
+      <text class="t-bound" x="836" y="232">IndyKite platform (hosted)</text>
+      <rect class="boundary" x="820" y="630" width="360" height="130"/>
+      <text class="t-bound" x="836" y="652">external</text>
+
+      <!-- console: x 50-310, y 60-210 -->
+      <rect class="box b-console" x="50" y="60" width="260" height="150"/>
+      <text class="t" x="66" y="84">console</text>
+      <text class="t-sub" x="66" y="102">① login at Auth0 (code + PKCE): the person's</text>
+      <text class="t-sub" x="66" y="116">access token for the people's API, in a session</text>
+      <text class="t-sub" x="66" y="134">gateway client (raw A2A JSON-RPC)</text>
+      <text class="t-sub" x="66" y="149">mapping preview + fleet of agent cards</text>
+      <text class="t-sub" x="66" y="164">AuthZEN decision mapper</text>
+      <text class="t-sub" x="66" y="179">audit webhook + live stream</text>
+      <text class="t-mono" x="66" y="199">:3400 · host 3300</text>
+
+      <!-- token service: x 50-235, y 250-340 -->
+      <rect class="box b-its" x="50" y="250" width="185" height="90"/>
+      <text class="t" x="66" y="274">token-service</text>
+      <text class="t-sub" x="66" y="292">IndyKite Token Service · RFC 8693</text>
+      <text class="t-sub" x="66" y="307">verifies Auth0 tokens via the tenant JWKS</text>
+      <text class="t-mono" x="66" y="328">:8102 · aud intent-ibac-agents</text>
+
+      <!-- mapping preview + fleet: x 50-310, y 400-645 -->
+      <rect class="box b-ibac" x="50" y="400" width="260" height="245"/>
+      <text class="t" x="66" y="424">mapping preview</text>
+      <text class="t-sub" x="66" y="442">runs in the console, card by card</text>
+      <text class="t-sub" x="66" y="460">discovery: intent × every skill of a card</text>
+      <text class="t-sub" x="66" y="475">usage: intent × matched skill → requests</text>
+      <text class="t-sub" x="66" y="490">ids: literal, empty (search) or $reference</text>
+      <text class="t-sub" x="66" y="512">the six cards of fleet.json:</text>
+      <text class="t-mono" x="66" y="530">Trading Desk · quote-lookup · core-banking</text>
+      <text class="t-mono" x="66" y="545">Customer Support · policy-library · …</text>
+      <text class="t-mono" x="66" y="560">Billing · my-invoices · my-accounts</text>
+      <text class="t-mono" x="66" y="575">People Directory · org-chart</text>
+      <text class="t-mono" x="66" y="590">Workflow Runner · run-workflow</text>
+      <text class="t-mono" x="66" y="605">Weather · forecast (no mappings)</text>
+      <text class="t-sub" x="66" y="630">no decision: the requests go to AuthZEN ⑫</text>
+
+      <!-- gateway: x 440-760, y 60-250 -->
+      <rect class="box b-ibac" x="440" y="60" width="320" height="190"/>
+      <text class="t" x="456" y="84">iag-&lt;agent&gt; · IndyKite Agent Gateway (×6)</text>
+      <text class="t-sub" x="456" y="102">③ introspects the caller's Auth0 token at the bridge</text>
+      <text class="t-sub" x="456" y="117">④ whoami: the persona as a Person node of the graph</text>
+      <text class="t-sub" x="456" y="132">⑤ ibac.enabled: the prompt goes to the Intent Agent;</text>
+      <text class="t-sub" x="456" y="147">no intent → the gateway answers the caller itself</text>
+      <text class="t-sub" x="456" y="162">⑥ exchange at the Token Service → delegated token</text>
+      <text class="t-sub" x="456" y="177">⑦ admission: one AuthZEN evaluation, CAN_TRIGGER its own</text>
+      <text class="t-sub" x="456" y="192">Agent node, the delegation chain in $ik_token.act_chain</text>
+      <text class="t-sub" x="456" y="207">⑧ forwards with X-IK-Token and A2A-Extensions</text>
+      <text class="t-sub" x="456" y="222">one audit record per step</text>
+      <text class="t-mono" x="456" y="240">:9901-9906 · image agent-gateway (release 2.99)</text>
+
+      <!-- stand-in agent: x 480-760, y 290-360 -->
+      <rect class="box b-card" x="480" y="290" width="280" height="70"/>
+      <text class="t" x="496" y="313">agent-&lt;agent&gt; · stand-in agent (×6)</text>
+      <text class="t-sub" x="496" y="331">serves its card from fleet.json; replies with</text>
+      <text class="t-sub" x="496" y="346">the skill and the chain the gateway forwarded</text>
+
+      <!-- intent agent: x 440-760, y 400-570 -->
+      <rect class="box b-agent" x="440" y="400" width="320" height="170"/>
+      <text class="t" x="456" y="424">intent-agent</text>
+      <text class="t-sub" x="456" y="442">A2A JSON-RPC · SendMessage only</text>
+      <text class="t-sub" x="456" y="457">Bearer = the gateway's Auth0 token, introspected at the bridge</text>
+      <text class="t-sub" x="456" y="472">subject bound from message.metadata (the whoami result)</text>
+      <text class="t-sub" x="456" y="487">vocabulary = data schema + the subject type's policies</text>
+      <text class="t-sub" x="456" y="502">Gemini structured output → validation loop</text>
+      <text class="t-sub" x="456" y="517">CEL filters checked against the schema</text>
+      <text class="t-sub" x="456" y="532">one audit record per request</text>
+      <text class="t-mono" x="456" y="552">:6003 A2A · :8001 /health · indykite/intent-agent</text>
+
+      <!-- redis -->
+      <rect class="box b-data" x="440" y="600" width="140" height="45"/>
+      <text class="t" x="456" y="621">redis</text>
+      <text class="t-sub" x="456" y="636">shared schema cache</text>
+
+      <!-- identity provider: the bridge (local) and the Auth0 tenant -->
+      <rect class="box b-console" x="840" y="55" width="150" height="110"/>
+      <text class="t" x="852" y="78">auth0-bridge</text>
+      <text class="t-sub" x="852" y="96">RFC 7662 introspect:</text>
+      <text class="t-sub" x="852" y="110">verifies the tenant's JWTs</text>
+      <text class="t-sub" x="852" y="124">token grant → Auth0,</text>
+      <text class="t-sub" x="852" y="138">audience added</text>
+      <text class="t-mono" x="852" y="156">:8090 · local</text>
+      <rect class="box b-ext" x="1010" y="55" width="150" height="110"/>
+      <text class="t" x="1022" y="78">Auth0 tenant</text>
+      <text class="t-mono" x="1022" y="96">https://&lt;tenant&gt;/</text>
+      <text class="t-sub" x="1022" y="112">people: ibac-people</text>
+      <text class="t-sub" x="1022" y="126">agents: ibac-agents</text>
+      <text class="t-sub" x="1022" y="140">intent_agent · JWKS</text>
+      <text class="t-sub" x="1022" y="156">Console app (login)</text>
+      <path class="edge" d="M990 110 L1010 110"/>
+
+      <!-- platform: x 840-1160 -->
+      <rect class="box b-data" x="840" y="250" width="320" height="125"/>
+      <text class="t" x="856" y="274">AuthZEN · decisions</text>
+      <text class="t-mono" x="856" y="292">POST /access/v1/evaluation · admission ⑦</text>
+      <text class="t-mono" x="856" y="307">POST /access/v1/evaluations · search/* ⑨ ⑫</text>
+      <text class="t-sub" x="856" y="327">KBAC policies over the IKG (data/intent-ibac):</text>
+      <text class="t-sub" x="856" y="342">the 24 policies the intent is written in, and</text>
+      <text class="t-sub" x="856" y="357">person-can-reach-agent over the workflow path</text>
+      <rect class="box b-data" x="840" y="395" width="320" height="55"/>
+      <text class="t" x="856" y="419">ContX IQ · whoami</text>
+      <text class="t-mono" x="856" y="437">GET /contx-iq/v1/whoami · token → Person</text>
+      <rect class="box b-data" x="840" y="470" width="320" height="50"/>
+      <text class="t" x="856" y="494">Data Schema API</text>
+      <text class="t-mono" x="856" y="512">GET /data-schema/v1 · X-IK-ClientKey</text>
+      <rect class="box b-data" x="840" y="535" width="320" height="50"/>
+      <text class="t" x="856" y="559">AuthZEN · policy listing</text>
+      <text class="t-mono" x="856" y="577">GET /access/v1/policies?subject_type=</text>
+
+      <!-- external -->
+      <rect class="box b-ext" x="840" y="670" width="320" height="60"/>
+      <text class="t" x="856" y="694">Google Gemini</text>
+      <text class="t-mono" x="856" y="712">structured output · the only model call</text>
+
+      <!-- 2: console -> gateway -->
+      <path class="edge" d="M310 90 L440 90"/>
+      <text class="t-edge" x="316" y="82">② SendMessage</text>
+      <text class="t-edge" x="316" y="104">Bearer = Auth0 token</text>
+
+      <!-- audit: gateway -> console -->
+      <path class="edge-soft" d="M440 170 L310 170"/>
+      <text class="t-edge" x="316" y="183">audit</text>
+
+      <!-- 3: gateway -> bridge (introspect the caller, fetch its own token) -->
+      <path class="edge" d="M760 100 L840 100"/>
+      <text class="t-edge" x="766" y="92">③ introspect</text>
+      <text class="t-edge" x="766" y="118">+ own token</text>
+
+      <!-- intent agent -> bridge (introspects the gateway's token): drawn as a dotted hint only -->
+      <path class="edge-soft" d="M760 415 C 805 415, 805 180, 880 165"/>
+      <text class="t-edge" x="766" y="406">introspect ⑤</text>
+
+      <!-- 6: gateway -> token service -->
+      <path class="edge" d="M440 215 C 380 215, 350 285, 235 285"/>
+      <text class="t-edge" x="278" y="305">⑥ exchange</text>
+      <text class="t-edge" x="278" y="319">→ delegated token</text>
+
+      <!-- token service -> console (audit) -->
+      <path class="edge-soft" d="M110 250 L110 210"/>
+
+      <!-- 5: gateway -> intent agent -->
+      <path class="edge" d="M460 250 L460 400"/>
+      <text class="t-edge" transform="rotate(-90 452 325)" x="452" y="325" text-anchor="middle">⑤ intent</text>
+
+      <!-- 8: gateway -> stand-in agent -->
+      <path class="edge-plum" d="M600 250 L600 290"/>
+      <text class="t-edge" x="476" y="275">⑧ forward · X-IK-Token · A2A-Extensions</text>
+
+      <!-- intent agent -> redis -->
+      <path class="edge" d="M500 570 L500 600"/>
+
+      <!-- 7: gateway -> admission -->
+      <path class="edge-plum" d="M760 180 C 800 180, 800 290, 840 290"/>
+      <text class="t-edge" x="766" y="172">⑦ admission</text>
+
+      <!-- 4: gateway -> whoami -->
+      <path class="edge" d="M760 235 C 810 235, 810 420, 840 420"/>
+      <text class="t-edge" x="766" y="252">④ whoami</text>
+
+      <!-- intent agent -> platform -->
+      <path class="edge" d="M760 480 C 800 480, 800 495, 840 495"/>
+      <text class="t-edge" x="766" y="472">schema</text>
+      <path class="edge" d="M760 520 C 805 520, 805 560, 840 560"/>
+      <text class="t-edge" x="766" y="536">policies</text>
+
+      <!-- intent agent -> gemini -->
+      <path class="edge" d="M760 555 C 800 555, 800 700, 840 700"/>
+      <text class="t-edge" x="766" y="580">extract</text>
+
+      <!-- 10-11: console -> preview -->
+      <path class="edge-plum" d="M90 210 L90 400"/>
+      <text class="t-edge" x="98" y="372">⑩ intent → discovery</text>
+      <text class="t-edge" x="98" y="388">⑪ usage on matched skills</text>
+
+      <!-- 9, 12: console decides the intent and the generated requests -->
+      <path class="edge" d="M255 210 L255 380 L790 380 C 815 380, 815 375, 840 375"/>
+      <text class="t-edge" x="262" y="372">⑨ decide the intent · ⑫ decide the generated requests</text>
+    </svg>
+  </div>
+
+  <div class="below">
+    <div class="panel">
+      <h2>One prompt, end to end</h2>
+      <ol>
+        <li><b>Login.</b> The person logs in at Auth0 (authorization code with PKCE, the tenant's "Console" application); the console keeps the access token issued for the people's API, <code>aud ibac-people</code>, in a server-side session. Every login is a Person of the graph.</li>
+        <li><b>SendMessage.</b> A2A JSON-RPC to the gateway of the chosen agent with <code>Authorization: Bearer &lt;the person's Auth0 token&gt;</code>, <code>A2A-Version: 1.0</code> and <code>X-Request-ID</code>. From here on the gateway drives.</li>
+        <li><b>Introspect.</b> The gateway validates the Bearer at the <code>auth0-bridge</code> (RFC 7662; the bridge verifies the JWT against the tenant's JWKS) and accepts only a token issued for <code>ibac-people</code>; it also fetches its own client-credentials token through the bridge, with its Machine-to-Machine application. Tampered, wrong-audience or missing tokens are 401 before anything else happens.</li>
+        <li><b>whoami.</b> The platform resolves the person's token to its <code>Person</code> node through the dataset's <code>auth0-people</code> token introspect (the tenant's issuer and keys). Whether that person is staff or a customer is found on the graph (<code>WORKS_IN</code>, <code>IS_CUSTOMER</code>), never in the token.</li>
+        <li><b>Intent.</b> With <code>ibac.enabled</code> the gateway sends the prompt to the Intent Agent, the whoami subject in <code>message.metadata</code>, its own token as Bearer. The agent introspects that token at the bridge with its own M2M client, reads the data schema and the subject type's ACTIVE policies (cached in Redis), extracts with Gemini, validates, audits. No intent, and the gateway answers the caller itself with the agent's reason; the agent behind it is never called.</li>
+        <li><b>Exchange.</b> RFC 8693 at the Token Service: the person's Auth0 token as subject, the gateway's as actor, both verified against the tenant JWKS; a delegated token out with <code>aud intent-ibac-agents</code>, <code>sub</code> = the person, <code>act.sub</code> = the gateway's client subject. One more hop per gateway.</li>
+        <li><b>Admission.</b> One AuthZEN evaluation: subject = the whoami result, action <code>CAN_TRIGGER</code>, resource = the gateway's own <code>Agent</code> node, the chain in <code>$ik_token.act_chain</code>. The policies <code>user-can-reach-agent</code> and <code>customer-can-reach-agent</code> compare it with the <code>Workflow → INVOKES → Agent</code> path. <code>false</code> is a 403.</li>
+        <li><b>Forward.</b> The message reaches the agent with the person's token untouched in <code>Authorization</code>, the delegated token in <code>X-IK-Token</code> and the delegated token extension named in <code>A2A-Extensions</code>. The stand-in agent echoes what it received, so the trace shows the chain arriving.</li>
+        <li><b>Decide the intent.</b> The console maps each evaluation to the AuthZEN endpoint the platform has today and shows the live decision or search results. <code>filters</code> and <code>qualifiers</code> are shown as carried: the AuthZEN API reads <code>input_params</code> only.</li>
+        <li class="ibac-step"><b>Discover.</b> The mapping preview matches the intent against every card of the fleet: a skill matches an evaluation when one of its <code>x-coaz-mappings</code> agrees on subject type, resource type and action.</li>
+        <li class="ibac-step"><b>Confirm.</b> For every matched skill the preview resolves the mapping's ids (<code>$token.sub</code> from the token, <code>$parameters.&lt;name&gt;</code> from the intent) and builds one AuthZEN request per (subject, resource) pair, or declares a search match when an id stays empty.</li>
+        <li class="ibac-step"><b>Decide the generated requests.</b> The requests the preview built go to the platform through the same mapper as the intent's own evaluations, so the board shows ALLOW or DENY next to each.</li>
+      </ol>
+    </div>
+    <div class="panel">
+      <h2>Boundaries</h2>
+      <p class="muted">Three things leave the machine: the login and the bridge's calls to the Auth0 tenant, the platform calls (whoami, admission, schema, policies, decisions) and the Gemini call made by the Intent Agent. Secrets live in <code>.env</code> (the tenant's client secrets among them) and in two generated files that git ignores: the Token Service config and the gateways' audit config.</p>
+      <div class="note">The Intent Agent makes no authorization decision. It produces the question, in the AuthZEN shape, from the only vocabulary a policy engine will accept.</div>
+      <div class="note plum">The gateway makes one decision, admission: may this caller reach this agent through this delegation chain. The mapping preview makes none. It answers a narrower question, in the console: <em>does this card declare a skill for this intent, and which permission does that come down to?</em> The released gateway does not read the cards' mappings yet, which is why that part stays a preview here. There is no central engine and nothing routes: each gateway checks its own card, so the fleet is compared by sending the same prompt through each gateway.</div>
+      <h3>What the fleet is</h3>
+      <p class="muted">Six A2A agent cards in <code>console/data/fleet.json</code>, each served by a stand-in agent behind its own gateway. Their skills' mappings use only triples that exist as policies in the dataset, which a unit test enforces. Three policy actions and one whole agent are left unmapped on purpose, so refusals can be shown as well as routes. Who may reach which gateway is in the graph: a <code>Workflow</code> per agent, <code>CAN_TRIGGER</code> edges from the departments and the customer records a Person holds. Which skills a person may use is in the graph too: <code>Skill</code> nodes under each <code>Agent</code> and the policy <code>person-can-use-skill</code>; a gateway answers the authenticated card with that set only and records the filtering as a <code>DISCOVERY</code>.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

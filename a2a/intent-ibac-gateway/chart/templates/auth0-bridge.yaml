@@ -1,0 +1,64 @@
+{{- $c := merge (dict "component" "auth0-bridge") . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "demo.name" $c }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "demo.labels" $c | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{- include "demo.selector" $c | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "demo.selector" $c | nindent 8 }}
+    spec:
+      # The image runs as uid 1001 and writes nothing.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: auth0-bridge
+          image: {{ include "demo.image" .Values.bridge.image }}
+          imagePullPolicy: {{ .Values.bridge.image.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.bridge.port }}
+          env:
+            - name: AUTH0_DOMAIN
+              value: {{ required "auth0.domain is required (the tenant, e.g. 1st.eu.auth0.com)" .Values.auth0.domain | quote }}
+            # Audience added to a client-credentials grant that names none: the gateways' actor tokens.
+            - name: AUTH0_DEFAULT_AUDIENCE
+              value: {{ .Values.auth0.agentsAudience | quote }}
+            - name: BRIDGE_PORT
+              value: {{ .Values.bridge.port | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.bridge.logLevel | quote }}
+          securityContext: {{- include "demo.securityContext" . | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 15
+          resources: {{- toYaml .Values.bridge.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "demo.name" $c }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "demo.labels" $c | nindent 4 }}
+spec:
+  selector: {{- include "demo.selector" $c | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.bridge.port }}
+      targetPort: http

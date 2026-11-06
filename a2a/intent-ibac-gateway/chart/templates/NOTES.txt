@@ -1,0 +1,15 @@
+intent-ibac-gateway {{ .Chart.Version }} installed as {{ .Release.Name }} in {{ .Release.Namespace }}.
+
+Open the console on the port the tenant's Console application has as callback (3300 by default):
+  kubectl -n {{ .Release.Namespace }} port-forward svc/{{ .Release.Name }}-console 3300:{{ .Values.console.port }}
+  then http://localhost:3300/ and log in as one of the demo's people.
+
+Watch the pods come up (the gateways wait for their agent's card, the Intent Agent for the Token Service and Redis):
+  kubectl get pods -n {{ .Release.Namespace }} -w
+
+Expected objects (created before install, see the README):
+  Secret    {{ .Values.secrets.envSecret }}   .env as is (GEMINI_API_KEY, APP_AGENT_CREDENTIALS_TOKEN, TOKEN_SERVICE_CLIENT_SECRET,
+                                  AUDIT_WEBHOOK_API_KEY, CONSOLE_IDP_CLIENT_*, INTENT_INTROSPECT_CLIENT_*, <AGENT>_IDP_CLIENT_*)
+  Secret    {{ .Values.secrets.filesSecret }} token-service.yaml and audit-config.yaml, webhook URL on {{ .Release.Name }}-console
+  ConfigMap {{ .Values.secrets.fleetConfigMap }} fleet.json
+  Image     {{ .Values.gateway.image.repository }}:{{ .Values.gateway.image.tag }} loaded into the cluster (never pulled)
