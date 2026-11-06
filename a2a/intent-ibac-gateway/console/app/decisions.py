@@ -124,25 +124,31 @@ def _is_about(evaluation: dict[str, Any], subject: dict[str, Any]) -> bool:
     )
 
 
+# Returned by _gate_for for a second subject that no query-permission evaluation precedes.
+NO_GATE = -1
+
+
 def _gate_for(evaluations: list[dict[str, Any]], index: int, caller: dict[str, str] | None) -> int | None:
-    """Index of the gate an evaluation depends on, or None when it runs as the caller.
+    """Index of the gate an evaluation depends on, None when it runs as the caller, NO_GATE when it may not run.
 
     The Intent Agent emits a second subject as "first the caller may ask about X, then X does Y", with the
     permission-to-query gate first. The gate is the earlier evaluation about X whose action is a query
-    permission (`CAN_QUERY_*`); failing that, the first evaluation of the prompt when it is about X. Any
-    other earlier evaluation that merely mentions X (a REPORTS_TO about X, say) is not a gate.
+    permission (`CAN_QUERY_*`). An earlier evaluation that merely mentions X (a REPORTS_TO about X, say) is
+    not a gate, and without a gate the evaluation as X is not sent: nothing established that the caller may
+    ask about X.
     """
     subject = evaluations[index].get("subject") or {}
     if caller is None or not subject.get("id"):
         return None  # without a caller nothing is a second subject: every evaluation runs
     if subject.get("type") == caller.get("type") and subject.get("id") == caller.get("id"):
         return None
-    candidates = [earlier for earlier in range(index) if _is_about(evaluations[earlier], subject)]
-    for earlier in candidates:
+    for earlier in range(index):
+        if not _is_about(evaluations[earlier], subject):
+            continue
         action = (evaluations[earlier].get("action") or {}).get("name") or ""
         if action.startswith(GATE_ACTION_PREFIX):
             return earlier
-    return 0 if 0 in candidates else None
+    return NO_GATE
 
 
 def _split_context(
@@ -187,7 +193,13 @@ def _plan_one(
     if input_params:
         request["context"] = {"input_params": input_params}
     depends_on = _gate_for(evaluations, index, caller)
-    if depends_on is not None:
+    skipped = None
+    if depends_on == NO_GATE:
+        depends_on = None
+        skipped = (
+            "a second subject with no query-permission evaluation (CAN_QUERY_*) before it: not sent to the platform"
+        )
+    elif depends_on is not None:
         notes.append(f"runs as a second subject: only after evaluation {depends_on + 1} (the gate) is allowed")
     return DecisionPlan(
         index=index,
@@ -198,6 +210,7 @@ def _plan_one(
         carried=carried,
         notes=notes,
         depends_on=depends_on,
+        skipped=skipped,
     )
 
 
@@ -245,7 +258,7 @@ async def execute_plans(platform: PlatformClient, plans: list[DecisionPlan]) -> 
     the unrelated plans of a multi-intent prompt still run.
     """
     by_index = {plan.index: plan for plan in plans}
-    await _run_batch(platform, [plan for plan in plans if plan.depends_on is None])
+    await _run_batch(platform, [plan for plan in plans if plan.depends_on is None and plan.skipped is None])
     # A gate can itself depend on an earlier gate (ask about X, then as X ask about Y, then as Y), so the
     # dependents run one by one in intent order: each sees its gate's answer before it is checked.
     for plan in sorted((p for p in plans if p.depends_on is not None), key=lambda p: p.index):

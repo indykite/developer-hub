@@ -83,6 +83,16 @@ spec:
               port: http
             periodSeconds: 15
           resources: {{- toYaml .Values.console.resources | nindent 12 }}
+          volumeMounts:
+            # The same cards the stand-in agents serve, so a new fleet.json reaches both sides at once.
+            - name: fleet
+              mountPath: /app/data/fleet.json
+              subPath: fleet.json
+              readOnly: true
+      volumes:
+        - name: fleet
+          configMap:
+            name: {{ .Values.secrets.fleetConfigMap }}
 ---
 apiVersion: v1
 kind: Service

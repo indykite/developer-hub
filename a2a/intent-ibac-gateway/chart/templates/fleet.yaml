@@ -224,4 +224,4 @@ spec:
     - name: http
       port: {{ .port }}
       targetPort: http
-{{- end }}
+{{ end }}
