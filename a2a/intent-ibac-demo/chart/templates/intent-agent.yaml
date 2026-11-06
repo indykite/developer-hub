@@ -1,0 +1,118 @@
+{{- $c := merge (dict "component" "intent-agent") . -}}
+{{- $ts := include "demo.name" (merge (dict "component" "token-service") .) -}}
+{{- $console := include "demo.name" (merge (dict "component" "console") .) -}}
+{{- $redis := include "demo.name" (merge (dict "component" "redis") .) -}}
+{{- $env := .Values.secrets.envSecret -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "demo.name" $c }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "demo.labels" $c | nindent 4 }}
+spec:
+  replicas: {{ .Values.intentAgent.replicaCount | default 1 }}
+  selector:
+    matchLabels: {{- include "demo.selector" $c | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "demo.selector" $c | nindent 8 }}
+      annotations:
+        # Rolls the pod when secrets.revision is bumped after the Secrets were re-created.
+        checksum/secrets-revision: {{ .Values.secrets.revision | toString | sha256sum }}
+    spec:
+      # The upstream image runs as this uid; /app is read-only, /tmp is the only writable path.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: intent-agent
+          image: {{ include "demo.image" .Values.intentAgent.image }}
+          imagePullPolicy: {{ .Values.intentAgent.image.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.intentAgent.intentPort }}
+            - name: health
+              containerPort: {{ .Values.intentAgent.healthPort }}
+          env:
+            - name: LOG_LEVEL
+              value: {{ .Values.intentAgent.logLevel | quote }}
+            - name: INTENT_PORT
+              value: {{ .Values.intentAgent.intentPort | quote }}
+            - name: HEALTH_PORT
+              value: {{ .Values.intentAgent.healthPort | quote }}
+            - name: ADVERTISED_HOST
+              value: {{ include "demo.name" $c | quote }}
+            - name: GEMINI_MODEL
+              value: {{ .Values.intentAgent.geminiModel | quote }}
+            - name: INDYKITE_BASE_URL
+              value: {{ .Values.platform.indykiteBaseUrl | quote }}
+            - name: INTROSPECT_URL
+              value: {{ printf "http://%s:%d/oauth2/introspect" $ts (int .Values.tokenService.port) | quote }}
+            - name: INTROSPECT_CLIENT_ID
+              value: {{ .Values.tokenService.clientId | quote }}
+            - name: EXPECTED_TOKEN_AUDIENCE
+              value: {{ .Values.intentAgent.expectedTokenAudience | quote }}
+            - name: REQUEST_TIMEOUT_SECONDS
+              value: {{ .Values.intentAgent.requestTimeoutSeconds | quote }}
+            - name: LLM_TIMEOUT_SECONDS
+              value: {{ .Values.intentAgent.llmTimeoutSeconds | quote }}
+            - name: VALIDATION_MAX_RETRIES
+              value: {{ .Values.intentAgent.validationMaxRetries | quote }}
+            - name: CACHE_BACKEND
+              value: redis
+            - name: REDIS_URL
+              value: {{ printf "redis://%s:6379" $redis | quote }}
+            - name: AUDIT_DELIVERY
+              value: webhook
+            - name: AUDIT_HTTP_URL
+              value: {{ printf "http://%s:%d/audit/webhook" $console (int .Values.console.port) | quote }}
+            - name: AUDIT_HTTP_METHOD
+              value: POST
+            - name: AUDIT_HTTP_AUTH_TYPE
+              value: api-key
+            - name: AUDIT_HTTP_API_KEY_HEADER
+              value: X-API-Key
+            - name: AUDIT_ASYNC
+              value: "true"
+            {{- include "demo.secretEnv" (dict "name" "GEMINI_API_KEY" "secret" $env "key" "GEMINI_API_KEY") | nindent 12 }}
+            {{- include "demo.secretEnv" (dict "name" "IK_APP_AGENT_KEY" "secret" $env "key" "APP_AGENT_CREDENTIALS_TOKEN") | nindent 12 }}
+            {{- include "demo.secretEnv" (dict "name" "INTROSPECT_CLIENT_SECRET" "secret" $env "key" "TOKEN_SERVICE_CLIENT_SECRET") | nindent 12 }}
+            {{- include "demo.secretEnv" (dict "name" "AUDIT_HTTP_API_KEY" "secret" $env "key" "AUDIT_WEBHOOK_API_KEY") | nindent 12 }}
+          securityContext: {{- include "demo.securityContext" . | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: health
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: health
+            initialDelaySeconds: 20
+            periodSeconds: 15
+          resources: {{- toYaml .Values.intentAgent.resources | nindent 12 }}
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "demo.name" $c }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "demo.labels" $c | nindent 4 }}
+spec:
+  selector: {{- include "demo.selector" $c | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.intentAgent.intentPort }}
+      targetPort: http
+    - name: health
+      port: {{ .Values.intentAgent.healthPort }}
+      targetPort: health

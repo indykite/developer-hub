@@ -100,7 +100,8 @@ def test_a_quote_prompt_routes_to_the_trading_desk_and_generates_a_concrete_requ
         if a not in ("trading-desk", "weather")
     )
     assert result["summary"]["matched_agents"] == ["trading-desk"]
-    [usage] = result["usage"]
+    assert len(result["usage"]) == 1
+    usage = result["usage"][0]
     assert usage["reason_code"] == ibac.REASON_INTENT_MATCH_AUTHZEN_REQUIRED
     assert usage["requests"][0]["subject"] == {"type": "Person", "id": "roy"}
     assert usage["requests"][0]["resource"] == {"type": "Quote", "id": "stock_quote"}
@@ -122,7 +123,8 @@ def test_a_parameter_reference_resolves_from_the_intent():
         "bob",
         evaluation(("Person", "bob"), "HAS", ("AccountTier",), parameters={"tier": "tier_1"}),
     )
-    [usage] = result["usage"]
+    assert len(result["usage"]) == 1
+    usage = result["usage"][0]
     assert usage["agent"] == "billing"
     assert usage["skill"] == "my-accounts"
     assert usage["requests"] == [
@@ -139,7 +141,8 @@ def test_a_search_shaped_intent_matches_as_a_search():
     """A search shaped intent matches as a search."""
     fleet = load_fleet(FLEET)
     result = run(fleet, "Person", "leslie", evaluation(("Person", "leslie"), "CAN_VIEW", ("Invoice",)))
-    [usage] = result["usage"]
+    assert len(result["usage"]) == 1
+    usage = result["usage"][0]
     assert usage["skill"] == "customer-360"
     assert usage["reason_code"] == ibac.REASON_INTENT_MATCH_SEARCH
     assert usage["requests"] == []
@@ -184,7 +187,8 @@ def test_two_evaluations_with_the_same_parameter_name_generate_two_distinct_requ
         evaluation(("Person", "bob"), "HAS", ("AccountTier",), parameters={"tier": "tier_1"}),
         evaluation(("Person", "bob"), "HAS", ("AccountTier",), parameters={"tier": "tier_3"}),
     )
-    [usage] = result["usage"]
+    assert len(result["usage"]) == 1
+    usage = result["usage"][0]
     assert usage["reason_code"] == ibac.REASON_INTENT_MATCH_AUTHZEN_REQUIRED
     assert [r["resource"]["id"] for r in usage["requests"]] == ["tier_1", "tier_3"]
     assert [r["context"]["input_params"]["parameters"] for r in usage["requests"]] == [

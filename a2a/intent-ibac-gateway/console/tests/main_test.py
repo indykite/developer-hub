@@ -145,7 +145,6 @@ def test_act_chain_walks_nested_actors_outermost_first():
 
 def test_card_summary_splits_kept_and_hidden_skills_and_reads_the_discovery_record():
     """What the fleet page shows per card: the skills kept in the order of the card, the hidden ones, the record."""
-
     answer = {
         "agent": "support-desk",
         "kind": "card",

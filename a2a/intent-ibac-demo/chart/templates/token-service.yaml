@@ -1,0 +1,71 @@
+{{- $c := merge (dict "component" "token-service") . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "demo.name" $c }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "demo.labels" $c | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{- include "demo.selector" $c | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "demo.selector" $c | nindent 8 }}
+      annotations:
+        # Rolls the pod when secrets.revision is bumped after the Secrets were re-created.
+        checksum/secrets-revision: {{ .Values.secrets.revision | toString | sha256sum }}
+    spec:
+      # The image runs as uid 65532 and writes nothing: config is mounted, audit goes to the webhook.
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: token-service
+          image: {{ include "demo.image" .Values.tokenService.image }}
+          imagePullPolicy: {{ .Values.tokenService.image.pullPolicy | default "IfNotPresent" }}
+          args: ["--config=/app/.configs/token-service.yaml"]
+          ports:
+            - name: http
+              containerPort: {{ .Values.tokenService.port }}
+            - name: health
+              containerPort: 9080
+          readinessProbe:
+            httpGet:
+              path: /.well-known/openid-configuration
+              port: http
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            periodSeconds: 15
+          securityContext: {{- include "demo.securityContext" . | nindent 12 }}
+          resources: {{- toYaml .Values.tokenService.resources | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /app/.configs
+              readOnly: true
+      volumes:
+        - name: config
+          secret:
+            secretName: {{ .Values.secrets.filesSecret }}
+            items:
+              - key: token-service.yaml
+                path: token-service.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "demo.name" $c }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "demo.labels" $c | nindent 4 }}
+spec:
+  selector: {{- include "demo.selector" $c | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.tokenService.port }}
+      targetPort: http

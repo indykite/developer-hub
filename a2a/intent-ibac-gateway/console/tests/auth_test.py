@@ -9,7 +9,19 @@ import urllib.parse
 
 import jwt
 import pytest
-from app.auth import Auth0Login, LoginError, Session, bearer_for, decode_unverified, tamper
+from app.auth import (
+    LOGIN_COOKIE,
+    SESSION_COOKIE,
+    Auth0Login,
+    LoginError,
+    Session,
+    bearer_for,
+    decode_unverified,
+    router,
+    tamper,
+)
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
 
 def token(**claims):
@@ -104,3 +116,52 @@ def test_decode_unverified_tolerates_garbage_and_expired_tokens():
     assert decode_unverified("not-a-jwt") == {}
     assert decode_unverified(token(sub="x", exp=1))["sub"] == "x"
     assert json.dumps(decode_unverified(token(sub="x"))) != "{}"
+
+
+class _Exchanging(Auth0Login):
+    """A login whose code exchange needs no tenant: any known state becomes a session."""
+
+    async def exchange(self, _code, state):
+        if self.pending.pop(state, None) is None:
+            msg = "unknown or expired login state"
+            raise LoginError(msg)
+        return Session(
+            access_token=token(sub="auth0|1", aud="ibac-people"),
+            id_token=token(sub="auth0|1", name="Bambi"),
+        )
+
+
+def _client():
+    lg = _Exchanging(
+        domain="tenant.test",
+        client_id="c",
+        client_secret="s",
+        audience="ibac-people",
+        public_url="http://localhost:3300",
+    )  # nosec B106
+    app = FastAPI()
+    app.include_router(router(lambda _request: lg))
+    return TestClient(app, follow_redirects=False), lg
+
+
+def test_callback_installs_a_session_only_in_the_browser_that_started_the_login():
+    """The login cookie binds the state to one browser: a callback replayed elsewhere installs nothing."""
+    client, lg = _client()
+    started = client.get("/auth/login")
+    assert started.status_code == 302
+    state = urllib.parse.parse_qs(urllib.parse.urlparse(started.headers["location"]).query)["state"][0]
+    assert started.cookies.get(LOGIN_COOKIE) == state
+
+    other = TestClient(client.app, follow_redirects=False)  # a browser that never started this login
+    hijack = other.get(f"/auth/callback?code=x&state={state}")
+    assert hijack.status_code == 302
+    assert "login_error" in hijack.headers["location"]
+    assert SESSION_COOKIE not in hijack.cookies
+    assert state not in lg.pending  # the stolen state is burnt, the real browser cannot finish with it either
+
+    second = client.get("/auth/login")
+    state2 = urllib.parse.parse_qs(urllib.parse.urlparse(second.headers["location"]).query)["state"][0]
+    done = client.get(f"/auth/callback?code=x&state={state2}")
+    assert done.status_code == 302
+    assert done.headers["location"] == "/"
+    assert done.cookies.get(SESSION_COOKIE) in lg.sessions
