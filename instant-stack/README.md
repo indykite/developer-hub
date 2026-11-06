@@ -76,6 +76,11 @@ data/
                         # policies, no MCP/CIQ/resolvers (DATASET=intent)
   ibac/                 # a2a/ibac-demo: the canbank graph with the music demo's
                         # people as Auth0 subjects (DATASET=ibac)
+  intent-ibac/          # a2a/intent-ibac-gateway: the intent dataset with one identity type,
+                        # Person (the ibac people as Auth0 subjects; customers found on the
+                        # graph through IS_CUSTOMER), plus the fleet's agents, workflows,
+                        # skills (CAN_USE), admission and skill policies and the two token
+                        # introspects its six gateways need (DATASET=intent-ibac)
     manifest.json       # all Config-API elements: project, application,
                         # app_agent, mcp_server, token_introspect, kbac,
                         # resolvers, ciq_policies, ciq_queries

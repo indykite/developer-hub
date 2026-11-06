@@ -1,0 +1,463 @@
+---
+# intent-ibac-gateway: the IndyKite Intent Agent and the IBAC engine, shown together.
+#
+#   console ──(mint persona + actor JWT)──▶ token-service ──▶ delegation token (aud intent_agent)
+#   console ──A2A SendMessage, Bearer = delegation──▶ intent-agent ──introspect──▶ token-service
+#                                                      │ data schema + policies ──▶ IndyKite platform
+#                                                      │ extraction ──▶ Gemini
+#                                                      └ audit record ──▶ console (webhook)
+#   console ──A2A SendMessage, Bearer = the person's Auth0 token──▶ iag-<agent> (Agent Gateway 2.99)
+#       gateway: introspect at auth0-bridge ─▶ whoami ─▶ Intent Agent (ibac.enabled) ─▶ Token Service
+#                exchange ─▶ AuthZEN admission ($ik_token.act_chain) ─▶ forward to agent-<agent>
+#                every step an audit record ──▶ console (webhook)
+#   console ──mapping preview + AuthZEN evaluations/search──▶ IndyKite platform (the decision step)
+#
+# Build the console image with `make images`; the Intent Agent is the published
+# indykite/intent-agent image (override INTENT_AGENT_IMAGE to test a local build).
+# The project name and the host ports differ from intent-agent-demo so both stacks can run at once.
+
+name: intent-ibac-gateway
+
+services:
+  # Showcase web console: Auth0 login (the person's token), A2A client to the
+  # gateways, mapping preview + fleet of agent cards, AuthZEN decision mapper,
+  # audit webhook + live stream.
+  console:
+    image: intent-ibac-console:local
+    build:
+      context: ./console
+    # Loopback by default: /api/prompt and the audit endpoints have no caller
+    # authentication. Set CONSOLE_BIND=0.0.0.0 in .env to present from another device.
+    ports:
+      - "${CONSOLE_BIND:-127.0.0.1}:${CONSOLE_PORT:-3300}:3400"
+    environment:
+      # The container listens on 3400 whatever the host port (CONSOLE_PORT in .env) is.
+      CONSOLE_PORT: 3400
+      LOG_LEVEL: ${CONSOLE_LOG_LEVEL:-INFO}
+      INTENT_AGENT_URL: http://${INTENT_AGENT_ENTRY:-intent-agent}:${INTENT_AGENT_PORT:-6003}
+      INTENT_AGENT_HEALTH_URL: http://intent-agent:${INTENT_AGENT_HEALTH_PORT:-8001}
+      TOKEN_SERVICE_URL: http://token-service:8102
+      TOKEN_SERVICE_CLIENT_ID: intent-ibac
+      TOKEN_SERVICE_CLIENT_SECRET: ${TOKEN_SERVICE_CLIENT_SECRET}
+      INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
+      APP_AGENT_CREDENTIALS_TOKEN: ${APP_AGENT_CREDENTIALS_TOKEN}
+      AUDIT_WEBHOOK_API_KEY: ${AUDIT_WEBHOOK_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
+      # The login: the tenant's "Console" application, authorization code + PKCE,
+      # asking for the people's API so the access token is what the gateways take.
+      AUTH0_DOMAIN: ${AUTH0_DOMAIN}
+      CONSOLE_IDP_CLIENT_ID: ${CONSOLE_IDP_CLIENT_ID}
+      CONSOLE_IDP_CLIENT_SECRET: ${CONSOLE_IDP_CLIENT_SECRET}
+      AUTH0_PEOPLE_AUDIENCE: ${AUTH0_PEOPLE_AUDIENCE:-ibac-people}
+      # The callback registered on that application: where the browser reaches the console.
+      CONSOLE_PUBLIC_URL: ${CONSOLE_PUBLIC_URL:-http://localhost:${CONSOLE_PORT:-3300}}
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request, sys;
+          sys.exit(0 if urllib.request.urlopen('http://localhost:3400/api/health/console', timeout=3).status == 200 else 1)
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+
+  # IndyKite Token Service: RFC 8693 exchange + RFC 7662 introspection. Issues
+  # the delegation token the console presents to the Intent Agent, and is the
+  # agent's INTROSPECT_URL. Official image; linux/amd64 only.
+  token-service:
+    image: indykite/token-service:1.0.0@sha256:a1248b73ab22fb939e533455a89468b7112b2b938486d8feca818e17776a97e2
+    platform: linux/amd64
+    # Published for curl-level inspection only, on loopback (see CONSOLE_BIND).
+    # The container listens on 8102; the host port is TOKEN_SERVICE_HOST_PORT.
+    ports:
+      - "${TOKEN_SERVICE_BIND:-127.0.0.1}:${TOKEN_SERVICE_HOST_PORT:-8302}:8102"
+    volumes:
+      # Holds the private signing key + client secret - rendered by `make keys`
+      # from token-service.template.yaml, gitignored.
+      - ./token-service/token-service.yaml:/app/.configs/token-service.yaml:ro
+    command: ["--config=/app/.configs/token-service.yaml"]
+    healthcheck:
+      test: ["CMD", "/bin/http_health_probe", "http://localhost:8102/.well-known/openid-configuration"]
+      interval: 10s
+      timeout: 2s
+      start_period: 10s
+      retries: 5
+
+  # The product under demonstration: the published image (see INTENT_AGENT_IMAGE
+  # in .example.env). Distroless, non-root, nothing writable but /tmp - audit
+  # goes to the console webhook.
+  intent-agent:
+    image: ${INTENT_AGENT_IMAGE:-docker.io/indykite/intent-agent:1.1.0@sha256:a9e8271ada04e13f52218046df0c88641274fdf7658bacd50e4c4bda6ee3d71c}
+    expose:
+      - "6003"
+      - "8001"
+    environment:
+      LOG_LEVEL: ${INTENT_LOG_LEVEL:-INFO}
+      INTENT_PORT: 6003
+      HEALTH_PORT: 8001
+      ADVERTISED_HOST: intent-agent
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
+      INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
+      IK_APP_AGENT_KEY: ${APP_AGENT_CREDENTIALS_TOKEN}
+      # RFC 7662 introspection at the auth0-bridge: the Bearer a gateway presents
+      # is its Auth0 client-credentials token for the intent_agent API. The agent
+      # authenticates to the bridge with a Machine-to-Machine client of its own.
+      INTROSPECT_URL: http://auth0-bridge:8090/oauth/introspect
+      INTROSPECT_CLIENT_ID: ${INTENT_INTROSPECT_CLIENT_ID}
+      INTROSPECT_CLIENT_SECRET: ${INTENT_INTROSPECT_CLIENT_SECRET}
+      EXPECTED_TOKEN_AUDIENCE: intent_agent
+      REQUEST_TIMEOUT_SECONDS: ${REQUEST_TIMEOUT_SECONDS:-10.0}
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-3.0}
+      VALIDATION_MAX_RETRIES: ${VALIDATION_MAX_RETRIES:-1}
+      CACHE_BACKEND: redis
+      REDIS_URL: redis://redis:6379
+      AUDIT_DELIVERY: webhook
+      AUDIT_HTTP_URL: http://console:3400/audit/webhook
+      AUDIT_HTTP_METHOD: POST
+      AUDIT_HTTP_AUTH_TYPE: api-key
+      AUDIT_HTTP_API_KEY: ${AUDIT_WEBHOOK_API_KEY}
+      AUDIT_HTTP_API_KEY_HEADER: X-API-Key
+      AUDIT_ASYNC: "true"
+    depends_on:
+      redis:
+        condition: service_healthy
+      token-service:
+        condition: service_healthy
+      auth0-bridge:
+        condition: service_healthy
+
+  # Second instance + balancer (profile "cluster"): both instances share one
+  # schema/policy cache entry in Redis; the console then talks to the balancer.
+  intent-agent-2:
+    image: ${INTENT_AGENT_IMAGE:-docker.io/indykite/intent-agent:1.1.0@sha256:a9e8271ada04e13f52218046df0c88641274fdf7658bacd50e4c4bda6ee3d71c}
+    profiles: ["cluster"]
+    expose:
+      - "6003"
+    environment:
+      LOG_LEVEL: ${INTENT_LOG_LEVEL:-INFO}
+      INTENT_PORT: 6003
+      HEALTH_PORT: 8001
+      ADVERTISED_HOST: intent-agent
+      INTENT_AGENT_NAME: intent_agent_2
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash-lite}
+      INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
+      IK_APP_AGENT_KEY: ${APP_AGENT_CREDENTIALS_TOKEN}
+      INTROSPECT_URL: http://auth0-bridge:8090/oauth/introspect
+      INTROSPECT_CLIENT_ID: ${INTENT_INTROSPECT_CLIENT_ID}
+      INTROSPECT_CLIENT_SECRET: ${INTENT_INTROSPECT_CLIENT_SECRET}
+      EXPECTED_TOKEN_AUDIENCE: intent_agent
+      REQUEST_TIMEOUT_SECONDS: ${REQUEST_TIMEOUT_SECONDS:-10.0}
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-3.0}
+      VALIDATION_MAX_RETRIES: ${VALIDATION_MAX_RETRIES:-1}
+      CACHE_BACKEND: redis
+      REDIS_URL: redis://redis:6379
+      AUDIT_DELIVERY: webhook
+      AUDIT_HTTP_URL: http://console:3400/audit/webhook
+      AUDIT_HTTP_METHOD: POST
+      AUDIT_HTTP_AUTH_TYPE: api-key
+      AUDIT_HTTP_API_KEY: ${AUDIT_WEBHOOK_API_KEY}
+      AUDIT_HTTP_API_KEY_HEADER: X-API-Key
+      AUDIT_ASYNC: "true"
+    depends_on:
+      redis:
+        condition: service_healthy
+      token-service:
+        condition: service_healthy
+      auth0-bridge:
+        condition: service_healthy
+
+  intent-balancer:
+    image: nginx:1.29-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
+    profiles: ["cluster"]
+    expose:
+      - "6003"
+    volumes:
+      - ./nginx/intent-balancer.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - intent-agent
+      - intent-agent-2
+
+  # The gateways' and the Intent Agent's identity provider endpoint, in front of
+  # Auth0: RFC 7662 introspection (verifies the tenant's JWTs offline against
+  # its JWKS) and the token endpoint (forwarded to Auth0 with the agents'
+  # audience added). Callers authenticate with their own M2M credentials, which
+  # the bridge verifies at Auth0; no client list lives here.
+  auth0-bridge:
+    image: intent-ibac-auth0-bridge:local
+    build:
+      context: ./auth0_bridge
+    expose:
+      - "8090"
+    environment:
+      AUTH0_DOMAIN: ${AUTH0_DOMAIN}
+      AUTH0_DEFAULT_AUDIENCE: ${AUTH0_AGENTS_AUDIENCE:-ibac-agents}
+      BRIDGE_PORT: 8090
+      LOG_LEVEL: ${IAG_LOG_LEVEL:-info}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8090/healthz', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # The fleet: six stand-in A2A agents, each behind its own Agent Gateway.
+  # The agents serve their card from the console's fleet file (mappings
+  # included) and answer a message with a reply that names the skill and what
+  # the gateway forwarded (A2A-Extensions, the delegated token). Only the
+  # gateways are published on the host; the agents are reachable in-network.
+
+  agent-trading-desk:
+    image: intent-ibac-agent:local
+    build:
+      context: ./agents
+    expose:
+      - "8000"
+    environment:
+      AGENT_ID: trading-desk
+      ADVERTISED_URL: http://agent-trading-desk:8000/
+      FLEET_FILE: /app/fleet.json
+    volumes:
+      - ./console/data/fleet.json:/app/fleet.json:ro
+
+  iag-trading-desk:
+    extends:
+      service: iag-base
+      file: iag-base-docker.yaml
+    ports:
+      - "${IAG_BIND:-127.0.0.1}:${IAG_TRADING_DESK_PORT:-9901}:9901"
+    environment:
+      K_SERVICE: iag-trading-desk
+      JARVIS_SERVICE_NAME: iag-trading-desk
+      JARVIS_SERVICE_PORT: "9901"
+      # Public URL of the gateway: the interface URL in the card it serves.
+      JARVIS_SERVICE_BASE_URL: http://localhost:${IAG_TRADING_DESK_PORT:-9901}
+      JARVIS_PROTECTED_AGENT_BASE_URL: http://agent-trading-desk:8000
+      # The gateway's Auth0 Machine-to-Machine client; its token sub,
+      # <client_id>@clients, is the Agent node's external_id in the graph.
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${TRADING_DESK_IDP_CLIENT_ID}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${TRADING_DESK_IDP_CLIENT_SECRET}
+    depends_on:
+      console:
+        condition: service_healthy
+      token-service:
+        condition: service_healthy
+      auth0-bridge:
+        condition: service_healthy
+      agent-trading-desk:
+        condition: service_started
+
+  agent-support-desk:
+    image: intent-ibac-agent:local
+    build:
+      context: ./agents
+    expose:
+      - "8000"
+    environment:
+      AGENT_ID: support-desk
+      ADVERTISED_URL: http://agent-support-desk:8000/
+      FLEET_FILE: /app/fleet.json
+    volumes:
+      - ./console/data/fleet.json:/app/fleet.json:ro
+
+  iag-support-desk:
+    extends:
+      service: iag-base
+      file: iag-base-docker.yaml
+    ports:
+      - "${IAG_BIND:-127.0.0.1}:${IAG_SUPPORT_DESK_PORT:-9902}:9902"
+    environment:
+      K_SERVICE: iag-support-desk
+      JARVIS_SERVICE_NAME: iag-support-desk
+      JARVIS_SERVICE_PORT: "9902"
+      # Public URL of the gateway: the interface URL in the card it serves.
+      JARVIS_SERVICE_BASE_URL: http://localhost:${IAG_SUPPORT_DESK_PORT:-9902}
+      JARVIS_PROTECTED_AGENT_BASE_URL: http://agent-support-desk:8000
+      # The gateway's Auth0 Machine-to-Machine client; its token sub,
+      # <client_id>@clients, is the Agent node's external_id in the graph.
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${SUPPORT_DESK_IDP_CLIENT_ID}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${SUPPORT_DESK_IDP_CLIENT_SECRET}
+    depends_on:
+      console:
+        condition: service_healthy
+      token-service:
+        condition: service_healthy
+      auth0-bridge:
+        condition: service_healthy
+      agent-support-desk:
+        condition: service_started
+
+  agent-billing:
+    image: intent-ibac-agent:local
+    build:
+      context: ./agents
+    expose:
+      - "8000"
+    environment:
+      AGENT_ID: billing
+      ADVERTISED_URL: http://agent-billing:8000/
+      FLEET_FILE: /app/fleet.json
+    volumes:
+      - ./console/data/fleet.json:/app/fleet.json:ro
+
+  iag-billing:
+    extends:
+      service: iag-base
+      file: iag-base-docker.yaml
+    ports:
+      - "${IAG_BIND:-127.0.0.1}:${IAG_BILLING_PORT:-9903}:9903"
+    environment:
+      K_SERVICE: iag-billing
+      JARVIS_SERVICE_NAME: iag-billing
+      JARVIS_SERVICE_PORT: "9903"
+      # Public URL of the gateway: the interface URL in the card it serves.
+      JARVIS_SERVICE_BASE_URL: http://localhost:${IAG_BILLING_PORT:-9903}
+      JARVIS_PROTECTED_AGENT_BASE_URL: http://agent-billing:8000
+      # The gateway's Auth0 Machine-to-Machine client; its token sub,
+      # <client_id>@clients, is the Agent node's external_id in the graph.
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${BILLING_IDP_CLIENT_ID}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${BILLING_IDP_CLIENT_SECRET}
+    depends_on:
+      console:
+        condition: service_healthy
+      token-service:
+        condition: service_healthy
+      auth0-bridge:
+        condition: service_healthy
+      agent-billing:
+        condition: service_started
+
+  agent-people-directory:
+    image: intent-ibac-agent:local
+    build:
+      context: ./agents
+    expose:
+      - "8000"
+    environment:
+      AGENT_ID: people-directory
+      ADVERTISED_URL: http://agent-people-directory:8000/
+      FLEET_FILE: /app/fleet.json
+    volumes:
+      - ./console/data/fleet.json:/app/fleet.json:ro
+
+  iag-people-directory:
+    extends:
+      service: iag-base
+      file: iag-base-docker.yaml
+    ports:
+      - "${IAG_BIND:-127.0.0.1}:${IAG_PEOPLE_DIRECTORY_PORT:-9904}:9904"
+    environment:
+      K_SERVICE: iag-people-directory
+      JARVIS_SERVICE_NAME: iag-people-directory
+      JARVIS_SERVICE_PORT: "9904"
+      # Public URL of the gateway: the interface URL in the card it serves.
+      JARVIS_SERVICE_BASE_URL: http://localhost:${IAG_PEOPLE_DIRECTORY_PORT:-9904}
+      JARVIS_PROTECTED_AGENT_BASE_URL: http://agent-people-directory:8000
+      # The gateway's Auth0 Machine-to-Machine client; its token sub,
+      # <client_id>@clients, is the Agent node's external_id in the graph.
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${PEOPLE_DIRECTORY_IDP_CLIENT_ID}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${PEOPLE_DIRECTORY_IDP_CLIENT_SECRET}
+    depends_on:
+      console:
+        condition: service_healthy
+      token-service:
+        condition: service_healthy
+      auth0-bridge:
+        condition: service_healthy
+      agent-people-directory:
+        condition: service_started
+
+  agent-workflow-runner:
+    image: intent-ibac-agent:local
+    build:
+      context: ./agents
+    expose:
+      - "8000"
+    environment:
+      AGENT_ID: workflow-runner
+      ADVERTISED_URL: http://agent-workflow-runner:8000/
+      FLEET_FILE: /app/fleet.json
+    volumes:
+      - ./console/data/fleet.json:/app/fleet.json:ro
+
+  iag-workflow-runner:
+    extends:
+      service: iag-base
+      file: iag-base-docker.yaml
+    ports:
+      - "${IAG_BIND:-127.0.0.1}:${IAG_WORKFLOW_RUNNER_PORT:-9905}:9905"
+    environment:
+      K_SERVICE: iag-workflow-runner
+      JARVIS_SERVICE_NAME: iag-workflow-runner
+      JARVIS_SERVICE_PORT: "9905"
+      # Public URL of the gateway: the interface URL in the card it serves.
+      JARVIS_SERVICE_BASE_URL: http://localhost:${IAG_WORKFLOW_RUNNER_PORT:-9905}
+      JARVIS_PROTECTED_AGENT_BASE_URL: http://agent-workflow-runner:8000
+      # The gateway's Auth0 Machine-to-Machine client; its token sub,
+      # <client_id>@clients, is the Agent node's external_id in the graph.
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${WORKFLOW_RUNNER_IDP_CLIENT_ID}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${WORKFLOW_RUNNER_IDP_CLIENT_SECRET}
+    depends_on:
+      console:
+        condition: service_healthy
+      token-service:
+        condition: service_healthy
+      auth0-bridge:
+        condition: service_healthy
+      agent-workflow-runner:
+        condition: service_started
+
+  agent-weather:
+    image: intent-ibac-agent:local
+    build:
+      context: ./agents
+    expose:
+      - "8000"
+    environment:
+      AGENT_ID: weather
+      ADVERTISED_URL: http://agent-weather:8000/
+      FLEET_FILE: /app/fleet.json
+    volumes:
+      - ./console/data/fleet.json:/app/fleet.json:ro
+
+  iag-weather:
+    extends:
+      service: iag-base
+      file: iag-base-docker.yaml
+    ports:
+      - "${IAG_BIND:-127.0.0.1}:${IAG_WEATHER_PORT:-9906}:9906"
+    environment:
+      K_SERVICE: iag-weather
+      JARVIS_SERVICE_NAME: iag-weather
+      JARVIS_SERVICE_PORT: "9906"
+      # Public URL of the gateway: the interface URL in the card it serves.
+      JARVIS_SERVICE_BASE_URL: http://localhost:${IAG_WEATHER_PORT:-9906}
+      JARVIS_PROTECTED_AGENT_BASE_URL: http://agent-weather:8000
+      # The gateway's Auth0 Machine-to-Machine client; its token sub,
+      # <client_id>@clients, is the Agent node's external_id in the graph.
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${WEATHER_IDP_CLIENT_ID}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${WEATHER_IDP_CLIENT_SECRET}
+    depends_on:
+      console:
+        condition: service_healthy
+      token-service:
+        condition: service_healthy
+      auth0-bridge:
+        condition: service_healthy
+      agent-weather:
+        condition: service_started
+
+  redis:
+    image: redis:8-alpine@sha256:21090af93f8324db2f0f0f4f38a7c60369d47d917e000c3423d89d2ae2883537
+    expose:
+      - "6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

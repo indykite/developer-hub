@@ -1,0 +1,83 @@
+---
+# IndyKite Token Service (ITS) configuration for the intent-ibac demo.
+#
+# TEMPLATE: `make keys` renders it into token-service.yaml (gitignored) by
+# filling the double-underscore placeholders below: the private RSA JWK the
+# ITS signs delegation tokens with (ITS_SIGNING_JWK), the client_secret_basic
+# secret (TOKEN_SERVICE_CLIENT_SECRET) and the webhook key the console expects
+# (AUDIT_WEBHOOK_API_KEY), both mirrored in .env, and the Auth0 tenant domain
+# (AUTH0_DOMAIN, read from .env). The rendered file is written world-readable
+# like .env: the Token Service container runs as its own uid and must read it.
+#
+# Reference for every field: https://developer.indykite.com/guides/guide-token-service
+
+service:
+  name: token-service
+  port: 8102
+  environment: local
+  log_level: info
+  # The `iss` claim of every token this service signs - an identifier, not a
+  # transport address. https because the IndyKite platform validates JWTs
+  # offline only for https issuers; inside the compose network the service is
+  # reached at http://token-service:8102.
+  base_url: https://token-service.intent-ibac.local
+
+idp:
+  # Allow-list of `aud` values a delegation token may be issued for: the one
+  # the gateways exchange for (token_service.audience in iag-base-docker.yaml).
+  audiences:
+    - intent-ibac-agents
+  # Delegation tokens cannot be revoked - keep them short.
+  token_ttl: 5m
+  actor_type: Agent
+  # Presented as HTTP Basic by every gateway on /oauth2/token.
+  client_auth:
+    type: client_secret_basic
+    client_id: intent-ibac
+    client_secret: "__TOKEN_SERVICE_CLIENT_SECRET__" # skipcq: SCT-A000 - placeholder, filled by `make keys`
+  # First key signs; keep older keys listed while their tokens are alive.
+  signing_keys:
+    - '__ITS_SIGNING_JWK__'
+
+# Which incoming subject/actor tokens the exchange accepts: Auth0 access
+# tokens of the tenant, verified offline against its JWKS. Subjects are the
+# people's tokens (the ibac-people API); actors are the gateways' own
+# client-credentials tokens (the ibac-agents API, added by the bridge).
+token_introspection:
+  configurations:
+    auth0-people:
+      token_types:
+        - subject_token
+      matcher:
+        type: jwt
+        issuer: https://__AUTH0_DOMAIN__/
+        audience: ibac-people
+      validation:
+        offline:
+          jwks_uri: https://__AUTH0_DOMAIN__/.well-known/jwks.json
+    auth0-agents:
+      token_types:
+        - actor_token
+      matcher:
+        type: jwt
+        issuer: https://__AUTH0_DOMAIN__/
+        audience: ibac-agents
+      validation:
+        offline:
+          jwks_uri: https://__AUTH0_DOMAIN__/.well-known/jwks.json
+
+# Every exchange and introspection is audited to the console, which shows the
+# records in the same stream as the gateways' and the Intent Agent's. The
+# webhook auth and queue keys use the compact spellings the service reads
+# (apikey, apikeyheader, buffersize); snake_case variants are ignored.
+audit:
+  delivery: webhook
+  http:
+    url: http://console:3400/audit/webhook
+    method: POST
+    auth:
+      type: api-key
+      apikey: "__AUDIT_WEBHOOK_API_KEY__"
+      apikeyheader: X-API-Key
+  async:
+    buffersize: 100

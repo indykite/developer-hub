@@ -29,6 +29,7 @@ ignore: |
   # (`helm lint` / `helm template` check them).
   a2a/intent-agent-demo/chart/templates/
   a2a/intent-ibac-demo/chart/templates/
+  a2a/intent-ibac-gateway/chart/templates/
 
 rules:
   braces:

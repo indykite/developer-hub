@@ -1,0 +1,22 @@
+---
+# Audit delivery of every Agent Gateway: one record per decision to the
+# console's webhook, with the same API key the Intent Agent and the Token
+# Service use.
+#
+# TEMPLATE: `make keys` renders it into audit-config.yaml (gitignored) by
+# filling the placeholder with the generated AUDIT_WEBHOOK_API_KEY; the gateway
+# reads the key from this file only, not from the environment.
+audit:
+  delivery: webhook
+  # The INTENT records carry the prompt, and the reason of a failed intent,
+  # only with this on; the console shows them on purpose.
+  include_prompt: true
+  http:
+    url: http://console:3400/audit/webhook
+    method: post
+    auth:
+      # The compact spellings are the ones the gateway reads (as for the
+      # Token Service); api_key / api_key_header are silently ignored.
+      type: api-key
+      apikey: "__AUDIT_WEBHOOK_API_KEY__" # skipcq: SCT-A000 - placeholder, filled by `make keys`
+      apikeyheader: X-API-Key

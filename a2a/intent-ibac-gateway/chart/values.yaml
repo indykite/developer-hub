@@ -1,0 +1,141 @@
+# intent-ibac-gateway chart values: the whole compose stack on Kubernetes.
+#
+# Secrets and the fleet file are never in values; three objects are created from
+# the same files the compose stack uses, before `helm install` (README, "Run on
+# minikube"):
+#   envSecret      - .env as is (kubectl create secret generic ... --from-env-file=.env):
+#                    GEMINI_API_KEY, APP_AGENT_CREDENTIALS_TOKEN, TOKEN_SERVICE_CLIENT_SECRET,
+#                    AUDIT_WEBHOOK_API_KEY, CONSOLE_IDP_CLIENT_ID/_SECRET,
+#                    INTENT_INTROSPECT_CLIENT_ID/_SECRET, <AGENT>_IDP_CLIENT_ID/_SECRET
+#   filesSecret    - token-service.yaml and audit-config.yaml, with the console's
+#                    cluster name in their webhook URL
+#   fleetConfigMap - fleet.json (kubectl create configmap ... --from-file=console/data/fleet.json)
+
+---
+# Names of the pre-created objects, not credentials.
+secrets:
+  envSecret: intent-ibac-secrets # skipcq: SCT-A000
+  filesSecret: intent-ibac-files # skipcq: SCT-A000
+  fleetConfigMap: intent-ibac-fleet
+  # Bump after re-creating any of them: every pod that reads them rolls.
+  revision: "1"
+
+# Public, non-secret platform settings.
+platform:
+  indykiteBaseUrl: https://eu.api.indykite.com
+
+# The Auth0 tenant: the people's and the agents' identity provider (through the bridge).
+auth0:
+  # Bare domain, e.g. 1st.eu.auth0.com. Required.
+  domain: ""
+  peopleAudience: ibac-people
+  agentsAudience: ibac-agents
+
+intentAgent:
+  image:
+    repository: docker.io/indykite/intent-agent
+    tag: "1.1.0@sha256:a9e8271ada04e13f52218046df0c88641274fdf7658bacd50e4c4bda6ee3d71c"
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  intentPort: 6003
+  healthPort: 8001
+  logLevel: INFO
+  geminiModel: gemini-3.5-flash-lite
+  expectedTokenAudience: intent_agent
+  requestTimeoutSeconds: "10.0"
+  llmTimeoutSeconds: "3.0"
+  validationMaxRetries: "1"
+  resources:
+    requests: {cpu: 100m, memory: 256Mi}
+    limits: {cpu: "1", memory: 512Mi}
+
+tokenService:
+  image:
+    repository: docker.io/indykite/token-service
+    tag: "1.0.0@sha256:a1248b73ab22fb939e533455a89468b7112b2b938486d8feca818e17776a97e2"
+    pullPolicy: IfNotPresent
+  port: 8102
+  # Must equal idp.client_auth.client_id inside token-service.yaml.
+  clientId: intent-ibac
+  resources:
+    requests: {cpu: 50m, memory: 64Mi}
+    limits: {cpu: 500m, memory: 256Mi}
+
+# The identity-provider endpoint in front of Auth0 (local image, built by `make images`).
+bridge:
+  image:
+    repository: intent-ibac-auth0-bridge
+    tag: local
+    pullPolicy: IfNotPresent
+  port: 8090
+  logLevel: info
+  resources:
+    requests: {cpu: 50m, memory: 64Mi}
+    limits: {cpu: 500m, memory: 256Mi}
+
+console:
+  image:
+    repository: intent-ibac-console
+    tag: local
+    pullPolicy: IfNotPresent
+  port: 3400
+  logLevel: INFO
+  # Where the browser reaches the console: the callback registered on the tenant's
+  # Console application. With the port-forward of the README it is this value.
+  publicUrl: http://localhost:3300
+  service:
+    # ClusterIP: the console's API has no caller authentication, so it is reached
+    # through `kubectl port-forward` on loopback. Set NodePort to expose it on the
+    # cluster's nodes deliberately (then `minikube service <release>-console --url`).
+    type: ClusterIP
+    # 32001 leaves 32000 to intent-agent-demo, so both charts can use NodePort on one cluster.
+    nodePort: 32001
+  resources:
+    requests: {cpu: 50m, memory: 128Mi}
+    limits: {cpu: 500m, memory: 256Mi}
+
+redis:
+  image:
+    repository: redis
+    tag: 8-alpine@sha256:21090af93f8324db2f0f0f4f38a7c60369d47d917e000c3423d89d2ae2883537
+    pullPolicy: IfNotPresent
+  resources:
+    requests: {cpu: 50m, memory: 64Mi}
+    limits: {cpu: 250m, memory: 128Mi}
+
+# The Agent Gateway in front of every fleet agent: the release image loaded into the
+# cluster (`minikube image load agent-gateway:latest`), never pulled.
+gateway:
+  image:
+    repository: agent-gateway
+    tag: latest
+    pullPolicy: Never
+  logLevel: info
+  authzenCacheTtl: 30s
+  intentAgentTimeout: 45s
+  tokenServiceAudience: intent-ibac-agents
+  resources:
+    requests: {cpu: 50m, memory: 64Mi}
+    limits: {cpu: 500m, memory: 256Mi}
+
+# The stand-in A2A agents (one local image, one pod per fleet agent).
+agents:
+  image:
+    repository: intent-ibac-agent
+    tag: local
+    pullPolicy: IfNotPresent
+  port: 8000
+  resources:
+    requests: {cpu: 20m, memory: 64Mi}
+    limits: {cpu: 250m, memory: 128Mi}
+
+# The fleet: one entry per card of fleet.json. `envPrefix` names the gateway's Auth0
+# client in the env Secret (<envPrefix>_IDP_CLIENT_ID / _SECRET); `port` is the
+# gateway's listening and service port, as in docker-compose.yaml.
+fleet:
+  - {id: trading-desk, port: 9901, envPrefix: TRADING_DESK}
+  - {id: support-desk, port: 9902, envPrefix: SUPPORT_DESK}
+  - {id: billing, port: 9903, envPrefix: BILLING}
+  - {id: people-directory, port: 9904, envPrefix: PEOPLE_DIRECTORY}
+  - {id: workflow-runner, port: 9905, envPrefix: WORKFLOW_RUNNER}
+  - {id: weather, port: 9906, envPrefix: WEATHER}
