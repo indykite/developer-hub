@@ -28,6 +28,8 @@ if TYPE_CHECKING:
     from collections.abc import Callable
 
 SESSION_COOKIE = "intent_ibac_session"
+# Ties a login in flight to the browser that started it, so a callback URL cannot be replayed into another browser.
+LOGIN_COOKIE = "intent_ibac_login"
 LOGIN_TTL_SECONDS = 600
 HTTP_UNAUTHORIZED = 401
 
@@ -158,8 +160,17 @@ class Auth0Login:
         """The callback registered on the Console application."""
         return f"{self.public_url.rstrip('/')}/auth/callback"
 
+    @property
+    def secure_cookies(self) -> bool:
+        """Mark cookies Secure when the console is reached over https (not on the localhost demo)."""
+        return self.public_url.startswith("https://")
+
     def authorize_url(self, login_hint: str = "") -> str:
-        """Start a login: remember the PKCE verifier under a fresh state, return where to send the browser."""
+        """Start a login and return where to send the browser."""
+        return self.start_login(login_hint)[0]
+
+    def start_login(self, login_hint: str = "") -> tuple[str, str]:
+        """Start a login: remember the PKCE verifier under a fresh state; return the authorize URL and the state."""
         self._expire_pending()
         verifier = base64.urlsafe_b64encode(secrets.token_bytes(48)).rstrip(b"=").decode()
         challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b"=").decode()
@@ -178,7 +189,7 @@ class Auth0Login:
         if login_hint:
             params["login_hint"] = login_hint
             params["prompt"] = "login"
-        return f"{self.issuer}authorize?{urllib.parse.urlencode(params)}"
+        return f"{self.issuer}authorize?{urllib.parse.urlencode(params)}", state
 
     async def exchange(self, code: str, state: str) -> Session:
         """Finish a login: the code and the remembered verifier for the person's tokens."""
@@ -260,7 +271,19 @@ def router(login_of: Callable[[Request], Auth0Login]) -> APIRouter:
 
     @api.get("/auth/login", include_in_schema=False)
     async def login(request: Request, hint: str = "") -> RedirectResponse:
-        return RedirectResponse(login_of(request).authorize_url(login_hint=hint), status_code=302)
+        provider = login_of(request)
+        url, state = provider.start_login(login_hint=hint)
+        response = RedirectResponse(url, status_code=302)
+        response.set_cookie(
+            LOGIN_COOKIE,
+            state,
+            max_age=LOGIN_TTL_SECONDS,
+            httponly=True,
+            secure=provider.secure_cookies,
+            samesite="lax",
+            path="/auth/callback",
+        )
+        return response
 
     @api.get("/auth/callback", include_in_schema=False)
     async def callback(
@@ -270,15 +293,32 @@ def router(login_of: Callable[[Request], Auth0Login]) -> APIRouter:
         error: str = "",
         error_description: str = "",
     ) -> Response:
+        provider = login_of(request)
         if error:
             return RedirectResponse(f"/?login_error={urllib.parse.quote(error_description or error)}", status_code=302)
+        # The state must be the one this browser started with, not merely one the process remembers.
+        started = request.cookies.get(LOGIN_COOKIE) or ""
+        if not state or not started or not secrets.compare_digest(state.encode(), started.encode()):
+            provider.pending.pop(state, None)
+            return RedirectResponse(
+                "/?login_error=this%20login%20was%20not%20started%20in%20this%20browser",
+                status_code=302,
+            )
         try:
-            session = await login_of(request).exchange(code, state)
+            session = await provider.exchange(code, state)
         except LoginError as exc:
             return RedirectResponse(f"/?login_error={urllib.parse.quote(str(exc))}", status_code=302)
-        sid = login_of(request).remember(session)
+        sid = provider.remember(session)
         response = RedirectResponse("/", status_code=302)
-        response.set_cookie(SESSION_COOKIE, sid, httponly=True, samesite="lax", path="/")
+        response.set_cookie(
+            SESSION_COOKIE,
+            sid,
+            httponly=True,
+            secure=provider.secure_cookies,
+            samesite="lax",
+            path="/",
+        )
+        response.delete_cookie(LOGIN_COOKIE, path="/auth/callback")
         return response
 
     @api.get("/auth/logout", include_in_schema=False)

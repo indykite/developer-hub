@@ -83,7 +83,6 @@ def test_refusals_and_errors_are_told_apart():
 
 def test_extended_card_answer_keeps_the_skill_ids_the_gateway_left():
     """A 200 with a card: the skills the caller may use; a 403 is a refusal; anything else an error with its text."""
-
     card = {"name": "Billing Agent", "skills": [{"id": "my-invoices"}, {"id": "my-accounts"}]}
     ok = parse_card_answer("billing", 200, {"jsonrpc": "2.0", "id": "1", "result": card}, 12)
     assert ok.kind == "card"

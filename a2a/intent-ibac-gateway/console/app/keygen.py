@@ -99,14 +99,18 @@ def main(argv: list[str] | None = None) -> int:
         client_secret=client_secret,
         audit_key=audit_key,
     )
-    args.out.write_text(rendered)
-    args.out.chmod(0o644)
+    # Render both files before writing either: a bad audit template must not leave a half-done key set behind.
+    audit_rendered = None
     if args.audit_template:
         audit_template = args.audit_template.read_text()
         if "__AUDIT_WEBHOOK_API_KEY__" not in audit_template:
             _say("audit template lacks the __AUDIT_WEBHOOK_API_KEY__ placeholder", stream=sys.stderr)
             return 2
-        args.audit_out.write_text(audit_template.replace("__AUDIT_WEBHOOK_API_KEY__", audit_key))
+        audit_rendered = audit_template.replace("__AUDIT_WEBHOOK_API_KEY__", audit_key)
+    args.out.write_text(rendered)
+    args.out.chmod(0o644)
+    if args.audit_out is not None and audit_rendered is not None:
+        args.audit_out.write_text(audit_rendered)
         args.audit_out.chmod(0o644)
 
     _say(f"wrote {args.out}" + (f" and {args.audit_out}" if args.audit_out else ""))

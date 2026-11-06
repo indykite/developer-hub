@@ -415,7 +415,7 @@ async def send_prompt(request: Request, body: PromptRequest) -> dict[str, Any]:
     # 5. The mapping preview: the intent against every card of the fleet (the console's own check).
     evaluations = (payload or {}).get("evaluations")
     if evaluations is not None:
-        trace["ibac"] = await _ibac(ctx, persona, tokens, payload or {}, decide=body.decide)
+        trace["ibac"] = await _ibac(ctx, persona, tokens, payload or {}, with_decisions=body.decide)
 
     # 6. The decision step: what the platform answers for the intent's own evaluations today.
     if body.decide and evaluations:
@@ -602,20 +602,20 @@ async def _ibac(
     tokens: dict[str, Any],
     payload: dict[str, Any],
     *,
-    decide: bool,
+    with_decisions: bool,
 ) -> dict[str, Any]:
     """Run discovery and usage over the fleet for one intent; decide the generated requests; audit each call."""
     intent = ibac.Intent.from_dict(payload)
     claims = tokens.get("delegated") or tokens.get("subject") or {}
     params = engine_params(persona.type, persona.id, claims, payload.get("evaluations") or [])
-    run = ctx.fleet.run(intent, params, _audit_options(ctx, intent, persona))
-    for record in run["records"]:
+    outcome = ctx.fleet.run(intent, params, _audit_options(ctx, intent, persona))
+    for record in outcome["records"]:
         await ctx.audit.publish(record)
-    if decide:
-        for usage in run["usage"]:
+    if with_decisions:
+        for usage in outcome["usage"]:
             if usage["requests"]:
                 usage["plans"] = await _decide_generated(ctx, usage["requests"], persona)
-    return run
+    return outcome
 
 
 async def _decide_generated(ctx: State, requests: list[dict[str, Any]], persona: Persona) -> list[dict[str, Any]]:

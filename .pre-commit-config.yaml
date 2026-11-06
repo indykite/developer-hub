@@ -238,7 +238,7 @@ repos:
         entry: yamlfmt
         types: [yaml]
         # Helm chart templates are Go templates, not parseable YAML.
-        exclude: ^a2a/(intent-agent-demo|intent-ibac-gateway)/chart/templates/
+        exclude: ^a2a/(intent-agent-demo|intent-ibac-demo|intent-ibac-gateway)/chart/templates/
   # - repo: https://github.com/adrienverge/yamllint <- "language: python" slower & takes larger CI cache comparing to "system"
   #   rev: v1.37.1
   - repo: local

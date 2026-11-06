@@ -1,0 +1,99 @@
+{{- $c := merge (dict "component" "console") . -}}
+{{- $ts := include "demo.name" (merge (dict "component" "token-service") .) -}}
+{{- $agent := include "demo.name" (merge (dict "component" "intent-agent") .) -}}
+{{- $env := .Values.secrets.envSecret -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "demo.name" $c }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "demo.labels" $c | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{- include "demo.selector" $c | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "demo.selector" $c | nindent 8 }}
+      annotations:
+        # Rolls the pod when secrets.revision is bumped after the Secrets were re-created.
+        checksum/secrets-revision: {{ .Values.secrets.revision | toString | sha256sum }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        fsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: console
+          image: {{ include "demo.image" .Values.console.image }}
+          imagePullPolicy: {{ .Values.console.image.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.console.port }}
+          env:
+            - name: CONSOLE_PORT
+              value: {{ .Values.console.port | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.console.logLevel | quote }}
+            - name: INTENT_AGENT_URL
+              value: {{ printf "http://%s:%d" $agent (int .Values.intentAgent.intentPort) | quote }}
+            - name: INTENT_AGENT_AUDIENCE
+              value: {{ .Values.intentAgent.expectedTokenAudience | quote }}
+            - name: INTENT_AGENT_HEALTH_URL
+              value: {{ printf "http://%s:%d" $agent (int .Values.intentAgent.healthPort) | quote }}
+            - name: TOKEN_SERVICE_URL
+              value: {{ printf "http://%s:%d" $ts (int .Values.tokenService.port) | quote }}
+            - name: TOKEN_SERVICE_CLIENT_ID
+              value: {{ .Values.tokenService.clientId | quote }}
+            - name: INDYKITE_BASE_URL
+              value: {{ .Values.platform.indykiteBaseUrl | quote }}
+            - name: GEMINI_MODEL
+              value: {{ .Values.intentAgent.geminiModel | quote }}
+            - name: DEMO_IDP_SIGNING_KEY_FILE
+              value: /app/keys/demo-idp.key
+            {{- include "demo.secretEnv" (dict "name" "TOKEN_SERVICE_CLIENT_SECRET" "secret" $env "key" "TOKEN_SERVICE_CLIENT_SECRET") | nindent 12 }}
+            {{- include "demo.secretEnv" (dict "name" "APP_AGENT_CREDENTIALS_TOKEN" "secret" $env "key" "APP_AGENT_CREDENTIALS_TOKEN") | nindent 12 }}
+            {{- include "demo.secretEnv" (dict "name" "AUDIT_WEBHOOK_API_KEY" "secret" $env "key" "AUDIT_WEBHOOK_API_KEY") | nindent 12 }}
+          securityContext: {{- include "demo.securityContext" . | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /api/health/console
+              port: http
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /api/health/console
+              port: http
+            periodSeconds: 15
+          resources: {{- toYaml .Values.console.resources | nindent 12 }}
+          volumeMounts:
+            - name: keys
+              mountPath: /app/keys
+              readOnly: true
+      volumes:
+        - name: keys
+          secret:
+            secretName: {{ .Values.secrets.filesSecret }}
+            items:
+              - key: demo-idp.key
+                path: demo-idp.key
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "demo.name" $c }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "demo.labels" $c | nindent 4 }}
+spec:
+  type: {{ .Values.console.service.type }}
+  selector: {{- include "demo.selector" $c | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .Values.console.port }}
+      targetPort: http
+      {{- if and (eq .Values.console.service.type "NodePort") .Values.console.service.nodePort }}
+      nodePort: {{ .Values.console.service.nodePort }}
+      {{- end }}
