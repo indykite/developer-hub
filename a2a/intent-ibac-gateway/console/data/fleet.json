@@ -1,0 +1,668 @@
+{
+  "_comment": "The fleet: the agent cards the IBAC engine matches every intent against. Each is an A2A agent card whose skills carry x-coaz-mappings in the vocabulary of the instant-stack data/intent project: subject types User and Customer, the KBAC actions of its 24 policies, the resource types they grant. Subject ids are the reference $token.sub, resolved from the delegation token's sub (the persona); resource ids are literal where a skill is bound to one resource, a $parameters.<name> reference where the intent carries that parameter, and empty otherwise, which matches as a search. None of these agents runs: the cards are what a gateway in front of each would read. Three policy actions are left unmapped on purpose (User CAN_DISCLOSE Document, User AFFECTED Account, Customer VIEW_PRODUCT_DOCUMENT), and the weather agent publishes no mappings at all.",
+  "agents": [
+    {
+      "id": "trading-desk",
+      "accent": "orange",
+      "card": {
+        "name": "Trading Desk Agent",
+        "description": "Quotes and core-banking lookups for the Trading department.",
+        "version": "1.4.0",
+        "provider": {
+          "organization": "CanBank",
+          "url": "https://canbank.example"
+        },
+        "supportedInterfaces": [
+          {
+            "url": "http://trading-desk:8010/",
+            "protocolBinding": "JSONRPC",
+            "protocolVersion": "1.0"
+          }
+        ],
+        "capabilities": {
+          "streaming": false
+        },
+        "defaultInputModes": [
+          "text/plain"
+        ],
+        "defaultOutputModes": [
+          "application/json"
+        ],
+        "skills": [
+          {
+            "id": "quote-lookup",
+            "name": "Quote lookup",
+            "description": "Retrieve the CANB stock quote and read its price.",
+            "tags": [
+              "quotes",
+              "trading"
+            ],
+            "examples": [
+              "Can I retrieve the quote stock_quote?",
+              "What is the price of the quote stock_quote?"
+            ],
+            "x-coaz-mappings": [
+              {
+                "subject": [
+                  {
+                    "type": "Person",
+                    "id": "$token.sub"
+                  }
+                ],
+                "resource": [
+                  {
+                    "type": "Quote",
+                    "id": "stock_quote"
+                  }
+                ],
+                "action": [
+                  {
+                    "name": "CAN_RETRIEVE"
+                  },
+                  {
+                    "name": "GET_PRICE"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "core-banking",
+            "name": "Core banking customers",
+            "description": "List and open the customers held in a core banking system the department may access.",
+            "tags": [
+              "customers",
+              "systems"
+            ],
+            "examples": [
+              "Which customers can I list?",
+              "Can I access the customer cust-marmaduke in sys_canbank_core?"
+            ],
+            "x-coaz-mappings": [
+              {
+                "subject": [
+                  {
+                    "type": "Person",
+                    "id": "$token.sub"
+                  }
+                ],
+                "resource": [
+                  {
+                    "type": "Customer"
+                  }
+                ],
+                "action": [
+                  {
+                    "name": "CAN_LIST_CUSTOMER"
+                  },
+                  {
+                    "name": "CAN_ACCESS_CUSTOMER"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "support-desk",
+      "accent": "blue",
+      "card": {
+        "name": "Customer Support Agent",
+        "description": "Policy documents and customer context for the Support department.",
+        "version": "2.1.0",
+        "provider": {
+          "organization": "CanBank",
+          "url": "https://canbank.example"
+        },
+        "supportedInterfaces": [
+          {
+            "url": "http://support-desk:8011/",
+            "protocolBinding": "JSONRPC",
+            "protocolVersion": "1.0"
+          }
+        ],
+        "capabilities": {
+          "streaming": true
+        },
+        "defaultInputModes": [
+          "text/plain"
+        ],
+        "defaultOutputModes": [
+          "text/plain"
+        ],
+        "skills": [
+          {
+            "id": "policy-library",
+            "name": "Policy library",
+            "description": "Open the customer-service policy folder and the documents it contains.",
+            "tags": [
+              "documents",
+              "policies"
+            ],
+            "examples": [
+              "Which folders can I access?",
+              "Which documents named like refund can I access?"
+            ],
+            "x-coaz-mappings": [
+              {
+                "subject": [
+                  {
+                    "type": "Person",
+                    "id": "$token.sub"
+                  }
+                ],
+                "resource": [
+                  {
+                    "type": "Folder",
+                    "id": "cs_policy"
+                  }
+                ],
+                "action": [
+                  {
+                    "name": "CAN_ACCESS"
+                  }
+                ]
+              },
+              {
+                "subject": [
+                  {
+                    "type": "Person",
+                    "id": "$token.sub"
+                  }
+                ],
+                "resource": [
+                  {
+                    "type": "Document"
+                  }
+                ],
+                "action": [
+                  {
+                    "name": "CAN_ACCESS_FOLDER_DOCUMENT"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "customer-360",
+            "name": "Customer 360",
+            "description": "The customers the department serves and the invoices on their accounts.",
+            "tags": [
+              "customers",
+              "invoices"
+            ],
+            "examples": [
+              "Which invoices can I view?",
+              "Which overdue invoices can I view?"
+            ],
+            "x-coaz-mappings": [
+              {
+                "subject": [
+                  {
+                    "type": "Person",
+                    "id": "$token.sub"
+                  }
+                ],
+                "resource": [
+                  {
+                    "type": "Invoice"
+                  }
+                ],
+                "action": [
+                  {
+                    "name": "CAN_VIEW"
+                  }
+                ]
+              },
+              {
+                "subject": [
+                  {
+                    "type": "Person",
+                    "id": "$token.sub"
+                  }
+                ],
+                "resource": [
+                  {
+                    "type": "Customer"
+                  }
+                ],
+                "action": [
+                  {
+                    "name": "CAN_LIST_CUSTOMER"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "case-decisions",
+            "name": "Case decisions",
+            "description": "Let a customer read the decision that closed one of their tickets.",
+            "tags": [
+              "tickets",
+              "customers"
+            ],
+            "examples": [
+              "Which decisions closed my tickets?"
+            ],
+            "x-coaz-mappings": [
+              {
+                "subject": [
+                  {
+                    "type": "Person",
+                    "id": "$token.sub"
+                  }
+                ],
+                "resource": [
+                  {
+                    "type": "Decision"
+                  }
+                ],
+                "action": [
+                  {
+                    "name": "VIEW_TICKET_DECISION"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "billing",
+      "accent": "teal",
+      "card": {
+        "name": "Billing Agent",
+        "description": "Self-service invoices, accounts and tiers for CanBank customers.",
+        "version": "3.0.2",
+        "provider": {
+          "organization": "CanBank",
+          "url": "https://canbank.example"
+        },
+        "supportedInterfaces": [
+          {
+            "url": "http://billing:8012/",
+            "protocolBinding": "JSONRPC",
+            "protocolVersion": "1.0"
+          }
+        ],
+        "capabilities": {
+          "streaming": false
+        },
+        "defaultInputModes": [
+          "text/plain"
+        ],
+        "defaultOutputModes": [
+          "application/json"
+        ],
+        "skills": [
+          {
+            "id": "my-invoices",
+            "name": "My invoices",
+            "description": "A customer's own invoices, paid and unpaid.",
+            "tags": [
+              "invoices"
+            ],
+            "examples": [
+              "Which of my invoices can I view?",
+              "Which of my unpaid invoices are over 500?"
+            ],
+            "x-coaz-mappings": [
+              {
+                "subject": [
+                  {
+                    "type": "Person",
+                    "id": "$token.sub"
+                  }
+                ],
+                "resource": [
+                  {
+                    "type": "Invoice"
+                  }
+                ],
+                "action": [
+                  {
+                    "name": "VIEW_INVOICE"
+                  },
+                  {
+                    "name": "VIEW_UNPAID_INVOICE"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "my-accounts",
+            "name": "My accounts",
+            "description": "A customer's accounts, balances, tiers and investment categories; fellow customers served by the same department.",
+            "tags": [
+              "accounts",
+              "tiers"
+            ],
+            "examples": [
+              "Do I own the account acc_rebecca_chequing?",
+              "Do I have a tier_1 account?",
+              "Does cust-cashmere have a tier_3 account?"
+            ],
+            "x-coaz-mappings": [
+              {
+                "subject": [
+                  {
+                    "type": "Person",
+                    "id": "$token.sub"
+                  }
+                ],
+                "resource": [
+                  {
+                    "type": "Account"
+                  }
+                ],
+                "action": [
+                  {
+                    "name": "OWNS"
+                  },
+                  {
+                    "name": "VIEW_BALANCE"
+                  }
+                ]
+              },
+              {
+                "subject": [
+                  {
+                    "type": "Person",
+                    "id": "$token.sub"
+                  }
+                ],
+                "resource": [
+                  {
+                    "type": "AccountTier",
+                    "id": "$parameters.tier"
+                  }
+                ],
+                "action": [
+                  {
+                    "name": "HAS"
+                  }
+                ]
+              },
+              {
+                "subject": [
+                  {
+                    "type": "Person",
+                    "id": "$token.sub"
+                  }
+                ],
+                "resource": [
+                  {
+                    "type": "AccountTier"
+                  }
+                ],
+                "action": [
+                  {
+                    "name": "HAS_TIER"
+                  }
+                ]
+              },
+              {
+                "subject": [
+                  {
+                    "type": "Person",
+                    "id": "$token.sub"
+                  }
+                ],
+                "resource": [
+                  {
+                    "type": "InvestmentCategory"
+                  }
+                ],
+                "action": [
+                  {
+                    "name": "VIEW_ACCOUNT_CATEGORY"
+                  }
+                ]
+              },
+              {
+                "subject": [
+                  {
+                    "type": "Person",
+                    "id": "$token.sub"
+                  }
+                ],
+                "resource": [
+                  {
+                    "type": "Customer"
+                  }
+                ],
+                "action": [
+                  {
+                    "name": "CAN_QUERY_CUSTOMER"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "people-directory",
+      "accent": "plum",
+      "card": {
+        "name": "People Directory Agent",
+        "description": "The org chart: who reports to whom, who works where.",
+        "version": "1.0.3",
+        "provider": {
+          "organization": "CanBank",
+          "url": "https://canbank.example"
+        },
+        "supportedInterfaces": [
+          {
+            "url": "http://people-directory:8013/",
+            "protocolBinding": "JSONRPC",
+            "protocolVersion": "1.0"
+          }
+        ],
+        "capabilities": {
+          "streaming": false
+        },
+        "defaultInputModes": [
+          "text/plain"
+        ],
+        "defaultOutputModes": [
+          "text/plain"
+        ],
+        "skills": [
+          {
+            "id": "org-chart",
+            "name": "Org chart",
+            "description": "Reporting lines, colleagues and departments.",
+            "tags": [
+              "people",
+              "departments"
+            ],
+            "examples": [
+              "Who do I report directly to?",
+              "Which department do I work in?",
+              "Is the department I work in under the exec department?"
+            ],
+            "x-coaz-mappings": [
+              {
+                "subject": [
+                  {
+                    "type": "Person",
+                    "id": "$token.sub"
+                  }
+                ],
+                "resource": [
+                  {
+                    "type": "Person"
+                  }
+                ],
+                "action": [
+                  {
+                    "name": "REPORTS_TO"
+                  },
+                  {
+                    "name": "REPORTS_TO_INDIRECTLY"
+                  },
+                  {
+                    "name": "CAN_QUERY_USER"
+                  }
+                ]
+              },
+              {
+                "subject": [
+                  {
+                    "type": "Person",
+                    "id": "$token.sub"
+                  }
+                ],
+                "resource": [
+                  {
+                    "type": "Department"
+                  }
+                ],
+                "action": [
+                  {
+                    "name": "WORKS_IN"
+                  },
+                  {
+                    "name": "WORKS_UNDER"
+                  }
+                ]
+              },
+              {
+                "subject": [
+                  {
+                    "type": "Person",
+                    "id": "$token.sub"
+                  }
+                ],
+                "resource": [
+                  {
+                    "type": "Department",
+                    "id": "$parameters.department"
+                  }
+                ],
+                "action": [
+                  {
+                    "name": "WORKS_UNDER_DEPARTMENT"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "workflow-runner",
+      "accent": "green",
+      "card": {
+        "name": "Workflow Runner Agent",
+        "description": "Starts the agentic workflows a user or their department may trigger.",
+        "version": "0.9.0",
+        "provider": {
+          "organization": "CanBank",
+          "url": "https://canbank.example"
+        },
+        "supportedInterfaces": [
+          {
+            "url": "http://workflow-runner:8014/",
+            "protocolBinding": "JSONRPC",
+            "protocolVersion": "1.0"
+          }
+        ],
+        "capabilities": {
+          "streaming": true,
+          "pushNotifications": true
+        },
+        "defaultInputModes": [
+          "text/plain"
+        ],
+        "defaultOutputModes": [
+          "application/json"
+        ],
+        "skills": [
+          {
+            "id": "run-workflow",
+            "name": "Run a workflow",
+            "description": "Trigger a workflow by name, or list the ones the caller may trigger.",
+            "tags": [
+              "workflows"
+            ],
+            "examples": [
+              "Can I trigger the workflow wf1?",
+              "Which workflows am I allowed to trigger?"
+            ],
+            "x-coaz-mappings": [
+              {
+                "subject": [
+                  {
+                    "type": "Person",
+                    "id": "$token.sub"
+                  }
+                ],
+                "resource": [
+                  {
+                    "type": "Workflow"
+                  }
+                ],
+                "action": [
+                  {
+                    "name": "CAN_TRIGGER"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "weather",
+      "accent": "grey",
+      "card": {
+        "name": "Weather Agent",
+        "description": "Forecasts for any city. Publishes no coarse-authorization mappings, so no intent ever matches it.",
+        "version": "1.2.0",
+        "provider": {
+          "organization": "CanBank",
+          "url": "https://canbank.example"
+        },
+        "supportedInterfaces": [
+          {
+            "url": "http://weather:8015/",
+            "protocolBinding": "JSONRPC",
+            "protocolVersion": "1.0"
+          }
+        ],
+        "capabilities": {
+          "streaming": false
+        },
+        "defaultInputModes": [
+          "text/plain"
+        ],
+        "defaultOutputModes": [
+          "text/plain"
+        ],
+        "skills": [
+          {
+            "id": "forecast",
+            "name": "Forecast",
+            "description": "Tomorrow's weather for a city.",
+            "tags": [
+              "weather"
+            ],
+            "examples": [
+              "What is the weather in Toronto tomorrow?"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

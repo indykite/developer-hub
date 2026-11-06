@@ -1,0 +1,227 @@
+{{- $root := . -}}
+{{- $env := .Values.secrets.envSecret -}}
+{{- $console := include "demo.name" (merge (dict "component" "console") .) -}}
+{{- $ts := include "demo.name" (merge (dict "component" "token-service") .) -}}
+{{- $bridge := include "demo.name" (merge (dict "component" "auth0-bridge") .) -}}
+{{- $intent := include "demo.name" (merge (dict "component" "intent-agent") .) -}}
+{{- range .Values.fleet }}
+{{- $a := merge (dict "component" (printf "agent-%s" .id)) $root -}}
+{{- $g := merge (dict "component" (printf "iag-%s" .id)) $root -}}
+{{- $agentName := include "demo.name" $a -}}
+{{- $gatewayName := include "demo.name" $g -}}
+---
+# The stand-in agent: serves its card from fleet.json and echoes what the gateway forwarded.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $agentName }}
+  namespace: {{ $root.Release.Namespace }}
+  labels: {{- include "demo.labels" $a | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{- include "demo.selector" $a | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "demo.selector" $a | nindent 8 }}
+      annotations:
+        checksum/secrets-revision: {{ $root.Values.secrets.revision | toString | sha256sum }}
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: agent
+          image: {{ include "demo.image" $root.Values.agents.image }}
+          imagePullPolicy: {{ $root.Values.agents.image.pullPolicy | default "IfNotPresent" }}
+          ports:
+            - name: http
+              containerPort: {{ $root.Values.agents.port }}
+          env:
+            - name: AGENT_ID
+              value: {{ .id | quote }}
+            - name: PORT
+              value: {{ $root.Values.agents.port | quote }}
+            - name: ADVERTISED_URL
+              value: {{ printf "http://%s:%d/" $agentName (int $root.Values.agents.port) | quote }}
+            - name: FLEET_FILE
+              value: /app/fleet.json
+          securityContext: {{- include "demo.securityContext" $root | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 5
+          resources: {{- toYaml $root.Values.agents.resources | nindent 12 }}
+          volumeMounts:
+            - name: fleet
+              mountPath: /app/fleet.json
+              subPath: fleet.json
+              readOnly: true
+      volumes:
+        - name: fleet
+          configMap:
+            name: {{ $root.Values.secrets.fleetConfigMap }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $agentName }}
+  namespace: {{ $root.Release.Namespace }}
+  labels: {{- include "demo.labels" $a | nindent 4 }}
+spec:
+  selector: {{- include "demo.selector" $a | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ $root.Values.agents.port }}
+      targetPort: http
+---
+# The Agent Gateway in front of it: the settings of iag-base-docker.yaml, cluster names for the peers.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $gatewayName }}
+  namespace: {{ $root.Release.Namespace }}
+  labels: {{- include "demo.labels" $g | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{- include "demo.selector" $g | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "demo.selector" $g | nindent 8 }}
+      annotations:
+        checksum/secrets-revision: {{ $root.Values.secrets.revision | toString | sha256sum }}
+    spec:
+      # The release image chooses its own user; nothing here overrides it.
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: gateway
+          image: {{ include "demo.image" $root.Values.gateway.image }}
+          imagePullPolicy: {{ $root.Values.gateway.image.pullPolicy | default "Never" }}
+          args: ["--config=/app/.configs/audit-config.yaml"]
+          ports:
+            - name: http
+              containerPort: {{ .port }}
+            - name: health
+              containerPort: 9080
+          env:
+            - name: K_SERVICE
+              value: {{ printf "iag-%s" .id | quote }}
+            - name: JARVIS_SERVICE_NAME
+              value: {{ printf "iag-%s" .id | quote }}
+            - name: JARVIS_SERVICE_PORT
+              value: {{ .port | quote }}
+            - name: JARVIS_SERVICE_LOG_LEVEL
+              value: {{ $root.Values.gateway.logLevel | quote }}
+            - name: JARVIS_SERVICE_ENVIRONMENT
+              value: demo
+            - name: JARVIS_SERVICE_TRACING_DETECTOR
+              value: local
+            # Public URL of the gateway, written into the card it serves.
+            - name: JARVIS_SERVICE_BASE_URL
+              value: {{ printf "http://%s:%d" $gatewayName (int .port) | quote }}
+            - name: JARVIS_PROTECTED_AGENT_BASE_URL
+              value: {{ printf "http://%s:%d" $agentName (int $root.Values.agents.port) | quote }}
+            - name: JARVIS_PROTECTED_AGENT_AUTHENTICATION_TYPE
+              value: credentials
+            - name: JARVIS_PROTECTED_AGENT_AUTHENTICATION_AUDIENCES
+              value: {{ $root.Values.auth0.peopleAudience | quote }}
+            {{- include "demo.secretEnv" (dict "name" "JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID" "secret" $env "key" (printf "%s_IDP_CLIENT_ID" .envPrefix)) | nindent 12 }}
+            {{- include "demo.secretEnv" (dict "name" "JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET" "secret" $env "key" (printf "%s_IDP_CLIENT_SECRET" .envPrefix)) | nindent 12 }}
+            # The identity provider: Auth0 through the bridge.
+            - name: JARVIS_IDENTITY_PROVIDER_BASE_URL
+              value: {{ printf "http://%s:%d" $bridge (int $root.Values.bridge.port) | quote }}
+            - name: JARVIS_IDENTITY_PROVIDER_INTROSPECT_ENDPOINT
+              value: oauth/introspect
+            - name: JARVIS_IDENTITY_PROVIDER_CLIENT_CREDENTIAL_ENDPOINT
+              value: oauth/token
+            - name: JARVIS_IDENTITY_PROVIDER_EXCHANGE_ENDPOINT
+              value: oauth/token
+            - name: JARVIS_IDENTITY_PROVIDER_OPENID_CONFIGURATION_URL
+              value: {{ printf "https://%s/.well-known/openid-configuration" (required "auth0.domain is required" $root.Values.auth0.domain) | quote }}
+            - name: JARVIS_IDENTITY_PROVIDER_ISSUER
+              value: {{ printf "https://%s/" $root.Values.auth0.domain | quote }}
+            # Token Service mode: the delegated token in X-IK-Token.
+            - name: JARVIS_TOKEN_SERVICE_BASE_URL
+              value: {{ printf "http://%s:%d" $ts (int $root.Values.tokenService.port) | quote }}
+            - name: JARVIS_TOKEN_SERVICE_EXCHANGE_ENDPOINT
+              value: oauth2/token
+            - name: JARVIS_TOKEN_SERVICE_INTROSPECT_ENDPOINT
+              value: oauth2/introspect
+            - name: JARVIS_TOKEN_SERVICE_CLIENT_AUTH_TYPE
+              value: client_secret_basic
+            - name: JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_ID
+              value: {{ $root.Values.tokenService.clientId | quote }}
+            {{- include "demo.secretEnv" (dict "name" "JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_SECRET" "secret" $env "key" "TOKEN_SERVICE_CLIENT_SECRET") | nindent 12 }}
+            - name: JARVIS_TOKEN_SERVICE_AUDIENCE
+              value: {{ $root.Values.gateway.tokenServiceAudience | quote }}
+            # The platform: whoami, admission, the capability set.
+            - name: JARVIS_CONTX_IQ_BASE_URL
+              value: {{ printf "%s/contx-iq/v1" $root.Values.platform.indykiteBaseUrl | quote }}
+            {{- include "demo.secretEnv" (dict "name" "JARVIS_CONTX_IQ_APP_AGENT_CREDENTIALS_TOKEN" "secret" $env "key" "APP_AGENT_CREDENTIALS_TOKEN") | nindent 12 }}
+            - name: JARVIS_AUTHZEN_BASE_URL
+              value: {{ printf "%s/access/v1" $root.Values.platform.indykiteBaseUrl | quote }}
+            - name: JARVIS_AUTHZEN_ACTION
+              value: CAN_TRIGGER
+            - name: JARVIS_AUTHZEN_CACHE_TTL
+              value: {{ $root.Values.gateway.authzenCacheTtl | quote }}
+            - name: JARVIS_AUTHZEN_CACHE_UPDATE_AFTER
+              value: {{ $root.Values.gateway.authzenCacheTtl | quote }}
+            - name: JARVIS_AUTHZEN_CAPABILITIES_ENABLED
+              value: "true"
+            - name: JARVIS_AUTHZEN_CAPABILITIES_ACTION
+              value: CAN_USE
+            - name: JARVIS_AUTHZEN_CAPABILITIES_LABELS_SKILLS
+              value: Skill
+            # Intent-Based Access Control: the prompt goes to the Intent Agent first.
+            - name: JARVIS_IBAC_ENABLED
+              value: "true"
+            - name: JARVIS_INTENT_AGENT_BASE_URL
+              value: {{ printf "http://%s:%d" $intent (int $root.Values.intentAgent.intentPort) | quote }}
+            - name: JARVIS_INTENT_AGENT_AUDIENCE
+              value: {{ $root.Values.intentAgent.expectedTokenAudience | quote }}
+            - name: JARVIS_INTENT_AGENT_TIMEOUT
+              value: {{ $root.Values.gateway.intentAgentTimeout | quote }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: health
+            initialDelaySeconds: 20
+            periodSeconds: 15
+          resources: {{- toYaml $root.Values.gateway.resources | nindent 12 }}
+          volumeMounts:
+            - name: config
+              mountPath: /app/.configs
+              readOnly: true
+      volumes:
+        - name: config
+          secret:
+            secretName: {{ $root.Values.secrets.filesSecret }}
+            items:
+              - key: audit-config.yaml
+                path: audit-config.yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $gatewayName }}
+  namespace: {{ $root.Release.Namespace }}
+  labels: {{- include "demo.labels" $g | nindent 4 }}
+spec:
+  selector: {{- include "demo.selector" $g | nindent 4 }}
+  ports:
+    - name: http
+      port: {{ .port }}
+      targetPort: http
+{{- end }}

@@ -2,7 +2,7 @@
 
 This repository serves as a collection of independent code examples and small applications. It is designed to be a place where different projects can be hosted without being part of a single, unified codebase.
 
-Generated at: 2026-11-05T17:42:31Z
+Generated at: 2026-11-06T20:41:00Z
 
 DO NOT EDIT!!
 
@@ -14,7 +14,7 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 
 | License | Classification | Severity | Count |
 | --- | --- | --- | ---: |
-| MIT | notice | LOW | 37 |
+| MIT | notice | LOW | 38 |
 | Apache-2.0 | notice | LOW | 16 |
 | BSD-3-Clause | notice | LOW | 12 |
 | BSD-2-Clause | notice | LOW | 2 |
@@ -25,7 +25,7 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 | Python-2.0 | notice | LOW | 2 |
 | BSD-0-Clause | unknown | UNKNOWN | 1 |
 
-**Total packages scanned:** 78
+**Total packages scanned:** 79
 
 ## Report Summary (by target)
 
@@ -33,7 +33,8 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 | --- | --- | ---: |
 | Loose File License(s) | - | 74 |
 | a2a/intent-agent-demo/console/requirements.txt | pip | 2 |
-| a2a/intent-ibac-demo/console/requirements.txt | pip | 2 |
+| a2a/intent-ibac-gateway/agents/requirements.txt | pip | 1 |
+| a2a/intent-ibac-gateway/console/requirements.txt | pip | 2 |
 
 ## Details
 
@@ -123,7 +124,13 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 | PyJWT | MIT | notice | LOW |
 | pydantic | MIT | notice | LOW |
 
-### `a2a/intent-ibac-demo/console/requirements.txt` (pip) -- 2 licenses
+### `a2a/intent-ibac-gateway/agents/requirements.txt` (pip) -- 1 license
+
+| Package | License | Classification | Severity |
+| --- | --- | --- | --- |
+| PyJWT | MIT | notice | LOW |
+
+### `a2a/intent-ibac-gateway/console/requirements.txt` (pip) -- 2 licenses
 
 | Package | License | Classification | Severity |
 | --- | --- | --- | --- |
