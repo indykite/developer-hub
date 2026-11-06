@@ -5,7 +5,6 @@ from types import SimpleNamespace
 
 import pytest
 from app.main import _act_chain, _decide_generated, summarize_card_answer, summarize_gateway_answer
-from app.prompts import Persona
 
 
 class RecordingPlatform:
@@ -52,14 +51,13 @@ async def test_generated_plans_keep_the_order_of_the_requests_across_subject_typ
     """Requests of two subject types interleave; each plan must sit at the position of its request."""
     platform = RecordingPlatform()
     ctx = SimpleNamespace(platform=platform)
-    persona = Persona(id="roy", type="Person", name="Roy", role="r")
     requests = [
         request("User", "roy", "d1", "t1"),
         request("Customer", "ted", "d2", "t2"),
         request("User", "roy", "d3", "t3"),
     ]
 
-    plans = await _decide_generated(ctx, requests, persona)
+    plans = await _decide_generated(ctx, requests)
 
     assert [p["index"] for p in plans] == [0, 1, 2]
     assert [p["request"]["resource"]["id"] for p in plans] == ["d1", "d2", "d3"]

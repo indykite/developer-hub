@@ -21,14 +21,14 @@ from app.auth import router as auth_router
 from app.config import Settings
 from app.decisions import execute_plans, plan_decisions
 from app.fleet import Fleet, engine_params, load_fleet
-from app.gateway import GatewayClient
+from app.gateway import GatewayAnswer, GatewayClient
 from app.platform import PlatformClient, PlatformError, policy_triples, reach, schema_summary
 from app.prompts import Gallery, Persona, load_gallery
 from app.token_service import TokenServiceClient
 from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import FileResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 logger = logging.getLogger("console")
 
@@ -374,29 +374,57 @@ async def send_prompt(request: Request, body: PromptRequest) -> dict[str, Any]:
 
     # 3. What the parties recorded: the Intent Agent's own record (the evaluations), the gateway's
     #    records (INTENT, admission), the Token Service's (the gateway's exchange).
-    forwarded_or_answered = answer.kind in ("task", "intent_error")
-    if forwarded_or_answered:
-        trace["audit"] = await ctx.audit.wait_until(
-            lambda e: _is_intent_record(e, persona, body.prompt),
-            seq_before,
-            AUDIT_WAIT_SECONDS,
-        )
-    else:
-        await asyncio.sleep(0.5)
+    trace["audit"] = await _intent_record(ctx, answer, persona, body.prompt, seq_before)
     trace["gateway"]["records"] = _gateway_records(ctx, seq_before, agent)
     tokens["token_audit"] = _token_service_records(ctx, seq_before, persona.id)
     # The delegated token the agent received, as the agent reported it, is the chain to show.
-    received = answer.received or {}
-    tokens["delegated"] = received.get("x_ik_token")
+    tokens["delegated"] = (answer.received or {}).get("x_ik_token")
 
     # 4. The intent, as the Intent Agent recorded it, in the shape the tickets expect.
-    record = (trace["audit"] or {}).get("record") or {}
-    payload: dict[str, Any] | None = None
+    payload = _intent_payload(answer, (trace["audit"] or {}).get("record") or {}, body.prompt)
+    trace["a2a"] = _a2a_view(answer, payload)
+
+    # 5. The mapping preview: the intent against every card of the fleet (the console's own check).
+    evaluations = (payload or {}).get("evaluations")
+    if evaluations is not None:
+        trace["ibac"] = await _ibac(ctx, persona, tokens, payload or {}, with_decisions=body.decide)
+
+    # 6. The decision step: what the platform answers for the intent's own evaluations today.
+    if body.decide and evaluations:
+        trace["decisions"] = await _decide(ctx, evaluations, persona.type, persona.id)
+    return trace
+
+
+async def _intent_record(
+    ctx: State,
+    answer: GatewayAnswer,
+    persona: Persona,
+    prompt: str,
+    seq_before: int,
+) -> dict[str, Any] | None:
+    """Wait for the Intent Agent's own record of this prompt when the gateway asked it; else let records settle."""
+    if answer.kind in ("task", "intent_error"):
+        return await ctx.audit.wait_until(
+            lambda e: _is_intent_record(e, persona, prompt),
+            seq_before,
+            AUDIT_WAIT_SECONDS,
+        )
+    await asyncio.sleep(0.5)
+    return None
+
+
+def _intent_payload(answer: GatewayAnswer, record: dict[str, Any], prompt: str) -> dict[str, Any] | None:
+    """Return the intent as the tickets expect it: the relayed refusal, or the recorded evaluations."""
     if answer.kind == "intent_error":
-        payload = dict(answer.intent_error or {})
-    elif record.get("outcome") == "success" and isinstance(record.get("evaluations"), list):
-        payload = {"prompt": body.prompt, "evaluations": record["evaluations"]}
-    trace["a2a"] = {
+        return dict(answer.intent_error or {})
+    if record.get("outcome") == "success" and isinstance(record.get("evaluations"), list):
+        return {"prompt": prompt, "evaluations": record["evaluations"]}
+    return None
+
+
+def _a2a_view(answer: GatewayAnswer, payload: dict[str, Any] | None) -> dict[str, Any]:
+    """Build the wire-level view of the exchange with the gateway, plus the coarse outcome."""
+    return {
         "outcome": "success" if payload and "evaluations" in payload else "refused" if payload else "error",
         "payload": payload,
         "http_status": answer.http_status,
@@ -411,16 +439,6 @@ async def send_prompt(request: Request, body: PromptRequest) -> dict[str, Any]:
         "transport_error": answer.transport_error,
         "error_text": answer.error_text,
     }
-
-    # 5. The mapping preview: the intent against every card of the fleet (the console's own check).
-    evaluations = (payload or {}).get("evaluations")
-    if evaluations is not None:
-        trace["ibac"] = await _ibac(ctx, persona, tokens, payload or {}, with_decisions=body.decide)
-
-    # 6. The decision step: what the platform answers for the intent's own evaluations today.
-    if body.decide and evaluations:
-        trace["decisions"] = await _decide(ctx, evaluations, persona.type, persona.id)
-    return trace
 
 
 # --- the same prompt through every gateway ------------------------------------
@@ -444,34 +462,18 @@ def summarize_gateway_answer(answer: dict[str, Any], records: list[dict[str, Any
     replied with, the chain in the delegated token the agent received, and the gateway's admission and
     INTENT records. The console adds only a one-word verdict for the card.
     """
-    kind = answer.get("kind")
-    status = answer.get("http_status")
     admission = next(
         (r for r in records if r.get("action") != "INTENT" and r.get("decision") in ("AUTHORIZED", "NOT_AUTHORIZED")),
         None,
     )
     intent = next((r for r in records if r.get("action") == "INTENT"), None)
     failure = next((r for r in records if r.get("decision") == "ERROR"), None)
-    if answer.get("transport_error"):
-        verdict = "unreachable"
-    elif failure:
-        # The gateway could not decide (its record says why: usually the platform refused X-IK-Token).
-        verdict = "admission error"
-    elif kind == "task":
-        verdict = "forwarded"
-    elif kind == "intent_error":
-        verdict = "no intent"
-    elif kind == "refused":
-        verdict = "admission refused" if status == HTTP_FORBIDDEN else "token refused"
-    else:
-        verdict = "error"
-    received = answer.get("received") or {}
-    delegated = received.get("x_ik_token") or {}
+    delegated = (answer.get("received") or {}).get("x_ik_token") or {}
     return {
         "agent": answer.get("agent"),
-        "verdict": verdict,
-        "kind": kind,
-        "http_status": status,
+        "verdict": _gateway_verdict(answer, failed=failure is not None),
+        "kind": answer.get("kind"),
+        "http_status": answer.get("http_status"),
         "latency_ms": answer.get("latency_ms"),
         "error_text": (failure or {}).get("reason") or answer.get("error_text") or answer.get("transport_error") or "",
         "skill": answer.get("skill"),
@@ -481,6 +483,23 @@ def summarize_gateway_answer(answer: dict[str, Any], records: list[dict[str, Any
         "intent": {"decision": intent.get("decision"), "duration_ms": intent.get("durationMs")} if intent else None,
         "records": records,
     }
+
+
+def _gateway_verdict(answer: dict[str, Any], *, failed: bool) -> str:
+    """Name what the gateway did, in one or two words, for the board."""
+    if answer.get("transport_error"):
+        return "unreachable"
+    if failed:
+        # The gateway could not decide (its record says why: usually the platform refused X-IK-Token).
+        return "admission error"
+    kind = answer.get("kind")
+    if kind == "task":
+        return "forwarded"
+    if kind == "intent_error":
+        return "no intent"
+    if kind == "refused":
+        return "admission refused" if answer.get("http_status") == HTTP_FORBIDDEN else "token refused"
+    return "error"
 
 
 def _act_chain(act: object) -> list[str]:
@@ -614,11 +633,11 @@ async def _ibac(
     if with_decisions:
         for usage in outcome["usage"]:
             if usage["requests"]:
-                usage["plans"] = await _decide_generated(ctx, usage["requests"], persona)
+                usage["plans"] = await _decide_generated(ctx, usage["requests"])
     return outcome
 
 
-async def _decide_generated(ctx: State, requests: list[dict[str, Any]], persona: Persona) -> list[dict[str, Any]]:
+async def _decide_generated(ctx: State, requests: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Send the engine's generated AuthZEN requests to the platform through the same mapper as the intent.
 
     The engine puts the params map of its call in `context.input_params`; the platform reads scalar
@@ -636,7 +655,8 @@ async def _decide_generated(ctx: State, requests: list[dict[str, Any]], persona:
         shaped.append(one)
         by_type.setdefault((req.get("subject") or {}).get("type", ""), []).append(position)
     for subject_type, positions in by_type.items():
-        decided = await _decide(ctx, [shaped[p] for p in positions], subject_type, persona.id)
+        # Each generated request is a check of its own, never a second-subject chain: planned without a caller.
+        decided = await _decide(ctx, [shaped[p] for p in positions], subject_type, None)
         for offset, position in enumerate(positions):
             if decided.get("error"):
                 plan: dict[str, Any] = {"kind": "evaluation", "error": decided["error"], "request": shaped[position]}
@@ -676,17 +696,40 @@ async def ibac_usage(request: Request, body: UsageRequest) -> dict[str, Any]:
     return {"params": params, "usage": usage}
 
 
+class EvaluationIn(BaseModel):
+    """One evaluation as the Intent Agent emits it; the nested shapes are checked here, not deep in the planner."""
+
+    subject: dict[str, Any] | None = None
+    action: dict[str, Any] | None = None
+    resource: dict[str, Any] | None = None
+    context: dict[str, Any] | None = None
+
+    @field_validator("context")
+    @classmethod
+    def _context_shape(cls, value: dict[str, Any] | None) -> dict[str, Any] | None:
+        if value is not None:
+            for key in ("parameters", "input_params", "qualifiers"):
+                if key in value and value[key] is not None and not isinstance(value[key], dict):
+                    msg = f"context.{key} must be an object"
+                    raise ValueError(msg)
+            if "filters" in value and value["filters"] is not None and not isinstance(value["filters"], list | str):
+                msg = "context.filters must be a list or a string"
+                raise ValueError(msg)
+        return value
+
+
 class DecideRequest(BaseModel):
     subject_type: str = Field(min_length=1)
     # The caller's id lets a second-subject evaluation be gated; without it every evaluation runs.
     subject_id: str | None = None
-    evaluations: list[dict[str, Any]] = Field(min_length=1, max_length=64)
+    evaluations: list[EvaluationIn] = Field(min_length=1, max_length=64)
 
 
 @app.post("/api/decide")
 async def decide(request: Request, body: DecideRequest) -> dict[str, Any]:
     """Map evaluations to AuthZEN calls and execute them (the decision step on its own)."""
-    return await _decide(_ctx(request), body.evaluations, body.subject_type, body.subject_id)
+    evaluations = [e.model_dump(exclude_none=True) for e in body.evaluations]
+    return await _decide(_ctx(request), evaluations, body.subject_type, body.subject_id)
 
 
 async def _decide(

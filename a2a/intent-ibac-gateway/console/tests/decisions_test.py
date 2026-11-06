@@ -209,3 +209,15 @@ async def test_a_chain_of_gates_runs_in_order():
     assert [p.skipped for p in plans] == [None, None, None]
     assert plans[2].result == {"results": [{"type": "Account", "id": "acc"}]}
     assert [c[0] for c in platform.calls] == ["evaluations", "evaluations", "search_resource"]
+
+
+def test_a_second_subject_without_a_query_gate_is_not_sent():
+    """REPORTS_TO about flo then WORKS_IN as flo, with no CAN_QUERY_USER in between: the second plan is skipped."""
+    me = {"type": "Person", "id": "leslie"}
+    reports_to = _ev(me, "REPORTS_TO", {"type": "Person", "id": "flo"})
+    as_flo = _ev({"type": "Person", "id": "flo"}, "WORKS_IN", {"type": "Department"})
+    plans = plan_decisions([reports_to, as_flo], POLICIES, me)
+    assert plans[0].skipped is None
+    assert plans[1].depends_on is None
+    assert plans[1].skipped is not None
+    assert "CAN_QUERY_" in plans[1].skipped

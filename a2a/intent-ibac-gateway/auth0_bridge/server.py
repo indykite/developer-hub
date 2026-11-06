@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import functools
 import hashlib
 import logging
 import os
@@ -63,16 +64,14 @@ ALGORITHMS = ["RS256"]
 
 app = FastAPI(title="auth0-bridge", docs_url=None, redoc_url=None)
 
-_jwks: PyJWKClient | None = None
 # client_id -> (sha256 of the secret, verified-until epoch seconds)
 _verified_clients: dict[str, tuple[str, float]] = {}
 
 
+@functools.lru_cache(maxsize=1)
 def _jwks_client() -> PyJWKClient:
-    global _jwks  # noqa: PLW0603 - one cached JWKS client per process
-    if _jwks is None:
-        _jwks = PyJWKClient(JWKS_URI, cache_keys=True, lifespan=3600)
-    return _jwks
+    """One JWKS client per process; it caches the tenant's keys for an hour."""
+    return PyJWKClient(JWKS_URI, cache_keys=True, lifespan=3600)
 
 
 async def _post_auth0(form: dict[str, str], headers: dict[str, str]) -> tuple[int, object]:
@@ -86,8 +85,9 @@ async def _post_auth0(form: dict[str, str], headers: dict[str, str]) -> tuple[in
     return resp.status_code, body
 
 
-def _signing_key_for(token: str):
-    return _jwks_client().get_signing_key_from_jwt(token).key
+def _signing_key_for(jwt_text: str):
+    """Return the tenant key that signed this JWT, by its kid."""
+    return _jwks_client().get_signing_key_from_jwt(jwt_text).key
 
 
 def _basic_credentials(request: Request) -> tuple[str, str] | None:
@@ -96,7 +96,7 @@ def _basic_credentials(request: Request) -> tuple[str, str] | None:
         return None
     try:
         decoded = base64.b64decode(header[6:].strip()).decode()
-    except (ValueError, UnicodeDecodeError):
+    except ValueError:  # bad base64 or bad UTF-8 alike
         return None
     client_id, sep, secret = decoded.partition(":")
     return (client_id, secret) if sep else None
@@ -144,6 +144,7 @@ def _inactive(reason: str, caller: str) -> JSONResponse:
 
 @app.get("/healthz")
 async def healthz() -> dict:
+    """Liveness: the settings the bridge runs with."""
     return {"status": "ok", "issuer": ISSUER, "default_audience": DEFAULT_AUDIENCE}
 
 
@@ -158,15 +159,15 @@ async def introspect(request: Request) -> Response:
     if not await _caller_is_tenant_client(client_id, secret):
         return _unauthorized("client authentication failed")
 
-    token = form.get("token", "")
-    if not token:
+    presented = form.get("token", "")
+    if not presented:
         return JSONResponse({"error": "invalid_request", "error_description": "token is required"}, status_code=400)
     # token_type_hint is deliberately ignored: Auth0 issues one kind of JWT.
     try:
         # PyJWKClient fetches the tenant's keys with blocking I/O: off the event loop.
-        key = await asyncio.to_thread(_signing_key_for, token)
+        key = await asyncio.to_thread(_signing_key_for, presented)
         claims = jwt.decode(
-            token,
+            presented,
             key,
             algorithms=ALGORITHMS,
             issuer=ISSUER,
