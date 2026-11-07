@@ -688,7 +688,7 @@ services:
   #  + the profile in .env. The image is the published indykite/intent-agent
   #  (pinned by digest); INTENT_AGENT_IMAGE overrides it for a local build.
   intent-agent:
-    image: ${INTENT_AGENT_IMAGE:-docker.io/indykite/intent-agent:1.0.0@sha256:0b857bc6edcf5ab5f206b7111471c11f9e5d9854a09e818e0081172179b4fe3c}
+    image: ${INTENT_AGENT_IMAGE:-docker.io/indykite/intent-agent:1.1.0@sha256:a9e8271ada04e13f52218046df0c88641274fdf7658bacd50e4c4bda6ee3d71c}
     profiles: ["intent"]
     expose:
       - "6003"
