@@ -72,7 +72,7 @@ What the console shows, live:
   as they present themselves), **Ontology** (the schema graph),
   **Architecture** - as in intent-agent-demo, extended with the gateways.
 
-Deep links replay a beat: `/?persona=auth0%7C69c4975a584b4b83e003ce65&agent=trading-desk&prompt=...&send=1`,
+Deep links replay a beat: `/?persona=auth0%7C6aee62c9f745e80a6c6d0455&agent=trading-desk&prompt=...&send=1`,
 `/?view=fleet`.
 
 ## Contents
@@ -157,7 +157,7 @@ as a page (**How IBAC works**, item 07 in the rail), with the examples drawn.
 
 1. **Two sides of one question.** The Intent Agent has turned the prompt
    into an *intent*: evaluations of the form subject → action → resource,
-   in the words of the graph's policies ("Person auth0|69c4975a584b4b83e003ce65 → GET_PRICE → Quote
+   in the words of the graph's policies ("Person auth0|6aee62c9f745e80a6c6d0455 → GET_PRICE → Quote
    stock_quote"). Every agent publishes an *agent card* with its skills.
    IBAC adds one thing to each skill: a declaration of which subjects may do
    which actions on which resources through it. The check never reads the
