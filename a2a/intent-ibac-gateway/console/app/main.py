@@ -692,7 +692,7 @@ async def ibac_usage(request: Request, body: UsageRequest) -> dict[str, Any]:
     params = engine_params(persona.type, persona.id, body.token_claims, body.intent.get("evaluations") or [])
     usage = ctx.fleet.usage(agent.id, body.skill, intent, params, _audit_options(ctx, intent, persona))
     if body.decide and usage["requests"]:
-        usage["plans"] = await _decide_generated(ctx, usage["requests"], persona)
+        usage["plans"] = await _decide_generated(ctx, usage["requests"])
     return {"params": params, "usage": usage}
 
 
