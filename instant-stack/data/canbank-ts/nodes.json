@@ -1850,6 +1850,443 @@
       "type": "Agent",
       "is_identity": false,
       "properties": []
+    },
+    {
+      "external_id": "millicent",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Millicent Contextsworth (Curity)"
+        },
+        {
+          "type": "idp",
+          "value": "curity"
+        },
+        {
+          "type": "issuer",
+          "value": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous"
+        }
+      ]
+    },
+    {
+      "external_id": "alexb",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Alex B (Curity)"
+        },
+        {
+          "type": "idp",
+          "value": "curity"
+        },
+        {
+          "type": "issuer",
+          "value": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous"
+        }
+      ]
+    },
+    {
+      "external_id": "jeff",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Jeff Sanders (Curity)"
+        },
+        {
+          "type": "idp",
+          "value": "curity"
+        },
+        {
+          "type": "issuer",
+          "value": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous"
+        }
+      ]
+    },
+    {
+      "external_id": "joe",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Joe Smith (Curity)"
+        },
+        {
+          "type": "idp",
+          "value": "curity"
+        },
+        {
+          "type": "issuer",
+          "value": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous"
+        }
+      ]
+    },
+    {
+      "external_id": "jane",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Jane Jacobs (Curity)"
+        },
+        {
+          "type": "idp",
+          "value": "curity"
+        },
+        {
+          "type": "issuer",
+          "value": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous"
+        }
+      ]
+    },
+    {
+      "external_id": "carol",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Carol Davis (Curity)"
+        },
+        {
+          "type": "idp",
+          "value": "curity"
+        },
+        {
+          "type": "issuer",
+          "value": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous"
+        }
+      ]
+    },
+    {
+      "external_id": "rebecca",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Rebecca Welton (Curity)"
+        },
+        {
+          "type": "idp",
+          "value": "curity"
+        },
+        {
+          "type": "issuer",
+          "value": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous"
+        }
+      ]
+    },
+    {
+      "external_id": "leslie",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Leslie Higgins (Curity)"
+        },
+        {
+          "type": "idp",
+          "value": "curity"
+        },
+        {
+          "type": "issuer",
+          "value": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous"
+        }
+      ]
+    },
+    {
+      "external_id": "flo",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Flo Collins (Curity)"
+        },
+        {
+          "type": "idp",
+          "value": "curity"
+        },
+        {
+          "type": "issuer",
+          "value": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous"
+        }
+      ]
+    },
+    {
+      "external_id": "roy",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Roy Kent (Curity)"
+        },
+        {
+          "type": "idp",
+          "value": "curity"
+        },
+        {
+          "type": "issuer",
+          "value": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous"
+        }
+      ]
+    },
+    {
+      "external_id": "indykiteagent",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "indykiteagent (Curity)"
+        },
+        {
+          "type": "idp",
+          "value": "curity"
+        },
+        {
+          "type": "issuer",
+          "value": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous"
+        }
+      ]
+    },
+    {
+      "external_id": "indykiteagent-2",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "indykiteagent-2 (Curity)"
+        },
+        {
+          "type": "idp",
+          "value": "curity"
+        },
+        {
+          "type": "issuer",
+          "value": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous"
+        }
+      ]
+    },
+    {
+      "external_id": "indykiteagent-3",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "indykiteagent-3 (Curity)"
+        },
+        {
+          "type": "idp",
+          "value": "curity"
+        },
+        {
+          "type": "issuer",
+          "value": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous"
+        }
+      ]
+    },
+    {
+      "external_id": "indykiteagent-4",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "indykiteagent-4 (Curity)"
+        },
+        {
+          "type": "idp",
+          "value": "curity"
+        },
+        {
+          "type": "issuer",
+          "value": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous"
+        }
+      ]
+    },
+    {
+      "external_id": "indykiteagent-mcp",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "indykiteagent-mcp (Curity)"
+        },
+        {
+          "type": "idp",
+          "value": "curity"
+        },
+        {
+          "type": "issuer",
+          "value": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous"
+        }
+      ]
+    },
+    {
+      "external_id": "indykiteagent-drive",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "indykiteagent-drive (Curity)"
+        },
+        {
+          "type": "idp",
+          "value": "curity"
+        },
+        {
+          "type": "issuer",
+          "value": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous"
+        }
+      ]
+    },
+    {
+      "external_id": "indykiteagent-erp",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "indykiteagent-erp (Curity)"
+        },
+        {
+          "type": "idp",
+          "value": "curity"
+        },
+        {
+          "type": "issuer",
+          "value": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous"
+        }
+      ]
+    },
+    {
+      "external_id": "auth0|69c410bfb501d3a02bd01ea2",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Millicent Contextsworth (Auth0)"
+        },
+        {
+          "type": "idp",
+          "value": "auth0"
+        },
+        {
+          "type": "issuer",
+          "value": "https://1st.eu.auth0.com/"
+        }
+      ]
+    },
+    {
+      "external_id": "gmgA1DyG2GbSA5jYGJjVOmmvAFIlPUpl@clients",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "indykiteagent (Auth0)"
+        },
+        {
+          "type": "idp",
+          "value": "auth0"
+        },
+        {
+          "type": "issuer",
+          "value": "https://1st.eu.auth0.com/"
+        }
+      ]
+    },
+    {
+      "external_id": "2UrTycwn1b4zTBTgNShNwHfxsQ370izE@clients",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "indykiteagent-2 (Auth0)"
+        },
+        {
+          "type": "idp",
+          "value": "auth0"
+        },
+        {
+          "type": "issuer",
+          "value": "https://1st.eu.auth0.com/"
+        }
+      ]
+    },
+    {
+      "external_id": "aFKvLFJ6xqRyNq5WqQ9wbjtsDt5oPU0j@clients",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "indykiteagent-3 (Auth0)"
+        },
+        {
+          "type": "idp",
+          "value": "auth0"
+        },
+        {
+          "type": "issuer",
+          "value": "https://1st.eu.auth0.com/"
+        }
+      ]
+    },
+    {
+      "external_id": "XBL0paUO1lYnqM32Ij9JXT4NWVsSod3P@clients",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "indykiteagent-4 (Auth0)"
+        },
+        {
+          "type": "idp",
+          "value": "auth0"
+        },
+        {
+          "type": "issuer",
+          "value": "https://1st.eu.auth0.com/"
+        }
+      ]
+    },
+    {
+      "external_id": "4s3MfC9DSNcxonPuheS1qWIzibI9LDUi@clients",
+      "type": "Identity",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "indykiteagent-mcp (Auth0)"
+        },
+        {
+          "type": "idp",
+          "value": "auth0"
+        },
+        {
+          "type": "issuer",
+          "value": "https://1st.eu.auth0.com/"
+        }
+      ]
     }
   ]
 }

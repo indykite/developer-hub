@@ -20,8 +20,16 @@ services:
     # Usecase branding (ORG_NAME/ORG_TAGLINE) so the console adapts per usecase.
     env_file:
       - ./usecases/${USECASE:-canbank}/usecase.env
+    # CHATBOT_PORT is the port on the host (the browser's URL, the login
+    # callback); inside the stack the chatbot always listens on 3000, where
+    # the agents, gateways and Token Service send their audit updates.
     ports:
-      - "${CHATBOT_PORT}:${CHATBOT_PORT}"
+      - "${CHATBOT_PORT}:3000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.create_connection(('127.0.0.1', 3000), 3); s.close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     networks:
       - console-network
       - orchestrator-iag-network
@@ -42,12 +50,16 @@ services:
       CHATBOT_PORT: ${CHATBOT_PORT}
       ORCHESTRATOR_HOST: ${IAG_ORCHESTRATOR_HOST}
       ORCHESTRATOR_PORT: ${IAG_ORCHESTRATOR_PORT}
-      ID_SERVER_BASE_URL: ${IDP_BASE_URL:-https://idsvr.indykite.one/oauth/v2/}
-      ID_SERVER_TOKEN_ENDPOINT: oauth-token
-      ID_SERVER_AUTHORIZE_ENDPOINT: oauth-authorize
+      # User login at the IdP (authorization code with PKCE). Auth0 by
+      # default; the Curity settings are in .example.env.
+      ID_SERVER_BASE_URL: ${CHATBOT_IDP_BASE_URL:-https://${AUTH0_DOMAIN}}
+      ID_SERVER_AUTHORIZE_ENDPOINT: ${CHATBOT_IDP_AUTHORIZE_ENDPOINT:-authorize}
+      ID_SERVER_TOKEN_ENDPOINT: ${CHATBOT_IDP_TOKEN_ENDPOINT:-oauth/token}
+      ID_SERVER_LOGOUT_ENDPOINT: ${CHATBOT_IDP_LOGOUT_ENDPOINT:-v2/logout}
+      ID_SERVER_TOKEN_AUTH: ${CHATBOT_IDP_TOKEN_AUTH:-post}
+      ID_SERVER_AUDIENCE: ${CHATBOT_IDP_AUDIENCE-ibac-people}
       ID_SERVER_CLIENT_ID: ${CHATBOT_IDP_CLIENT_ID}
       ID_SERVER_CLIENT_SECRET: ${CHATBOT_IDP_CLIENT_SECRET}
-      ID_SERVER_TOKEN_AUTH: basic
       CHATBOT_REDIRECT_URL: http://${CHATBOT_HOST}:${CHATBOT_PORT}/auth/callback
       FLASK_SECRET_KEY: ${FLASK_SECRET_KEY}
       LOG_LEVEL: ${LOG_LEVEL}
@@ -75,11 +87,12 @@ services:
       # one-click CAN_TRIGGER grant, and the workflow bundle one click writes
       # (empty = feature off). The grant is guarded by a live AuthZEN
       # self-check on the logged-in user.
-      AUTHZEN_SUBJECT_TYPES: ${AUTHZEN_SUBJECT_TYPES:-User}
+      AUTHZEN_SUBJECT_TYPES: ${AUTHZEN_SUBJECT_TYPES:-Identity}
+      PERSON_QUERY_ID: ${PERSON_QUERY_ID:-identity-person}
       GRANT_WORKFLOW_MAP: ${GRANT_WORKFLOW_MAP:-}
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    command: python app.py --host 0.0.0.0 --port ${CHATBOT_PORT}
+    command: python app.py --host 0.0.0.0 --port 3000
 
   # IndyKite Token Service - the issuer of exchanged (delegation) tokens. Every
   # gateway calls its /oauth2/token instead of exchanging at the external IdP
@@ -119,8 +132,28 @@ services:
     volumes:
       # Holds the private signing key + client secret - gitignored; create it
       # from token-service/token-service.example.yaml.
-      - ./token-service/token-service.yaml:/app/.configs/token-service.yaml:ro
+      # TOKEN_SERVICE_CONFIG picks another file, e.g. the Curity one in .env.curity.
+      - ${TOKEN_SERVICE_CONFIG:-./token-service/token-service.yaml}:/app/.configs/token-service.yaml:ro
     command: ["--config=/app/.configs/token-service.yaml"]
+
+  # Auth0 has no token introspection endpoint and needs an audience on every
+  # client-credentials request; the gateways (IDP_BASE_URL) call this bridge,
+  # which provides both. See auth0_bridge/README.md. Not used with Curity.
+  auth0-bridge:
+    build:
+      context: ./auth0_bridge
+    environment:
+      AUTH0_DOMAIN: ${AUTH0_DOMAIN}
+      AUTH0_DEFAULT_AUDIENCE: ${AUTH0_AGENTS_AUDIENCE:-ibac-agents}
+    networks:
+      - orchestrator-iag-network
+      - retriever-iag-network
+      - weather-iag-network
+      - analyst-iag-network
+      - mcp-iag-network
+      - drive-mcp-iag-network
+      - crm-iag-network
+      - erp-mcp-iag-network
 
   # Protects Orchestrator
   orchestrator-iag:
@@ -580,7 +613,7 @@ services:
       APP_AGENT_CREDENTIALS_TOKEN: ${APP_AGENT_CREDENTIALS_TOKEN}
       # Subject node type for the AuthZEN search (insurance: Person,
       # canbank: default User); reuses the gateways' subject-type env.
-      ERP_SUBJECT_TYPE: ${AUTHZEN_SUBJECT_TYPES:-User}
+      ERP_SUBJECT_TYPE: ${AUTHZEN_SUBJECT_TYPES:-Identity}
       LOG_LEVEL: ${LOG_LEVEL}
     depends_on:
       - erp-db

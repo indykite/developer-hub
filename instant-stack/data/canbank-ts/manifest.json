@@ -10,10 +10,10 @@
       "description": "Retrieve the authenticated user's profile, department and manager. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-self\", \"input_params\": { } }.",
       "query": {
         "nodes": [
-          "subject.external_id",
-          "subject.property.name",
-          "subject.property.email",
-          "subject.property.title",
+          "user.external_id",
+          "user.property.name",
+          "user.property.email",
+          "user.property.title",
           "department.property.name",
           "manager.property.name"
         ],
@@ -30,9 +30,9 @@
       "description": "Get Stock Quote retrieves the user, their department and a stock quote for the requested ticker symbol.The only information required is the currently authenticated user's bearer token and a ticker symbol for the stock. Use this function when the user asks questions about stock quotes, such as: 'What is the current price of <ticker>?' Returns: An object containing the user's details, including full_name, department, and the stock price. Call tool 'ciq_execute' with the user's bearer token as the authorization header. Use the following arguments: \"id\": \"get-stock-quote\" and \"ticker\". Example: { \"id\": \"get-stock-quote\", \"input_params\": { \"ticker\": \"NVDA\"} }.\"",
       "query": {
         "nodes": [
-          "subject.external_id",
-          "subject.property.name",
-          "subject.property.title",
+          "user.external_id",
+          "user.property.name",
+          "user.property.title",
           "department.property.name",
           "quote.property.price"
         ],
@@ -47,9 +47,9 @@
       "description": "Retrieve a customer's stock account tier and threshold. Caller must be in the trading department. Example: { \"id\": \"get-stock-trade-threshold\", \"input_params\": { \"customer_external_id\": \"ted\" } }.",
       "query": {
         "nodes": [
-          "subject.external_id",
-          "subject.property.name",
-          "subject.property.title",
+          "user.external_id",
+          "user.property.name",
+          "user.property.title",
           "customer.property.name",
           "tier.property.name",
           "tier.property.threshold_amount"
@@ -65,9 +65,9 @@
       "description": "Retrieve internal documents visible to the caller filtered by taxonomy. Example: { \"id\": \"get-internal-documents\", \"input_params\": { \"taxonomy_external_id\": \"policy\" } }.",
       "query": {
         "nodes": [
-          "subject.external_id",
-          "subject.property.name",
-          "subject.property.title",
+          "user.external_id",
+          "user.property.name",
+          "user.property.title",
           "document.external_id",
           "document.property.name",
           "document.property.description",
@@ -194,7 +194,7 @@
           },
           {
             "name": "r_made",
-            "source": "subject",
+            "source": "user",
             "target": "decision",
             "type": "MADE"
           },
@@ -257,14 +257,29 @@
       "description": "Retrieve internal documents by taxonomy over the fully delegated agent chain. Call tool 'ciq_execute' with input_params. Example: { \"id\": \"get-internal-documents-chained\", \"input_params\": { \"taxonomy_external_id\": \"policy\" } }. Refused unless the request traveled console->orchestrator->retriever->mcp with the ITS delegation intact.",
       "query": {
         "nodes": [
-          "subject.external_id",
-          "subject.property.name",
-          "subject.property.title",
+          "user.external_id",
+          "user.property.name",
+          "user.property.title",
           "document.external_id",
           "document.property.name",
           "document.property.description",
           "document.property.url",
           "taxonomy.property.name"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "14",
+      "name": "identity-person",
+      "display_name": "Identity Person",
+      "description": "Resolve an IdP identity to its person. Example: { \"id\": \"identity-person\", \"input_params\": { \"identity_id\": \"millicent\" } }.",
+      "query": {
+        "nodes": [
+          "identity.property.idp",
+          "person.external_id",
+          "person.property.name"
         ],
         "relationships": [],
         "aggregate_values": []
@@ -282,17 +297,18 @@
           "policy_version": "1.0-ciq"
         },
         "subject": {
-          "type": "User"
+          "type": "Identity"
         },
         "condition": {
-          "cypher": "MATCH (subject:User {external_id: $token.sub}) WITH subject OPTIONAL MATCH (subject)-[:WORKS_IN]->(department:Department) WITH subject, department OPTIONAL MATCH (subject)-[:REPORTS_TO]->(manager:User) WITH subject, department, manager, $token.act.sub AS agent",
+          "cypher": "MATCH (subject:Identity {external_id: $token.sub})-[:IDENTIFIES]->(user:User) WITH subject, user OPTIONAL MATCH (user)-[:WORKS_IN]->(department:Department) WITH subject, user, department OPTIONAL MATCH (user)-[:REPORTS_TO]->(manager:User) WITH subject, user, department, manager, $token.act.sub AS agent",
           "filter": []
         },
         "allowed_reads": {
           "nodes": [
             "subject.*",
             "department.*",
-            "manager.*"
+            "manager.*",
+            "user.*"
           ],
           "relationships": [],
           "aggregate_values": [
@@ -316,17 +332,18 @@
           "policy_version": "1.0-ciq"
         },
         "subject": {
-          "type": "User"
+          "type": "Identity"
         },
         "condition": {
-          "cypher": "MATCH (subject:User {external_id: $token.sub})-[:WORKS_IN]->(department:Department)-[:CAN_RETRIEVE]->(quote:Quote)",
+          "cypher": "MATCH (subject:Identity {external_id: $token.sub})-[:IDENTIFIES]->(user:User)-[:WORKS_IN]->(department:Department)-[:CAN_RETRIEVE]->(quote:Quote)",
           "filter": []
         },
         "allowed_reads": {
           "nodes": [
             "subject.*",
             "department.*",
-            "quote.*"
+            "quote.*",
+            "user.*"
           ],
           "relationships": [],
           "aggregate_values": []
@@ -348,10 +365,10 @@
           "policy_version": "1.0-ciq"
         },
         "subject": {
-          "type": "User"
+          "type": "Identity"
         },
         "condition": {
-          "cypher": "MATCH (subject:User {external_id: $token.sub})-[:WORKS_IN]->(department:Department)-[:CAN_ACCESS|CONTAINS*..2]->(customer:Customer {external_id: $customer_external_id})-[:OWNS]-(account:Account)-[:IS_TIER]->(tier:AccountTier) WHERE (account)-[:IS_TYPE]->(:InvestmentCategory {external_id: 'cat_stocks'})",
+          "cypher": "MATCH (subject:Identity {external_id: $token.sub})-[:IDENTIFIES]->(user:User)-[:WORKS_IN]->(department:Department)-[:CAN_ACCESS|CONTAINS*..2]->(customer:Customer {external_id: $customer_external_id})-[:OWNS]-(account:Account)-[:IS_TIER]->(tier:AccountTier) WHERE (account)-[:IS_TYPE]->(:InvestmentCategory {external_id: 'cat_stocks'})",
           "filter": []
         },
         "allowed_reads": {
@@ -359,7 +376,8 @@
             "subject.*",
             "customer.*",
             "account.*",
-            "tier.*"
+            "tier.*",
+            "user.*"
           ],
           "relationships": [],
           "aggregate_values": []
@@ -381,17 +399,18 @@
           "policy_version": "1.0-ciq"
         },
         "subject": {
-          "type": "User"
+          "type": "Identity"
         },
         "condition": {
-          "cypher": "MATCH (subject:User {external_id: $token.sub})-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(document:Document)-[:IS_TYPE]->(taxonomy:Taxonomy {external_id: $taxonomy_external_id})",
+          "cypher": "MATCH (subject:Identity {external_id: $token.sub})-[:IDENTIFIES]->(user:User)-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(document:Document)-[:IS_TYPE]->(taxonomy:Taxonomy {external_id: $taxonomy_external_id})",
           "filter": []
         },
         "allowed_reads": {
           "nodes": [
             "subject.*",
             "document.*",
-            "taxonomy.*"
+            "taxonomy.*",
+            "user.*"
           ],
           "relationships": [],
           "aggregate_values": []
@@ -475,10 +494,10 @@
           "policy_version": "1.0-ciq"
         },
         "subject": {
-          "type": "User"
+          "type": "Identity"
         },
         "condition": {
-          "cypher": "MATCH (subject:User {external_id: $token.sub})-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(document:Document {external_id: $document_external_id})<-[document_applied]-(decision:Decision)<--(ticket:Ticket)-[:REGARDING]->(account:Account), (ticket)-[:CREATED_BY]-(customer:Customer), (decision)<-[:MADE]-(actor:User)",
+          "cypher": "MATCH (subject:Identity {external_id: $token.sub})-[:IDENTIFIES]->(user:User)-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(document:Document {external_id: $document_external_id})<-[document_applied]-(decision:Decision)<--(ticket:Ticket)-[:REGARDING]->(account:Account), (ticket)-[:CREATED_BY]-(customer:Customer), (decision)<-[:MADE]-(actor:User)",
           "filter": []
         },
         "allowed_reads": {
@@ -490,7 +509,8 @@
             "decision.*",
             "ticket.*",
             "account.*",
-            "customer.*"
+            "customer.*",
+            "user.*"
           ],
           "relationships": [
             "document_applied.*"
@@ -517,7 +537,7 @@
           "type": "_Application"
         },
         "condition": {
-          "cypher": "MATCH (subject:_Application) MATCH (wf:Workflow)-[rels:INVOKES*]->(a:Agent {external_id: $agent_id}) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) WITH subject, wf.external_id AS workflow, [r IN rels | endNode(r).external_id] AS agent_list",
+          "cypher": "MATCH (subject:_Application) MATCH (wf:Workflow)-[rels:INVOKES*]->(a:Identity {external_id: $agent_id}) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Identity) WITH subject, wf.external_id AS workflow, [r IN rels | endNode(r).external_id] AS agent_list",
           "filter": []
         },
         "allowed_reads": {
@@ -541,16 +561,17 @@
           "policy_version": "1.0-ciq"
         },
         "subject": {
-          "type": "User"
+          "type": "Identity"
         },
         "condition": {
-          "cypher": "MATCH (subject:User {external_id: $token.sub}) WITH subject MATCH (weather:Weather {external_id: 'hq_weather'})",
+          "cypher": "MATCH (subject:Identity {external_id: $token.sub})-[:IDENTIFIES]->(user:User) WITH subject, user MATCH (weather:Weather {external_id: 'hq_weather'})",
           "filter": []
         },
         "allowed_reads": {
           "nodes": [
             "subject.*",
-            "weather.*"
+            "weather.*",
+            "user.*"
           ],
           "relationships": [],
           "aggregate_values": []
@@ -571,10 +592,10 @@
           "policy_version": "1.0-ciq"
         },
         "subject": {
-          "type": "User"
+          "type": "Identity"
         },
         "condition": {
-          "cypher": "MATCH (subject:User {external_id: $token.sub}) MATCH (document:Document {external_id: $document_external_id}) MATCH (ticket:Ticket {external_id: $ticket_external_id})",
+          "cypher": "MATCH (subject:Identity {external_id: $token.sub})-[:IDENTIFIES]->(user:User) MATCH (document:Document {external_id: $document_external_id}) MATCH (ticket:Ticket {external_id: $ticket_external_id})",
           "filter": []
         },
         "allowed_upserts": {
@@ -623,7 +644,7 @@
           "type": "_Application"
         },
         "condition": {
-          "cypher": "MATCH (subject:_Application) MATCH (u:User {external_id: $subject_id})-[w:WORKS_IN]->(d:Department)-[t:CAN_TRIGGER]->(wf:Workflow {external_id: $workflow_id})",
+          "cypher": "MATCH (subject:_Application) MATCH (:Identity {external_id: $subject_id})-[:IDENTIFIES]->(u:User)-[w:WORKS_IN]->(d:Department)-[t:CAN_TRIGGER]->(wf:Workflow {external_id: $workflow_id})",
           "filter": []
         },
         "allowed_reads": {
@@ -654,7 +675,7 @@
           "type": "_Application"
         },
         "condition": {
-          "cypher": "MATCH (subject:_Application) MATCH (u:User {external_id: $subject_id})-[t:CAN_TRIGGER]->(wf:Workflow {external_id: $workflow_id})",
+          "cypher": "MATCH (subject:_Application) MATCH (:Identity {external_id: $subject_id})-[:IDENTIFIES]->(u:User)-[t:CAN_TRIGGER]->(wf:Workflow {external_id: $workflow_id})",
           "filter": []
         },
         "allowed_reads": {
@@ -681,18 +702,18 @@
           "policy_version": "1.0-ciq"
         },
         "subject": {
-          "type": "User"
+          "type": "Identity"
         },
         "condition": {
-          "cypher": "MATCH (subject:User {external_id: $token.sub})-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(document:Document)-[:IS_TYPE]->(taxonomy:Taxonomy {external_id: $taxonomy_external_id})",
+          "cypher": "MATCH (subject:Identity {external_id: $token.sub})-[:IDENTIFIES]->(user:User)-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(document:Document)-[:IS_TYPE]->(taxonomy:Taxonomy {external_id: $taxonomy_external_id}) MATCH (:Identity {external_id: $ik_token.act.act.act.sub})-[:IDENTIFIES]->(:Agent {external_id: 'indykiteagent'})",
           "filter": [],
           "token_filter": {
-            "attribute": "$ik_token.act.act.act.sub",
+            "attribute": "$ik_token.act.act.act.type",
             "operator": "=",
-            "value": "indykiteagent",
+            "value": "Identity",
             "advice": {
               "error": "invalid_delegation_chain",
-              "error_description": "Expected a depth-3 delegation chain with indykiteagent as the innermost actor ($ik_token.act.act.act.sub)"
+              "error_description": "Expected a depth-3 delegation chain ($ik_token.act.act.act) whose innermost actor is the orchestrator (indykiteagent) in any IdP"
             }
           }
         },
@@ -700,7 +721,8 @@
           "nodes": [
             "subject.*",
             "document.*",
-            "taxonomy.*"
+            "taxonomy.*",
+            "user.*"
           ],
           "relationships": [],
           "aggregate_values": []
@@ -711,6 +733,36 @@
         "documents",
         "delegation",
         "chain"
+      ]
+    },
+    {
+      "slot": "14",
+      "name": "identity-person",
+      "display_name": "Identity Person",
+      "description": "The person an IdP identity (a token sub) belongs to: Identity -IDENTIFIES-> User. The console grants CAN_TRIGGER to that person, so a grant holds for every IdP the person logs in with.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "_Application"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:_Application) MATCH (identity:Identity {external_id: $identity_id})-[:IDENTIFIES]->(person:User)",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "identity.*",
+            "person.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "canbank",
+        "identity"
       ]
     }
   ],
@@ -814,47 +866,65 @@
   },
   "token_introspect": [
     {
-      "name": "canbank-token-introspect",
-      "display_name": "CanBank Token Introspect",
-      "description": "Token introspect for CanBank users authenticated via their IdP",
-      "ikg_node_type": "User",
+      "name": "auth0-agent-tokens",
+      "display_name": "Auth0 agent tokens",
+      "description": "Client-credentials tokens of the gateways (Auth0 API AUTH0_AGENTS_AUDIENCE). The sub (<client_id>@clients) is an Identity node that IDENTIFIES an Agent.",
+      "ikg_node_type": "Identity",
+      "jwt_matcher": {
+        "issuer": "${AUTH0_ISSUER:-https://1st.eu.auth0.com/}",
+        "audience": "${AUTH0_AGENTS_AUDIENCE:-ibac-agents}"
+      },
+      "claims_mapping": {},
+      "offline_validation": {},
+      "perform_upsert": false
+    },
+    {
+      "name": "auth0-user-tokens",
+      "display_name": "Auth0 user tokens",
+      "description": "Access tokens of the chatbot login (Auth0 API AUTH0_PEOPLE_AUDIENCE). The sub (auth0|<id>) is an Identity node that IDENTIFIES a User.",
+      "ikg_node_type": "Identity",
+      "jwt_matcher": {
+        "issuer": "${AUTH0_ISSUER:-https://1st.eu.auth0.com/}",
+        "audience": "${AUTH0_PEOPLE_AUDIENCE:-ibac-people}"
+      },
+      "claims_mapping": {},
+      "offline_validation": {},
+      "perform_upsert": false
+    },
+    {
+      "name": "curity-agent-tokens",
+      "display_name": "Curity agent tokens",
+      "description": "Client-credentials token of the MCP gateway at Curity (aud indykiteagent-mcp). The sub is an Identity node that IDENTIFIES an Agent.",
+      "ikg_node_type": "Identity",
       "jwt_matcher": {
         "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous",
         "audience": "indykiteagent-mcp"
       },
-      "claims_mapping": {
-        "email": {
-          "selector": "email"
-        }
-      },
+      "claims_mapping": {},
       "offline_validation": {},
-      "perform_upsert": true
+      "perform_upsert": false
     },
     {
-      "name": "canbank-user-token-introspect",
-      "display_name": "CanBank User Token Introspect",
-      "description": "Raw user access tokens (aud chatbot-mcp) reaching the MCP endpoint in token-service mode",
-      "ikg_node_type": "User",
+      "name": "curity-user-tokens",
+      "display_name": "Curity user tokens",
+      "description": "Access tokens of the chatbot login at Curity (aud CURITY_USER_AUDIENCE: the chatbot's Curity client). The sub is an Identity node that IDENTIFIES a User.",
+      "ikg_node_type": "Identity",
       "jwt_matcher": {
         "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous",
-        "audience": "chatbot-mcp"
+        "audience": "${CURITY_USER_AUDIENCE:-chatbot-mcp}"
       },
-      "claims_mapping": {
-        "email": {
-          "selector": "email"
-        }
-      },
+      "claims_mapping": {},
       "offline_validation": {},
-      "perform_upsert": true
+      "perform_upsert": false
     },
     {
-      "name": "token-service-https-chatbot-mcp",
-      "display_name": "Token Service Delegations (chatbot-mcp audience)",
-      "description": "Token-service-minted delegation JWTs arriving in X-IK-Token; audience inherited from the user subject token (chatbot-mcp). The public JWK comes from .env (TOKEN_SERVICE_PUBLIC_JWK) - fetch it from the running service's /.well-known/jwks.json and strip it to kty/n/e/alg/kid/use.",
-      "ikg_node_type": "User",
+      "name": "token-service-auth0",
+      "display_name": "Token Service delegations (Auth0 logins)",
+      "description": "Delegations the gateways mint at the Token Service for Auth0 logins, arriving in X-IK-Token. They keep the user token audience. sub and every act.sub are Identity nodes (Token Service actor_type: Identity). Public JWK from .env (TOKEN_SERVICE_PUBLIC_JWK).",
+      "ikg_node_type": "Identity",
       "jwt_matcher": {
         "issuer": "https://token-service.demo.local",
-        "audience": "chatbot-mcp"
+        "audience": "${AUTH0_PEOPLE_AUDIENCE:-ibac-people}"
       },
       "claims_mapping": {},
       "offline_validation": {
@@ -862,7 +932,24 @@
           "${TOKEN_SERVICE_PUBLIC_JWK}"
         ]
       },
-      "perform_upsert": true
+      "perform_upsert": false
+    },
+    {
+      "name": "token-service-curity",
+      "display_name": "Token Service delegations (Curity logins)",
+      "description": "Delegations the gateways mint at the Token Service for Curity logins, arriving in X-IK-Token. They keep the user token audience. sub and every act.sub are Identity nodes (Token Service actor_type: Identity). Public JWK from .env (TOKEN_SERVICE_PUBLIC_JWK).",
+      "ikg_node_type": "Identity",
+      "jwt_matcher": {
+        "issuer": "https://token-service.demo.local",
+        "audience": "${CURITY_USER_AUDIENCE:-chatbot-mcp}"
+      },
+      "claims_mapping": {},
+      "offline_validation": {
+        "public_jwks": [
+          "${TOKEN_SERVICE_PUBLIC_JWK}"
+        ]
+      },
+      "perform_upsert": false
     }
   ],
   "kbac": [
@@ -876,7 +963,7 @@
           "policy_version": "2.0-kbac"
         },
         "subject": {
-          "type": "User"
+          "type": "Identity"
         },
         "actions": [
           "CAN_TRIGGER"
@@ -885,7 +972,7 @@
           "type": "Workflow"
         },
         "condition": {
-          "cypher": "MATCH (subject:User)-[:WORKS_IN|CAN_TRIGGER*..3]->(resource:Workflow)"
+          "cypher": "MATCH (subject:Identity)-[:IDENTIFIES]->(:User)-[:WORKS_IN|CAN_TRIGGER*..3]->(resource:Workflow)"
         }
       }
     },
@@ -899,7 +986,7 @@
           "policy_version": "2.0-kbac"
         },
         "subject": {
-          "type": "User"
+          "type": "Identity"
         },
         "actions": [
           "CAN_RETRIEVE"
@@ -908,7 +995,7 @@
           "type": "Quote"
         },
         "condition": {
-          "cypher": "MATCH (subject:User)-[:WORKS_IN]->(department:Department)-[:CAN_RETRIEVE]->(resource:Quote)"
+          "cypher": "MATCH (subject:Identity)-[:IDENTIFIES]->(:User)-[:WORKS_IN]->(department:Department)-[:CAN_RETRIEVE]->(resource:Quote)"
         }
       }
     },
@@ -922,7 +1009,7 @@
           "policy_version": "2.0-kbac"
         },
         "subject": {
-          "type": "User"
+          "type": "Identity"
         },
         "actions": [
           "CAN_VIEW"
@@ -931,7 +1018,7 @@
           "type": "Invoice"
         },
         "condition": {
-          "cypher": "MATCH (subject:User)-[:WORKS_IN]->(:Department)-[:SERVES]->(:Customer)-[:HAS_INVOICE]->(resource:Invoice)"
+          "cypher": "MATCH (subject:Identity)-[:IDENTIFIES]->(:User)-[:WORKS_IN]->(:Department)-[:SERVES]->(:Customer)-[:HAS_INVOICE]->(resource:Invoice)"
         }
       }
     },
@@ -945,7 +1032,7 @@
           "policy_version": "2.0-kbac"
         },
         "subject": {
-          "type": "User"
+          "type": "Identity"
         },
         "actions": [
           "CAN_VIEW"
@@ -954,7 +1041,7 @@
           "type": "Invoice"
         },
         "condition": {
-          "cypher": "MATCH (subject:User)-[:IS_CUSTOMER]->(:Customer)-[:HAS_INVOICE]->(resource:Invoice)"
+          "cypher": "MATCH (subject:Identity)-[:IDENTIFIES]->(:User)-[:IS_CUSTOMER]->(:Customer)-[:HAS_INVOICE]->(resource:Invoice)"
         }
       }
     },
@@ -968,7 +1055,7 @@
           "policy_version": "2.0-kbac"
         },
         "subject": {
-          "type": "User"
+          "type": "Identity"
         },
         "actions": [
           "CAN_DISCLOSE"
@@ -977,11 +1064,11 @@
           "type": "Document"
         },
         "condition": {
-          "cypher": "MATCH (subject:User)-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(resource:Document)",
+          "cypher": "MATCH (subject:Identity)-[:IDENTIFIES]->(:User)-[:WORKS_IN|CAN_ACCESS|CONTAINS*..4]->(resource:Document)",
           "filter": {
-            "attribute": "$ik_token.act.act.act.sub",
+            "attribute": "$ik_token.act.act.act.type",
             "operator": "=",
-            "value": "indykiteagent"
+            "value": "Identity"
           }
         }
       }

@@ -36,8 +36,9 @@ idp:
   # Delegation tokens are short-lived on purpose - nothing revokes them.
   token_ttl: 5m
   # act.type written into issued tokens; the IndyKite backend resolves the
-  # actor in the graph with it.
-  actor_type: Agent
+  # actor in the graph with it. Identity: each act.sub is the agent's IdP
+  # identity, which IDENTIFIES the Agent node (instant-stack canbank-ts).
+  actor_type: Identity
   # Credentials callers (the gateways) present on the token endpoint.
   client_auth:
     type: client_secret_basic

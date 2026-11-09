@@ -38,6 +38,7 @@ console → orchestrator → retriever → mcp.
     - [3. Build the local service images](#3-build-the-local-service-images)
     - [4. Pin the Agent Gateway image tag](#4-pin-the-agent-gateway-image-tag)
     - [Token Service setup](#token-service-setup)
+    - [Identity providers: Auth0 and Curity](#identity-providers-auth0-and-curity)
     - [5. Start the stack](#5-start-the-stack)
     - [6. Try the demo prompts](#6-try-the-demo-prompts)
     - [7. Troubleshooting](#7-troubleshooting)
@@ -219,12 +220,13 @@ before step 5.
   `data/insurance-ts` for **insurance** (`DATASET=insurance-ts`; see
   [`usecases/insurance/DEMO_SCRIPT.md`](usecases/insurance/DEMO_SCRIPT.md)).
   They hold the same graph, queries and policies as `data/canbank` /
-  `data/insurance` plus the Token Service layer: three Token Introspect
-  configurations (IdP tokens with the `indykiteagent-mcp` and `chatbot-mcp`
-  audiences, and the Token Service issuer validated offline with its public
-  JWK - set `TOKEN_SERVICE_PUBLIC_JWK` in instant-stack's `.env` before
-  provisioning), one chain-guarded knowledge query + policy, and one
-  chain-guarded KBAC policy. The instant-stack manifests cover everything:
+  `data/insurance` plus the Token Service layer: Token Introspect
+  configurations for the IdP tokens and for the Token Service issuer
+  (validated offline with its public JWK - set `TOKEN_SERVICE_PUBLIC_JWK` in
+  instant-stack's `.env` before provisioning), one chain-guarded knowledge
+  query + policy, and one chain-guarded KBAC policy. `canbank-ts` serves
+  Auth0 and Curity logins from one project; see
+  [Identity providers](#identity-providers-auth0-and-curity). The instant-stack manifests cover everything:
   capture nodes/relationships, CIQ policies + knowledge queries incl.
   `get-agent-workflows`, KBAC policies, App Agent, Token Introspect, MCP
   server config, and external data resolvers. For canbank, the **Bruno
@@ -260,12 +262,13 @@ before step 5.
     demo); enable and configure it in the IndyKite console. The MCP server
     resolves the App Agent server-side from it, so MCP callers no longer send an
     App Agent token.
-- **Provider clients** for `console` (chatbot login), `indykiteagent`
-  (orchestrator), `indykiteagent-2` (retriever), `indykiteagent-3`
-  (weather), and `indykiteagent-4` (analyst): each with its secret.
-  The optional Drive MCP PoC additionally needs `indykiteagent-drive`, the
-  optional CRM profile `indykiteagent-crm`, and the optional ERP profile
-  `indykiteagent-erp`.
+- **Identity provider clients**: one for the chatbot login and one per
+  gateway (orchestrator, retriever, weather, analyst, mcp), each with its
+  secret. Auth0 is the default; the applications and APIs it needs, and the
+  Curity alternative, are in
+  [Identity providers](#identity-providers-auth0-and-curity). The optional
+  Drive MCP PoC, CRM profile and ERP profile each need one more client
+  (Curity: `indykiteagent-drive`, `indykiteagent-crm`, `indykiteagent-erp`).
 - **(Optional) Gemini API key**, otherwise an **Ollama** instance reachable
   from Docker (default `http://host.docker.internal:11434`).
 
@@ -390,12 +393,15 @@ in [`token-service/README.md`](token-service/README.md); in short:
    `docker-compose.yaml` pins `indykite/token-service:1.0.0` (`linux/amd64`
    only - the compose file requests the platform explicitly, so arm64 hosts
    run it under emulation). `docker compose pull token-service` fetches it.
-2. **Configure it**: copy `token-service/token-service.example.yaml` to
-   `token-service/token-service.yaml` (gitignored) and fill in a fresh RSA
+2. **Configure it**: copy `token-service/token-service.auth0.example.yaml`
+   (Auth0, the default) or `token-service/token-service.example.yaml`
+   (Curity) to `token-service/token-service.yaml` (gitignored; another file
+   name can be set with `TOKEN_SERVICE_CONFIG` in `.env`) and fill in a fresh RSA
    private JWK (`idp.signing_keys`), the client credentials the gateways
    present (`idp.client_auth`, matching `TOKEN_SERVICE_CLIENT_ID/SECRET` in
    `.env.<usecase>`), and the IdP client secret of the two `opaque` online
-   fallbacks. `idp.audiences` lists **every audience a subject token can
+   fallbacks (Curity only). `idp.actor_type: Identity` makes every `act.sub`
+   resolve to the agent's Identity node. `idp.audiences` lists **every audience a subject token can
    carry plus every protected agent** (the console client, `chatbot-mcp`,
    all `indykiteagent*` ids incl. `-crm` and `-erp`) - a missing one is
    refused with `invalid_target`; the `token_introspection.configurations`
@@ -405,9 +411,10 @@ in [`token-service/README.md`](token-service/README.md); in short:
    usecase-independent.
 3. **Platform-side trust**, once per project: the `-ts` datasets provision a
    Token Introspect configuration for the Token Service issuer
-   (`https://token-service.demo.local`, audience `chatbot-mcp` - the
-   delegation inherits the user token's audience) with the **public** half
-   of the signing key inline. Put that public JWK (`kty`/`n`/`e`/`alg`/`kid`/`use`
+   (`https://token-service.demo.local`) per user token audience - the
+   delegation inherits the user token's audience (canbank-ts: `ibac-people`
+   for Auth0 logins, `CURITY_USER_AUDIENCE` for Curity logins) - with the
+   **public** half of the signing key inline. Put that public JWK (`kty`/`n`/`e`/`alg`/`kid`/`use`
    only - no private fields, no `key_ops`) into instant-stack's `.env` as
    `TOKEN_SERVICE_PUBLIC_JWK` before provisioning; a running service
    publishes it at `http://localhost:8102/.well-known/jwks.json`. The
@@ -424,8 +431,12 @@ chain`). The CRM agent and the ERP MCP server read the subject and the
 `$ik_token`: the chain-guarded knowledge query
 (`get-internal-documents-chained` in canbank,
 `get-policy-documents-chained` in insurance) and the `*-can-disclose-document-chained`
-KBAC policy require `$ik_token.act.act.act.sub = indykiteagent`, i.e.
-exactly the console → orchestrator → retriever → mcp route. Prompt
+KBAC policy require exactly the console → orchestrator → retriever → mcp
+route. In insurance they require `$ik_token.act.act.act.sub = indykiteagent`.
+In canbank they require a depth-3 chain (`$ik_token.act.act.act.type =
+Identity`), and the knowledge query checks in the graph that the innermost
+actor is the orchestrator in whichever IdP issued its token:
+`MATCH (:Identity {external_id: $ik_token.act.act.act.sub})-[:IDENTIFIES]->(:Agent {external_id: 'indykiteagent'})`. Prompt
 *"Use get-internal-documents-chained to list the policy documents"* (canbank)
 or *"Use get-policy-documents-chained to list the policy documents"*
 (insurance) from the console and the query answers; the same query called
@@ -440,6 +451,92 @@ gateway authorization decisions, tagged `service: token-service`
 `jti` of the issued token). To observe it working, prompt in the console and
 watch `docker compose logs -f token-service`: one `POST /oauth2/token` per
 hop is your issuer minting the delegation.
+
+### Identity providers: Auth0 and Curity
+
+The chatbot login and each gateway's agent identity come from an OAuth2
+identity provider (IdP). Auth0 is the default; Curity is configured in
+`.env.curity`. Both IdPs work against the **same** IndyKite project: a person
+or an agent is one node in the graph, and each IdP account is an `Identity`
+node that points to it.
+
+```text
+(:Identity {external_id: "auth0|69c4…", idp: auth0})  -[:IDENTIFIES {idp}]->  (:User {external_id: "millicent"})
+(:Identity {external_id: "millicent",   idp: curity}) -[:IDENTIFIES {idp}]->
+(:Identity {external_id: "gmgA…@clients", idp: auth0}) -[:IDENTIFIES {idp}]->  (:Agent {external_id: "indykiteagent"})
+(:Identity {external_id: "indykiteagent", idp: curity}) -[:IDENTIFIES {idp}]->
+```
+
+An `Identity`'s `external_id` is the `sub` that IdP puts in its tokens. How
+each part of the demo uses it (instant-stack `data/canbank-ts`):
+
+| Part | What it does with `Identity` |
+| --- | --- |
+| Token Introspect configurations | `ikg_node_type: Identity`, `perform_upsert: false`; one per issuer and audience: Auth0 agent and user tokens, Curity agent and user tokens, and Token Service delegations for each user audience. A token whose `sub` has no `Identity` node is refused. |
+| CIQ policies | The policy subject is the `Identity`: `MATCH (subject:Identity {external_id: $token.sub})-[:IDENTIFIES]->(user:User)`. Queries read the person as `user.*`. |
+| KBAC policies | Subject type `Identity`: `MATCH (subject:Identity)-[:IDENTIFIES]->(:User)-…`. The gateways and the chatbot evaluate `AUTHZEN_SUBJECT_TYPES=Identity`. |
+| Token Service | `idp.actor_type: Identity`: the platform resolves each `act.sub` of a delegation to the agent's `Identity`. |
+| Workflow chains | Each `INVOKES {workflow_name}` chain between `Agent` nodes is repeated between each IdP's agent identities, so `get-agent-workflows` returns the chain in the IDs that IdP puts in the tokens; the gateways compare it with the token's actor chain in order. |
+| Grants | The console's grant button writes `CAN_TRIGGER` on the person (`identity-person` knowledge query, `PERSON_QUERY_ID`), so a grant holds for every IdP that person logs in with. |
+
+#### Auth0 (default)
+
+Tenant setup (Auth0 dashboard):
+
+| What | Settings |
+| --- | --- |
+| API for user tokens | Identifier `AUTH0_PEOPLE_AUDIENCE` (default `ibac-people`). |
+| API for agent tokens | Identifier `AUTH0_AGENTS_AUDIENCE` (default `ibac-agents`). |
+| Regular Web Application for the chatbot | Allowed Callback URL `http://localhost:<CHATBOT_PORT>/auth/callback`, Allowed Logout URL `http://localhost:<CHATBOT_PORT>/`. Client ID/secret: `CHATBOT_IDP_CLIENT_ID/SECRET`. |
+| Machine to Machine application per gateway | Authorized for the agents API. Client ID/secret: `<AGENT>_IDP_CLIENT_ID/SECRET`. Its token `sub` is `<client_id>@clients`. |
+| Users | One per person who logs in. Their `user_id` (`auth0|…`) is the token `sub`. |
+
+`.env` sets `AUTH0_DOMAIN` and the two audiences (`.example.env` has the
+block). The gateways reach Auth0 through [`auth0_bridge`](auth0_bridge/README.md),
+which adds the token introspection endpoint Auth0 lacks and the audience on
+every client-credentials request; the chatbot logs in at Auth0 directly.
+
+`canbank-ts` holds the identities of tenant `1st.eu.auth0.com`: Millicent and
+the orchestrator, retriever, weather, analyst and mcp agents. For another
+tenant or another person, add an `Identity` node to `nodes.json` and an
+`IDENTIFIES` edge (with `idp`) to `relationships.json`; for an agent, also
+repeat its `INVOKES` chain edges between the new identities. instant-stack's
+`.env` sets `AUTH0_ISSUER` (default `https://1st.eu.auth0.com/`) when the
+tenant differs.
+
+#### Curity
+
+`.env.curity` is a complete env file: the Curity clients, the IdP endpoints
+(the commented block in `.example.env`), `CHATBOT_PORT` for the Curity
+chatbot client's callback, and
+`TOKEN_SERVICE_CONFIG=./token-service/token-service.curity.yaml` (the Curity
+Token Service configuration, from `token-service/token-service.example.yaml`).
+instant-stack's `.env` sets `CURITY_USER_AUDIENCE` to the chatbot's Curity
+client (default `chatbot-mcp`). Every canbank user and agent has a Curity
+`Identity` (the Curity `sub` is the username or client ID).
+
+#### Switching
+
+Both env files point at the same project; start the stack with the one you
+want (the containers are replaced):
+
+```bash
+docker compose up -d                          # Auth0 (.env)
+docker compose --env-file .env.curity up -d   # Curity
+```
+
+The gateways stay on `indykite/agent-gateway:2.70.2`: 2.102.0 no longer
+accepts `JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID`, which this demo's admission
+uses. 2.70.2 cannot set the delegation audience, so a delegation keeps the
+user token's audience; the Token Service's `idp.audiences` and the platform's
+delegation configurations follow it.
+
+**Adding another IdP**: create its user and agent clients, add an `Identity`
+node and `IDENTIFIES` edge per person and agent (plus the mirrored `INVOKES`
+chain edges), add Token Introspect configurations for its agent and user
+tokens and a Token Service delegation configuration for its user audience,
+add its token matchers to a Token Service configuration, and create an env
+file with its endpoints. The policies do not change.
 
 ### 5. Start the stack
 

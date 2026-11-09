@@ -2348,6 +2348,1165 @@
       },
       "properties": [],
       "type": "CAN_TRIGGER"
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "millicent"
+      },
+      "target": {
+        "type": "User",
+        "external_id": "millicent"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "curity"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "alexb"
+      },
+      "target": {
+        "type": "User",
+        "external_id": "alexb"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "curity"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "jeff"
+      },
+      "target": {
+        "type": "User",
+        "external_id": "jeff"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "curity"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "joe"
+      },
+      "target": {
+        "type": "User",
+        "external_id": "joe"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "curity"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "jane"
+      },
+      "target": {
+        "type": "User",
+        "external_id": "jane"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "curity"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "carol"
+      },
+      "target": {
+        "type": "User",
+        "external_id": "carol"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "curity"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "rebecca"
+      },
+      "target": {
+        "type": "User",
+        "external_id": "rebecca"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "curity"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "leslie"
+      },
+      "target": {
+        "type": "User",
+        "external_id": "leslie"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "curity"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "flo"
+      },
+      "target": {
+        "type": "User",
+        "external_id": "flo"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "curity"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "roy"
+      },
+      "target": {
+        "type": "User",
+        "external_id": "roy"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "curity"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "indykiteagent"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "curity"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "indykiteagent-2"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-2"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "curity"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "indykiteagent-3"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-3"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "curity"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "indykiteagent-4"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-4"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "curity"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "indykiteagent-mcp"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-mcp"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "curity"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "indykiteagent-drive"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-drive"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "curity"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "indykiteagent-erp"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-erp"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "curity"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
+      },
+      "target": {
+        "type": "User",
+        "external_id": "millicent"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "auth0"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "gmgA1DyG2GbSA5jYGJjVOmmvAFIlPUpl@clients"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "auth0"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "2UrTycwn1b4zTBTgNShNwHfxsQ370izE@clients"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-2"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "auth0"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "aFKvLFJ6xqRyNq5WqQ9wbjtsDt5oPU0j@clients"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-3"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "auth0"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "XBL0paUO1lYnqM32Ij9JXT4NWVsSod3P@clients"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-4"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "auth0"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "4s3MfC9DSNcxonPuheS1qWIzibI9LDUi@clients"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "indykiteagent-mcp"
+      },
+      "type": "IDENTIFIES",
+      "properties": [
+        {
+          "type": "idp",
+          "value": "auth0"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf1"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf1"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "gmgA1DyG2GbSA5jYGJjVOmmvAFIlPUpl@clients"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "indykiteagent"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent-2"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "gmgA1DyG2GbSA5jYGJjVOmmvAFIlPUpl@clients"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "2UrTycwn1b4zTBTgNShNwHfxsQ370izE@clients"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "indykiteagent-2"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent-mcp"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "2UrTycwn1b4zTBTgNShNwHfxsQ370izE@clients"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "4s3MfC9DSNcxonPuheS1qWIzibI9LDUi@clients"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf2"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf2"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf2"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "gmgA1DyG2GbSA5jYGJjVOmmvAFIlPUpl@clients"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf2"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "indykiteagent"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent-3"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf2"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "gmgA1DyG2GbSA5jYGJjVOmmvAFIlPUpl@clients"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "aFKvLFJ6xqRyNq5WqQ9wbjtsDt5oPU0j@clients"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf2"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "indykiteagent-3"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent-mcp"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf2"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "aFKvLFJ6xqRyNq5WqQ9wbjtsDt5oPU0j@clients"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "4s3MfC9DSNcxonPuheS1qWIzibI9LDUi@clients"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf2"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf3"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent-4"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf3"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "XBL0paUO1lYnqM32Ij9JXT4NWVsSod3P@clients"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-drive"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent-drive"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "indykiteagent-4"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent-mcp"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "XBL0paUO1lYnqM32Ij9JXT4NWVsSod3P@clients"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "4s3MfC9DSNcxonPuheS1qWIzibI9LDUi@clients"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-drive-analyst"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent-4"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-analyst"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-drive-analyst"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "XBL0paUO1lYnqM32Ij9JXT4NWVsSod3P@clients"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-analyst"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "indykiteagent-4"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent-drive"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-analyst"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-drive-console"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-console"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-drive-console"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "gmgA1DyG2GbSA5jYGJjVOmmvAFIlPUpl@clients"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-console"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "indykiteagent"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent-4"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "gmgA1DyG2GbSA5jYGJjVOmmvAFIlPUpl@clients"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "XBL0paUO1lYnqM32Ij9JXT4NWVsSod3P@clients"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "indykiteagent-4"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent-drive"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf3-console"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf3-console"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "gmgA1DyG2GbSA5jYGJjVOmmvAFIlPUpl@clients"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "indykiteagent"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent-4"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "gmgA1DyG2GbSA5jYGJjVOmmvAFIlPUpl@clients"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "XBL0paUO1lYnqM32Ij9JXT4NWVsSod3P@clients"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "indykiteagent-4"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent-mcp"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "XBL0paUO1lYnqM32Ij9JXT4NWVsSod3P@clients"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "4s3MfC9DSNcxonPuheS1qWIzibI9LDUi@clients"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-erp"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent-erp"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-erp-analyst"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent-4"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-analyst"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-erp-analyst"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "XBL0paUO1lYnqM32Ij9JXT4NWVsSod3P@clients"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-analyst"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "indykiteagent-4"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent-erp"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-analyst"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-erp-console"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-erp-console"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "gmgA1DyG2GbSA5jYGJjVOmmvAFIlPUpl@clients"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "indykiteagent"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent-4"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "gmgA1DyG2GbSA5jYGJjVOmmvAFIlPUpl@clients"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "XBL0paUO1lYnqM32Ij9JXT4NWVsSod3P@clients"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Identity",
+        "external_id": "indykiteagent-4"
+      },
+      "target": {
+        "type": "Identity",
+        "external_id": "indykiteagent-erp"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
     }
   ]
 }

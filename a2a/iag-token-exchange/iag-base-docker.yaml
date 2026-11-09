@@ -8,8 +8,11 @@ services:
     # by mcp-iag, drive-mcp-iag and erp-mcp-iag) needs 2.21 or newer; token
     # service mode with hop-by-hop nesting of the incoming X-IK-Token needs
     # 2.47 or newer. All gateways share this tag.
-    # See https://hub.docker.com/r/indykite/agent-gateway/tags.
-    image: indykite/agent-gateway:2.70.2
+    # See https://hub.docker.com/r/indykite/agent-gateway/tags. Override with
+    # AGENT_GATEWAY_IMAGE in .env, e.g. a newer release loaded locally.
+    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.70.2}
+    # linux/amd64 only; arm64 hosts (Apple Silicon) run it under emulation.
+    platform: linux/amd64
     environment:
       JARVIS_SERVICE_LOG_LEVEL: debug
       JARVIS_SERVICE_ENVIRONMENT: demo
@@ -34,21 +37,28 @@ services:
       # "local" turns on Prometheus metrics at :9090/metrics (in-network only,
       # no host port is published).
       JARVIS_SERVICE_TRACING_DETECTOR: local
-      JARVIS_IDENTITY_PROVIDER_BASE_URL: "${IDP_BASE_URL:-https://idsvr.indykite.one/oauth/v2/}"
-      JARVIS_IDENTITY_PROVIDER_INTROSPECT_ENDPOINT: "oauth-introspect"
-      JARVIS_IDENTITY_PROVIDER_CLIENT_CREDENTIAL_ENDPOINT: "oauth-token"
-      JARVIS_IDENTITY_PROVIDER_EXCHANGE_ENDPOINT: "oauth-token"
+      # Identity provider (IdP): validates the caller's token by introspection
+      # and issues each gateway's client-credentials (actor) token. Auth0 by
+      # default, through auth0-bridge (Auth0 has no introspection endpoint);
+      # the Curity settings are in .example.env. Endpoints are relative to
+      # IDP_BASE_URL.
+      JARVIS_IDENTITY_PROVIDER_BASE_URL: "${IDP_BASE_URL:-http://auth0-bridge:8090/}"
+      JARVIS_IDENTITY_PROVIDER_INTROSPECT_ENDPOINT: "${IDP_INTROSPECT_ENDPOINT:-oauth/introspect}"
+      JARVIS_IDENTITY_PROVIDER_CLIENT_CREDENTIAL_ENDPOINT: "${IDP_TOKEN_ENDPOINT:-oauth/token}"
+      JARVIS_IDENTITY_PROVIDER_EXCHANGE_ENDPOINT: "${IDP_TOKEN_ENDPOINT:-oauth/token}"
+      JARVIS_IDENTITY_PROVIDER_ISSUER: "${IDP_ISSUER:-https://${AUTH0_DOMAIN}/}"
+      JARVIS_IDENTITY_PROVIDER_OPENID_CONFIGURATION_URL: "${IDP_OPENID_CONFIGURATION_URL:-https://${AUTH0_DOMAIN}/.well-known/openid-configuration}"
       JARVIS_CONTX_IQ_BASE_URL: ${INDYKITE_BASE_URL}/contx-iq/v1
       JARVIS_CONTX_IQ_QUERY_ID: ${CIQ_QUERY_ID}
       JARVIS_CONTX_IQ_APP_AGENT_CREDENTIALS_TOKEN: ${APP_AGENT_CREDENTIALS_TOKEN}
       JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${WORKFLOW_ID}
       JARVIS_AUTHZEN_BASE_URL: ${INDYKITE_BASE_URL}/access/v1
       JARVIS_AUTHZEN_ACTION: CAN_TRIGGER
-      # Subject node types the gateways evaluate for CAN_TRIGGER. Default
-      # covers staff logins (User). Subjects with customer logins (e.g. the
-      # insurance demo's roy, a Person) set AUTHZEN_SUBJECT_TYPES=User Person
-      # in .env; each extra type needs a matching CAN_TRIGGER KBAC policy.
-      JARVIS_AUTHZEN_SUBJECT_TYPES: ${AUTHZEN_SUBJECT_TYPES:-User}
+      # Subject node type the gateways evaluate for CAN_TRIGGER. Callers are
+      # IdP identities: the token's sub is an Identity node that IDENTIFIES the
+      # person (User), so one person can log in with any IdP (instant-stack
+      # canbank-ts). Each type needs a matching CAN_TRIGGER KBAC policy.
+      JARVIS_AUTHZEN_SUBJECT_TYPES: ${AUTHZEN_SUBJECT_TYPES:-Identity}
       # Subject workflow-set cache: how long a gateway keeps a subject's
       # CAN_TRIGGER decisions before asking the platform again, i.e. how fast
       # a grant or revoke reaches gateway decisions. Keep both values equal.

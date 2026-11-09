@@ -81,5 +81,7 @@ drive_mcp/gcp-oauth.keys.json
 .env.*
 !.example.env
 
-# Token-service config holds a private signing key + client secret - keep local.
-token-service/token-service.yaml
+# Token-service configs hold a private signing key + client secret - keep local
+# (token-service.yaml, and per-IdP ones such as token-service.curity.yaml).
+token-service/token-service*.yaml
+!token-service/token-service*.example.yaml

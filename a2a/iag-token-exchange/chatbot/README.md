@@ -17,7 +17,11 @@ Environment variables:
 | `ORCHESTRATOR_HOST` | `localhost` | Host of the Orchestrator Agent. |
 | `ORCHESTRATOR_PORT` | `6001` | Port of the Orchestrator Agent. |
 | `ORCHESTRATOR_TIMEOUT` | `300` | Request timeout in seconds (LLM responses can take a while). |
-| `ID_SERVER_BASE_URL` | – | OAuth2 Identity Server base URL (e.g. `https://idsvr.indykite.one/oauth/v2`). |
+| `ID_SERVER_BASE_URL` | – | OAuth2 Identity Server base URL (e.g. `https://<tenant>.eu.auth0.com` or `https://idsvr.indykite.one/oauth/v2`). |
+| `ID_SERVER_AUTHORIZE_ENDPOINT` / `ID_SERVER_TOKEN_ENDPOINT` | `oauth-authorize` / `oauth-token` | Paths under the base URL (Auth0: `authorize` / `oauth/token`). |
+| `ID_SERVER_LOGOUT_ENDPOINT` | `oauth-session/logout` | Logout path; `v2/logout` uses Auth0's `client_id` + `returnTo`, any other path OIDC `post_logout_redirect_uri` + `id_token_hint`. |
+| `ID_SERVER_AUDIENCE` | – | API audience for the access token (Auth0 needs it; empty for Curity). |
+| `ID_SERVER_TOKEN_AUTH` | `basic` | Token endpoint client auth: `basic` or `post` (Auth0). |
 | `CHATBOT_REDIRECT_URL` | – | OAuth2 redirect URI after login (e.g. `http://127.0.0.1:3000/auth/callback`). |
 | `ID_SERVER_CLIENT_ID` | `indykiteagent` | OAuth2 client ID. |
 | `ID_SERVER_SCOPES` | `openid profile email` | OAuth2 scopes. |

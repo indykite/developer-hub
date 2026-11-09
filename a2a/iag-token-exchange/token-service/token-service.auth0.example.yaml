@@ -1,0 +1,96 @@
+---
+# Token-service configuration for the iag-token-exchange demo, with Auth0 as
+# the identity provider (the default; token-service.example.yaml is the Curity
+# version). EXAMPLE - copy to token-service.yaml, replace <tenant> with your
+# Auth0 tenant domain and fill in real keys/secrets.
+# Reference for every field: jarvis services/.configs/services/token-service.yaml
+
+service:
+  name: token-service
+  port: 8102
+  environment: local
+  log_level: debug
+  # Issuer: the `iss` of every token this service signs. An identifier, not
+  # necessarily reachable - relying parties are configured with it.
+  # NOTE: must be https:// - the IndyKite platform routes third-party JWT
+  # introspection only for https issuers (http issuers are treated as opaque
+  # tokens). This is an identifier, not a transport address: the gateways
+  # still call the service at http://token-service:8102 inside the compose
+  # network, and the platform validates tokens with the inline public JWK,
+  # so the URL never needs to resolve.
+  base_url: https://token-service.demo.local
+
+idp:
+  # Allow-list of what a token may be issued for (`aud` claim): every
+  # audience a subject token can carry plus every protected agent the
+  # gateways exchange for. A missing one is refused with invalid_target.
+  audiences:
+    # A delegation keeps the audience of the user's access token: the Auth0
+    # API (AUTH0_PEOPLE_AUDIENCE) and the tenant's userinfo endpoint, which
+    # Auth0 adds for the openid scope. The platform's token introspect config
+    # for delegations matches on the first (instant-stack canbank-ts).
+    - ibac-people
+    - https://<tenant>.eu.auth0.com/userinfo
+  # Delegation tokens are short-lived on purpose - nothing revokes them.
+  token_ttl: 5m
+  # act.type written into issued tokens; the IndyKite backend resolves the
+  # actor in the graph with it. Identity: each act.sub is the agent's IdP
+  # identity, which IDENTIFIES the Agent node (instant-stack canbank-ts).
+  actor_type: Identity
+  # Credentials callers (the gateways) present on the token endpoint.
+  client_auth:
+    type: client_secret_basic
+    client_id: agent-gateway
+    client_secret: "" # generate a secret and mirror it as TOKEN_SERVICE_CLIENT_SECRET in .env.<usecase>
+  # First key signs; the rest stay published for rotation. The PUBLIC half
+  # (kty/n/e/alg/kid/use) goes into instant-stack's TOKEN_SERVICE_PUBLIC_JWK
+  # so the platform's Token Introspect validates the delegations offline.
+  signing_keys:
+    - '{"alg":"RS256","kid":"<kid>","kty":"RSA","use":"sig","n":"<...>","e":"AQAB","d":"<PRIVATE - generate your own>"}'
+
+# Which incoming subject/actor tokens are accepted, and how they are verified.
+# `configurations` is a MAP keyed by the configuration name. Both are Auth0
+# JWTs, verified offline against the tenant's signing keys.
+token_introspection:
+  configurations:
+    # The user's access token from the chatbot login (audience: the Auth0 API
+    # AUTH0_PEOPLE_AUDIENCE).
+    auth0-people:
+      token_types:
+        - subject_token
+      matcher:
+        type: jwt
+        issuer: https://<tenant>.eu.auth0.com/
+        audience: ibac-people
+      validation:
+        offline:
+          jwks_uri: https://<tenant>.eu.auth0.com/.well-known/jwks.json
+    # Each gateway's own client-credentials token. auth0-bridge requests them
+    # all for the same Auth0 API (AUTH0_AGENTS_AUDIENCE), so one matcher
+    # covers every gateway.
+    auth0-agents:
+      token_types:
+        - actor_token
+      matcher:
+        type: jwt
+        issuer: https://<tenant>.eu.auth0.com/
+        audience: ibac-agents
+      validation:
+        offline:
+          jwks_uri: https://<tenant>.eu.auth0.com/.well-known/jwks.json
+
+# Audit: every exchange attempt (authorized or not) is delivered to the demo's
+# audit terminal - the same webhook the gateways use - so minting a delegation
+# appears in the console stream beside the gateway authorization decisions.
+# Messages carry decision, reason, subject, actor, the delegation chain, the
+# trace id, and (on success) tokenID: the jti of the issued token.
+audit:
+  delivery: webhook
+  http:
+    url: http://chatbot:3000/api/push-update
+    method: post
+    auth:
+      type: no-auth
+  # Deliver in the background so auditing never adds latency to an exchange.
+  async:
+    buffer_size: 100

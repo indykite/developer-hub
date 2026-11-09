@@ -150,18 +150,25 @@ TOKEN_INTROSPECT: dict = TOKEN_INTROSPECTS[0] if TOKEN_INTROSPECTS else {}
 # policy bodies (e.g. an agent subject in a chain filter) and the capture
 # nodes/relationships (e.g. agent external_ids that are IdP client subjects).
 # Secrets and per-deployment values stay in .env instead of being committed in
-# the dataset files.
-_ENV_PLACEHOLDER = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)\}")
+# the dataset files. ``${ENV_VAR:-default}`` supplies a value for when the
+# variable is unset or empty, e.g. the IdP subject of a demo user, so a dataset
+# loads unchanged for the default IdP and switches IdP through .env alone.
+_ENV_PLACEHOLDER = re.compile(r"\$\{([A-Za-z_][A-Za-z0-9_]*)(?::-([^}]*))?\}")
+
+
+def _env_value(match):
+    return os.getenv(match.group(1)) or (match.group(2) or "")
 
 
 def resolve_env_placeholders(value):
-    """Recursively expand ``${ENV_VAR}`` placeholders from the environment.
+    """Recursively expand ``${ENV_VAR}`` and ``${ENV_VAR:-default}`` from the environment.
 
-    An unset variable resolves to the empty string (and is logged by the
-    caller's request failing visibly at the Config API, not silently here).
+    An unset or empty variable resolves to its default, or to the empty string
+    without one (and is logged by the caller's request failing visibly at the
+    Config API, not silently here).
     """
     if isinstance(value, str):
-        return _ENV_PLACEHOLDER.sub(lambda m: os.getenv(m.group(1), ""), value)
+        return _ENV_PLACEHOLDER.sub(_env_value, value)
     if isinstance(value, list):
         return [resolve_env_placeholders(v) for v in value]
     if isinstance(value, dict):

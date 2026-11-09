@@ -39,6 +39,13 @@ ORCHESTRATOR_PORT = int(os.getenv("ORCHESTRATOR_PORT", "6001"))
 ID_SERVER_BASE_URL = (os.getenv("ID_SERVER_BASE_URL") or "").rstrip("/")
 ID_SERVER_AUTH_ENDPOINT = os.getenv("ID_SERVER_AUTHORIZE_ENDPOINT", "oauth-authorize")
 ID_SERVER_TOKEN_ENDPOINT = os.getenv("ID_SERVER_TOKEN_ENDPOINT", "oauth-token")
+# Logout path under ID_SERVER_BASE_URL. OIDC RP-initiated logout (Curity's
+# oauth-session/logout, Auth0's oidc/logout) takes post_logout_redirect_uri and
+# id_token_hint; Auth0's v2/logout takes client_id and returnTo instead.
+ID_SERVER_LOGOUT_ENDPOINT = os.getenv("ID_SERVER_LOGOUT_ENDPOINT", "oauth-session/logout").strip("/")
+# API the user's access token is for. Auth0 needs it (without one it issues an
+# opaque token the gateways cannot read); leave empty for Curity.
+ID_SERVER_AUDIENCE = (os.getenv("ID_SERVER_AUDIENCE") or "").strip()
 CHATBOT_HOST = (os.getenv("CHATBOT_HOST") or "localhost").strip()
 CHATBOT_PORT = str(os.getenv("CHATBOT_PORT", "3000")).strip()
 CHATBOT_REDIRECT_URL = (os.getenv("CHATBOT_REDIRECT_URL") or "").strip()
@@ -111,6 +118,10 @@ GRANT_WORKFLOW_MAP = {
     if svc.strip() and wfs.strip()
 }
 GRANT_ENABLED = bool(INDYKITE_BASE_URL and APP_AGENT_CREDENTIALS_TOKEN and GRANT_WORKFLOW_MAP)
+# When subjects are IdP identities (AUTHZEN_SUBJECT_TYPES=Identity), a grant goes
+# on the person the identity belongs to, so it holds for every IdP that person
+# logs in with. This knowledge query resolves Identity -IDENTIFIES-> person.
+PERSON_QUERY_ID = (os.getenv("PERSON_QUERY_ID") or "").strip()
 # Cached grant rights (/api/auth/status) are invalid once the map changes.
 GRANT_MAP_FINGERPRINT = os.getenv("GRANT_WORKFLOW_MAP") or ""
 CAN_GRANT_TTL_S = 60
@@ -507,6 +518,8 @@ def auth_login():
         "code_challenge": code_challenge,
         "code_challenge_method": "S256",
     }
+    if ID_SERVER_AUDIENCE:
+        params["audience"] = ID_SERVER_AUDIENCE
     url = f"{auth_url}?{urllib.parse.urlencode(params)}"
     return redirect(url)
 
@@ -602,15 +615,26 @@ def _authzen_can_trigger(subject_id, workflow_id):
     return bool((resp.json() or {}).get("decision"))
 
 
+def _grant_source(subject_id):
+    """The node a grant goes on: the person behind an identity, else the subject itself."""
+    if PERSON_QUERY_ID:
+        rows = _ciq_execute(PERSON_QUERY_ID, {"identity_id": subject_id})
+        person = next(((r.get("nodes") or {}).get("person.external_id") for r in rows), None)
+        if person:
+            return {"type": "User", "external_id": person}
+    return {"type": AUTHZEN_SUBJECT_TYPE, "external_id": subject_id}
+
+
 def _capture_can_trigger(subject_id, workflow_ids, *, revoke=False):
     """Upsert (or delete) ``subject -CAN_TRIGGER-> Workflow`` edges via the Capture API.
 
     Authorization is data: this one write is what flips the next gateway
     decision from DENY to ALLOW (and back). Upserts are idempotent.
     """
+    source = _grant_source(subject_id)
     edges = [
         {
-            "source": {"type": AUTHZEN_SUBJECT_TYPE, "external_id": subject_id},
+            "source": source,
             "target": {"type": "Workflow", "external_id": wf},
             "type": "CAN_TRIGGER",
             **({} if revoke else {"properties": []}),
@@ -818,11 +842,13 @@ def get_config():
     post_logout_redirect = f"http://{CHATBOT_HOST}:{CHATBOT_PORT}/"
     logout_url = ""
     if ID_SERVER_BASE_URL:
-        query_parts = [f"post_logout_redirect_uri={urllib.parse.quote(post_logout_redirect, safe='')}"]
-        id_token = session.get("id_token")
-        if id_token:
-            query_parts.append(f"id_token_hint={urllib.parse.quote(id_token, safe='')}")
-        logout_url = f"{ID_SERVER_BASE_URL}/oauth-session/logout?{'&'.join(query_parts)}"
+        if ID_SERVER_LOGOUT_ENDPOINT == "v2/logout":
+            query = {"client_id": OAUTH_CLIENT_ID, "returnTo": post_logout_redirect}
+        else:
+            query = {"post_logout_redirect_uri": post_logout_redirect}
+            if session.get("id_token"):
+                query["id_token_hint"] = session["id_token"]
+        logout_url = f"{ID_SERVER_BASE_URL}/{ID_SERVER_LOGOUT_ENDPOINT}?{urllib.parse.urlencode(query)}"
     return jsonify(
         {
             "logout_url": logout_url,
