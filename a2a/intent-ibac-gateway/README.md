@@ -55,8 +55,8 @@ What the console shows, live:
   refuses them itself: nothing without an intent reaches an agent.
 - **How IBAC works** - the mapping check explained in five steps with the
   demo's own examples: the two sides, a mapping field by field, discovery as
-  three yes/no questions, usage with the references resolved, and where the
-  check stops. On the board, every card carries a one-line verdict in plain
+  three yes/no questions, usage as the step of a tool call with the
+  references resolved, and where the check stops. On the board, every card carries a one-line verdict in plain
   words and every skill a *why?* fold.
 - **IBAC fleet** - the six agent cards as their gateways serve them, every
   skill's mappings, a coverage map of the policy triples, and, once you are
@@ -173,11 +173,19 @@ as a page (**How IBAC works**, item 07 in the rail), with the examples drawn.
    every card is asked three yes/no questions: same subject type? same
    resource type? action listed? Three yes on one mapping and the skill
    matches; ids are ignored at this stage. One matching skill makes the card
-   AUTHORIZED; none makes it NOT_AUTHORIZED (`intent_mismatch`); a card
-   without mappings answers `missing_coaz_mapping` and can never match.
-4. **Usage: what exactly must be checked?** For the matched skill the ids
-   are resolved: `$token.sub` from the token, `$parameters.tier` from what
-   the Intent Agent extracted. One AuthZEN request per (subject, resource)
+   AUTHORIZED; none makes it NOT_AUTHORIZED (`intent_mismatch`). A card
+   without mappings is settled by the gateway's setting before the engine is
+   asked: *allow* (the default, the `no mapping` switch next to the composer)
+   skips the check and KBAC alone decides; *deny* hands it to the engine,
+   which answers `missing_coaz_mapping`. An intent carries at most 10
+   evaluations; a larger one is refused and the caller asked to split it.
+4. **Usage: what exactly must be checked?** The step of a tool call (an A2A
+   message has none; the console runs it as a preview of what a tool call on
+   the matched skill would be checked against). For that skill the ids are
+   resolved from the call, never from the intent: `$token.sub` from the
+   delegated token, `$request.arguments.tier` from the call's arguments,
+   which the preview stands in with the parameter the Intent Agent
+   extracted. One AuthZEN request per (subject, resource)
    pair: "Person auth0|69c4129b… → HAS → AccountTier tier_1"
    (`intent_match_authzen_required`). An id left empty is a *search match*
    (`intent_match_search`): nothing is generated, the intent's own evaluation
@@ -205,16 +213,16 @@ rewritten to itself, the delegated token extension declared) and the agent
 answers with the skill it would have used. The mappings use only (subject
 type, action, resource type) triples that exist as policies in the dataset -
 a unit test enforces it - with subjects bound to `$token.sub` and resources
-literal, empty or `$parameters.<name>`:
+literal, empty or `$request.arguments.<name>`:
 
 | Agent | Gateway | Skills | Serves |
 | --- | --- | --- | --- |
 | Trading Desk Agent | `127.0.0.1:9901` | `quote-lookup`, `core-banking` | Person → Quote `stock_quote` (CAN_RETRIEVE, GET_PRICE); Person → Customer (CAN_LIST_CUSTOMER, CAN_ACCESS_CUSTOMER) |
 | Customer Support Agent | `127.0.0.1:9902` | `policy-library`, `customer-360`, `case-decisions` | Person → Folder `cs_policy`, Document; Person → Invoice (CAN_VIEW), Customer (CAN_LIST_CUSTOMER); Person → Decision |
-| Billing Agent | `127.0.0.1:9903` | `my-invoices`, `my-accounts` | Person → Invoice; Person → Account, AccountTier (`$parameters.tier` for HAS, empty for HAS_TIER), InvestmentCategory, Customer (CAN_QUERY_CUSTOMER) |
-| People Directory Agent | `127.0.0.1:9904` | `org-chart` | Person → Person (REPORTS_TO, REPORTS_TO_INDIRECTLY, CAN_QUERY_USER), Department (WORKS_IN, WORKS_UNDER, WORKS_UNDER_DEPARTMENT with `$parameters.department`) |
+| Billing Agent | `127.0.0.1:9903` | `my-invoices`, `my-accounts` | Person → Invoice; Person → Account, AccountTier (`$request.arguments.tier` for HAS, empty for HAS_TIER), InvestmentCategory, Customer (CAN_QUERY_CUSTOMER) |
+| People Directory Agent | `127.0.0.1:9904` | `org-chart` | Person → Person (REPORTS_TO, REPORTS_TO_INDIRECTLY, CAN_QUERY_USER), Department (WORKS_IN, WORKS_UNDER, WORKS_UNDER_DEPARTMENT with `$request.arguments.department`) |
 | Workflow Runner Agent | `127.0.0.1:9905` | `run-workflow` | Person → Workflow (CAN_TRIGGER) |
-| Weather Agent | `127.0.0.1:9906` | `forecast` | no mappings - `missing_coaz_mapping` for every intent |
+| Weather Agent | `127.0.0.1:9906` | `forecast` | no mappings - passes under the *allow* setting (KBAC alone decides), `missing_coaz_mapping` under *deny* |
 
 Three policy actions are left unmapped on purpose - CAN_DISCLOSE Document,
 AFFECTED Account, VIEW_PRODUCT_DOCUMENT Document - so the
@@ -498,7 +506,10 @@ Two issuers take part, and every token is a JWT:
    verifies both incoming Auth0 tokens against the tenant JWKS; the platform
    validates the delegated token through the `token-service-intent-ibac`
    introspect, which is how `$ik_token.act_chain` reaches the admission
-   policy.
+   policy. The exchange also accepts an `intent` parameter, a JSON list of
+   evaluations (at most 10), which the Token Service writes as
+   `act.intent.evaluations` of that hop; the released gateway does not send
+   it yet, and the token card says so until it does.
 
 The platform reads the person's token in whoami through the `auth0-people`
 introspect, against the tenant's keys.

@@ -73,6 +73,11 @@
               <summary title="What is this switch?">?</summary>
               <p>What goes in the <code>Authorization</code> header to the gateway. Only a live token of the tenant issued for the people's API (<code>ibac-people</code>) passes the introspection at the bridge; the other three stop at the Introspect step, before whoami, the Intent Agent or the agent are involved, and are still audited. Switch back to <em>my token</em> afterwards.</p>
             </details>
+            <div class="map-mode" id="mapMode" title="The gateway's setting for a skill without a mapping, as the mapping preview applies it">
+              <span class="map-mode-k">no mapping</span>
+              <button data-mode="allow" class="active" title="allow (the default): a skill without a mapping passes the mapping check, KBAC alone decides for it">allow</button>
+              <button data-mode="deny" title="deny: a skill without a mapping covers no intent and is refused (missing_coaz_mapping)">deny</button>
+            </div>
           </div>
         </div>
         <div class="composer-row">
@@ -96,7 +101,7 @@
         <div class="pipe-node gw-step" data-step="intent" title="With ibac.enabled the gateway sends the prompt to the Intent Agent, with the whoami subject in the message metadata and its own client token for the intent_agent audience. No intent: the gateway answers the caller itself."><i></i><b>Intent</b><small>gateway → Intent Agent · ibac.enabled</small><em></em></div>
         <div class="pipe-node gw-step" data-step="forward" title="The message goes to the protected agent with the caller's token in Authorization, the delegated token in X-IK-Token and the delegated-token extension named in A2A-Extensions."><i></i><b>Forward</b><small>gateway → agent · X-IK-Token</small><em></em></div>
         <div class="pipe-node ibac-step" data-step="discover" title="Mapping preview (console): the intent compared with every skill of every card on subject type, resource type and action."><i></i><b>Discover</b><small>preview · intent vs every card</small><em></em></div>
-        <div class="pipe-node ibac-step" data-step="confirm" title="Mapping preview (console): the matched skill's ids resolved and the requests the platform would check."><i></i><b>Confirm</b><small>preview · usage on the matched skill</small><em></em></div>
+        <div class="pipe-node ibac-step" data-step="confirm" title="Mapping preview (console): what a tool call on the matched skill would be checked against - the ids resolved from the call's arguments and the token, and the requests the platform would check. An A2A message has no usage step."><i></i><b>Confirm</b><small>preview · a tool call on the matched skill</small><em></em></div>
         <div class="pipe-node" data-step="audit"><i></i><b>Audit</b><small>one record per call</small><em></em></div>
       </div>
 
@@ -133,7 +138,7 @@
               <ul>
                 <li><b>the intent</b> - the Intent Agent's artifact, <code>{prompt, evaluations[]}</code>. Of each evaluation it compares the <i>subject type</i>, the <i>action name</i> and the <i>resource type</i>; ids are read only at usage, the prompt text never.</li>
                 <li><b>a capability</b> - an agent card reduced to its name and its skills: <code>id</code>, <code>name</code> and the skill's <code>x-coaz-mappings</code>. One per agent; the console gives it every card of the fleet in turn.</li>
-                <li><b>params</b> - what <code>$references</code> in the mappings resolve from. Here: the delegation token's claims (<code>$token.sub</code> is the caller), the bound subject, and the <code>context.parameters</code> of the intent (<code>$parameters.tier</code>).</li>
+                <li><b>params</b> - what <code>$references</code> in the mappings resolve from, two keys and nothing from the intent: <code>token</code>, the delegated token's claims (<code>$token.sub</code> is the caller), and <code>request</code>, the parameters of the call (<code>$request.arguments.tier</code>). A message carries no arguments, so the preview stands them in with the <code>context.parameters</code> of the intent.</li>
               </ul>
             </div>
             <div class="io-col">
@@ -141,7 +146,7 @@
               <ul>
                 <li><b>a decision</b> - <code>true</code> or <code>false</code>, with a <i>reason code</i> and, when negative, a reason in words.</li>
                 <li><b>discovery</b> - for every evaluation, the ids of the skills that matched it; the card is AUTHORIZED when any evaluation matched any skill.</li>
-                <li><b>usage</b> - for the one skill it was given, either the <i>generated AuthZEN requests</i> (<code>{subject, action, resource, context.input_params}</code>, ids resolved) or nothing when the match is a search.</li>
+                <li><b>usage</b> - for the one skill it was given, the step of a tool call (an A2A message has none): either the <i>generated AuthZEN requests</i> (<code>{subject, action, resource, context.input_params}</code>, ids resolved from the call's arguments and the token) or nothing when the match is a search.</li>
                 <li><b>one audit record per call</b> - <code>IBAC_DISCOVERY</code> with the skills matched per evaluation, <code>IBAC_USAGE</code> with the skill id and the reason code.</li>
               </ul>
             </div>
@@ -170,7 +175,7 @@
             <div class="board-legend" id="boardLegend">
               <span class="legend-title">Three readings on every card, three different questions</span>
               <div class="legend-item"><span class="fa-gw ok sample">its gateway · forwarded</span><span>what the <b>gateway</b> did with <b>you</b>: admission on the delegation chain, the intent, the forward. The product's decision, read from its records; a refusal here never reads the prompt.</span></div>
-              <div class="legend-item"><span class="pill yes sample">DECLARES IT</span><span class="pill no sample">NOT DECLARED</span><span>the <b>mapping preview</b>: does a skill of this card map the intent's subject type, action and resource type in its <code>x-coaz-mappings</code>? About the intent, not about you. The console's check of what the released gateway does not read yet.</span></div>
+              <div class="legend-item"><span class="pill yes sample">DECLARES IT</span><span class="pill no sample">NOT DECLARED</span><span class="pill skip sample">NO MAPPING · PASSES</span><span>the <b>mapping preview</b>: does a skill of this card map the intent's subject type, action and resource type in its <code>x-coaz-mappings</code>? About the intent, not about you. A card without mappings passes under the <em>allow</em> setting (KBAC alone decides) and is refused under <em>deny</em>. The console's check of what the released gateway does not read yet.</span></div>
               <div class="legend-item"><span class="use-mark yes sample">you may use it</span><span class="use-mark no sample">not for you</span><span>the <b>skills this gateway shows you</b> on its authenticated card: the <code>CAN_USE Skill</code> set the platform answers for you. About you, not about the intent. The product's filtering, one <code>DISCOVERY</code> record per card.</span></div>
               <span class="legend-note">The telling cases are the disagreements: a card that declares the skill behind a gateway that refuses you, or a gateway that forwards to a card that declares nothing.</span>
             </div>
@@ -282,14 +287,14 @@
           <div class="how-n">3</div>
           <div class="how-body">
             <h2>Discovery: who could serve this?</h2>
-            <p>The engine takes each evaluation of the intent and asks every skill of every card the same three yes/no questions. <b>Three yes</b> on one mapping and the skill is a match. Ids are deliberately ignored at this stage: discovery runs before anyone has resolved who exactly is asking about what. One matching skill anywhere makes the card <span class="pill yes">AUTHORIZED</span>; none makes it <span class="pill no">NOT_AUTHORIZED</span> with the reason <code>intent_mismatch</code>; a card with no mappings at all answers <code>missing_coaz_mapping</code> and can never match.</p>
+            <p>The engine takes each evaluation of the intent and asks every skill of every card the same three yes/no questions. <b>Three yes</b> on one mapping and the skill is a match. Ids are deliberately ignored at this stage: discovery runs before anyone has resolved who exactly is asking about what. One matching skill anywhere makes the card <span class="pill yes">AUTHORIZED</span>; none makes it <span class="pill no">NOT_AUTHORIZED</span> with the reason <code>intent_mismatch</code>. A card with no mappings at all is settled by the gateway's setting before the engine is asked: <em>allow</em>, the default, skips the mapping check for it and KBAC alone decides; <em>deny</em> hands it to the engine, which answers <code>missing_coaz_mapping</code>. The switch next to the composer sets it for the preview.</p>
             <table class="how-table">
               <thead><tr><th>Harshvardhan's evaluation vs…</th><th>subject type<br><small>Person = ?</small></th><th>resource type<br><small>Quote = ?</small></th><th>action<br><small>GET_PRICE ∈ ?</small></th><th>result</th></tr></thead>
               <tbody>
                 <tr><td>Trading Desk · <span class="mono">quote-lookup</span></td><td class="ok">Person ✓</td><td class="ok">Quote ✓</td><td class="ok">{CAN_RETRIEVE, GET_PRICE} ✓</td><td class="ok">match</td></tr>
                 <tr><td>People Directory · <span class="mono">org-chart</span></td><td class="ok">Person ✓</td><td class="no">Person, Department ✗</td><td class="no">REPORTS_TO, … ✗</td><td class="no">no</td></tr>
                 <tr><td>Billing · <span class="mono">my-invoices</span></td><td class="ok">Person ✓</td><td class="no">Invoice ✗</td><td class="no">VIEW_INVOICE, … ✗</td><td class="no">no</td></tr>
-                <tr><td>Weather · <span class="mono">forecast</span></td><td colspan="3" class="no">no mappings published</td><td class="no">missing_coaz_mapping</td></tr>
+                <tr><td>Weather · <span class="mono">forecast</span></td><td colspan="3" class="no">no mappings published</td><td>skipped (allow) · <span class="no">missing_coaz_mapping</span> (deny)</td></tr>
               </tbody>
             </table>
             <p class="how-note">On the Playground this is the board under the tickets: each card lit or not, each matched skill carrying the numbers of the evaluations it matched. Open any skill's <em>why?</em> to see these same three questions answered for that skill.</p>
@@ -300,15 +305,15 @@
           <div class="how-n">4</div>
           <div class="how-body">
             <h2>Usage: what exactly must be checked?</h2>
-            <p>Discovery found the skill; usage confirms the intent against that one skill and turns the mapping into concrete AuthZEN requests. Now the ids matter. A literal stays as it is. A <code>$reference</code> is looked up in what the request carried: <code>$token.sub</code> in the delegation token's claims, <code>$parameters.tier</code> in the parameters the Intent Agent extracted. One request is built per resolved (subject, resource) pair, with the evaluation's action.</p>
+            <p>Usage is the step of a call that names a capability: an MCP <code>tools/call</code>, <code>resources/read</code> or <code>prompts/get</code>. It confirms the current intent against that one capability and turns the mapping into concrete AuthZEN requests. Now the ids matter. A literal stays as it is. A <code>$reference</code> is looked up in what the call carried, never in the intent: <code>$token.sub</code> in the delegated token's claims, <code>$request.arguments.tier</code> in the arguments of the call. One request is built per resolved (subject, resource) pair, with the evaluation's action. An A2A message names no capability and carries no arguments, so it has no usage step; the preview below runs it anyway, as what a tool call on the matched skill would be checked against, with the arguments stood in by the parameters the Intent Agent extracted.</p>
             <div class="how-two">
               <div class="how-box">
                 <div class="how-box-title">resolved: a request is generated</div>
                 <div class="how-quote">"Do I have a tier_1 account?" <span class="muted">— Marmaduke, a Person who holds a customer record</span></div>
                 <div class="how-resolve">
-                  <div><span class="k">mapping</span><span class="v">Person <i class="id ref">$token.sub</i> → HAS → AccountTier <i class="id ref">$parameters.tier</i></span></div>
-                  <div><span class="k">$token.sub</span><span class="v">auth0|69c4129b0ba356c7db9f91ab <small>(the delegation token's sub)</small></span></div>
-                  <div><span class="k">$parameters.tier</span><span class="v">tier_1 <small>(the intent's context.parameters)</small></span></div>
+                  <div><span class="k">mapping</span><span class="v">Person <i class="id ref">$token.sub</i> → HAS → AccountTier <i class="id ref">$request.arguments.tier</i></span></div>
+                  <div><span class="k">$token.sub</span><span class="v">auth0|69c4129b0ba356c7db9f91ab <small>(the delegated token's sub)</small></span></div>
+                  <div><span class="k">$request.arguments.tier</span><span class="v">tier_1 <small>(the call's argument; in the preview, the intent's parameter stands in)</small></span></div>
                   <div><span class="k">generated</span><span class="v"><b>Person auth0|69c4129b… → HAS → AccountTier tier_1</b></span></div>
                   <div><span class="k">reason code</span><span class="v mono">intent_match_authzen_required</span></div>
                 </div>
@@ -324,7 +329,7 @@
                 </div>
               </div>
             </div>
-            <p class="how-note">A reference that cannot be resolved drops that entity, and the mapping does not match: a skill bound to <code>$parameters.tier</code> is not a match for a prompt that named no tier. Note also that the subject always comes from the mapping, so a prompt about someone else ("does cust-cashmere have…") generates a request about the caller; the board says so when it happens.</p>
+            <p class="how-note">A reference that cannot be resolved drops that entity, and the mapping does not match: a skill bound to <code>$request.arguments.tier</code> is not a match for a call that carries no tier (in the preview, a prompt that named none). Note also that the subject always comes from the mapping, so a prompt about someone else ("does cust-cashmere have…") generates a request about the caller; the board says so when it happens.</p>
           </div>
         </article>
 
@@ -340,7 +345,8 @@
                 <tr><td class="mono">intent_match_search</td><td>usage</td><td>the skill matched, but an id stayed empty: nothing generated, the intent's evaluation decides</td></tr>
                 <tr><td class="mono">intent_match_authzen_required</td><td>usage</td><td>the skill matched and the ids resolved: these requests must be checked by AuthZEN</td></tr>
                 <tr><td class="mono">intent_mismatch</td><td>both</td><td>no mapping agreed on subject type, resource type and action</td></tr>
-                <tr><td class="mono">missing_coaz_mapping</td><td>both</td><td>the card publishes no mappings at all</td></tr>
+                <tr><td class="mono">missing_coaz_mapping</td><td>both</td><td>the card publishes no mappings at all; the engine is only asked about such a card under the <em>deny</em> setting</td></tr>
+                <tr><td class="mono">ibac_skipped</td><td>gateway</td><td>the console's label, not an engine code: no mapping and the setting is <em>allow</em>, so the engine was not asked and KBAC alone decides</td></tr>
                 <tr><td class="mono">invalid_intent · invalid_capability</td><td>both</td><td>the intent or the card does not pass validation (a missing subject, a type that is not a node type, a skill without an id)</td></tr>
                 <tr><td class="mono">incorrect_num_skills</td><td>usage</td><td>usage was given a capability with more or fewer than one skill</td></tr>
               </tbody>
@@ -362,17 +368,17 @@
         <div class="rule">
           <span class="rule-n">1</span>
           <h3>Discovery</h3>
-          <p>The intent against <b>every skill</b> of a card. A skill matches an evaluation when one of its mappings agrees on the <b>subject type</b>, the <b>resource type</b> and the <b>action</b>. Ids are not compared yet. One match anywhere is a positive decision; a card without mappings never matches (<code>missing_coaz_mapping</code>).</p>
+          <p>The intent against <b>every skill</b> of a card. A skill matches an evaluation when one of its mappings agrees on the <b>subject type</b>, the <b>resource type</b> and the <b>action</b>. Ids are not compared yet. One match anywhere is a positive decision. A card without mappings is settled by the gateway's setting first: <em>allow</em> (default) skips the check and KBAC alone decides, <em>deny</em> refuses it (<code>missing_coaz_mapping</code>).</p>
         </div>
         <div class="rule">
           <span class="rule-n">2</span>
           <h3>Usage</h3>
-          <p>The intent against the <b>one skill</b> discovery picked. The matching mapping's ids are resolved and one AuthZEN request is built per (subject, resource) pair: <code>intent_match_authzen_required</code>. Ids left empty mean a <b>search</b> match, <code>intent_match_search</code>: nothing is generated, the intent's own evaluation decides.</p>
+          <p>The step of a <b>tool call</b> (an A2A message has none): the current intent against the <b>one capability</b> the call names. The matching mapping's ids are resolved from the call and one AuthZEN request is built per (subject, resource) pair: <code>intent_match_authzen_required</code>. Ids left empty mean a <b>search</b> match, <code>intent_match_search</code>: nothing is generated, the intent's own evaluation decides.</p>
         </div>
         <div class="rule">
           <span class="rule-n">$</span>
           <h3>References</h3>
-          <p>An id starting with <code>$</code> is looked up in the request's parameters: <code>$token.sub</code> is the caller from the delegation token, <code>$parameters.tier</code> a value the intent carried. A reference that does not resolve drops the entity, and the mapping does not match.</p>
+          <p>An id starting with <code>$</code> is looked up in what the call carried, under two keys: <code>$token.sub</code> is the caller from the delegated token, <code>$request.arguments.tier</code> an argument of the call. Nothing comes from the intent. A reference that does not resolve drops the entity, and the mapping does not match.</p>
         </div>
       </div>
       <section class="coaz-about">
@@ -385,20 +391,20 @@
             <div><b>resource</b><span>same rules as subject</span></div>
             <div><b>action</b><span>zero or more names, exactly as the policies spell them; none means any action</span></div>
             <div><b>context</b><span>an optional map for operators; the engine does not read it</span></div>
-            <div><b>ids</b><span><span class="ent"><i class="id lit">literal</i></span> bound to one instance · <span class="ent"><i class="id ref">$reference</i></span> resolved at usage from the token or the intent · <span class="ent"><i class="id search">empty</i></span> any instance, a search</span></div>
-            <div><b>limits</b><span>64 mappings per skill, 64 entities per list, 64 actions; an invalid mapping makes the gateway refuse the whole card</span></div>
+            <div><b>ids</b><span><span class="ent"><i class="id lit">literal</i></span> bound to one instance · <span class="ent"><i class="id ref">$reference</i></span> resolved at usage from the call's arguments or the token ·<span class="ent"><i class="id search">empty</i></span> any instance, a search</span></div>
+            <div><b>limits</b><span>64 mappings per skill, 64 entities per list, 64 actions; an invalid mapping makes the gateway refuse the whole card. An intent carries at most 10 evaluations: a larger one is refused before the exchange and the caller is asked to split the prompt</span></div>
           </div>
         </div>
         <div class="coaz-text">
           <h2>How to write one</h2>
-          <p>Start from the policies, not from the prompt: every (subject type, action, resource type) in a mapping must exist as a policy, or the Intent Agent will never emit it and the mapping is dead weight. Bind the subject to <code>$token.sub</code>: the caller is whoever the delegation token says, never a value from the prompt. Pin the resource id only when the skill really serves one instance (<code>stock_quote</code>, <code>cs_policy</code>); use a <code>$parameters.&lt;name&gt;</code> reference when the policy declares that parameter; leave it empty when the skill answers "which ones may I".</p>
+          <p>Start from the policies, not from the prompt: every (subject type, action, resource type) in a mapping must exist as a policy, or the Intent Agent will never emit it and the mapping is dead weight. Bind the subject to <code>$token.sub</code>: the caller is whoever the delegation token says, never a value from the prompt. Pin the resource id only when the skill really serves one instance (<code>stock_quote</code>, <code>cs_policy</code>); use a <code>$request.arguments.&lt;name&gt;</code> reference when the call carries that argument and the policy declares the parameter; leave it empty when the skill answers "which ones may I".</p>
           <p>Keep a skill's mappings narrow. A mapping with no actions matches every action on those types, which is rarely what a skill means. Group by what the skill does, not by what the agent could do: discovery routes to <em>skills</em>, and a card whose one skill maps everything tells the engine nothing.</p>
 <pre class="how-code">"skills": [{
   "id": "my-accounts",
   "name": "My accounts",
   "x-coaz-mappings": [
     { "subject":  [{"type": "Person", "id": "$token.sub"}],
-      "resource": [{"type": "AccountTier", "id": "$parameters.tier"}],
+      "resource": [{"type": "AccountTier", "id": "$request.arguments.tier"}],
       "action":   [{"name": "HAS"}] },
     { "subject":  [{"type": "Person", "id": "$token.sub"}],
       "resource": [{"type": "AccountTier"}],

@@ -57,7 +57,7 @@ CORE_BANKING = skill("core-banking", mapping("User", "Customer", "CAN_LIST_CUSTO
 MY_ACCOUNTS = skill(
     "my-accounts",
     mapping("Customer", "Account", "OWNS", "VIEW_BALANCE"),
-    mapping("Customer", "AccountTier", "HAS", resource_id="$parameters.tier"),
+    mapping("Customer", "AccountTier", "HAS", resource_id="$request.arguments.tier"),
     mapping("Customer", "AccountTier", "HAS_TIER"),
 )
 TRADING = Capability(name="Trading Desk Agent", skills=[QUOTE_LOOKUP, CORE_BANKING])
@@ -69,7 +69,7 @@ WEATHER = Capability(name="Weather Agent", skills=[skill("forecast")])
 
 ROY_QUOTE = ev("User/roy", "GET_PRICE", "Quote/stock_quote")
 BOB_TIER = ev("Customer/bob", "HAS", "AccountTier", parameters={"tier": "tier_1"})
-PARAMS = {"token": {"sub": "roy"}, "subject": {"type": "User", "id": "roy"}, "parameters": {}}
+PARAMS = {"request": {"arguments": {}}, "token": {"sub": "roy"}}
 
 
 def intent(*evaluations):
@@ -177,7 +177,7 @@ def test_usage_resolves_the_caller_and_a_literal_resource_into_one_request():
 
 def test_usage_resolves_a_parameter_reference_with_a_dotted_path():
     """my-accounts binds the tier from the intent's parameters."""
-    params = {"token": {"sub": "bob"}, "parameters": {"tier": "tier_1"}}
+    params = {"request": {"arguments": {"tier": "tier_1"}}, "token": {"sub": "bob"}}
     resp = evaluate_usage(intent(BOB_TIER), BILLING.with_skill("my-accounts"), params)
     assert resp.decision is True
     [req] = requests_of(resp)
@@ -208,7 +208,7 @@ def test_an_unresolved_reference_drops_the_entity_and_the_mapping_does_not_match
 
 
 def test_a_missing_intent_parameter_is_a_mismatch_but_a_sibling_mapping_can_still_match():
-    """Without parameters.tier HAS cannot resolve; HAS_TIER on the same skill still matches as a search."""
+    """Without request.arguments.tier HAS cannot resolve; HAS_TIER on the same skill still matches as a search."""
     no_tier = ev("Customer/bob", "HAS", "AccountTier")
     bob = {"token": {"sub": "bob"}}
     assert evaluate_usage(intent(no_tier), BILLING.with_skill("my-accounts"), bob).decision is False

@@ -23,6 +23,14 @@ if TYPE_CHECKING:
 # Claims of the delegation token the engine may resolve `$token.<claim>` from.
 _TOKEN_CLAIMS = ("iss", "sub", "aud", "act", "jti", "iat", "exp")
 
+# The gateway's setting for a capability without a mapping, applied before the engine is asked:
+# allow (default) skips IBAC for it and KBAC alone decides; deny asks the engine, which refuses it.
+UNMAPPED_ALLOW = "allow"
+UNMAPPED_DENY = "deny"
+# The console's label for a card the setting let through; not an engine reason code.
+REASON_IBAC_SKIPPED = "ibac_skipped"
+REASON_TEXT_IBAC_SKIPPED = "The card publishes no mappings: IBAC skipped, KBAC alone decides"
+
 
 class FleetAgent(BaseModel):
     """One agent of the fleet: a short id for the console, an accent for the UI, and its A2A card."""
@@ -69,17 +77,43 @@ class Fleet:
             )
         return out
 
-    def run(self, intent: ibac.Intent, params: dict[str, Any], options: ibac.AuditOptions) -> dict[str, Any]:
+    def run(
+        self,
+        intent: ibac.Intent,
+        params: dict[str, Any],
+        options: ibac.AuditOptions,
+        *,
+        unmapped: str = UNMAPPED_ALLOW,
+    ) -> dict[str, Any]:
         """Run discovery over every agent, then usage on every skill a discovery matched.
 
-        Returns the JSON view of the run: one discovery entry per agent, one usage entry per matched
-        (agent, skill), the audit record of every engine call under `records`, and a summary.
+        A card without mappings goes through the `unmapped` setting first: under allow the engine is
+        not asked and the card passes with no skill matched (`skipped`); under deny it is asked and
+        refuses. Returns the JSON view of the run: one discovery entry per agent, one usage entry per
+        matched (agent, skill), the audit record of every engine call under `records`, and a summary.
         """
         discovery: list[dict[str, Any]] = []
         usage: list[dict[str, Any]] = []
         records: list[dict[str, Any]] = []
         for agent in self.agents:
             capability = self.capabilities[agent.id]
+            if unmapped == UNMAPPED_ALLOW and not capability.has_mappings():
+                discovery.append(
+                    {
+                        "agent": agent.id,
+                        "capability": capability.name,
+                        "accent": agent.accent,
+                        "decision": True,
+                        "skipped": True,
+                        "reason_code": REASON_IBAC_SKIPPED,
+                        "reason": REASON_TEXT_IBAC_SKIPPED,
+                        "skill_ids": [s.id for s in capability.skills],
+                        "matched_skills": [],
+                        "evaluations": [],
+                        "record": None,
+                    },
+                )
+                continue
             response = ibac.evaluate_discovery(intent, capability)
             record = ibac.discovery_audit_record(response, capability, options)
             records.append(record)
@@ -94,6 +128,7 @@ class Fleet:
                     "capability": capability.name,
                     "accent": agent.accent,
                     "decision": response.decision,
+                    "skipped": False,
                     "reason_code": response.context.reason_code,
                     "reason": response.context.reason,
                     "skill_ids": [s.id for s in capability.skills],
@@ -109,15 +144,17 @@ class Fleet:
                 entry = self.usage(agent.id, skill_id, intent, params, options)
                 records.append(entry["record"])
                 usage.append(entry)
-        matched_agents = [d["agent"] for d in discovery if d["decision"]]
+        matched_agents = [d["agent"] for d in discovery if d["decision"] and not d["skipped"]]
         return {
             "params": params,
+            "unmapped": unmapped,
             "discovery": discovery,
             "usage": usage,
             "records": records,
             "summary": {
                 "agents": len(self.agents),
                 "matched_agents": matched_agents,
+                "skipped_agents": [d["agent"] for d in discovery if d["skipped"]],
                 "matched_skills": len(usage),
                 "requests": sum(len(u["requests"]) for u in usage),
             },
@@ -226,17 +263,18 @@ def _bad_fleet(agent_id: str, detail: str) -> ValueError:
 
 
 def engine_params(
-    persona_type: str,
     persona_id: str,
     token_claims: dict[str, Any],
     evaluations: list[dict[str, Any]],
 ) -> dict[str, Any]:
     """Build what the engine resolves `$references` from for one prompt.
 
-    `token` is the delegation token's claims (so `$token.sub` is the persona), `subject` the bound
-    subject, and `evaluations[i].parameters` the `context.parameters` of the intent's i-th evaluation
-    with the agent's own markers removed (so `$parameters.tier` is the tier that evaluation named,
-    never one borrowed from another evaluation of the same prompt).
+    The gateway gives the engine two keys: `request`, the parameters of the call, and `token`, the
+    claims of the delegated token (so `$token.sub` is the persona). An A2A message carries no
+    arguments, so the preview stands them in: `evaluations[i].parameters` is the `context.parameters`
+    of the intent's i-th evaluation with the agent's own markers removed, and `params_for` serves it
+    as `request.arguments` (so `$request.arguments.tier` is the tier that evaluation named, never one
+    borrowed from another evaluation of the same prompt).
     """
     scoped: list[dict[str, Any]] = []
     for evaluation in evaluations:
@@ -248,11 +286,11 @@ def engine_params(
     token = {claim: token_claims[claim] for claim in _TOKEN_CLAIMS if claim in token_claims}
     if "sub" not in token:
         token["sub"] = persona_id
-    return {"token": token, "subject": {"type": persona_type, "id": persona_id}, "evaluations": scoped}
+    return {"token": token, "evaluations": scoped}
 
 
 def params_for(params: dict[str, Any], index: int) -> dict[str, Any]:
-    """Return the params map of one evaluation: the shared token and subject plus that evaluation's parameters."""
+    """Return the params map of one evaluation: the shared token, that evaluation's parameters as the arguments."""
     scoped = params.get("evaluations") or []
     parameters = scoped[index].get("parameters", {}) if index < len(scoped) else {}
-    return {"token": params.get("token", {}), "subject": params.get("subject", {}), "parameters": parameters}
+    return {"request": {"arguments": parameters}, "token": params.get("token", {})}

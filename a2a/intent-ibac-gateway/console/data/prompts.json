@@ -114,13 +114,13 @@
         {
           "persona": "auth0|69c4129b0ba356c7db9f91ab",
           "text": "Do I have a tier_1 account?",
-          "expect": "HAS AccountTier, parameters {tier: tier_1} \u2192 Billing \u00b7 my-accounts resolves $parameters.tier \u2192 generated request ALLOW",
+          "expect": "HAS AccountTier, parameters {tier: tier_1} \u2192 Billing \u00b7 my-accounts resolves $request.arguments.tier (the tier standing in as the argument) \u2192 generated request ALLOW",
           "agent": "billing"
         },
         {
           "persona": "auth0|69c410bfb501d3a02bd01ea2",
           "text": "Is the department I work in under the exec department?",
-          "expect": "WORKS_UNDER_DEPARTMENT, parameters {department: exec} \u2192 People Directory \u00b7 org-chart resolves $parameters.department",
+          "expect": "WORKS_UNDER_DEPARTMENT, parameters {department: exec} \u2192 People Directory \u00b7 org-chart resolves $request.arguments.department (the department standing in as the argument)",
           "agent": "people-directory"
         },
         {
@@ -487,7 +487,7 @@
         {
           "persona": "auth0|69c413eab4187d1438819098",
           "text": "Do I have a tier_3 account?",
-          "expect": "HAS AccountTier, parameters {tier: tier_3} \u2192 Billing \u00b7 my-accounts resolves $parameters.tier",
+          "expect": "HAS AccountTier, parameters {tier: tier_3} \u2192 Billing \u00b7 my-accounts resolves $request.arguments.tier (the tier standing in as the argument)",
           "agent": "billing"
         },
         {

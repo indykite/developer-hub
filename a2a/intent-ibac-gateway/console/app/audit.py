@@ -24,16 +24,17 @@ def classify(record: dict[str, Any]) -> str:
     """Which component wrote the record - the four formats are told apart by their fields.
 
     The gateways and the Token Service share one record shape; a gateway names itself in `service`
-    (its `JARVIS_SERVICE_NAME`, `iag-<agent>` in this demo).
+    (its `JARVIS_SERVICE_NAME`, `iag-<agent>` in this demo) and owns every record it writes, the
+    IBAC_* ones included. IBAC_* records without a gateway service come from the console's preview.
     """
+    service = str(record.get("service", ""))
+    if service.startswith("iag-"):
+        return "agent-gateway"
     if record.get("action") in IBAC_ACTIONS:
         return "ibac-engine"
     if "outcome" in record and "prompt" in record:
         return "intent-agent"
     if "decision" in record and "actor" in record:
-        service = str(record.get("service", ""))
-        if service.startswith("iag-"):
-            return "agent-gateway"
         return "token-service"
     return "unknown"
 

@@ -10,6 +10,7 @@ const state = {
   persona: null,
   agent: null,
   authMode: "delegation",
+  unmapped: "allow", // the gateway's setting for a skill without a mapping, as the preview applies it
   category: null,
   view: "playground",
   trace: null,
@@ -217,6 +218,12 @@ function bindEvents() {
     if (!btn) return;
     state.authMode = btn.dataset.mode;
     [...$("#authMode").children].forEach((b) => b.classList.toggle("active", b === btn));
+  });
+  $("#mapMode").addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    state.unmapped = btn.dataset.mode;
+    $("#mapMode").querySelectorAll("button").forEach((b) => b.classList.toggle("active", b === btn));
   });
   $("#sendBtn").addEventListener("click", () => sendPrompt($("#promptText").value));
   $("#agentPick").addEventListener("change", (e) => {
@@ -541,7 +548,7 @@ async function sendPrompt(text, agentOverride) {
     const res = await fetch("/api/prompt", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt, auth_mode: state.authMode, decide: true, agent: state.agent }),
+      body: JSON.stringify({ prompt, auth_mode: state.authMode, decide: true, agent: state.agent, unmapped: state.unmapped }),
     });
     const trace = await res.json();
     clearInterval(ticker);
@@ -805,11 +812,17 @@ function renderHandoff(trace) {
       ["params", `token.sub = ${params.token?.sub || "—"}${named.length ? ` · parameters: ${named.join(", ")}` : " · no parameters in the intent"}`],
     ], "ok"));
     lane.append(arrow("discovery, then usage", "ok"));
+    const skipped = ib.summary.skipped_agents || [];
+    const thisAgent = skipped.includes(trace.agent)
+      ? [`${agentName(trace.agent)} publishes no mapping: check skipped (allow), KBAC alone decides`, ""]
+      : matched.includes(trace.agent)
+        ? [`${agentName(trace.agent)} declares a skill for it`, ""]
+        : [`${agentName(trace.agent)} declares no skill for it`, "muted"];
     lane.append(stage("ibac", "mapping preview · out", matched.length ? `${matched.length} of ${ib.summary.agents} cards declare it` : "no card declares it", [
-      ["discovery", matched.length ? `match: ${matched.join(", ")}` : "no match on any card"],
-      ["usage", ib.usage.length ? ib.usage.map((u) => `${u.skill} → ${u.reason_code}`).join(" · ") : "not run"],
+      ["discovery", `${matched.length ? `match: ${matched.join(", ")}` : "no match on any card"}${skipped.length ? ` · skipped: ${skipped.join(", ")}` : ""}`],
+      ["usage", ib.usage.length ? `as a tool call: ${ib.usage.map((u) => `${u.skill} → ${u.reason_code}`).join(" · ")}` : "not run"],
       ["requests", ib.summary.requests ? `${ib.summary.requests} AuthZEN request${ib.summary.requests === 1 ? "" : "s"}` : searches ? `none: ${searches} search match${searches === 1 ? "" : "es"}` : "none"],
-      ["this agent", matched.includes(trace.agent) ? `${agentName(trace.agent)} declares a skill for it` : `${agentName(trace.agent)} declares no skill for it`, matched.includes(trace.agent) ? "" : "muted"],
+      ["this agent", ...thisAgent],
     ], matched.length ? "ok" : "fail"));
     lane.append(arrow("what the gateway would check", matched.length ? "ok" : "fail"));
   } else {
@@ -830,6 +843,7 @@ function renderHandoff(trace) {
     outRows = [
       ["Authorization", recv.authorization ? "the caller's token, untouched" : "—"],
       ["X-IK-Token", recv.x_ik_token?.sub ? `${recv.x_ik_token.sub} ← ${actChain(recv.x_ik_token.act)}` : "—"],
+      ["intent in token", recv.x_ik_token?.sub ? intentRow(recv.x_ik_token.act) : "—", intentInToken(recv.x_ik_token?.act) ? "" : "muted"],
       ["A2A-Extensions", recv.a2a_extensions || "not sent"],
       ["agent reply", gw.reply_text ? gw.reply_text.slice(0, 160) + (gw.reply_text.length > 160 ? "…" : "") : "—"],
       ["skill", gw.skill || "—"],
@@ -966,6 +980,22 @@ function actChain(act) {
   return parts.join(" ← ") || "—";
 }
 
+// The Token Service writes the intent of a hop, when the exchange carries one, as act.intent.evaluations
+// of that hop. The released gateway does not send it yet, so the row says so until it does.
+function intentInToken(act) {
+  for (let a = act; a && typeof a === "object"; a = a.act) {
+    if (Array.isArray(a.intent?.evaluations)) return a.intent.evaluations;
+  }
+  return null;
+}
+
+function intentRow(act) {
+  const evs = intentInToken(act);
+  if (!evs) return "none: the evaluations stay out of the token";
+  const what = evs.map((e) => `${e.action?.name || "any"} ${e.resource?.type || ""}`.trim()).join(" · ");
+  return `${evs.length} evaluation${evs.length === 1 ? "" : "s"} in act.intent${what ? `: ${what}` : ""}`;
+}
+
 function tokenCard(title, kind, status, rows) {
   const card = el("div", `tok ${status}`);
   const head = el("div", "tok-head");
@@ -1010,6 +1040,7 @@ function renderChain(trace) {
         ["iss", d.iss],
         ["sub", d.sub],
         ["act", actChain(d.act)],
+        ["intent", intentRow(d.act)],
         ["aud", audList(d.aud)],
         ["ttl", ttl(d)],
         ["jti", shortId(d.jti)],
@@ -1371,7 +1402,8 @@ const REASON_TEXT = {
   intent_match_authzen_required: "matched - the mapping's ids resolved, these requests go to the platform",
   intent_match_search: "matched as a search - an id stays empty, so nothing is generated; the intent's own evaluation decides",
   intent_mismatch: "no mapping of this skill agrees with any evaluation on subject type, resource type and action",
-  missing_coaz_mapping: "the card publishes no x-coaz-mappings - no intent can ever match it",
+  missing_coaz_mapping: "the card publishes no x-coaz-mappings - no intent can ever match it (the gateway asks the engine about such a card only under the deny setting)",
+  ibac_skipped: "the card publishes no x-coaz-mappings and the setting is allow: the engine was not asked, KBAC alone decides",
   invalid_intent: "the intent itself is not valid",
   invalid_capability: "the card is not valid",
   incorrect_num_skills: "usage needs exactly one skill",
@@ -1394,7 +1426,8 @@ const skillMappings = (agentId, skillId) =>
 
 // One plain-English line per card: what made it match, or the nearest reason it did not.
 function verdictFor(d, evaluations) {
-  if (d.reason_code === "missing_coaz_mapping") return "publishes no mappings, so no intent can ever match it";
+  if (d.skipped) return "publishes no mappings: the check is skipped under the allow setting, KBAC alone decides for it";
+  if (d.reason_code === "missing_coaz_mapping") return "publishes no mappings, so no intent can ever match it (deny setting)";
   if (d.decision) {
     const ev = d.evaluations.find((e) => e.matched_skills.length);
     const e = evaluations[ev.index];
@@ -1545,14 +1578,18 @@ async function renderIbac(trace) {
     : me.verdict === "no intent"
       ? `The gateway of ${through} got no intent and answered the caller itself.`
       : `The gateway of ${through} refused the call (${me.verdict}).`;
-  $("#ibacLede").textContent = mine.decision
-    ? `${did} The console's preview of its card says it declares a skill for this intent (${mine.matched_skills.join(", ")}); this is the check the gateway will run against its own card once it reads the mappings. Usage then resolved the matched skill's ids.`
-    : `${did} The console's preview of its card says it declares no skill for this intent: a gateway reading its mappings would refuse here. Today's release forwards on admission and intent alone. Click a skill to see why nothing matched.`;
+  $("#ibacLede").textContent = mine.skipped
+    ? `${did} Its card publishes no mappings. Under the gateway setting "no mapping: allow", the default, the mapping check is skipped for it and KBAC alone decides, which is what the admission above did. Switch the setting to deny and send again to see the preview refuse it.`
+    : mine.decision
+      ? `${did} The console's preview of its card says it declares a skill for this intent (${mine.matched_skills.join(", ")}); this is the check the gateway will run against its own card once it reads the mappings. Below, what a tool call on the matched skill would then be checked against.`
+      : `${did} The console's preview of its card says it declares no skill for this intent: a gateway reading its mappings would refuse here. Today's release forwards on admission and intent alone. Click a skill to see why nothing matched.`;
+  const skipped = (ib.summary.skipped_agents || []).length;
   $("#ibacSummary").replaceChildren(
     stat(me.verdict, "this gateway did", me.verdict === "forwarded" ? "ok" : me.verdict === "no intent" ? "" : "fail"),
-    stat(mine.decision ? "declares" : "does not", "its card, in the preview", mine.decision ? "ok" : "fail"),
+    stat(mine.skipped ? "skipped" : mine.decision ? "declares" : "does not", mine.skipped ? "no mapping · allow" : "its card, in the preview", mine.decision ? "ok" : "fail"),
     stat(`${matched} / ${ib.summary.agents}`, "cards declare it (preview)", matched ? "ok" : "fail"),
   );
+  if (skipped) $("#ibacSummary").append(stat(String(skipped), "unmapped · pass (allow)", ""));
 
   $("#ibacPrimary").replaceChildren(fleetCard(mine, trace, evaluations, me));
   const board = $("#ibacBoard");
@@ -1570,18 +1607,18 @@ async function renderIbac(trace) {
   if (first) openUsage(first.agent, first.skill);
   else {
     state.ibacPick = null;
-    $("#ibacUsage").replaceChildren(el("div", "empty", "No skill matched: no usage ran. Click any skill above to run it anyway and read the reason code."));
+    $("#ibacUsage").replaceChildren(el("div", "empty", "No skill matched: nothing to preview as a tool call. Click any skill above to run usage on it anyway and read the reason code."));
   }
 }
 
 // One card of the board: the preview's verdict on its mappings, what its gateway did (or a slot for it), its skills.
 function fleetCard(d, trace, evaluations, answer) {
   const primary = answer !== null;
-  const card = el("article", `fa fa-${d.accent} ${d.decision ? "matched" : d.reason_code === "missing_coaz_mapping" ? "nomap" : "unmatched"}${primary ? " primary" : ""}`);
+  const card = el("article", `fa fa-${d.accent} ${d.skipped || d.reason_code === "missing_coaz_mapping" ? "nomap" : d.decision ? "matched" : "unmatched"}${primary ? " primary" : ""}`);
   const head = el("div", "fa-head");
   const title = el("b", "", d.capability);
   title.append(el("span", "mono muted", ` · iag-${d.agent}`));
-  head.append(title, el("span", `pill ${d.decision ? "yes" : "no"}`, d.decision ? "DECLARES IT" : "NOT DECLARED"));
+  head.append(title, el("span", `pill ${d.skipped ? "skip" : d.decision ? "yes" : "no"}`, d.skipped ? "NO MAPPING · PASSES" : d.decision ? "DECLARES IT" : "NOT DECLARED"));
   card.append(head);
   if (primary) card.append(gwBlock(answer, true));
   else {
@@ -1738,7 +1775,7 @@ async function openUsage(agent, skill) {
             agent,
             skill,
             intent: trace.a2a.payload,
-            token_claims: trace.tokens.exchange?.claims || {},
+            token_claims: trace.tokens.delegated || {},
             decide: true,
           }),
         });
@@ -1761,10 +1798,11 @@ function renderUsage(u, params, whatIf) {
   wrap.replaceChildren();
   const head = el("div", "usage-head");
   const title = el("h3", "");
-  title.append(el("span", "muted", "usage · "), document.createTextNode(`${u.capability} / `), el("span", "mono", u.skill));
+  title.append(el("span", "muted", "usage, as a tool call · "), document.createTextNode(`${u.capability} / `), el("span", "mono", u.skill));
   head.append(title, el("span", `pill ${u.decision ? "yes" : "no"}`, u.decision ? "AUTHORIZED" : "NOT_AUTHORIZED"), el("span", "mono reason", u.reason_code));
   if (whatIf) head.append(el("span", "tag", "what if: discovery did not pick this skill"));
   wrap.append(head, el("p", "usage-why", REASON_TEXT[u.reason_code] || u.reason || ""));
+  wrap.append(el("p", "usage-note", "An A2A message has no usage step: it names no capability and carries no arguments. This is what a tool call on this skill would be checked against, with the same intent; the call's arguments are stood in by the parameters the Intent Agent extracted, the token claims are the delegated token's."));
   wrap.append(mappingComparison(u, params));
 
   if (u.requests.length) {
@@ -1781,7 +1819,7 @@ function renderUsage(u, params, whatIf) {
       );
       const body = el("div", "req-body");
       body.append(el("div", "req-n", `generated request ${String(i + 1).padStart(2, "0")}`), triple);
-      body.append(el("div", "req-note mono", `context.input_params = params (${Object.keys(r.context?.input_params || {}).join(", ")})`));
+      body.append(el("div", "req-note mono", `context.input_params = the params map (${Object.keys(r.context?.input_params || {}).join(", ")})`));
       // The engine takes the subject from the mapping ($token.sub), not from the evaluation: an
       // evaluation the Intent Agent emitted as a second subject comes back bound to the caller.
       const named = (state.trace?.a2a?.payload?.evaluations || []).find(
@@ -1795,21 +1833,20 @@ function renderUsage(u, params, whatIf) {
   }
 
   const p = el("div", "params");
-  p.append(el("h4", "", "what the $references resolved from"));
+  p.append(el("h4", "", "what the $references resolved from: request and token, nothing from the intent"));
   const rows = [
     ["$token.sub", params.token?.sub],
     ["$token.aud", audList(params.token?.aud)],
     ["$token.act.sub", params.token?.act?.sub],
-    ["$subject", `${params.subject?.type} · ${params.subject?.id}`],
   ];
   let anyNamed = false;
   (params.evaluations || []).forEach((e, i) => {
     Object.entries(e.parameters || {}).forEach(([k, v]) => {
       anyNamed = true;
-      rows.push([`$parameters.${k}`, `${JSON.stringify(v)}  (evaluation ${String(i + 1).padStart(2, "0")})`]);
+      rows.push([`$request.arguments.${k}`, `${JSON.stringify(v)}  (stand-in: parameter of evaluation ${String(i + 1).padStart(2, "0")})`]);
     });
   });
-  if (!anyNamed) rows.push(["$parameters.*", "none in this intent"]);
+  if (!anyNamed) rows.push(["$request.arguments.*", "none: the intent named no parameter to stand in for an argument"]);
   p.append(kv(rows));
   wrap.append(p);
 }
@@ -1836,8 +1873,8 @@ function entityChips(list, params, hitType) {
 }
 
 // The evaluation's three fields drawn over each mapping of the skill, with the ids resolved as usage saw them.
-// The params map of one evaluation, as the engine saw it: shared token and subject, that evaluation's parameters.
-const paramsFor = (params, i) => ({ ...params, parameters: params?.evaluations?.[i]?.parameters || {} });
+// The params map of one evaluation, as the engine saw it: that evaluation's parameters as the call's arguments, the token.
+const paramsFor = (params, i) => ({ request: { arguments: params?.evaluations?.[i]?.parameters || {} }, token: params?.token || {} });
 
 function mappingComparison(u, params) {
   const box = el("div", "cmp");

@@ -1,5 +1,5 @@
 {
-  "_comment": "The fleet: the agent cards the IBAC engine matches every intent against. Each is an A2A agent card whose skills carry x-coaz-mappings in the vocabulary of the instant-stack data/intent project: subject types User and Customer, the KBAC actions of its 24 policies, the resource types they grant. Subject ids are the reference $token.sub, resolved from the delegation token's sub (the persona); resource ids are literal where a skill is bound to one resource, a $parameters.<name> reference where the intent carries that parameter, and empty otherwise, which matches as a search. None of these agents runs: the cards are what a gateway in front of each would read. Three policy actions are left unmapped on purpose (User CAN_DISCLOSE Document, User AFFECTED Account, Customer VIEW_PRODUCT_DOCUMENT), and the weather agent publishes no mappings at all.",
+  "_comment": "The fleet: the agent cards the IBAC engine matches every intent against. Each is an A2A agent card whose skills carry x-coaz-mappings in the vocabulary of the instant-stack data/intent-ibac project: the subject type Person, the KBAC actions of its policies, the resource types they grant. Subject ids are the reference $token.sub, resolved from the delegated token's sub (the person); resource ids are literal where a skill is bound to one resource, a $request.arguments.<name> reference where a call would carry that argument (the preview stands it in with the parameter the Intent Agent extracted), and empty otherwise, which matches as a search. Each agent runs as a stub behind its own gateway: the cards are what the gateway in front of each serves. Three policy actions are left unmapped on purpose (Person CAN_DISCLOSE Document, Person AFFECTED Account, Person VIEW_PRODUCT_DOCUMENT), and the weather agent publishes no mappings at all, so the gateway's setting for a capability without a mapping (allow by default, or deny) decides for it.",
   "agents": [
     {
       "id": "trading-desk",
@@ -379,7 +379,7 @@
                 "resource": [
                   {
                     "type": "AccountTier",
-                    "id": "$parameters.tier"
+                    "id": "$request.arguments.tier"
                   }
                 ],
                 "action": [
@@ -544,7 +544,7 @@
                 "resource": [
                   {
                     "type": "Department",
-                    "id": "$parameters.department"
+                    "id": "$request.arguments.department"
                   }
                 ],
                 "action": [

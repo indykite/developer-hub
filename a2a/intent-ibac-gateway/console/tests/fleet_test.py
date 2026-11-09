@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 from app import ibac
-from app.fleet import engine_params, load_fleet, params_for
+from app.fleet import REASON_IBAC_SKIPPED, UNMAPPED_DENY, engine_params, load_fleet, params_for
 
 FLEET = Path(__file__).resolve().parent.parent / "data" / "fleet.json"
 # The dataset the fleet speaks the vocabulary of, when the repository checkout has it.
@@ -76,14 +76,16 @@ def test_subjects_reference_the_token_and_resources_are_literal_empty_or_paramet
                     assert (
                         resource.id == ""
                         or not resource.id.startswith("$")
-                        or re.match(r"^\$parameters\.\w+$", resource.id)
+                        or re.match(r"^\$request\.arguments\.\w+$", resource.id)
                     )
 
 
-def run(fleet, persona_type, persona_id, *evaluations):
-    """Run."""
-    params = engine_params(persona_type, persona_id, {"sub": persona_id, "aud": "intent_agent"}, list(evaluations))
-    return fleet.run(intent(*evaluations), params, ibac.AuditOptions(subject=persona_id, actors_chain=("console",)))
+def run(fleet, persona_type, persona_id, *evaluations, unmapped="allow"):
+    """Run the preview as /api/prompt does, under the given setting for a card without mappings."""
+    assert persona_type == "Person"
+    params = engine_params(persona_id, {"sub": persona_id, "aud": "intent_agent"}, list(evaluations))
+    options = ibac.AuditOptions(subject=persona_id, actors_chain=("console",))
+    return fleet.run(intent(*evaluations), params, options, unmapped=unmapped)
 
 
 def test_a_quote_prompt_routes_to_the_trading_desk_and_generates_a_concrete_request():
@@ -93,25 +95,44 @@ def test_a_quote_prompt_routes_to_the_trading_desk_and_generates_a_concrete_requ
     by_agent = {d["agent"]: d for d in result["discovery"]}
     assert by_agent["trading-desk"]["decision"] is True
     assert by_agent["trading-desk"]["matched_skills"] == ["quote-lookup"]
-    assert by_agent["weather"]["reason_code"] == ibac.REASON_MISSING_MAPPING
+    assert by_agent["weather"]["skipped"] is True
+    assert by_agent["weather"]["reason_code"] == REASON_IBAC_SKIPPED
+    assert by_agent["weather"]["record"] is None
     assert all(
         d["reason_code"] == ibac.REASON_INTENT_MISMATCH
         for a, d in by_agent.items()
         if a not in ("trading-desk", "weather")
     )
     assert result["summary"]["matched_agents"] == ["trading-desk"]
+    assert result["summary"]["skipped_agents"] == ["weather"]
     assert len(result["usage"]) == 1
     usage = result["usage"][0]
     assert usage["reason_code"] == ibac.REASON_INTENT_MATCH_AUTHZEN_REQUIRED
     assert usage["requests"][0]["subject"] == {"type": "Person", "id": "roy"}
     assert usage["requests"][0]["resource"] == {"type": "Quote", "id": "stock_quote"}
     assert usage["requests"][0]["action"] == {"name": "CAN_RETRIEVE"}
-    # Every engine call left a record: one discovery per agent, one usage per matched skill, in call order.
+    # Every engine call left a record: one discovery per card with mappings (the unmapped one was not
+    # asked), one usage per matched skill, in call order.
     actions = [r["action"] for r in result["records"]]
-    assert actions.count("IBAC_DISCOVERY") == len(fleet.agents)
+    assert actions.count("IBAC_DISCOVERY") == len(fleet.agents) - 1
     assert actions.count("IBAC_USAGE") == 1
-    agents = [d["agent"] for d in result["discovery"]]
+    agents = [d["agent"] for d in result["discovery"] if not d["skipped"]]
     assert actions.index("IBAC_USAGE") == agents.index("trading-desk") + 1
+
+
+def test_under_deny_a_card_without_mappings_is_asked_and_refused():
+    """The deny setting hands the unmapped card to the engine, which answers missing_coaz_mapping with a record."""
+    fleet = load_fleet(FLEET)
+    quote = evaluation(("Person", "roy"), "CAN_RETRIEVE", ("Quote", "stock_quote"))
+    result = run(fleet, "Person", "roy", quote, unmapped=UNMAPPED_DENY)
+    weather = next(d for d in result["discovery"] if d["agent"] == "weather")
+    assert weather["decision"] is False
+    assert weather["skipped"] is False
+    assert weather["reason_code"] == ibac.REASON_MISSING_MAPPING
+    assert weather["record"]["action"] == "IBAC_DISCOVERY"
+    assert result["unmapped"] == UNMAPPED_DENY
+    assert result["summary"]["skipped_agents"] == []
+    assert sum(1 for r in result["records"] if r["action"] == "IBAC_DISCOVERY") == len(fleet.agents)
 
 
 def test_a_parameter_reference_resolves_from_the_intent():
@@ -159,7 +180,6 @@ def test_an_unmapped_action_matches_nobody():
 def test_engine_params_scope_the_parameters_to_their_evaluation_without_the_markers():
     """Each evaluation keeps its own parameters; the agent's markers and unknown token claims are dropped."""
     params = engine_params(
-        "Person",
         "rebecca",
         {"sub": "rebecca", "act": {"sub": "console"}, "nonce": "never-forwarded"},
         [
@@ -168,13 +188,14 @@ def test_engine_params_scope_the_parameters_to_their_evaluation_without_the_mark
         ],
     )
     assert params["token"] == {"sub": "rebecca", "act": {"sub": "console"}}
-    assert params["subject"] == {"type": "Person", "id": "rebecca"}
+    assert "subject" not in params  # the engine gets request and token only, nothing from the intent's subject
     assert [e["parameters"] for e in params["evaluations"]] == [
         {"tier": "tier_3"},
         {"tier": "tier_1", "attribute": "price"},
     ]
-    assert params_for(params, 1)["parameters"] == {"tier": "tier_1", "attribute": "price"}
-    assert params_for(params, 7)["parameters"] == {}
+    arguments = {"tier": "tier_1", "attribute": "price"}
+    assert params_for(params, 1) == {"request": {"arguments": arguments}, "token": params["token"]}
+    assert params_for(params, 7)["request"]["arguments"] == {}
 
 
 def test_two_evaluations_with_the_same_parameter_name_generate_two_distinct_requests():
@@ -191,7 +212,7 @@ def test_two_evaluations_with_the_same_parameter_name_generate_two_distinct_requ
     usage = result["usage"][0]
     assert usage["reason_code"] == ibac.REASON_INTENT_MATCH_AUTHZEN_REQUIRED
     assert [r["resource"]["id"] for r in usage["requests"]] == ["tier_1", "tier_3"]
-    assert [r["context"]["input_params"]["parameters"] for r in usage["requests"]] == [
+    assert [r["context"]["input_params"]["request"]["arguments"] for r in usage["requests"]] == [
         {"tier": "tier_1"},
         {"tier": "tier_3"},
     ]
@@ -226,7 +247,6 @@ def test_a_fleet_with_a_bad_mapping_is_refused(tmp_path):
 def test_engine_params_ignore_a_malformed_context():
     """The what-if endpoint hands the engine a client-supplied intent: odd shapes are skipped, never raised on."""
     params = engine_params(
-        "Person",
         "roy",
         {"sub": "roy"},
         [
@@ -241,13 +261,13 @@ def test_engine_params_ignore_a_malformed_context():
 
 
 def test_an_oversized_intent_is_refused_whole_at_usage():
-    """Sixty-five evaluations are invalid for the engine; splitting per evaluation must not slip past that."""
+    """An intent over the cap is invalid for the engine; splitting per evaluation must not slip past that."""
     fleet = load_fleet(FLEET)
     too_many = [evaluation(("Person", "roy"), "CAN_RETRIEVE", ("Quote", "stock_quote"))] * (ibac.MAX_EVALUATIONS + 1)
     result = run(fleet, "Person", "roy", *too_many)
     assert result["usage"] == []
-    assert all(d["reason_code"] == ibac.REASON_INVALID_INTENT for d in result["discovery"])
-    params = engine_params("Person", "roy", {"sub": "roy"}, too_many)
+    assert all(d["reason_code"] == ibac.REASON_INVALID_INTENT for d in result["discovery"] if not d["skipped"])
+    params = engine_params("roy", {"sub": "roy"}, too_many)
     usage = fleet.usage("trading-desk", "quote-lookup", intent(*too_many), params, ibac.AuditOptions())
     assert usage["decision"] is False
     assert usage["reason_code"] == ibac.REASON_INVALID_INTENT
