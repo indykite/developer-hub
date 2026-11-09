@@ -283,6 +283,8 @@ class PromptRequest(BaseModel):
     decide: bool = True
     # The fleet agent whose gateway the prompt goes through; the first agent of the fleet when empty.
     agent: str = ""
+    # The gateway's setting for a capability without a mapping, as the preview applies it.
+    unmapped: Literal["allow", "deny"] = "allow"
 
 
 def _person(ctx: State, session: Session) -> Persona:
@@ -387,7 +389,7 @@ async def send_prompt(request: Request, body: PromptRequest) -> dict[str, Any]:
     # 5. The mapping preview: the intent against every card of the fleet (the console's own check).
     evaluations = (payload or {}).get("evaluations")
     if evaluations is not None:
-        trace["ibac"] = await _ibac(ctx, persona, tokens, payload or {}, with_decisions=body.decide)
+        trace["ibac"] = await _ibac(ctx, persona, tokens, payload or {}, body)
 
     # 6. The decision step: what the platform answers for the intent's own evaluations today.
     if body.decide and evaluations:
@@ -620,17 +622,16 @@ async def _ibac(
     persona: Persona,
     tokens: dict[str, Any],
     payload: dict[str, Any],
-    *,
-    with_decisions: bool,
+    body: PromptRequest,
 ) -> dict[str, Any]:
-    """Run discovery and usage over the fleet for one intent; decide the generated requests; audit each call."""
+    """Run the preview over the fleet for one intent under the request's settings; decide and audit as asked."""
     intent = ibac.Intent.from_dict(payload)
     claims = tokens.get("delegated") or tokens.get("subject") or {}
-    params = engine_params(persona.type, persona.id, claims, payload.get("evaluations") or [])
-    outcome = ctx.fleet.run(intent, params, _audit_options(ctx, intent, persona))
+    params = engine_params(persona.id, claims, payload.get("evaluations") or [])
+    outcome = ctx.fleet.run(intent, params, _audit_options(ctx, intent, persona), unmapped=body.unmapped)
     for record in outcome["records"]:
         await ctx.audit.publish(record)
-    if with_decisions:
+    if body.decide:
         for usage in outcome["usage"]:
             if usage["requests"]:
                 usage["plans"] = await _decide_generated(ctx, usage["requests"])
@@ -642,7 +643,7 @@ async def _decide_generated(ctx: State, requests: list[dict[str, Any]]) -> list[
 
     The engine puts the params map of its call in `context.input_params`; the platform reads scalar
     `input_params` a policy declares as `$name`, so each request goes through `plan_decisions` with
-    the parameters it was generated from as its context, exactly like the intent's own evaluations.
+    the arguments it was generated from as its context, exactly like the intent's own evaluations.
     """
     # One plan per request, in the order of the requests: the UI pairs them by position.
     plans: list[dict[str, Any] | None] = [None] * len(requests)
@@ -650,7 +651,8 @@ async def _decide_generated(ctx: State, requests: list[dict[str, Any]]) -> list[
     shaped: list[dict[str, Any]] = []
     for position, req in enumerate(requests):
         one = {k: v for k, v in req.items() if k in ("subject", "action", "resource")}
-        generated_from = ((req.get("context") or {}).get("input_params") or {}).get("parameters") or {}
+        input_params = (req.get("context") or {}).get("input_params") or {}
+        generated_from = (input_params.get("request") or {}).get("arguments") or {}
         one["context"] = {"parameters": dict(generated_from)}
         shaped.append(one)
         by_type.setdefault((req.get("subject") or {}).get("type", ""), []).append(position)
@@ -689,7 +691,7 @@ async def ibac_usage(request: Request, body: UsageRequest) -> dict[str, Any]:
     if agent is None or body.skill not in [s.id for s in ctx.fleet.capabilities[agent.id].skills]:
         raise HTTPException(status_code=404, detail="unknown agent or skill")
     intent = ibac.Intent.from_dict(body.intent)
-    params = engine_params(persona.type, persona.id, body.token_claims, body.intent.get("evaluations") or [])
+    params = engine_params(persona.id, body.token_claims, body.intent.get("evaluations") or [])
     usage = ctx.fleet.usage(agent.id, body.skill, intent, params, _audit_options(ctx, intent, persona))
     if body.decide and usage["requests"]:
         usage["plans"] = await _decide_generated(ctx, usage["requests"])

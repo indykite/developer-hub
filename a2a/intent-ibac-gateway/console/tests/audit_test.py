@@ -80,3 +80,9 @@ def test_a_gateway_record_is_told_from_a_token_service_one_by_its_service_name()
     gateway = {**ITS_RECORD, "service": "iag-billing", "action": "INTENT", "decision": "INTENT_FOUND"}
     assert classify(gateway) == "agent-gateway"
     assert classify({**ITS_RECORD, "service": "token-service"}) == "token-service"
+
+
+def test_a_gateway_owns_its_ibac_records_too():
+    """An IBAC_* record written by a gateway belongs to that gateway, not to the console's preview."""
+    assert classify({**IBAC_RECORD, "service": "iag-billing"}) == "agent-gateway"
+    assert classify({**IBAC_RECORD, "service": "intent-ibac-console"}) == "ibac-engine"

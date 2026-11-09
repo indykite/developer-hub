@@ -13,9 +13,12 @@ The check has two steps:
   resource type and action only. One skill matching one evaluation is enough; the
   answer lists the skills matched per evaluation.
 - **usage** - one skill against the intent, with the ids resolved: a literal stays,
-  a `$reference` is looked up in the request's parameters, an empty id means "any"
-  and makes the match a search. One AuthZEN request per resolved (subject,
-  resource) pair comes out, for the platform to decide.
+  a `$reference` is looked up in the params map the gateway builds from the call
+  (`$request.*`, the parameters of the request; `$token.*`, the claims of the
+  delegated token - nothing from the intent), an empty id means "any" and makes
+  the match a search. One AuthZEN request per resolved (subject, resource) pair
+  comes out, for the platform to decide. Usage is the step of an MCP invocation;
+  an A2A message has none.
 
 This is the console's preview of that check, written for the demo. Nothing here
 calls the network; `evaluate_discovery` and `evaluate_usage` are pure and tested.
@@ -52,7 +55,9 @@ DECISION_AUTHORIZED = "AUTHORIZED"
 DECISION_NOT_AUTHORIZED = "NOT_AUTHORIZED"
 
 MAPPINGS_KEY = "x-coaz-mappings"
-MAX_EVALUATIONS = 64
+# The cap on the evaluations of one intent: the gateway refuses a larger intent before the second
+# exchange and asks the caller to split the prompt; the Token Service refuses the exchange of one.
+MAX_EVALUATIONS = 10
 _MAX_LIST = 64
 # A node type is a Cypher label: a letter or underscore, then word characters, 2 to 64 in all.
 _NODE_TYPE_RE = re.compile(r"^[a-zA-Z_]\w+$")
@@ -223,9 +228,9 @@ class Intent:
     evaluations: list[Evaluation] = field(default_factory=list)
 
     def validate(self) -> None:
-        """Bound the evaluations to 64 and require each to be valid."""
+        """Bound the evaluations to the cap and require each to be valid."""
         if len(self.evaluations) > MAX_EVALUATIONS:
-            _fail_too_many("evaluations", "evaluations")
+            _fail("evaluations", f"more than {MAX_EVALUATIONS} evaluations: the prompt asks for too much at once")
         for index, evaluation in enumerate(self.evaluations):
             evaluation.validate(f"evaluations[{index}]")
 

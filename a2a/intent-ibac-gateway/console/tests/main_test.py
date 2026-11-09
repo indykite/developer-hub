@@ -42,7 +42,7 @@ def request(subject_type, subject_id, resource_id, tier):
         "subject": {"type": subject_type, "id": subject_id},
         "action": {"name": "READ"},
         "resource": {"type": "Document", "id": resource_id},
-        "context": {"input_params": {"token": {"sub": subject_id}, "parameters": {"tier": tier}}},
+        "context": {"input_params": {"request": {"arguments": {"tier": tier}}, "token": {"sub": subject_id}}},
     }
 
 
