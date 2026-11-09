@@ -10,7 +10,6 @@ dependency-tree: true
 list-all-pkgs: true
 format: "table"
 # output: result.json
-# ignorefile: ".trivyignore.yaml"
 
 severity:
   - UNKNOWN
@@ -18,13 +17,11 @@ severity:
   - MEDIUM
   - HIGH
   - CRITICAL
-
 # [EXPERIMENTAL] tables that will be displayed in 'table' format, default '[summary,detailed]'
 # explicit setting breaks CI's 'github' format
 # table-mode:
 #   - summary
 #   - detailed
-
 scan:
   detection-priority: "precise"
   disable-telemetry: true
@@ -36,10 +33,8 @@ scan:
     - license # while enabled but run via the separate 'trivy-license' action
   skip-dirs: ["**/.terraform/**", "**/.terragrunt-cache/**", "openapi/**"]
   # skip-files: []
-
 vulnerability:
   ignore-unfixed: false
-
 misconfiguration:
   include-non-failures: false
   scanners:
@@ -51,14 +46,12 @@ misconfiguration:
     - terraform
     - terraformplan-json
     - terraformplan-snapshot
-
   terraform:
     exclude-downloaded-modules: true
-
 pkg:
   include-dev-deps: false
-
 license:
   confidenceLevel: 0.9
   full: true
   ignored: []
+ignorefile: .trivyignore.yaml
