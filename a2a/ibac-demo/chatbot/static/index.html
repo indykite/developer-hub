@@ -1668,9 +1668,19 @@
         // Intent records (the Intent Agent's own, and the gateway's INTENT
         // records) are one per prompt, and the same prompt may legitimately
         // repeat with the same evaluations or reason.
+        // A repeated identical hop (same service, question, answer, people,
+        // chain and sets) shows once; a capability decision for another
+        // workflow, person or kind is its own card even when the reason text
+        // is the same ("the lists of the server were filtered ...").
         const messageKey = decision.startsWith('intent_')
             ? `${event.service}:${event.request_id || event.timestamp}:${event.prompt || event.reason}`
-            : `${event.service}:${event.reason}`;
+            : [
+                event.service, event.action, decision, event.subject, event.actor,
+                Array.isArray(event.actors_chain) ? event.actors_chain.join('>') : '',
+                event.reason,
+                JSON.stringify(event.permitted_set || null),
+                JSON.stringify(event.capabilities || null),
+            ].join('|');
         if (seenMessages.has(messageKey)) {
             return;
         }

@@ -581,6 +581,12 @@ services:
       JARVIS_PROTECTED_AGENT_BASE_URL: http://${DRIVE_MCP_HOST:-drive-mcp}:8000/mcp
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${DRIVE_MCP_IDP_CLIENT_ID:-}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${DRIVE_MCP_IDP_CLIENT_SECRET:-}
+      # This gateway only: the Drive server serves every file as an MCP
+      # resource (gdrive:///<fileId>), ids that cannot be modelled in advance,
+      # so with the checks on a resources/read would be refused. Admission
+      # still decides who reaches the server. true = only the modelled
+      # `search` tool passes and file reads are refused.
+      JARVIS_AUTHZEN_CAPABILITIES_ENABLED: ${IAG_DRIVE_CAPABILITY_CHECKS:-false}
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]

@@ -53,7 +53,7 @@ this script:
 | --- | --- | --- |
 | Token Service mode | 2.89 | The TOKEN card of every hop (two in a row in Act 7); the **chain** line under every card; Bruno `chain-guard` |
 | One admission question per hop | 2.93 | Every `admission` card; Act 4: deny, grant, allow with no gateway touched |
-| Capability checks | 2.0.3 | Stagecraft, *the tools beat*: the `discovery` cards of `mcp-iag` with their permitted set; Act 3 (two tools) against Act 2 (sixteen) |
+| Capability checks | 2.0.3 | Stagecraft, *the tools beat*: the `discovery` cards of `mcp-iag` with their permitted set; Act 3 (two tools) against Act 2 (sixteen). Off on `drive-mcp-iag`: Drive files are dynamic resources, admission alone decides there |
 | Audit records name their question | 2.0.3 | The small tag on every card: `admission`, `discovery`, `invocation`, `refused early` |
 | The subject comes from the graph | 2.82 | "who am I" in every act; the subject on the cards is the Auth0 `sub` |
 | Tokens reused | 2.91 | Stagecraft, *the token-reuse beat* |

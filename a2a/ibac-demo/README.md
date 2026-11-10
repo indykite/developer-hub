@@ -622,8 +622,12 @@ its queries and the AuthZEN tools on `wf1`, and the weather agent only
 `ciq_execute` and `get-hq-weather` on `wf2`); a `tools/call` outside it is
 refused with `403` and JSON-RPC `-31403` before the server is called. The
 audit terminal shows each as a `discovery` or `invocation` card with the
-permitted set. The Drive gateway permits `search`, the ERP gateway
-`list_invoices` and `get_invoice`.
+permitted set. The ERP gateway permits `list_invoices` and `get_invoice`.
+The Drive gateway runs with the checks **off** (`IAG_DRIVE_CAPABILITY_CHECKS`):
+the Drive server serves every file as an MCP resource (`gdrive:///<fileId>`),
+ids that cannot be modelled in advance, so a file read would be refused;
+admission still decides who reaches Drive, and the dataset's `search` edges
+apply the moment the switch is turned on.
 
 ### Proxying a non-IndyKite MCP server: Google Drive (profile `drive`)
 
