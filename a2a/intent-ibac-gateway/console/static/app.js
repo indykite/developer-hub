@@ -1676,7 +1676,7 @@ function traceAnswer(trace) {
   return {
     agent: trace.agent, verdict, kind: gw.kind, http_status: gw.http_status, latency_ms: gw.latency_ms, skill: gw.skill,
     error_text: failure?.reason || gw.error_text || gw.transport_error || "",
-    admission: adm ? { decision: adm.decision, reason: adm.reason } : null,
+    admission: adm ? { decision: adm.decision, reason: adm.reason, cached: Boolean(adm.cached?.admission) } : null,
     intent: intent ? { decision: intent.decision, duration_ms: intent.durationMs } : null,
     chain,
   };

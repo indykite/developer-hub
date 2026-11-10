@@ -1371,7 +1371,12 @@
         // comes from the gateway's entry in EXPLAIN_WORKFLOW_MAP, else from
         // the last (-console) workflow of its grant bundle.
         const grantBundle = (GRANT_MAP[event.service] || []);
-        if (EXPLAIN_ENABLED && (decision === 'authorized' || decision === 'not_authorized')) {
+        // The explanation and the grant are about CAN_TRIGGER on a workflow,
+        // i.e. about admission. A capability record (DISCOVERY, INVOCATION)
+        // answers another question - what the caller may use at the agent -
+        // and a record refused early (noop) answers none.
+        const isAdmission = !['DISCOVERY', 'INVOCATION', 'INTENT', 'NOOP'].includes(question);
+        if (EXPLAIN_ENABLED && isAdmission && (decision === 'authorized' || decision === 'not_authorized')) {
             const wf = EXPLAIN_WF_MAP[event.service]
                 || grantBundle[grantBundle.length - 1] || '';
             if (wf && event.subject) {
@@ -1390,7 +1395,7 @@
         // CAN_TRIGGER grant to a viewer who can grant that service. The
         // backend re-checks WHO clicks (AuthZEN self-check).
         const ownCard = !!event.subject && event.subject === currentSubject;
-        if (isLoggedIn && decision === 'not_authorized' && ownCard && grantBundle.length) {
+        if (isLoggedIn && isAdmission && decision === 'not_authorized' && ownCard && grantBundle.length) {
             const ask = document.createElement('button');
             ask.type = 'button';
             ask.className = 'audit-grant';
@@ -1417,7 +1422,7 @@
             flow.appendChild(ask);
             card.appendChild(status);
             card.classList.add('grantable');
-        } else if (GRANT_ENABLED && isLoggedIn && decision === 'not_authorized'
+        } else if (GRANT_ENABLED && isLoggedIn && isAdmission && decision === 'not_authorized'
                 && grantBundle.length && event.subject && !ownCard && canGrant.includes(event.service)) {
             const grant = document.createElement('button');
             grant.type = 'button';
@@ -1574,11 +1579,12 @@
         }
 
         // One card per distinct decision: a gateway repeats the same record
-        // for every request of a conversation. The question, the chain and the
-        // capabilities a record is about tell records with one reason apart.
-        const messageKey = [event.service, event.action || '', event.reason,
-            (event.actors_chain || []).join('>'),
-            JSON.stringify(event.capabilities || event.permitted_set || '')].join(':');
+        // for every request of a conversation. The caller, the decision, the
+        // question, the chain and the capabilities a record is about tell
+        // records with one reason apart, also between two users.
+        const messageKey = JSON.stringify([event.service, event.subject || '', event.actor || '', decision,
+            event.action || '', event.reason, event.actors_chain || [],
+            event.capabilities || {}, event.permitted_set || {}]);
         if (seenMessages.has(messageKey)) {
             return;
         }
