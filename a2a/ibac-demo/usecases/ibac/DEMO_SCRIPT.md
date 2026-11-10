@@ -43,16 +43,18 @@ Support, each with action cards that send the prompts below (see
 things: customers also get a **Family** group, staff get the Trading desk
 and the Support inbox.
 
-## The gateway on stage (release 2.99)
+## The gateway on stage (release 2.0.3)
 
-Every agent sits behind the Agent Gateway release 2.99 (loaded locally, see
-the README). What a gateway does on each hop, and where the audience sees
-it in this script:
+Every agent sits behind the published Agent Gateway release 2.0.3 (see the
+README). What a gateway does on each hop, and where the audience sees it in
+this script:
 
 | Gateway behaviour | Since | Where to see it |
 | --- | --- | --- |
 | Token Service mode | 2.89 | The TOKEN card of every hop (two in a row in Act 7); the **chain** line under every card; Bruno `chain-guard` |
-| One admission question per hop | 2.93 | Every AUTHORIZED / NOT AUTHORIZED card; Act 4: deny, grant, allow with no gateway touched |
+| One admission question per hop | 2.93 | Every `admission` card; Act 4: deny, grant, allow with no gateway touched |
+| Capability checks | 2.0.3 | Stagecraft, *the tools beat*: the `discovery` cards of `mcp-iag` with their permitted set; Act 3 (two tools) against Act 2 (sixteen) |
+| Audit records name their question | 2.0.3 | The small tag on every card: `admission`, `discovery`, `invocation`, `refused early` |
 | The subject comes from the graph | 2.82 | "who am I" in every act; the subject on the cards is the Auth0 `sub` |
 | Tokens reused | 2.91 | Stagecraft, *the token-reuse beat* |
 | The agent card at the gateway | 2.87 | Stagecraft, *the card beat* |
@@ -72,6 +74,22 @@ What each line means:
   agent over *this* chain? The gateway asks AuthZEN once; the dataset's
   `person-can-reach-agent` policy compares `$ik_token.act_chain` with a
   workflow path in the graph. The gateway keeps no workflow list.
+- **Capability checks**: once admitted, a caller used to see and use
+  everything the MCP server exposed. Now the gateway asks the platform which
+  tools (and resources, prompts) this person may `CAN_USE` over this chain,
+  filters `tools/list` to that set and refuses a `tools/call` outside it with
+  `403` and JSON-RPC `-31403`, before the server is called. The set comes
+  from the graph: `Agent -HAS {workflow_name}-> Tool` edges and the
+  `person-can-use-*` policies, so the same MCP server shows different tools
+  to different workflows. In front of an A2A agent the gateway filters the
+  skills of the extended card; a message names no skill, so that part is
+  discovery only (the next hop's capability check bounds what a hidden skill
+  can reach).
+- **Audit records name their question**: `action` is `ADMISSION` (may the
+  subject reach the agent over this chain), `DISCOVERY` (what may the caller
+  see), `INVOCATION` (may the caller use what it named), `INTENT` or `noop`
+  (refused before any question), with the chain, the permitted set and
+  whether the answer was cached. One record per decision, never two.
 - **The subject comes from the graph**: whoami resolves the token through the
   Token Introspect to a `Person`; no subject type is configured on a gateway.
 - **Tokens reused**: a gateway keeps its client-credentials token until
@@ -100,7 +118,7 @@ What each line means:
   `tokenID` it concerns.
 - **No clock on the answer**: a long agent answer is never cut by the gateway.
 
-Not in 2.99: the IBAC discovery engine (`IBAC_DISCOVERY` records, the
+Not in 2.0.3: the IBAC discovery engine (`IBAC_DISCOVERY` records, the
 `x-coaz-mappings` of the agent cards matched against the intent) is in the
 gateway's source but not linked into the binary. The console's "IBAC
 discovery preview" line shows what it would decide.
@@ -114,9 +132,13 @@ terminal that is the gateway's work in that act.
    `AUTH0_ISSUER`, the eight `AUTH0_SUB_<AGENT>` values and
    `TOKEN_SERVICE_PUBLIC_JWK` set in instant-stack's `.env` before
    provisioning. It holds the people, departments, customers, accounts,
-   invoices, documents, decisions, agent workflows, the 34 Person policies
-   (incl. `person-can-reach-agent`, the gateways' admission check over the
-   delegation chain) and the 13 CIQ queries (`get-self`, `get-stock-quote`,
+   invoices, documents, decisions, agent workflows, the capabilities of the
+   agents (`Tool`, `McpResource` and `Skill` nodes on `HAS {workflow_name}`
+   edges), the 40 Person policies (incl. `person-can-reach-agent`, the
+   gateways' admission check over the delegation chain, the four
+   `person-can-use-*` capability policies, and `person-can-view-profile` /
+   `person-can-read-weather`, which give "who am I" and the weather prompts
+   a vocabulary for the Intent Agent) and the 13 CIQ queries (`get-self`, `get-stock-quote`,
    `get-stock-trade-threshold`, `get-internal-documents`,
    `get-customer-facing-documents`, `get-regulatory-agreements`,
    `get-decisions`, `get-hq-weather`, `store-decision`, the two explain
@@ -334,16 +356,22 @@ never enters.
   set, **why?** on any card asks the live graph for the path (staff leg
   `Person -WORKS_IN-> Department -CAN_TRIGGER-> Workflow`, direct leg
   `Person -CAN_TRIGGER-> Workflow`) or shows the gap.
-- **The intent beat** (`IBAC_ENABLED=true` + the `intent` profile): the
+- **The intent beat** (`IBAC_ENABLED=true` + the `intent` profile; run every
+  other act with the switch **off**, it changes nothing in them except
+  refusing prompts outside the policy vocabulary): the
   orchestrator gateway asks the Intent Agent what each prompt *means* -
   subject, action, resource - before forwarding it. The terminal shows the
   gateway's INTENT card (found / failed, duration, prompt) and the Intent
   Agent's own card with the evaluations and the IBAC discovery preview
   ("matches query-erp"). A prompt with no intent is answered by the gateway
   itself - "Unable to extract intent from prompt." plus the obligation - and
-  never reaches the orchestrator: greetings, weather and Drive prompts have
-  no policy vocabulary, so run those beats with IBAC off, or show the
-  refusal as the beat.
+  never reaches the orchestrator. The Intent Agent reads only KBAC policies,
+  so "who am I" and the HQ weather have their own (`person-can-view-profile`,
+  `person-can-read-weather`) and pass; greetings, web search and Drive
+  prompts still have no policy vocabulary, so run those beats with IBAC off,
+  or show the refusal as the beat. A prompt the model refuses although a
+  policy exists is rephrased closer to the action ("Retrieve the stock quote
+  for META").
 - **The card beat** (gateway 2.87): the gateway serves the protected
   agent's card itself -
 
@@ -375,6 +403,19 @@ never enters.
   2.99). The second, tokenless, is a `401` whose `WWW-Authenticate` names
   that metadata URL. Any other path on that port is a `404` before a token
   is read: the gateway serves one MCP endpoint.
+- **The tools beat** (gateway 2.0.3): the same MCP server, two workflows, two
+  tool lists. After Act 2 step 1 (Millicent, a stock quote, `wf1`) open the
+  `discovery` card of `mcp-iag`: *permitted set* lists `ciq_execute`, the
+  four `authzen_*` tools and the retriever's knowledge queries, and
+  *discovery* says how many tools the server listed and how many the
+  retriever got. After Act 3 step 2 (the HQ weather, `wf2`) the next
+  `discovery` card of the same gateway permits two: `ciq_execute` and
+  `get-hq-weather`. Nothing was configured on the gateway: the `HAS` edges
+  of the `mcp-gateway` agent carry a `workflow_name`, and the policy
+  `person-can-use-tool` walks the chain of the call. An `invocation` card
+  appears when a tool is called; a red one with `-31403` is a tool outside
+  the set. The Bruno `wf4-parallel-mcp` folder calls `mcp-iag` directly: its
+  `tools/list` is the fastest way to show the list change by hand.
 - **The token-reuse beat** (gateway 2.91):
 
   ```bash

@@ -1,0 +1,30 @@
+---
+info:
+  name: Create User CAN_USE Prompt Policy
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "name": "user-can-use-prompt",
+          "display_name": "User can use prompts",
+          "description": "The Agent Gateway's capability check for prompts: the prompts of an MCP server (prompts/list, prompts/get); none is modelled in this dataset, so the lists are empty. The gateway reads the permitted set with one AuthZEN search/resource (action CAN_USE, resource type Prompt) per request that lists or names a capability, with the delegation in X-IK-Token. A capability is permitted when a workflow the subject can trigger - directly or through their department - has exactly the delegation chain as its path of agents and the agent at the end of the chain HAS the capability for that workflow (HAS.workflow_name).",
+          "project_id": "{{project_id}}",
+          "policy": "{\"meta\": {\"policy_version\": \"2.0-kbac\"}, \"subject\": {\"type\": \"User\"}, \"actions\": [\"CAN_USE\"], \"resource\": {\"type\": \"Prompt\"}, \"condition\": {\"cypher\": \"MATCH (subject:User)-[:WORKS_IN|CAN_TRIGGER*..3]->(wf:Workflow) MATCH (wf)-[rels:INVOKES*]->(agent:Agent)-[h:HAS]->(resource:Prompt) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain AND h.workflow_name = wf.external_id\"}}",
+          "status": "ACTIVE"
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

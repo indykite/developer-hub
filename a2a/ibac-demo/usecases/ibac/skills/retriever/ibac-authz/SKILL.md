@@ -43,7 +43,10 @@ answers `false` by design.
 | --- | --- | --- | --- |
 | `CAN_TRIGGER` | `Workflow` | `wf1`, `wf2`, `wf3`, `wf3-console`, `wf-drive`, `wf-drive-analyst`, `wf-drive-console`, `wf-erp`, `wf-erp-analyst`, `wf-erp-console`, `wf-crm` | department or direct `CAN_TRIGGER` edge (the console's grant self-check and why? cards) |
 | `CAN_TRIGGER` | `Agent` | the agents' Auth0 subjects (`<client_id>@clients`) | the Agent Gateway's admission check: a workflow the person can trigger whose path of agents equals the delegation chain (`$ik_token.act_chain`); only the gateways call it, with the delegation in `X-IK-Token` |
+| `CAN_USE` | `Tool`, `McpResource`, `Prompt`, `Skill` | MCP tool names (`ciq_execute`, `get-hq-weather`, `search`, ...), card skill ids | the gateways' capability check: what the agent at the end of the chain `HAS` for the chain's workflow; only the gateways call it |
 | `CAN_RETRIEVE`, `GET_PRICE` | `Quote` | `stock_quote` | staff of `trading` |
+| `CAN_VIEW_PROFILE` | `Person` | the caller's own subject | everyone, on themselves only (the "who am I" vocabulary) |
+| `CAN_READ` | `Weather` | `hq_weather` | everyone (the weather vocabulary) |
 | `CAN_VIEW` | `Invoice` | `inv-cb-001` ... `inv-cb-009` | staff of the serving department; the customer; a parent of a minor customer |
 | `CAN_DISCLOSE` | `Document` | e.g. `refund_policy` | staff, only over the full console→orchestrator→retriever→mcp delegation chain |
 | `CAN_DISCLOSE_UNCHAINED`, `CAN_ACCESS_FOLDER_DOCUMENT` | `Document` | documents under the department's folders | staff |

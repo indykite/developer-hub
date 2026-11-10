@@ -103,7 +103,7 @@ spec:
       containers:
         - name: gateway
           image: {{ include "demo.image" $root.Values.gateway.image }}
-          imagePullPolicy: {{ $root.Values.gateway.image.pullPolicy | default "Never" }}
+          imagePullPolicy: {{ $root.Values.gateway.image.pullPolicy | default "IfNotPresent" }}
           args: ["--config=/app/.configs/audit-config.yaml"]
           ports:
             - name: http
@@ -173,6 +173,14 @@ spec:
               value: {{ $root.Values.gateway.authzenCacheTtl | quote }}
             - name: JARVIS_AUTHZEN_CACHE_UPDATE_AFTER
               value: {{ $root.Values.gateway.authzenCacheTtl | quote }}
+            - name: JARVIS_AUTHORIZATION_HEADER_FORWARD
+              value: {{ $root.Values.gateway.authorizationForward | default "none" | quote }}
+            - name: JARVIS_A2A_CACHE_TTL
+              value: {{ $root.Values.gateway.a2aCacheTtl | default "5s" | quote }}
+            - name: JARVIS_A2A_CACHE_UPDATE_AFTER
+              value: {{ $root.Values.gateway.a2aCacheTtl | default "5s" | quote }}
+            - name: JARVIS_A2A_CACHE_UPDATE_AFTER_ERROR
+              value: {{ $root.Values.gateway.a2aCacheTtl | default "5s" | quote }}
             - name: JARVIS_AUTHZEN_CAPABILITIES_ENABLED
               value: "true"
             - name: JARVIS_AUTHZEN_CAPABILITIES_ACTION

@@ -36,6 +36,26 @@ def test_chain_trace_and_token_are_forwarded(sent):
     assert sent[0]["token_id"] == "j-1"
 
 
+def test_capability_record_fields_are_forwarded(sent):
+    """A DISCOVERY record keeps its permitted set, discovery counts and cache flags under snake_case names."""
+    record = {
+        **RECORD,
+        "service": "mcp-iag",
+        "action": "DISCOVERY",
+        "reason": "the lists of the server were filtered to the permitted set",
+        "cached": {"tool": True},
+        "permittedSet": {"tool": ["ciq_execute", "get-hq-weather"]},
+        "discovery": {"serverCalled": True, "listed": 19, "kept": 2},
+    }
+    app.app.test_client().post("/api/push-update", json=record)
+    event = sent[0]
+    assert event["action"] == "DISCOVERY"
+    assert event["permitted_set"] == {"tool": ["ciq_execute", "get-hq-weather"]}
+    assert event["discovery_stats"] == {"serverCalled": True, "listed": 19, "kept": 2}
+    assert event["cached"] == {"tool": True}
+    assert "capabilities" not in event
+
+
 def test_empty_chain_is_left_out(sent):
     """A record without a chain, or with an empty one, broadcasts no chain field."""
     app.app.test_client().post("/api/push-update", json={**RECORD, "actorsChain": []})

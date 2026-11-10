@@ -67,6 +67,7 @@ variables:
     value: http://localhost:8885
   - name: iag_mcp_url
     value: http://localhost:8886/mcp/v1/gid:AAAAApo7TvCs_0TQt-WFbP5KxMM
-  # Drive MCP PoC: the IAG forwards the /mcp path to the wrapped Drive server
+  # Drive MCP PoC: the gateway serves its MCP endpoint at /mcp and forwards to
+  # the Drive server's /mcp endpoint
   - name: iag_drive_mcp_url
     value: http://localhost:8887/mcp

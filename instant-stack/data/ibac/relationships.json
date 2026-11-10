@@ -917,78 +917,6 @@
     },
     {
       "source": {
-        "type": "Agent",
-        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
-      },
-      "target": {
-        "type": "Skill",
-        "external_id": "s1"
-      },
-      "properties": [],
-      "type": "INVOKES"
-    },
-    {
-      "source": {
-        "type": "Agent",
-        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
-      },
-      "target": {
-        "type": "Skill",
-        "external_id": "s2"
-      },
-      "properties": [],
-      "type": "INVOKES"
-    },
-    {
-      "source": {
-        "type": "Skill",
-        "external_id": "s2"
-      },
-      "target": {
-        "type": "Tool",
-        "external_id": "t1"
-      },
-      "properties": [],
-      "type": "INVOKES"
-    },
-    {
-      "source": {
-        "type": "Skill",
-        "external_id": "s2"
-      },
-      "target": {
-        "type": "Tool",
-        "external_id": "t2"
-      },
-      "properties": [],
-      "type": "INVOKES"
-    },
-    {
-      "source": {
-        "type": "Agent",
-        "external_id": "${AUTH0_SUB_RETRIEVER}"
-      },
-      "target": {
-        "type": "Skill",
-        "external_id": "s3"
-      },
-      "properties": [],
-      "type": "INVOKES"
-    },
-    {
-      "source": {
-        "type": "Skill",
-        "external_id": "s3"
-      },
-      "target": {
-        "type": "Tool",
-        "external_id": "t2"
-      },
-      "properties": [],
-      "type": "INVOKES"
-    },
-    {
-      "source": {
         "type": "Entity",
         "external_id": "canbank"
       },
@@ -3379,6 +3307,2127 @@
         "external_id": "support"
       },
       "type": "ASSIGNED_TO"
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "ciq_execute"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "authzen_evaluate"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "authzen_evaluations"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "authzen_search_resource"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "authzen_search_action"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-self"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-stock-quote"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-stock-trade-threshold"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-internal-documents"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-customer-facing-documents"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-regulatory-agreements"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-decisions"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "store-decision"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-internal-documents-chained"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-my-family"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "ciq_execute"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf2"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-hq-weather"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf2"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "ciq_execute"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "authzen_evaluate"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "authzen_evaluations"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "authzen_search_resource"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "authzen_search_action"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-self"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-stock-quote"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-stock-trade-threshold"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-internal-documents"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-decisions"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "store-decision"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-my-family"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "ciq_execute"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "authzen_evaluate"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "authzen_evaluations"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "authzen_search_resource"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "authzen_search_action"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-self"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-stock-quote"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-stock-trade-threshold"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-internal-documents"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-decisions"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "store-decision"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-my-family"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "McpResource",
+        "external_id": "indykite://knowledge-queries/"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "McpResource",
+        "external_id": "indykite://knowledge-queries/"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "McpResource",
+        "external_id": "indykite://knowledge-queries/"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_DRIVE}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "search"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_DRIVE}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "search"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-analyst"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_DRIVE}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "search"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ERP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "list_invoices"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ERP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get_invoice"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ERP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "list_invoices"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-analyst"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ERP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get_invoice"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-analyst"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ERP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "list_invoices"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ERP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get_invoice"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "orchestrator"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "web-search"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "orchestrator"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf2"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "web-search"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf2"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "orchestrator"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-crm"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "web-search"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-crm"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "orchestrator"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "web-search"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "orchestrator"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "web-search"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "orchestrator"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "web-search"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "query-retriever"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "query-erp"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "query-crm"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-crm"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_RETRIEVER}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "retriever"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_RETRIEVER}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "authzen"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_RETRIEVER}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "ciq-execute"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_RETRIEVER}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "max-purchase-amount"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_RETRIEVER}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "ibac-authz"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf1"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "analyst"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "authzen"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "ciq-execute"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "ibac-authz"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "analyst"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "authzen"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "ciq-execute"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "ibac-authz"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf3-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "analyst"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-analyst"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "authzen"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-analyst"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "ciq-execute"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-analyst"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "ibac-authz"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-analyst"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "analyst"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "authzen"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "ciq-execute"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "ibac-authz"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-drive-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "analyst"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-analyst"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "authzen"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-analyst"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "ciq-execute"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-analyst"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "ibac-authz"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-analyst"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "analyst"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "authzen"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "ciq-execute"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "ibac-authz"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "erp-invoices"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-analyst"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "erp-invoices"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-erp-console"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_WEATHER}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "current-weather"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf2"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_CRM}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "create-crm-case"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-crm"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
     }
   ]
 }

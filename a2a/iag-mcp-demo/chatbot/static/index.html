@@ -1254,6 +1254,65 @@
         card.appendChild(details);
     }
 
+    // A capability record: what a DISCOVERY let the caller see of the
+    // server's lists, or what an INVOCATION named. The permitted set is the
+    // answer of the platform's CAN_USE search for this subject and chain, by
+    // kind (tool, resource, prompt, skill).
+    function attachCapabilities(card, event) {
+        const stats = event.discovery_stats;
+        if (stats && typeof stats === 'object') {
+            const served = stats.serverCalled === false
+                ? 'answered by the gateway, server not called'
+                : `server listed ${stats.listed ?? '?'}, caller got ${stats.kept ?? '?'}`;
+            attachDetails(card, 'discovery', served);
+        }
+        const permitted = event.permitted_set;
+        if (permitted && typeof permitted === 'object') {
+            const lines = Object.entries(permitted).map(([kind, ids]) =>
+                `${kind}: ${Array.isArray(ids) && ids.length ? ids.join(', ') : 'nothing'}`);
+            if (lines.length) attachDetails(card, 'permitted set', lines.join('\n'));
+        }
+        const named = event.capabilities;
+        if (named && typeof named === 'object') {
+            const lines = Object.entries(named).map(([kind, ids]) =>
+                `${kind}: ${Array.isArray(ids) ? ids.join(', ') : ids}`);
+            if (lines.length) attachDetails(card, 'named', lines.join('\n'));
+        }
+        const cached = event.cached;
+        if (cached && typeof cached === 'object') {
+            const hits = Object.entries(cached).filter(([, v]) => v === true).map(([k]) => k);
+            if (hits.length) attachDetails(card, 'cached', `${hits.join(', ')} answered from the gateway cache`);
+        }
+    }
+
+    // Every gateway record names the actors of the delegation token, oldest
+    // first (actorsChain): the value the admission policy compared with a
+    // workflow path in the graph. The trace id of the request is the tooltip.
+    function attachChain(card, event) {
+        const chain = Array.isArray(event.actors_chain) ? event.actors_chain.filter(Boolean) : [];
+        if (!chain.length) return;
+        const line = document.createElement('div');
+        line.className = 'audit-chain';
+        const label = document.createElement('span');
+        label.className = 'audit-chain-label';
+        label.textContent = 'chain';
+        line.appendChild(label);
+        chain.forEach((hop, i) => {
+            if (i) {
+                const sep = document.createElement('span');
+                sep.className = 'audit-arrow';
+                sep.textContent = '→';
+                line.appendChild(sep);
+            }
+            const el = document.createElement('span');
+            el.className = 'audit-principal';
+            el.textContent = hop;
+            line.appendChild(el);
+        });
+        if (event.trace_id) line.title = `trace ${event.trace_id}`;
+        card.appendChild(line);
+    }
+
     function renderAuditCard(event, decision) {
         const card = document.createElement('div');
         card.className = `audit-card ${decision}`;
@@ -1263,6 +1322,17 @@
         const service = document.createElement('span');
         service.className = 'audit-service';
         service.textContent = event.service || 'unknown';
+        // The gateway names the question a record answers: ADMISSION (may the
+        // subject reach the agent over this chain), DISCOVERY (which
+        // capabilities the caller may see), INVOCATION (may the caller use
+        // the named ones), or noop (refused before any question).
+        const question = (event.action || '').toUpperCase();
+        if (['ADMISSION', 'DISCOVERY', 'INVOCATION', 'NOOP'].includes(question)) {
+            const tag = document.createElement('span');
+            tag.className = `audit-action audit-action-${question.toLowerCase()}`;
+            tag.textContent = question === 'NOOP' ? 'refused early' : question.toLowerCase();
+            service.appendChild(tag);
+        }
         const time = document.createElement('span');
         time.className = 'audit-time';
         time.textContent = formatAuditTime(event.timestamp);
@@ -1281,9 +1351,8 @@
         actor.textContent = event.actor || '?';
         const badge = document.createElement('span');
         badge.className = 'audit-badge';
-        // Gateway >= 2.5x emits more decisions than the classic three:
-        // ERROR (any >=500 failure - used to arrive as NOT_AUTHORIZED) and
-        // the token-service ones (INTROSPECTED*, *_REFUSED, EXCHANGE_*).
+        // Beside AUTHORIZED / NOT_AUTHORIZED the gateway records ERROR: it,
+        // or something it depends on, failed and nothing was decided.
         badge.textContent = decision === 'authorized' ? 'AUTHORIZED'
             : decision === 'token_exchanged' ? 'TOKEN'
             : decision === 'not_authorized' ? 'NOT AUTHORIZED'
@@ -1291,16 +1360,19 @@
         flow.append(subject, arrow, actor, badge);
 
         card.append(head, flow);
+        attachChain(card, event);
         attachDetails(card, decision === 'token_exchanged' ? 'token' : 'reason', event.reason);
+        attachCapabilities(card, event);
 
         // "why?": render the live authorization path behind this decision.
         // Only for actual authorization outcomes - an ERROR / introspection
         // card has no workflow decision for the graph to explain.
-        // For gateways with deliberately-unpinned workflow ids the grant map's
-        // -console workflow is the last-resort guess for DENY cards.
+        // A record names the delegation chain, not a workflow: the workflow
+        // comes from the gateway's entry in EXPLAIN_WORKFLOW_MAP, else from
+        // the last (-console) workflow of its grant bundle.
         const grantBundle = (GRANT_MAP[event.service] || []);
         if (EXPLAIN_ENABLED && (decision === 'authorized' || decision === 'not_authorized')) {
-            const wf = parseWorkflow(event.reason) || EXPLAIN_WF_MAP[event.service]
+            const wf = EXPLAIN_WF_MAP[event.service]
                 || grantBundle[grantBundle.length - 1] || '';
             if (wf && event.subject) {
                 const why = document.createElement('button');
@@ -1406,13 +1478,6 @@
     // ------------------------------------------------------------------
     // "Explain the decision": why? modal rendering the live graph path.
     // ------------------------------------------------------------------
-    function parseWorkflow(reason) {
-        // AUTHORIZED reasons name the workflow in free text ("...workflows wf1
-        // and..."); DENY reasons don't - callers fall back to EXPLAIN_WF_MAP.
-        const m = (reason || '').match(/\bwf[a-z0-9][\w-]*\b/i);
-        return m ? m[0] : null;
-    }
-
     let explainCy = null;
     const EXPLAIN_TYPES = {
         Subject:    { color: '#6da7ec', shape: 'ellipse' },
@@ -1508,7 +1573,12 @@
             return;
         }
 
-        const messageKey = `${event.service}:${event.reason}`;
+        // One card per distinct decision: a gateway repeats the same record
+        // for every request of a conversation. The question, the chain and the
+        // capabilities a record is about tell records with one reason apart.
+        const messageKey = [event.service, event.action || '', event.reason,
+            (event.actors_chain || []).join('>'),
+            JSON.stringify(event.capabilities || event.permitted_set || '')].join(':');
         if (seenMessages.has(messageKey)) {
             return;
         }

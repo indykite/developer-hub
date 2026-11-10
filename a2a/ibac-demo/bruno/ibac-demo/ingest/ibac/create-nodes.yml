@@ -1134,7 +1134,7 @@ http:
             "properties": []
           },
           {
-            "external_id": "{{auth0_sub_orchestrator}}",
+            "external_id": "${AUTH0_SUB_ORCHESTRATOR}",
             "type": "Agent",
             "is_identity": false,
             "properties": [
@@ -1145,7 +1145,7 @@ http:
             ]
           },
           {
-            "external_id": "{{auth0_sub_retriever}}",
+            "external_id": "${AUTH0_SUB_RETRIEVER}",
             "type": "Agent",
             "is_identity": false,
             "properties": [
@@ -1156,7 +1156,7 @@ http:
             ]
           },
           {
-            "external_id": "{{auth0_sub_weather}}",
+            "external_id": "${AUTH0_SUB_WEATHER}",
             "type": "Agent",
             "is_identity": false,
             "properties": [
@@ -1167,7 +1167,7 @@ http:
             ]
           },
           {
-            "external_id": "{{auth0_sub_analyst}}",
+            "external_id": "${AUTH0_SUB_ANALYST}",
             "type": "Agent",
             "is_identity": false,
             "properties": [
@@ -1178,7 +1178,7 @@ http:
             ]
           },
           {
-            "external_id": "{{auth0_sub_mcp}}",
+            "external_id": "${AUTH0_SUB_MCP}",
             "type": "Agent",
             "is_identity": false,
             "properties": [
@@ -1189,7 +1189,7 @@ http:
             ]
           },
           {
-            "external_id": "{{auth0_sub_drive}}",
+            "external_id": "${AUTH0_SUB_DRIVE}",
             "type": "Agent",
             "is_identity": false,
             "properties": [
@@ -1198,36 +1198,6 @@ http:
                 "value": "drive-mcp-gateway"
               }
             ]
-          },
-          {
-            "external_id": "s1",
-            "type": "Skill",
-            "is_identity": false,
-            "properties": []
-          },
-          {
-            "external_id": "s2",
-            "type": "Skill",
-            "is_identity": false,
-            "properties": []
-          },
-          {
-            "external_id": "s3",
-            "type": "Skill",
-            "is_identity": false,
-            "properties": []
-          },
-          {
-            "external_id": "t1",
-            "type": "Tool",
-            "is_identity": false,
-            "properties": []
-          },
-          {
-            "external_id": "t2",
-            "type": "Tool",
-            "is_identity": false,
-            "properties": []
           },
           {
             "external_id": "canbank",
@@ -1502,6 +1472,22 @@ http:
               {
                 "type": "price",
                 "external_value": "stock-quote"
+              },
+              {
+                "type": "name",
+                "value": "Stock quote"
+              },
+              {
+                "type": "description",
+                "value": "Live stock market quote: the current price of a listed ticker symbol such as META or NVDA, fetched by the Yahoo Finance resolver"
+              },
+              {
+                "type": "currency",
+                "value": "USD"
+              },
+              {
+                "type": "symbol",
+                "value": "any listed ticker"
               }
             ]
           },
@@ -2231,6 +2217,10 @@ http:
               {
                 "type": "units",
                 "external_value": "weather-units"
+              },
+              {
+                "type": "description",
+                "value": "Current weather at CanBank headquarters (London), temperature and conditions populated live by the Open-Meteo resolvers"
               }
             ]
           },
@@ -2253,7 +2243,7 @@ http:
             "properties": []
           },
           {
-            "external_id": "{{auth0_sub_erp}}",
+            "external_id": "${AUTH0_SUB_ERP}",
             "type": "Agent",
             "is_identity": false,
             "properties": [
@@ -2271,7 +2261,7 @@ http:
             "properties": []
           },
           {
-            "external_id": "{{auth0_sub_crm}}",
+            "external_id": "${AUTH0_SUB_CRM}",
             "type": "Agent",
             "is_identity": false,
             "labels": [],
@@ -2986,6 +2976,516 @@ http:
               {
                 "type": "description",
                 "value": "I was only a few hours late with my credit card payment but I still received the fine. I would like the fine reversed."
+              }
+            ]
+          },
+          {
+            "external_id": "ciq_execute",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "ciq_execute"
+              },
+              {
+                "type": "description",
+                "value": "Run a Knowledge Query by id (deprecated on the IndyKite MCP server; the agents still call it)."
+              }
+            ]
+          },
+          {
+            "external_id": "authzen_evaluate",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "authzen_evaluate"
+              },
+              {
+                "type": "description",
+                "value": "One AuthZEN decision: may this subject do this action on this resource."
+              }
+            ]
+          },
+          {
+            "external_id": "authzen_evaluations",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "authzen_evaluations"
+              },
+              {
+                "type": "description",
+                "value": "Several AuthZEN decisions in one call."
+              }
+            ]
+          },
+          {
+            "external_id": "authzen_search_resource",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "authzen_search_resource"
+              },
+              {
+                "type": "description",
+                "value": "The resources of a type a subject may perform an action on."
+              }
+            ]
+          },
+          {
+            "external_id": "authzen_search_action",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "authzen_search_action"
+              },
+              {
+                "type": "description",
+                "value": "The actions a subject may perform on a resource."
+              }
+            ]
+          },
+          {
+            "external_id": "get-self",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "get-self"
+              },
+              {
+                "type": "description",
+                "value": "Who the caller is: the Person, their department, manager and customer record."
+              }
+            ]
+          },
+          {
+            "external_id": "get-stock-quote",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "get-stock-quote"
+              },
+              {
+                "type": "description",
+                "value": "The stock quote the caller's department may retrieve (live resolver)."
+              }
+            ]
+          },
+          {
+            "external_id": "get-stock-trade-threshold",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "get-stock-trade-threshold"
+              },
+              {
+                "type": "description",
+                "value": "A customer's trade limit from their account tier."
+              }
+            ]
+          },
+          {
+            "external_id": "get-internal-documents",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "get-internal-documents"
+              },
+              {
+                "type": "description",
+                "value": "Internal documents of a taxonomy the caller reaches through their department."
+              }
+            ]
+          },
+          {
+            "external_id": "get-customer-facing-documents",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "get-customer-facing-documents"
+              },
+              {
+                "type": "description",
+                "value": "Customer-facing documents with their regulatory agreements."
+              }
+            ]
+          },
+          {
+            "external_id": "get-regulatory-agreements",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "get-regulatory-agreements"
+              },
+              {
+                "type": "description",
+                "value": "The regulatory agreements of the bank."
+              }
+            ]
+          },
+          {
+            "external_id": "get-decisions",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "get-decisions"
+              },
+              {
+                "type": "description",
+                "value": "Past decisions that applied a document, with ticket and account."
+              }
+            ]
+          },
+          {
+            "external_id": "get-hq-weather",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "get-hq-weather"
+              },
+              {
+                "type": "description",
+                "value": "The weather at CanBank HQ, populated live by the external data resolvers."
+              }
+            ]
+          },
+          {
+            "external_id": "store-decision",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "store-decision"
+              },
+              {
+                "type": "description",
+                "value": "Record a decision that closes a ticket as an exception to a document."
+              }
+            ]
+          },
+          {
+            "external_id": "get-internal-documents-chained",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "get-internal-documents-chained"
+              },
+              {
+                "type": "description",
+                "value": "Internal documents, only over the full console-orchestrator-retriever-mcp chain."
+              }
+            ]
+          },
+          {
+            "external_id": "get-my-family",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "get-my-family"
+              },
+              {
+                "type": "description",
+                "value": "The caller's spouse, children and the accounts of minor children."
+              }
+            ]
+          },
+          {
+            "external_id": "search",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "search"
+              },
+              {
+                "type": "description",
+                "value": "Search files in Google Drive (the vendored Drive MCP server's only tool)."
+              }
+            ]
+          },
+          {
+            "external_id": "list_invoices",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "list_invoices"
+              },
+              {
+                "type": "description",
+                "value": "The ERP invoices the caller may view, pre-filtered by AuthZEN search/resource."
+              }
+            ]
+          },
+          {
+            "external_id": "get_invoice",
+            "type": "Tool",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "get_invoice"
+              },
+              {
+                "type": "description",
+                "value": "One ERP invoice by id, after an AuthZEN CAN_VIEW decision."
+              }
+            ]
+          },
+          {
+            "external_id": "indykite://knowledge-queries/",
+            "type": "McpResource",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "Knowledge query catalogue"
+              },
+              {
+                "type": "description",
+                "value": "The IndyKite MCP server's catalogue of Knowledge Queries and their parameters."
+              }
+            ]
+          },
+          {
+            "external_id": "orchestrator",
+            "type": "Skill",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "orchestrator"
+              },
+              {
+                "type": "description",
+                "value": "Route a prompt to the right agent and compose the answer."
+              }
+            ]
+          },
+          {
+            "external_id": "web-search",
+            "type": "Skill",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "web-search"
+              },
+              {
+                "type": "description",
+                "value": "Answer general questions from the web."
+              }
+            ]
+          },
+          {
+            "external_id": "query-retriever",
+            "type": "Skill",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "query-retriever"
+              },
+              {
+                "type": "description",
+                "value": "Ask the retriever agent for graph data, quotes and documents."
+              }
+            ]
+          },
+          {
+            "external_id": "query-erp",
+            "type": "Skill",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "query-erp"
+              },
+              {
+                "type": "description",
+                "value": "Ask the analyst for ERP invoices through the ERP MCP server."
+              }
+            ]
+          },
+          {
+            "external_id": "query-crm",
+            "type": "Skill",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "query-crm"
+              },
+              {
+                "type": "description",
+                "value": "File a Salesforce case through the CRM agent (staff only)."
+              }
+            ]
+          },
+          {
+            "external_id": "retriever",
+            "type": "Skill",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "retriever"
+              },
+              {
+                "type": "description",
+                "value": "Retrieve graph data through the IndyKite MCP server."
+              }
+            ]
+          },
+          {
+            "external_id": "authzen",
+            "type": "Skill",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "authzen"
+              },
+              {
+                "type": "description",
+                "value": "Ask AuthZEN a decision or a search with the caller's own token."
+              }
+            ]
+          },
+          {
+            "external_id": "ciq-execute",
+            "type": "Skill",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "ciq-execute"
+              },
+              {
+                "type": "description",
+                "value": "Run a Knowledge Query with the caller's own token."
+              }
+            ]
+          },
+          {
+            "external_id": "max-purchase-amount",
+            "type": "Skill",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "max-purchase-amount"
+              },
+              {
+                "type": "description",
+                "value": "How many shares a customer may buy: trade limit over live price."
+              }
+            ]
+          },
+          {
+            "external_id": "ibac-authz",
+            "type": "Skill",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "ibac-authz"
+              },
+              {
+                "type": "description",
+                "value": "The dataset's vocabulary: policies, actions, resources and the cast."
+              }
+            ]
+          },
+          {
+            "external_id": "analyst",
+            "type": "Skill",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "analyst"
+              },
+              {
+                "type": "description",
+                "value": "Analyse data across the IndyKite, Drive and ERP MCP servers."
+              }
+            ]
+          },
+          {
+            "external_id": "erp-invoices",
+            "type": "Skill",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "erp-invoices"
+              },
+              {
+                "type": "description",
+                "value": "List and open ERP invoices the caller may view."
+              }
+            ]
+          },
+          {
+            "external_id": "current-weather",
+            "type": "Skill",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "current-weather"
+              },
+              {
+                "type": "description",
+                "value": "Current weather for a place, or at CanBank HQ through the graph."
+              }
+            ]
+          },
+          {
+            "external_id": "create-crm-case",
+            "type": "Skill",
+            "is_identity": false,
+            "properties": [
+              {
+                "type": "name",
+                "value": "create-crm-case"
+              },
+              {
+                "type": "description",
+                "value": "Create a Salesforce case on behalf of the person."
               }
             ]
           }

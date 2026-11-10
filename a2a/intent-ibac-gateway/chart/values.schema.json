@@ -311,6 +311,18 @@
           "type": "string",
           "pattern": "^[0-9]+(ms|s|m|h)$"
         },
+        "authorizationForward": {
+          "type": "string",
+          "enum": [
+            "none",
+            "correct_audience",
+            "all"
+          ]
+        },
+        "a2aCacheTtl": {
+          "type": "string",
+          "pattern": "^[0-9]+(ms|s|m|h)$"
+        },
         "intentAgentTimeout": {
           "type": "string",
           "pattern": "^[0-9]+(ms|s|m|h)$"

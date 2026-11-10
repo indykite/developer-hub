@@ -317,14 +317,22 @@ def push_update():
         "service": service,
     }
     # Every gateway record names the delegation chain of the hop (oldest actor
-    # first), the trace and the token it is about. Records of the Intent Agent
-    # call (action INTENT) and of the IBAC engine (IBAC_DISCOVERY / IBAC_USAGE)
-    # carry more: the prompt (with audit.include_prompt), the call duration,
-    # the capability and skill the intent was matched against.
+    # first), the trace and the token it is about, and whether the answer came
+    # from the gateway's cache. Capability records (action DISCOVERY or
+    # INVOCATION) add the identifiers an invocation named, the permitted set a
+    # list was filtered to, and how many entries the server listed and the
+    # caller kept. Records of the Intent Agent call (action INTENT) and of the
+    # IBAC engine (IBAC_DISCOVERY / IBAC_USAGE) carry the prompt (with
+    # audit.include_prompt), the call duration, the capability and skill the
+    # intent was matched against.
     for key, out in (
         ("actorsChain", "actors_chain"),
         ("traceID", "trace_id"),
         ("tokenID", "token_id"),
+        ("cached", "cached"),
+        ("capabilities", "capabilities"),
+        ("permittedSet", "permitted_set"),
+        ("discovery", "discovery_stats"),
         ("prompt", "prompt"),
         ("durationMs", "duration_ms"),
         ("capabilityName", "capability_name"),
@@ -333,7 +341,7 @@ def push_update():
         ("reasonCode", "reason_code"),
         ("evaluations", "evaluations"),
     ):
-        if data.get(key) not in (None, "", []):
+        if data.get(key) not in (None, "", [], {}):
             event[out] = data[key]
     _broadcast_update(event)
     return jsonify({"ok": True})

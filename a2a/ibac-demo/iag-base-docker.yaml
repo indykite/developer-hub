@@ -3,27 +3,23 @@ version: '3.9'
 
 services:
   iag-base:
-    # The gateway image is loaded locally, not pulled: the release this demo
-    # needs (2.99) is not on Docker Hub yet. Load it from your registry and
-    # tag it `agent-gateway:latest`, or name it in .env as AGENT_GATEWAY_IMAGE;
-    # pull_policy never makes compose fail loudly instead of pulling. What the
-    # demo relies on: MCP proxying (JARVIS_PROTECTED_AGENT_PROTOCOL: mcp, used
-    # by mcp-iag, drive-mcp-iag and erp-mcp-iag) from 2.21; token service mode
-    # with hop-by-hop nesting of the incoming X-IK-Token from 2.47; the
-    # per-gateway user-token audience check and token_service.audience from
-    # 2.89; the ibac.enabled switch that gates the intent_agent section, the
-    # INTENT audit records and the gateway answering a failed intent in place
-    # of the agent from 2.90; client-credentials tokens kept until shortly
-    # before their expires_in from 2.91; admission decided by ONE AuthZEN
+    # The published Agent Gateway release 2.0.3, pinned by digest; .env may
+    # name another image as AGENT_GATEWAY_IMAGE. What the demo relies on: MCP
+    # proxying (JARVIS_PROTECTED_AGENT_PROTOCOL: mcp, used by mcp-iag,
+    # drive-mcp-iag and erp-mcp-iag); token service mode with hop-by-hop
+    # nesting of the incoming X-IK-Token, the per-gateway user-token audience
+    # check and token_service.audience; the ibac.enabled switch that gates the
+    # intent_agent section, the INTENT audit records and the gateway answering
+    # a failed intent in place of the agent; admission decided by ONE AuthZEN
     # evaluation over the delegation chain ($ik_token.act_chain, policy
-    # person-can-reach-agent in the dataset) instead of the CIQ workflow lookup,
-    # and MCP gateways serving one endpoint with OAuth discovery, from 2.93;
-    # the delegated token extension declared on the agent cards, the MCP
-    # capabilities and the protected resource metadata, and named in
-    # A2A-Extensions on every forwarded call, from 2.99.
-    # All gateways share this image.
-    image: ${AGENT_GATEWAY_IMAGE:-agent-gateway:latest}
-    pull_policy: never
+    # person-can-reach-agent in the dataset); MCP gateways serving one endpoint
+    # with OAuth discovery; the delegated token extension on the agent cards,
+    # the MCP capabilities and the protected resource metadata; and the
+    # capability checks (CAN_USE on the Tool, McpResource, Prompt and Skill
+    # nodes the dataset attaches to each agent per workflow), which filter
+    # the MCP lists and the A2A extended card and refuse a tool, resource or
+    # prompt outside the permitted set. All gateways share this image.
+    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.0.3@sha256:8368f151cfec343f679dce6f320f43ab8c14cebb5465f683213de66c857aed33}
     environment:
       JARVIS_SERVICE_LOG_LEVEL: debug
       JARVIS_SERVICE_ENVIRONMENT: demo
@@ -84,6 +80,16 @@ services:
       # and JARVIS_AUTHZEN_POLICY_TAGS (space-separated) here.
       JARVIS_AUTHZEN_BASE_URL: ${INDYKITE_BASE_URL}/access/v1
       JARVIS_AUTHZEN_ACTION: CAN_TRIGGER
+      # Capability checks (on by default): an MCP gateway reads the set of
+      # tools, resources and prompts the caller may use with one AuthZEN
+      # search/resource per kind (action CAN_USE, resource types Tool,
+      # McpResource, Prompt), filters the server's lists to it and refuses a
+      # call outside it with 403 / -31403; an A2A gateway filters the skills
+      # of the extended agent card (type Skill). The dataset attaches the
+      # capabilities to each Agent with HAS {workflow_name} edges and the
+      # person-can-use-* policies. false = every request gets the admission
+      # decision only, the lists pass through unfiltered.
+      JARVIS_AUTHZEN_CAPABILITIES_ENABLED: ${IAG_CAPABILITY_CHECKS:-true}
       # Admission decision cache: how long a gateway keeps a decision per
       # subject, agent and chain before asking the platform again, i.e. how
       # fast a grant or revoke reaches gateway decisions. Keep both values

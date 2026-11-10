@@ -1,0 +1,40 @@
+---
+info:
+  name: Create CanBank Token Introspect
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/token-introspects"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "project_id": "{{project_id}}",
+        "name": "canbank-token-introspect",
+        "display_name": "CanBank Token Introspect",
+        "description": "Token introspect for CanBank users authenticated via their IdP",
+        "ikg_node_type": "User",
+        "jwt_matcher": {
+          "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous",
+          "audience": "indykiteagent-mcp"
+        },
+        "claims_mapping": {
+          "email": {
+            "selector": "email"
+          }
+        },
+        "offline_validation": {},
+        "perform_upsert": true
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -12,8 +12,6 @@ http:
       value: application/json, text/event-stream
     - name: Content-Type
       value: application/json
-    - name: Mcp-Session-Id
-      value: "{{wf4_millicent_analyst_session_id}}"
     - name: Mcp-Protocol-Version
       value: "2025-11-25"
   body:
@@ -35,28 +33,30 @@ runtime:
       code: |
         var rawBody = res.body;
 
-        // SSE stream - parse the JSON from the event data
+        // The answer is JSON, or an SSE stream carrying the JSON in its data.
         var jsonData;
         if (typeof rawBody === "string" && rawBody.includes("event:")) {
           var dataMatch = rawBody.match(/data:\s*({.*})/s);
           if (dataMatch) {
             jsonData = JSON.parse(dataMatch[1]);
           }
+        } else if (typeof rawBody === "string" && rawBody.trim().startsWith("{")) {
+          jsonData = JSON.parse(rawBody);
         } else if (typeof rawBody === "object") {
           jsonData = rawBody;
         }
 
+        // A tools/list gets the capability decision in place of admission:
+        // the permitted set of this caller over the chain [indykiteagent-mcp]
+        // is empty, and the gateway answers the empty list itself.
         test("Status code is 200", function () {
           expect(res.status).to.equal(200);
         });
 
-        test("Response has a tools array with authzen_evaluate and ciq_execute", function () {
-          expect(jsonData).to.not.be.null;
+        test("The tools list is empty (nothing permitted over a skipped-hop chain)", function () {
+          expect(jsonData).to.not.be.undefined;
           expect(jsonData.result).to.have.property("tools");
-          expect(jsonData.result.tools).to.be.an("array");
-          var names = jsonData.result.tools.map(function (t) { return t.name; });
-          expect(names).to.include("authzen_evaluate");
-          expect(names).to.include("ciq_execute");
+          expect(jsonData.result.tools).to.be.an("array").that.is.empty;
         });
 
 settings:

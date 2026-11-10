@@ -4,6 +4,9 @@
 !.example.env
 token-service/token-service.yaml
 audit-config.yaml
+# The mock IdP's signing key and anything else dropped next to it
+console/keys/*
+!console/keys/.gitkeep
 
 # Audit files written by the file-delivery variant
 audit/

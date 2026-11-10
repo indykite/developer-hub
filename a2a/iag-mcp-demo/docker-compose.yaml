@@ -93,6 +93,9 @@ services:
       K_SERVICE: orchestrator-iag
       JARVIS_SERVICE_NAME: orchestrator-iag
       JARVIS_SERVICE_PORT: ${IAG_ORCHESTRATOR_PORT}
+      # Public URL of this gateway: the interface URL of the agent card it
+      # serves, and the URL the callers use.
+      JARVIS_SERVICE_BASE_URL: http://${IAG_ORCHESTRATOR_HOST}:${IAG_ORCHESTRATOR_PORT}
       JARVIS_PROTECTED_AGENT_BASE_URL: http://${ORCHESTRATOR_HOST}:${ORCHESTRATOR_PORT}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${ORCHESTRATOR_IDP_CLIENT_ID}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${ORCHESTRATOR_IDP_CLIENT_SECRET}
@@ -163,6 +166,9 @@ services:
       K_SERVICE: retriever-iag
       JARVIS_SERVICE_NAME: retriever-iag
       JARVIS_SERVICE_PORT: ${IAG_RETRIEVER_PORT}
+      # Public URL of this gateway: the interface URL of the agent card it
+      # serves, and the URL the callers use.
+      JARVIS_SERVICE_BASE_URL: http://${IAG_RETRIEVER_HOST}:${IAG_RETRIEVER_PORT}
       JARVIS_PROTECTED_AGENT_BASE_URL: http://${RETRIEVER_HOST}:${RETRIEVER_PORT}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${RETRIEVER_IDP_CLIENT_ID}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${RETRIEVER_IDP_CLIENT_SECRET}
@@ -220,12 +226,12 @@ services:
       K_SERVICE: weather-iag
       JARVIS_SERVICE_NAME: weather-iag
       JARVIS_SERVICE_PORT: ${IAG_WEATHER_PORT}
+      # Public URL of this gateway: the interface URL of the agent card it
+      # serves, and the URL the callers use.
+      JARVIS_SERVICE_BASE_URL: http://${IAG_WEATHER_HOST}:${IAG_WEATHER_PORT}
       JARVIS_PROTECTED_AGENT_BASE_URL: http://${WEATHER_HOST}:${WEATHER_PORT}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${WEATHER_IDP_CLIENT_ID}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${WEATHER_IDP_CLIENT_SECRET}
-      # The weather agent runs wf2 (weather -> mcp), not the base ${WORKFLOW_ID}
-      # (wf1). allowed_workflow_id is a single value per gateway.
-      JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${WEATHER_WORKFLOW_ID}
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]
@@ -243,12 +249,12 @@ services:
       K_SERVICE: analyst-iag
       JARVIS_SERVICE_NAME: analyst-iag
       JARVIS_SERVICE_PORT: ${IAG_ANALYST_PORT}
+      # Public URL of this gateway: the interface URL of the agent card it
+      # serves, and the URL the callers use.
+      JARVIS_SERVICE_BASE_URL: http://${IAG_ANALYST_HOST}:${IAG_ANALYST_PORT}
       JARVIS_PROTECTED_AGENT_BASE_URL: http://${ANALYST_HOST}:${ANALYST_PORT}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${ANALYST_IDP_CLIENT_ID}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${ANALYST_IDP_CLIENT_SECRET}
-      # The analyst runs its own workflow (wf3: millicent -> analyst -> mcp), not the
-      # base ${WORKFLOW_ID} (wf1). allowed_workflow_id is a single value per gateway.
-      JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${ANALYST_WORKFLOW_ID}
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]
@@ -317,16 +323,15 @@ services:
       K_SERVICE: crm-iag
       JARVIS_SERVICE_NAME: crm-iag
       JARVIS_SERVICE_PORT: ${IAG_CRM_PORT:-8888}
+      # Public URL of this gateway: the interface URL of the agent card it
+      # serves, and the URL the callers use.
+      JARVIS_SERVICE_BASE_URL: http://${IAG_CRM_HOST:-crm-iag}:${IAG_CRM_PORT:-8888}
       JARVIS_PROTECTED_AGENT_BASE_URL: http://${CRM_HOST:-crm}:${CRM_PORT:-6006}
       # Defaults keep `docker compose up` warning-free with a .env predating
       # the CRM pair - compose validates these specs even when the profile is
       # disabled (same convention as the drive PoC).
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${CRM_IDP_CLIENT_ID:-indykiteagent-crm}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${CRM_IDP_CLIENT_SECRET:-}
-      # The CRM agent runs its own workflow (wf-crm: staff -> orchestrator ->
-      # crm), not the base ${WORKFLOW_ID}. allowed_workflow_id is one value per
-      # gateway.
-      JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${CRM_WORKFLOW_ID:-wf-crm}
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]
@@ -385,15 +390,14 @@ services:
       JARVIS_SERVICE_PORT: ${IAG_MCP_PORT}
       # Switch the gateway out of the default "a2a" proxy mode into MCP proxy mode.
       JARVIS_PROTECTED_AGENT_PROTOCOL: mcp
-      # Downstream MCP server. Only the origin is needed: the gateway forwards the
-      # incoming request path (e.g. /mcp/v1/<project>) on top of this base URL.
-      JARVIS_PROTECTED_AGENT_BASE_URL: ${MCP_SERVER_ORIGIN}
+      # The gateway serves MCP only on the path of JARVIS_SERVICE_BASE_URL (the
+      # URL the agents call) and forwards to exactly
+      # JARVIS_PROTECTED_AGENT_BASE_URL, the MCP endpoint of the IndyKite MCP
+      # server. MCP_SERVER_PATH carries the project id unencoded (gid:...).
+      JARVIS_SERVICE_BASE_URL: http://${IAG_MCP_HOST}:${IAG_MCP_PORT}${MCP_SERVER_PATH}
+      JARVIS_PROTECTED_AGENT_BASE_URL: ${MCP_SERVER_ORIGIN}${MCP_SERVER_PATH}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${MCP_IDP_CLIENT_ID}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${MCP_IDP_CLIENT_SECRET}
-      # Three workflows converge on the MCP agent (wf1 retriever, wf2 weather,
-      # wf3 analyst) but allowed_workflow_id accepts a single value, so leave it
-      # empty here: the gateway then allows any workflow resolved from the graph.
-      JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ""
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]
@@ -454,14 +458,18 @@ services:
       JARVIS_SERVICE_PORT: ${IAG_DRIVE_MCP_PORT:-8887}
       # MCP proxy mode, same as mcp-iag.
       JARVIS_PROTECTED_AGENT_PROTOCOL: mcp
-      JARVIS_PROTECTED_AGENT_BASE_URL: http://${DRIVE_MCP_HOST:-drive-mcp}:${DRIVE_MCP_PORT:-8000}
+      # Public MCP endpoint at the gateway, and the MCP endpoint of the Drive
+      # server it forwards to (supergateway serves Streamable HTTP on /mcp).
+      JARVIS_SERVICE_BASE_URL: http://${IAG_DRIVE_MCP_HOST:-drive-mcp-iag}:${IAG_DRIVE_MCP_PORT:-8887}/mcp
+      JARVIS_PROTECTED_AGENT_BASE_URL: http://${DRIVE_MCP_HOST:-drive-mcp}:8000/mcp
+      # Capability checks are off on this gateway: the Drive server serves one
+      # resource per file (gdrive:///<file id>), URIs the graph cannot list in
+      # advance, so a resources/read would be refused. Admission still decides
+      # who reaches the server. true = only the modelled `search` tool passes
+      # and file reads are refused.
+      JARVIS_AUTHZEN_CAPABILITIES_ENABLED: ${IAG_DRIVE_CAPABILITY_CHECKS:-false}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${DRIVE_MCP_IDP_CLIENT_ID:-indykiteagent-drive}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${DRIVE_MCP_IDP_CLIENT_SECRET:-}
-      # The drive gateway serves one workflow per call shape (wf-drive direct,
-      # wf-drive-analyst via the analyst, wf-drive-console via the console
-      # chain). allowed_workflow_id is single-valued, so it stays unpinned
-      # (same as mcp-iag); set DRIVE_WORKFLOW_ID to pin a single shape.
-      JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${DRIVE_WORKFLOW_ID:-}
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]
@@ -505,13 +513,12 @@ services:
       JARVIS_SERVICE_NAME: erp-mcp-iag
       JARVIS_SERVICE_PORT: ${IAG_ERP_MCP_PORT:-8889}
       JARVIS_PROTECTED_AGENT_PROTOCOL: mcp
-      JARVIS_PROTECTED_AGENT_BASE_URL: http://${ERP_MCP_HOST:-erp-mcp}:${ERP_MCP_PORT:-8010}
+      # Public MCP endpoint at the gateway, and the MCP endpoint of the ERP
+      # server it forwards to.
+      JARVIS_SERVICE_BASE_URL: http://erp-mcp-iag:${IAG_ERP_MCP_PORT:-8889}/mcp
+      JARVIS_PROTECTED_AGENT_BASE_URL: http://${ERP_MCP_HOST:-erp-mcp}:${ERP_MCP_PORT:-8010}/mcp
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${ERP_MCP_IDP_CLIENT_ID:-indykiteagent-erp}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${ERP_MCP_IDP_CLIENT_SECRET:-}
-      # Left empty: three workflow shapes (wf-erp / wf-erp-analyst /
-      # wf-erp-console) converge on this gateway and allowed_workflow_id is
-      # single-valued - same trick as the drive gateway.
-      JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${ERP_WORKFLOW_ID:-}
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]

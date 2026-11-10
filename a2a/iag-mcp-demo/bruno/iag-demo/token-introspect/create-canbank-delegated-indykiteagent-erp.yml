@@ -1,0 +1,36 @@
+---
+info:
+  name: Create CanBank delegated token - ERP MCP gateway
+  type: http
+  seq: 8
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/token-introspects"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "project_id": "{{project_id}}",
+        "name": "canbank-delegated-indykiteagent-erp",
+        "display_name": "CanBank delegated token (ERP MCP gateway)",
+        "description": "Delegated tokens the identity provider mints for the ERP MCP gateway (aud indykiteagent-erp): sent by that gateway in X-IK-Token on its admission and capability calls, and the bearer token at the next gateway of the workflow.",
+        "ikg_node_type": "User",
+        "jwt_matcher": {
+          "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous",
+          "audience": "indykiteagent-erp"
+        },
+        "claims_mapping": {},
+        "offline_validation": {},
+        "perform_upsert": true
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

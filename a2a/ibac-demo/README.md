@@ -60,7 +60,7 @@ policies fed by `JARVIS_AUTHZEN_INPUT_PARAMS` and `JARVIS_AUTHZEN_POLICY_TAGS`.
     - [4. Token Service setup](#4-token-service-setup)
     - [5. Configure `.env`](#5-configure-env)
     - [6. Build the local service images](#6-build-the-local-service-images)
-    - [7. Load the Agent Gateway image](#7-load-the-agent-gateway-image)
+    - [7. The Agent Gateway image](#7-the-agent-gateway-image)
     - [8. Start the stack](#8-start-the-stack)
     - [9. Try the demo prompts](#9-try-the-demo-prompts)
     - [10. Troubleshooting](#10-troubleshooting)
@@ -270,8 +270,14 @@ With **instant-stack** (`../../instant-stack`), `DATASET=ibac`. Before
 The manifest covers everything: the people (26 `Person` with Auth0 subjects,
 families, age bands), departments, customers, accounts, invoices,
 documents, decisions, agent workflows (`wf1`…`wf3`, console and Drive
-shapes, `wf-erp*`, `wf-crm`), 34 KBAC policies (subject `Person`, incl. the
-gateways' admission policy `person-can-reach-agent`), 13 CIQ queries incl.
+shapes, `wf-erp*`, `wf-crm`), the capabilities of every agent (`Tool`,
+`McpResource` and `Skill` nodes attached with `HAS {workflow_name}` edges:
+which MCP tools and which card skills a workflow may use at which agent), 40
+KBAC policies (subject `Person`, incl. the gateways' admission policy
+`person-can-reach-agent`, the four `person-can-use-*` capability policies
+and the two vocabulary policies that let the Intent Agent map "who am I"
+and the weather prompts, `person-can-view-profile` and
+`person-can-read-weather`), 13 CIQ queries incl.
 `get-my-family`, three external data resolvers, the app agent (with `ReadAuthZConfigs` and
 `ReadDataSchema` for the Intent Agent), the MCP server configuration and the
 two Token Introspects. Allow a minute after provisioning: the data schema the
@@ -372,37 +378,47 @@ runs the published [`indykite/intent-agent`](https://hub.docker.com/r/indykite/i
 image, pinned by digest in compose; `INTENT_AGENT_IMAGE` overrides it for a
 local build of the [public repo](https://github.com/indykite/intent-agent).
 
-### 7. Load the Agent Gateway image
+### 7. The Agent Gateway image
 
-The gateway release this demo needs, **2.99**, is not on Docker Hub yet, so
-[`iag-base-docker.yaml`](iag-base-docker.yaml) runs a locally loaded image
-and never pulls (`pull_policy: never`): `AGENT_GATEWAY_IMAGE` in `.env`,
-`agent-gateway:latest` by default, inherited by all gateways. Load the
-release from your registry and tag it:
+The gateways run the published release
+[`indykite/agent-gateway:2.0.3`](https://hub.docker.com/layers/indykite/agent-gateway/2.0.3),
+pinned by digest in [`iag-base-docker.yaml`](iag-base-docker.yaml) and
+pulled from Docker Hub with the rest of the stack; `AGENT_GATEWAY_IMAGE` in
+`.env` names another image when you need one. Check what runs with:
 
 ```sh
-docker tag <your-registry>/agent-gateway:<version> agent-gateway:latest
-docker image inspect agent-gateway:latest --format '{{index .Config.Labels "org.opencontainers.image.version"}}'   # 2.99 or newer
+docker image inspect indykite/agent-gateway:2.0.3 --format '{{index .Config.Labels "org.opencontainers.image.version"}}'
 ```
 
-or set `AGENT_GATEWAY_IMAGE` to the loaded name as is. What the demo relies
-on: Token Service mode with hop-by-hop nesting (2.47+), MCP proxying
-(2.21+), the per-gateway user-token audience check and
-`token_service.audience` (2.89), the `ibac.enabled` switch with the INTENT
-audit records (2.90), and the reuse of client-credentials tokens until
-shortly before their `expires_in` (2.91: one Auth0 grant per audience per
-token lifetime instead of one per request; a refused exchange or a 401 from
-the Intent Agent renews the token once), admission as one AuthZEN evaluation
-over the delegation chain with MCP gateways serving one endpoint and OAuth
-discovery (2.93), and the check of the MCP server's protocol revision on
-`initialize` (2.94), and the delegated token extension (2.99): with a Token
-Service every gateway declares `https://indykite.com/extensions/delegated-token/v1`
-in `capabilities.extensions` of the agent cards it serves and names it in
-`A2A-Extensions` on every call it forwards; the MCP gateways declare
-`com.indykite/delegated-token` in the server capabilities and in
-`mcp_extensions` of their protected resource metadata. Releases 2.95 to
-2.98 change nothing the gateway does at run time. On Apple Silicon add
-`platform: linux/amd64` to `iag-base`.
+What the demo relies on, all in 2.0.3:
+
+- **Token Service mode**: the person's token stays in `Authorization`, the
+  delegation travels in `X-IK-Token` and nests the chain hop by hop; one
+  shared audience; a workflow starts only at the agent the token was issued
+  for; the agent gets the person's token only when it was issued for it
+  (`authorization_header.forward`, default `correct_audience`, which the
+  single audience `ibac-console` satisfies on every hop).
+- **Admission as one AuthZEN evaluation** over the delegation chain
+  (`person-can-reach-agent` compares `$ik_token.act_chain` with a workflow
+  path); no workflow query in the gateway.
+- **Capability checks**, on by default: an MCP gateway lists and allows only
+  the tools, resources and prompts the dataset attaches to its agent for the
+  workflow of the call (`HAS {workflow_name}` edges, `person-can-use-*`
+  policies, action `CAN_USE`); a call outside the set is `403` with JSON-RPC
+  `-31403`; an A2A gateway filters the skills of the extended agent card.
+  `IAG_CAPABILITY_CHECKS=false` in `.env` switches them off.
+- **Audit records that name their question**: `action` is `ADMISSION`,
+  `DISCOVERY`, `INVOCATION`, `INTENT` or `noop`, with the chain, the
+  permitted set and whether the answer was cached; the console shows them.
+- MCP gateways serving **one endpoint with OAuth discovery** and the check of
+  the server's protocol revision on `initialize`; the **delegated token
+  extension** on the agent cards, the MCP capabilities and the protected
+  resource metadata; the `ibac.enabled` switch with the INTENT records; the
+  reuse of client-credentials tokens until shortly before `expires_in`.
+- CORS is available (`JARVIS_CORS_ALLOWED_ORIGINS`) but not set: the console
+  calls the gateways server-side, no browser origin reaches them.
+
+On Apple Silicon add `platform: linux/amd64` to `iag-base`.
 
 ### 8. Start the stack
 
@@ -508,7 +524,7 @@ intent-agent ──audit record──▶ console (INTENT card: prompt, evaluatio
 
 The answer is a list of AuthZEN-shaped evaluations - subject, action,
 resource, context - constrained to this project's data schema and the
-caller's active KBAC policies (the 33 `Person` policies are the agent's whole
+caller's active KBAC policies (the 40 `Person` policies are the agent's whole
 vocabulary). What the gateway does with it:
 
 - an intent: the message is forwarded to the agent;
@@ -519,6 +535,20 @@ vocabulary). What the gateway does with it:
   that text as the reply;
 - the agent unreachable or unreadable: 502; a timeout
   (`INTENT_AGENT_TIMEOUT`, 45 s): 504.
+
+**What the switch buys today, and what it costs.** In this release the
+gateway uses the intent for one thing: a prompt the Intent Agent cannot map
+onto a policy never reaches the agent. It does not yet take an authorization
+decision from the intent (the IBAC engine is not linked into the gateway,
+see below), and the admission and capability checks run exactly the same
+with the switch off. So `IBAC_ENABLED=true` is a vocabulary gate: it refuses
+greetings, web search and Drive prompts, and it refuses any prompt the model
+fails to map, at the price of one Gemini round trip per prompt. The model
+maps from the policies' actions and the node types' property **names**, so a
+type without telling properties is invisible to it; that is why the dataset
+describes `Quote` (`name`, `description`, `currency`, `symbol`) and `Weather`
+beyond the values the resolvers fill in. Run the acts of the demo script with
+the switch **off** and switch it on for the intent beat only.
 
 Every call is an **INTENT** audit record of the gateway (`INTENT_FOUND` /
 `INTENT_FAILED`, with its duration and, because `audit-config.yaml` sets
@@ -539,10 +569,13 @@ Until the release that enables it ships, the console previews the discovery
 decision on every INTENT card from the orchestrator's raw card
 (`IBAC_CARD_URL`): "matches query-erp" for an invoice prompt, "no skill
 matches" for an intent outside the agent's declared skills. Note what
-`IBAC_ENABLED=true` already means on 2.90: a prompt the Intent Agent finds
-no intent for never reaches the agent - greetings, weather and web-search
-prompts included, because the policies have no vocabulary for them. Keep
-IBAC off for the weather and Drive beats, or accept the gateway's answer
+`IBAC_ENABLED=true` means: a prompt the Intent Agent finds no intent for
+never reaches the agent, because the policies have no vocabulary for it.
+The Intent Agent reads only the project's KBAC policies, so the dataset
+gives the two prompts that had none a policy each: `person-can-view-profile`
+(`CAN_VIEW_PROFILE` on `Person`, "who am I") and `person-can-read-weather`
+(`CAN_READ` on `Weather`). Greetings, web search and Drive prompts still have
+no vocabulary: keep IBAC off for those beats, or accept the gateway's answer
 as the beat.
 
 ### Protecting MCP traffic (`mcp-iag`)
@@ -577,6 +610,20 @@ Auth0 issuer (`JARVIS_IDENTITY_PROVIDER_ISSUER`); every 401 of the endpoint
 links it in `WWW-Authenticate`. A standard MCP client can therefore discover
 where to get a token. To bypass the gateway, set `MCP_SERVER_URL` back to the
 direct URL in the agents' service definitions.
+
+**Capability checks.** A request that lists or names a capability gets a
+capability decision in place of the admission decision: the gateway asks
+AuthZEN `search/resource` for the `Tool` (and `McpResource`, `Prompt`) nodes
+the person may `CAN_USE`, with the delegation in `X-IK-Token`, and the
+`person-can-use-*` policies answer the capabilities the agent at the end of
+the chain `HAS` for the workflow the chain belongs to. `tools/list` comes
+back filtered to that set (the same IndyKite MCP server lists the retriever
+its queries and the AuthZEN tools on `wf1`, and the weather agent only
+`ciq_execute` and `get-hq-weather` on `wf2`); a `tools/call` outside it is
+refused with `403` and JSON-RPC `-31403` before the server is called. The
+audit terminal shows each as a `discovery` or `invocation` card with the
+permitted set. The Drive gateway permits `search`, the ERP gateway
+`list_invoices` and `get_invoice`.
 
 ### Proxying a non-IndyKite MCP server: Google Drive (profile `drive`)
 
@@ -730,10 +777,31 @@ environment.
 
 ### 10. Troubleshooting
 
-- **`pull access denied` / `not found` for `agent-gateway` on `up` or `pull`**:
-  the gateway image is local only (`pull_policy: never`); load it and tag it
-  as `AGENT_GATEWAY_IMAGE` names it (step 7), and pull the other images with
-  `docker compose pull --ignore-pull-failures`.
+- **`pull access denied` for `erp-mcp`, `drive-mcp` or `crm-agent` on
+  `up`**: those images are local builds behind compose profiles; run
+  `make new-erp-mcp`, `make new-drive-mcp` or `make new-crm` before enabling
+  the profile.
+- **The retriever answers `MCP error. Detail: unhandled errors in a TaskGroup`
+  right after `resources/list`**: the MCP gateway permitted no resource for
+  this chain and answered the empty list itself; that answer carries no
+  `resultType`, which the MCP client of revision `2026-07-28` requires, so
+  the client rejects it (gateway 2.0.3). The agents tolerate it and go on
+  without resources; the chain gets its resource back once the `HAS` edges
+  of the dataset are captured with their `discriminating_property` (see
+  below).
+- **Only a few of the modelled tools are permitted, or a different set than
+  the workflow's**: the `HAS` edges were captured without
+  `discriminating_property: workflow_name`, so the platform kept one edge
+  per agent and tool and the last workflow written won. The dataset carries
+  the property on every `HAS` edge; re-capture the relationships
+  (instant-stack: clear `CAPTURED_RELATIONSHIPS`, or the Bruno ingest
+  requests) and the per-workflow sets appear.
+- **Empty tool lists, or `403` with JSON-RPC `-31403` on a tool call, while
+  the admission cards are green**: the capability checks found no permitted
+  set - the project was provisioned before the `Tool` / `Skill` nodes, the
+  `HAS` edges and the `person-can-use-*` policies existed, or the tool name
+  the server lists differs from the node's `external_id`. Re-provision the
+  dataset, or set `IAG_CAPABILITY_CHECKS=false` to pass the lists through.
 - **OAuth redirect mismatch / `invalid_request` at login**: the Auth0
   console application must list `http://${CHATBOT_HOST}:${CHATBOT_PORT}/auth/callback`
   as callback URL and `http://${CHATBOT_HOST}:${CHATBOT_PORT}/` as logout URL.
@@ -786,8 +854,11 @@ environment.
 - **The reply is "Unable to extract intent from prompt." instead of an
   answer**: that is the gateway answering in place of the agent because the
   Intent Agent found no intent for the prompt (INTENT_FAILED card). Prompts
-  outside the policy vocabulary - greetings, weather, web search - have no
-  intent by construction; see the IBAC paragraph above.
+  outside the policy vocabulary - greetings, web search, Drive - have no
+  intent by construction; see the IBAC paragraph above. A prompt that should
+  map (invoices, quotes, documents, family, "who am I", the HQ weather) and
+  is still refused is the model being conservative: rephrase it closer to
+  the action, e.g. "Retrieve the stock quote for META".
 - **`.env` changes don't take effect**: `docker compose restart` does not
   re-read `.env`; recreate: `docker compose up -d --force-recreate <service>`.
 - **`Bind for 0.0.0.0:98xx failed: port is already allocated`**: another

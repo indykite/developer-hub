@@ -16,7 +16,7 @@ http:
       {
           "name": "user-can-retrieve-quote",
           "display_name": "User can retrieve stock quote",
-          "description": "Allow a user to retrieve a stock quote when their department can retrieve it.",
+          "description": "Allow a user to retrieve a stock quote when their department can retrieve it. Note: evaluations carrying a user bearer token (e.g. via the MCP server) are bound to the token's subject - a user can only be evaluated as themselves.",
           "project_id": "{{project_id}}",
           "policy": "{ \"meta\": { \"policy_version\": \"2.0-kbac\" }, \"subject\": { \"type\": \"User\" }, \"actions\": [ \"CAN_RETRIEVE\" ], \"resource\": { \"type\": \"Quote\" }, \"condition\": { \"cypher\": \"MATCH (subject:User)-[:WORKS_IN]->(department:Department)-[:CAN_RETRIEVE]->(resource:Quote)\" } }",
           "status": "ACTIVE"

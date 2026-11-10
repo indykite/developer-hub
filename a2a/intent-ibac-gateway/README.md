@@ -9,7 +9,7 @@ front of a fleet of six agents:
   `{subject, action, resource, context}` evaluations constrained to the
   vocabulary of your IndyKite Knowledge Graph and the caller's active KBAC
   policies;
-- the **Agent Gateway** (release 2.99) sits in front of each agent of the
+- the **Agent Gateway** (release 2.0.3) sits in front of each agent of the
   fleet. With `ibac.enabled` it sends every prompt to the Intent Agent first
   and answers the caller itself when no intent comes back; then it resolves
   the caller (whoami), grows the delegation chain at the Token Service, asks
@@ -138,10 +138,15 @@ then does, in order, and audits each step:
    `person-can-reach-agent` compares that chain
    with the `Workflow` → `INVOKES` → `Agent` path in the graph. `false` is a
    403 to the caller.
-6. **Forwards** the message to the agent with the user's token untouched in
-   `Authorization`, the delegated token in `X-IK-Token`, and the delegated
-   token extension named in `A2A-Extensions`. The stand-in agent echoes what
-   it received, so the trace shows the chain arriving.
+6. **Forwards** the message to the agent with the delegated token in
+   `X-IK-Token` and the delegated token extension named in `A2A-Extensions`.
+   `Authorization` is left empty (`authorization_header.forward: none`,
+   `IAG_AUTHORIZATION_FORWARD` in `.env`): the agent never holds the person's
+   token, so it cannot start a new workflow as them; it acts through the
+   delegated token only. The stand-in agent echoes what it received, so the
+   trace shows the chain arriving. The admission answer is kept by the
+   gateway for `IAG_AUTHZEN_CACHE_TTL` (30 s): the trace says whether it was
+   asked of the platform or served from that cache.
 
 The console then adds what the gateway does not do yet: the **mapping
 preview** (discovery and usage over the cards' `x-coaz-mappings`, next
@@ -255,12 +260,15 @@ the same time.
 
 ### 1. The Agent Gateway image
 
-The gateways run the Agent Gateway release 2.99 or later from a locally
-loaded image; compose never pulls it (`pull_policy: never`). Load the
-release and tag it `agent-gateway:latest`, or name it in `.env` as
-`AGENT_GATEWAY_IMAGE`. What the demo relies on, all in that release: Token
+The gateways run the published release
+[`indykite/agent-gateway:2.0.3`](https://hub.docker.com/r/indykite/agent-gateway),
+which compose pulls when it is missing; another tag can be named in `.env`
+as `AGENT_GATEWAY_IMAGE`. What the demo relies on, all in that release: Token
 Service mode, `ibac.enabled`, admission over `$ik_token.act_chain`, the
-`INTENT` audit records, the delegated token extension on the card.
+capability checks behind the extended card, the `INTENT` and `DISCOVERY`
+audit records, the delegated token extension on the card. The release also
+answers CORS itself (`cors.allowed_origins`); the demo leaves the list
+empty, since only the console calls the gateways, server side.
 
 ### 2. The Auth0 tenant
 
@@ -398,16 +406,15 @@ port-forward on 3300, the port the tenant's Console application has as
 callback, so the login works unchanged. All commands run from
 `a2a/intent-ibac-gateway`.
 
-1. Start the cluster and load the local images (the Intent Agent, the Token
-   Service and Redis are public on Docker Hub and the cluster pulls them;
-   the gateway image is never pulled):
+1. Start the cluster and load the local images (the Agent Gateway, the Intent
+   Agent, the Token Service and Redis are public on Docker Hub and the
+   cluster pulls them):
 
    ```sh
    minikube start
    minikube image load intent-ibac-console:local
    minikube image load intent-ibac-agent:local
    minikube image load intent-ibac-auth0-bridge:local
-   minikube image load agent-gateway:latest
    ```
 
 2. Create the namespace, the two Secrets and the fleet ConfigMap. The chart
@@ -581,6 +588,8 @@ workflow in the dataset.
 | Symptom | Cause and fix |
 | --- | --- |
 | A gateway stays `unhealthy` or restarts | Its agent's card could not be read, or `audit-config.yaml` is missing: run `make keys` (it renders the file), then `docker compose up -d`. |
+| An edit to a card in `console/data/fleet.json` is not on the extended card yet | Each gateway keeps the card for `IAG_A2A_CACHE_TTL` (5 s here, 5 minutes by the gateway's default); the console caches `/api/fleet` until the view is reopened. Wait a few seconds and reload. |
+| A policy change does not change the admission at once | The gateway serves admission from its cache for `IAG_AUTHZEN_CACHE_TTL` (30 s); the handoff lane says "from the gateway's cache" when it did. |
 | The login ends on "Auth0 answered an opaque access token" | The Console application could not issue a token for `ibac-people`: the API does not exist in the tenant, or its identifier differs from `AUTH0_PEOPLE_AUDIENCE`. |
 | The login ends on "Auth0 refused the code" or a callback mismatch | `CONSOLE_PUBLIC_URL` (default `http://localhost:3300`) plus `/auth/callback` is not among the Console application's allowed callback URLs, or the client secret is wrong. |
 | Every prompt is 401 "not issued for this agent" | The token's audience is not the gateway's `PROTECTED_AGENT_AUTHENTICATION_AUDIENCES` (`ibac-people`): the console requested another API, or the tenant answered an opaque token because no audience was requested. |

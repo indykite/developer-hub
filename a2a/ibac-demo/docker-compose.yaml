@@ -688,7 +688,7 @@ services:
   #  + the profile in .env. The image is the published indykite/intent-agent
   #  (pinned by digest); INTENT_AGENT_IMAGE overrides it for a local build.
   intent-agent:
-    image: ${INTENT_AGENT_IMAGE:-docker.io/indykite/intent-agent:1.0.0@sha256:0b857bc6edcf5ab5f206b7111471c11f9e5d9854a09e818e0081172179b4fe3c}
+    image: ${INTENT_AGENT_IMAGE:-docker.io/indykite/intent-agent:1.1.0@sha256:a9e8271ada04e13f52218046df0c88641274fdf7658bacd50e4c4bda6ee3d71c}
     profiles: ["intent"]
     expose:
       - "6003"
@@ -717,6 +717,11 @@ services:
       REQUEST_TIMEOUT_SECONDS: ${INTENT_REQUEST_TIMEOUT_SECONDS:-10.0}
       LLM_TIMEOUT_SECONDS: ${INTENT_LLM_TIMEOUT_SECONDS:-3.0}
       VALIDATION_MAX_RETRIES: ${INTENT_VALIDATION_MAX_RETRIES:-1}
+      # How long the agent keeps the project's policy list and data schema
+      # (minutes, fractions allowed) before reading them again: how soon a
+      # policy or node type added to the dataset reaches the intents.
+      POLICY_REFRESH_TTL_MINUTES: ${INTENT_REFRESH_TTL_MINUTES:-0.5}
+      SCHEMA_REFRESH_TTL_MINUTES: ${INTENT_REFRESH_TTL_MINUTES:-0.5}
       CACHE_BACKEND: redis
       REDIS_URL: redis://intent-redis:6379
       # Audit records go to the console's audit terminal like the gateways'.

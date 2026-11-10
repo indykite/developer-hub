@@ -14,17 +14,43 @@ Differences from `canbank`:
   `demo-data/{canbank,customers,customer-docs}`): the CanBank organization
   plus the agent-workflow graph - users (`millicent`, `carol`, `joe`, …),
   workflows `wf1`–`wf3` and the `indykiteagent*` agent chains ending at
-  `indykiteagent-mcp`. The workflow→agent `INVOKES` edges carry
+  `indykiteagent-mcp`. Each `Agent` node's `external_id` is the IdP client
+  id of its gateway. The workflow→agent `INVOKES` edges carry
   `workflow_name` (and `discriminating_property: workflow_name` on edges into
-  the shared MCP agent), which the Agent Gateway's `get-agent-workflows`
-  ContX IQ query (slot 8) filters on at every hop. Wired workflows:
-  `wf1` = orchestrator → retriever → MCP, `wf2` = weather → MCP,
-  `wf3` = analyst → MCP (millicent only - carol is denied, which the WF4
-  parallel-MCP tests exercise). The `hq_weather` node is kept from `canbank`
-  so the weather EDRs and CIQ slot 9 still work.
+  the shared MCP agent), which the Agent Gateway's admission policy filters
+  on at every hop. Wired workflows:
+  `wf1` = orchestrator → retriever → MCP, `wf2` = orchestrator → weather →
+  MCP, `wf3` = analyst → MCP (millicent only - carol is denied, which the
+  WF4 parallel-MCP tests exercise). The agents' capabilities are nodes too:
+  `(:Agent)-[:HAS {workflow_name}]->(:Tool|:McpResource|:Skill)`, one edge
+  per workflow in which the tool, resource or skill may be used. The
+  `hq_weather` node is kept from `canbank` so the weather EDRs and CIQ
+  slot 9 still work.
+- **Agent Gateway policies** (`kbac` in the `canbank` and `insurance`
+  manifests): the admission policy `user-can-reach-agent` (`insurance`:
+  `person-can-reach-agent`; action `CAN_TRIGGER`, resource `Agent`) admits
+  a subject when a workflow they can trigger has exactly the delegation
+  chain (`$ik_token.act_chain`) as its path of agents - one policy for all
+  gateways. The capability policies `user-can-use-tool`,
+  `user-can-use-mcp-resource`, `user-can-use-prompt` and
+  `user-can-use-skill` (`insurance`: `person-...`; action `CAN_USE`) add the
+  agent's `HAS` edge for that workflow. `user-can-trigger-workflow` /
+  `person-can-trigger-workflow` (resource `Workflow`) serves the demo
+  console's grant self-check.
+- **Token Introspect** (`token_introspect` in the `canbank` and `insurance`
+  manifests) is a list, all for the Curity issuer and the dataset's node
+  type (`User` in `canbank`, `Person` in `insurance`): first the one the
+  MCP server configuration is bound to (audience `indykiteagent-mcp`), then
+  the console user token (audience `chatbot-mcp`), then one per gateway
+  client audience (`indykiteagent`, `indykiteagent-2`, `indykiteagent-3`,
+  `indykiteagent-4`, `indykiteagent-drive`, `indykiteagent-erp`, and
+  `indykiteagent-crm` in `insurance`). The platform must resolve every
+  token a gateway sends it: the bearer token for whoami and the delegation
+  token in `X-IK-Token`.
 - **CIQ policies and knowledge queries** (slots 1–8) are byte-identical to
   the latest versions in the Bruno collection (`ciq-context/*` and
-  `ciq-config/workflows-v2`).
+  `ciq-config/workflows-v2`). The Agent Gateways do not call slot 8
+  (`get-agent-workflows`).
 - **AuthZEN defaults** use the Bruno environment's subject (`joe` /
   `CAN_TRIGGER` / `wf1`). Users get workflow access via direct `CAN_TRIGGER`
   edges, and the chatbot demo users additionally via their departments:

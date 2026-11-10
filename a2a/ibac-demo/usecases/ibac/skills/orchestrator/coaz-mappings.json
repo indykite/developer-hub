@@ -282,6 +282,24 @@
           "name": "VIEW_TICKET_DECISION"
         }
       ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Person"
+        }
+      ],
+      "action": [
+        {
+          "name": "CAN_VIEW_PROFILE"
+        }
+      ]
     }
   ],
   "query-crm": [
@@ -303,6 +321,26 @@
         },
         {
           "name": "CAN_QUERY_CUSTOMER"
+        }
+      ]
+    }
+  ],
+  "orchestrator": [
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Weather"
+        }
+      ],
+      "action": [
+        {
+          "name": "CAN_READ"
         }
       ]
     }

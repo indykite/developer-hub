@@ -6,3 +6,14 @@ info:
 
 request:
   auth: inherit
+
+docs: |-
+  The agent-workflow graph of the canbank dataset (instant-stack data/canbank).
+  Create Nodes / Create Relationships: users, departments, Workflow and Agent
+  nodes, the INVOKES paths (workflow_name on every edge) and the CAN_TRIGGER
+  edges the admission policy user-can-reach-agent reads.
+  Create Capability Nodes / Create Capability Relationships: the Tool,
+  McpResource and Skill nodes named after what each MCP server or A2A agent
+  offers, and the Agent HAS edges (workflow_name, discriminating_property)
+  the capability policies user-can-use-* read. Run the nodes before the
+  relationships.

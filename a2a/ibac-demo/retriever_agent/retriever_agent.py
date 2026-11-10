@@ -365,20 +365,23 @@ _BASE_SYSTEM_PROMPT = (
     "Upon receiving a request, you must:\n"
     "1. Consider the combination of (a) your loaded skills (see <available_skills>) and (b) available "
     "MCP resources and MCP tools. Use list_resources to discover MCP "
-    "resources (URIs, names, descriptions). Your bound tools already include the MCP server's tools "
-    "(e.g. list_resources, read_resource, ciq_execute, plus any AuthZEN or other tools from the server).\n"
-    "2. Select from this combined list which to run: either call an MCP tool (list_resources, "
-    "read_resource, ciq_execute, or an AuthZEN tool), or one of your other bound tools, or activate a "
+    "resources (URIs, names, descriptions). Your bound tools already include the MCP server's tools: "
+    "one tool per knowledge query, named after the query (get-self, get-stock-quote, ...), the "
+    "AuthZEN tools, list_resources and read_resource. The tools you hold are exactly the ones the "
+    "Agent Gateway permits for this workflow; a query that is not among them is not available here.\n"
+    "2. Select from this combined list which to run: either call an MCP tool (the query's own tool, "
+    "list_resources, read_resource, or an AuthZEN tool), or one of your other bound tools, or activate a "
     "skill (activate_skill) and then run the matching tool, or reply without a tool (retriever).\n"
     "3. Run the selected tool or skill. Skills authzen and ciq-execute match MCP resources or tools "
     "exposed by the server—use list_resources and the tool list to see what is available and choose "
     "the right resource or tool for the request.\n"
-    'Use ciq_execute with a concrete {"id": "<query-id>"} and its "input_params" — '
-    "NEVER call ciq_execute with empty arguments, and NEVER invent a query id. Valid ids and "
-    "their exact call shapes come from (a) the examples in your activated ciq-execute skill and "
-    '(b) the MCP server itself: read_resource on "indykite://knowledge-queries/" lists every '
-    "query, each description carrying a ready-to-use ciq_execute example. Substitute the real "
-    "values from the user question; if unsure which id fits, read that resource first.\n"
+    'Run a knowledge query by calling the tool named after it with its "input_params" '
+    "(the tool's description is the query's description with its parameters). Substitute the real "
+    "values from the user question; NEVER invent a query name or a parameter. ciq_execute is "
+    'deprecated: use it only when the query\'s own tool is absent, with a concrete {"id": "<query-name>"} '
+    "and its input_params, never with empty arguments, and say that it is deprecated. "
+    'read_resource on "indykite://knowledge-queries/" lists every query with its parameters when a '
+    "tool description is not enough.\n"
     "AuthZEN (evaluation, evaluations, resource_search, subject_search, action_search): example "
     '{"subject":{"type":"user","id":"alice"},"action":{"name":"view"},"resource":{"type":"record","id":"109"}}; '
     'response {"decision":true} or {"decision":false}. Return data only when evaluation is '
@@ -1109,7 +1112,15 @@ class _McpConn:
                 async with asyncio.timeout(MCP_SETUP_TIMEOUT):
                     await _mcp_handshake(session)
                     mcp_tools = await _list_all_mcp_tools(session)
-                    mcp_resources = await _list_all_mcp_resources(session)
+                    try:
+                        mcp_resources = await _list_all_mcp_resources(session)
+                    except Exception as e:
+                        # Resources are optional. A gateway whose capability check permits no
+                        # resource answers an empty list itself, and that answer lacks the
+                        # resultType the 2026-07-28 client validates, so the call fails although
+                        # the session is fine; go on with the tools.
+                        _logger.warning("resources/list failed, continuing without resources: %s", e)
+                        mcp_resources = []
                 self.result = (session, mcp_tools, mcp_resources)
                 self.ready.set()
                 await self._close.wait()

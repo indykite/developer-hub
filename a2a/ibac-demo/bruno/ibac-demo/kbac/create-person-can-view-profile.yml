@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Person Can View Their Own Profile
+  type: http
+  seq: 39
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "person-can-view-profile",
+        "display_name": "Person can view their own profile",
+        "description": "A person may view their own profile: the resource is the person's own node. Gives prompts such as 'who am I' a vocabulary the Intent Agent can map (action CAN_VIEW_PROFILE on Person); the data itself comes from the get-self knowledge query.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"CAN_VIEW_PROFILE\"],\"resource\":{\"type\":\"Person\"},\"condition\":{\"cypher\":\"MATCH (subject:Person) MATCH (resource:Person) WHERE resource.external_id = subject.external_id\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_person_can_view_profile", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

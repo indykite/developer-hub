@@ -160,7 +160,7 @@ def _broadcast_update(event: dict) -> None:
 
 @app.route("/api/push-update", methods=["POST"])
 def push_update():
-    """Receive an audit/decision event (gateway or token webhook) and queue it for the SSE stream."""
+    """Receive an audit event (gateway record or an agent's token webhook) and queue it for the SSE stream."""
     data = request.json or {}
     decision = data.get("decision")
     reason = data.get("reason")
@@ -180,6 +180,21 @@ def push_update():
         "timestamp": timestamp,
         "service": service,
     }
+    # Every gateway record names the delegation chain of the hop (oldest actor
+    # first) and the trace, and whether the answer came from the gateway's
+    # cache. Capability records (action DISCOVERY or INVOCATION) add the
+    # identifiers an invocation named, the permitted set a list was filtered
+    # to, and how many entries the server listed and the caller kept.
+    for key, out in (
+        ("actorsChain", "actors_chain"),
+        ("traceID", "trace_id"),
+        ("cached", "cached"),
+        ("capabilities", "capabilities"),
+        ("permittedSet", "permitted_set"),
+        ("discovery", "discovery_stats"),
+    ):
+        if data.get(key) not in (None, "", [], {}):
+            event[out] = data[key]
     _broadcast_update(event)
     return jsonify({"ok": True})
 

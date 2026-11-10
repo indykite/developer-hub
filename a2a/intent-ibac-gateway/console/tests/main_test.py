@@ -96,7 +96,7 @@ def test_fleet_summary_reads_the_gateway_records_and_the_chain_the_agent_receive
     assert summary["verdict"] == "forwarded"
     assert summary["skill"] == "my-invoices"
     assert summary["chain"] == ["bob", "billing"]
-    assert summary["admission"] == {"decision": "AUTHORIZED", "reason": ADMITTED["reason"]}
+    assert summary["admission"] == {"decision": "AUTHORIZED", "reason": ADMITTED["reason"], "cached": False}
     assert summary["intent"] == {"decision": "INTENT_FOUND", "duration_ms": 1850}
 
 
