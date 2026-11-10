@@ -481,7 +481,16 @@ def summarize_gateway_answer(answer: dict[str, Any], records: list[dict[str, Any
         "skill": answer.get("skill"),
         "reply_text": answer.get("reply_text") or "",
         "chain": [delegated.get("sub"), *_act_chain(delegated.get("act"))] if delegated.get("sub") else [],
-        "admission": {"decision": admission.get("decision"), "reason": admission.get("reason")} if admission else None,
+        "admission": (
+            {
+                "decision": admission.get("decision"),
+                "reason": admission.get("reason"),
+                # The gateway keeps an admission answer for authzen.cache_ttl: true when this one came from there.
+                "cached": bool((admission.get("cached") or {}).get("admission")),
+            }
+            if admission
+            else None
+        ),
         "intent": {"decision": intent.get("decision"), "duration_ms": intent.get("durationMs")} if intent else None,
         "records": records,
     }

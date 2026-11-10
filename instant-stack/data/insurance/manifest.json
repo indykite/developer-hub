@@ -780,23 +780,133 @@
       "email"
     ]
   },
-  "token_introspect": {
-    "name": "securehome-token-introspect",
-    "display_name": "SecureHome Token Introspect",
-    "description": "Token introspect for SecureHome Insurance users authenticated via their IdP",
-    "ikg_node_type": "Person",
-    "jwt_matcher": {
-      "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous",
-      "audience": "indykiteagent-mcp"
+  "token_introspect": [
+    {
+      "name": "securehome-token-introspect",
+      "display_name": "SecureHome Token Introspect",
+      "description": "Token introspect for SecureHome Insurance users authenticated via their IdP",
+      "ikg_node_type": "Person",
+      "jwt_matcher": {
+        "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous",
+        "audience": "indykiteagent-mcp"
+      },
+      "claims_mapping": {
+        "email": {
+          "selector": "email"
+        }
+      },
+      "offline_validation": {},
+      "perform_upsert": true
     },
-    "claims_mapping": {
-      "email": {
-        "selector": "email"
-      }
+    {
+      "name": "securehome-user-token-introspect",
+      "display_name": "SecureHome User Token Introspect",
+      "description": "The access token the console obtains for the logged-in user (aud chatbot-mcp): the bearer token at the first gateway of a workflow, which the gateway sends to whoami and to its admission evaluation.",
+      "ikg_node_type": "Person",
+      "jwt_matcher": {
+        "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous",
+        "audience": "chatbot-mcp"
+      },
+      "claims_mapping": {
+        "email": {
+          "selector": "email"
+        }
+      },
+      "offline_validation": {},
+      "perform_upsert": true
     },
-    "offline_validation": {},
-    "perform_upsert": true
-  },
+    {
+      "name": "securehome-delegated-indykiteagent",
+      "display_name": "SecureHome delegated token (orchestrator gateway)",
+      "description": "Delegated tokens the identity provider mints for the orchestrator gateway (aud indykiteagent): sent by that gateway in X-IK-Token on its admission and capability calls, and the bearer token at the next gateway of the workflow.",
+      "ikg_node_type": "Person",
+      "jwt_matcher": {
+        "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous",
+        "audience": "indykiteagent"
+      },
+      "claims_mapping": {},
+      "offline_validation": {},
+      "perform_upsert": true
+    },
+    {
+      "name": "securehome-delegated-indykiteagent-2",
+      "display_name": "SecureHome delegated token (retriever gateway)",
+      "description": "Delegated tokens the identity provider mints for the retriever gateway (aud indykiteagent-2): sent by that gateway in X-IK-Token on its admission and capability calls, and the bearer token at the next gateway of the workflow.",
+      "ikg_node_type": "Person",
+      "jwt_matcher": {
+        "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous",
+        "audience": "indykiteagent-2"
+      },
+      "claims_mapping": {},
+      "offline_validation": {},
+      "perform_upsert": true
+    },
+    {
+      "name": "securehome-delegated-indykiteagent-3",
+      "display_name": "SecureHome delegated token (weather gateway)",
+      "description": "Delegated tokens the identity provider mints for the weather gateway (aud indykiteagent-3): sent by that gateway in X-IK-Token on its admission and capability calls, and the bearer token at the next gateway of the workflow.",
+      "ikg_node_type": "Person",
+      "jwt_matcher": {
+        "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous",
+        "audience": "indykiteagent-3"
+      },
+      "claims_mapping": {},
+      "offline_validation": {},
+      "perform_upsert": true
+    },
+    {
+      "name": "securehome-delegated-indykiteagent-4",
+      "display_name": "SecureHome delegated token (analyst gateway)",
+      "description": "Delegated tokens the identity provider mints for the analyst gateway (aud indykiteagent-4): sent by that gateway in X-IK-Token on its admission and capability calls, and the bearer token at the next gateway of the workflow.",
+      "ikg_node_type": "Person",
+      "jwt_matcher": {
+        "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous",
+        "audience": "indykiteagent-4"
+      },
+      "claims_mapping": {},
+      "offline_validation": {},
+      "perform_upsert": true
+    },
+    {
+      "name": "securehome-delegated-indykiteagent-crm",
+      "display_name": "SecureHome delegated token (CRM gateway)",
+      "description": "Delegated tokens the identity provider mints for the CRM gateway (aud indykiteagent-crm): sent by that gateway in X-IK-Token on its admission and capability calls, and the bearer token at the next gateway of the workflow.",
+      "ikg_node_type": "Person",
+      "jwt_matcher": {
+        "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous",
+        "audience": "indykiteagent-crm"
+      },
+      "claims_mapping": {},
+      "offline_validation": {},
+      "perform_upsert": true
+    },
+    {
+      "name": "securehome-delegated-indykiteagent-drive",
+      "display_name": "SecureHome delegated token (Drive MCP gateway)",
+      "description": "Delegated tokens the identity provider mints for the Drive MCP gateway (aud indykiteagent-drive): sent by that gateway in X-IK-Token on its admission and capability calls, and the bearer token at the next gateway of the workflow.",
+      "ikg_node_type": "Person",
+      "jwt_matcher": {
+        "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous",
+        "audience": "indykiteagent-drive"
+      },
+      "claims_mapping": {},
+      "offline_validation": {},
+      "perform_upsert": true
+    },
+    {
+      "name": "securehome-delegated-indykiteagent-erp",
+      "display_name": "SecureHome delegated token (ERP MCP gateway)",
+      "description": "Delegated tokens the identity provider mints for the ERP MCP gateway (aud indykiteagent-erp): sent by that gateway in X-IK-Token on its admission and capability calls, and the bearer token at the next gateway of the workflow.",
+      "ikg_node_type": "Person",
+      "jwt_matcher": {
+        "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous",
+        "audience": "indykiteagent-erp"
+      },
+      "claims_mapping": {},
+      "offline_validation": {},
+      "perform_upsert": true
+    }
+  ],
   "kbac": [
     {
       "name": "person-can-trigger-workflow",
@@ -910,6 +1020,121 @@
         },
         "condition": {
           "cypher": "MATCH (subject:Person)-[:HAS_INVOICE]->(resource:Invoice)"
+        }
+      }
+    },
+    {
+      "name": "person-can-reach-agent",
+      "display_name": "Person can reach agent",
+      "description": "The Agent Gateway's admission check: the subject may reach the protected agent or MCP server (the newest hop of the delegation chain, resource type Agent) when a workflow they can trigger - directly or through their department - has exactly the delegation chain as its path of agents ($ik_token.act_chain, sent by the gateway in X-IK-Token). One policy serves every gateway; a chain from another workflow, or one that does not end at this agent, is refused.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_TRIGGER"
+        ],
+        "resource": {
+          "type": "Agent"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN|CAN_TRIGGER*..3]->(wf:Workflow) MATCH (wf)-[rels:INVOKES*]->(resource:Agent) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain"
+        }
+      }
+    },
+    {
+      "name": "person-can-use-tool",
+      "display_name": "Person can use tools",
+      "description": "The Agent Gateway's capability check for tools: the tools of an MCP server (tools/list is filtered to them, a tools/call outside them is refused with 403 and -31403). The gateway reads the permitted set with one AuthZEN search/resource (action CAN_USE, resource type Tool) per request that lists or names a capability, with the delegation in X-IK-Token. A capability is permitted when a workflow the subject can trigger - directly or through their department - has exactly the delegation chain as its path of agents and the agent at the end of the chain HAS the capability for that workflow (HAS.workflow_name).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_USE"
+        ],
+        "resource": {
+          "type": "Tool"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN|CAN_TRIGGER*..3]->(wf:Workflow) MATCH (wf)-[rels:INVOKES*]->(agent:Agent)-[h:HAS]->(resource:Tool) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain AND h.workflow_name = wf.external_id"
+        }
+      }
+    },
+    {
+      "name": "person-can-use-mcp-resource",
+      "display_name": "Person can use MCP resources",
+      "description": "The Agent Gateway's capability check for MCP resources: the resources of an MCP server (resources/list, resources/read, subscriptions). The gateway reads the permitted set with one AuthZEN search/resource (action CAN_USE, resource type McpResource) per request that lists or names a capability, with the delegation in X-IK-Token. A capability is permitted when a workflow the subject can trigger - directly or through their department - has exactly the delegation chain as its path of agents and the agent at the end of the chain HAS the capability for that workflow (HAS.workflow_name).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_USE"
+        ],
+        "resource": {
+          "type": "McpResource"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN|CAN_TRIGGER*..3]->(wf:Workflow) MATCH (wf)-[rels:INVOKES*]->(agent:Agent)-[h:HAS]->(resource:McpResource) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain AND h.workflow_name = wf.external_id"
+        }
+      }
+    },
+    {
+      "name": "person-can-use-prompt",
+      "display_name": "Person can use prompts",
+      "description": "The Agent Gateway's capability check for prompts: the prompts of an MCP server (prompts/list, prompts/get); none is modelled in this dataset, so the lists are empty. The gateway reads the permitted set with one AuthZEN search/resource (action CAN_USE, resource type Prompt) per request that lists or names a capability, with the delegation in X-IK-Token. A capability is permitted when a workflow the subject can trigger - directly or through their department - has exactly the delegation chain as its path of agents and the agent at the end of the chain HAS the capability for that workflow (HAS.workflow_name).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_USE"
+        ],
+        "resource": {
+          "type": "Prompt"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN|CAN_TRIGGER*..3]->(wf:Workflow) MATCH (wf)-[rels:INVOKES*]->(agent:Agent)-[h:HAS]->(resource:Prompt) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain AND h.workflow_name = wf.external_id"
+        }
+      }
+    },
+    {
+      "name": "person-can-use-skill",
+      "display_name": "Person can use skills",
+      "description": "The Agent Gateway's capability check for skills: the skills of an A2A agent (the extended agent card the gateway serves lists only these; an A2A message names no skill, so this is discovery only). The gateway reads the permitted set with one AuthZEN search/resource (action CAN_USE, resource type Skill) per request that lists or names a capability, with the delegation in X-IK-Token. A capability is permitted when a workflow the subject can trigger - directly or through their department - has exactly the delegation chain as its path of agents and the agent at the end of the chain HAS the capability for that workflow (HAS.workflow_name).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_USE"
+        ],
+        "resource": {
+          "type": "Skill"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN|CAN_TRIGGER*..3]->(wf:Workflow) MATCH (wf)-[rels:INVOKES*]->(agent:Agent)-[h:HAS]->(resource:Skill) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain AND h.workflow_name = wf.external_id"
         }
       }
     }

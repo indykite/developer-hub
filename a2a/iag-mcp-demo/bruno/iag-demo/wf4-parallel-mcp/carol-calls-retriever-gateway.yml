@@ -39,16 +39,19 @@ runtime:
   scripts:
     - type: after-response
       code: |
-        test("Status code is 200 (user authorized through the gateway)", function () {
-          expect(res.status).to.equal(200);
+        // The user's token goes straight to the retriever gateway, so the
+        // delegation chain is [indykiteagent-2]. No workflow starts at the
+        // retriever (wf1 is orchestrator -> retriever -> mcp): admission refuses.
+        test("Status code is 403 (no workflow starts at the retriever)", function () {
+          expect(res.status).to.equal(403);
         });
 
-        test("Response is a JSON-RPC result", function () {
+        test("Response carries no JSON-RPC result", function () {
           var jsonData = res.body;
-          if (typeof jsonData === "string") {
+          if (typeof jsonData === "string" && jsonData.trim().startsWith("{")) {
             jsonData = JSON.parse(jsonData);
           }
-          expect(jsonData).to.have.property("result");
+          expect(jsonData || {}).to.not.have.property("result");
         });
 
 settings:

@@ -1,0 +1,36 @@
+---
+info:
+  name: Create CanBank delegated token - analyst gateway
+  type: http
+  seq: 6
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/token-introspects"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "project_id": "{{project_id}}",
+        "name": "canbank-delegated-indykiteagent-4",
+        "display_name": "CanBank delegated token (analyst gateway)",
+        "description": "Delegated tokens the identity provider mints for the analyst gateway (aud indykiteagent-4): sent by that gateway in X-IK-Token on its admission and capability calls, and the bearer token at the next gateway of the workflow.",
+        "ikg_node_type": "User",
+        "jwt_matcher": {
+          "issuer": "https://idsvr.indykite.one/oauth/v2/oauth-anonymous",
+          "audience": "indykiteagent-4"
+        },
+        "claims_mapping": {},
+        "offline_validation": {},
+        "perform_upsert": true
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

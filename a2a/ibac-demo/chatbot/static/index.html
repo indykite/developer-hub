@@ -1269,6 +1269,37 @@
         }
     }
 
+    // A capability record (gateway 2.0.3): what a DISCOVERY let the caller
+    // see of the server's lists, or what an INVOCATION named. The permitted
+    // set is the answer of the platform's CAN_USE search for this subject and
+    // chain, by kind (tool, resource, prompt, skill).
+    function attachCapabilities(card, event) {
+        const stats = event.discovery_stats;
+        if (stats && typeof stats === 'object') {
+            const served = stats.serverCalled === false
+                ? 'answered by the gateway, server not called'
+                : `server listed ${stats.listed ?? '?'}, caller got ${stats.kept ?? '?'}`;
+            attachDetails(card, 'discovery', served);
+        }
+        const permitted = event.permitted_set;
+        if (permitted && typeof permitted === 'object') {
+            const lines = Object.entries(permitted).map(([kind, ids]) =>
+                `${kind}: ${Array.isArray(ids) && ids.length ? ids.join(', ') : 'nothing'}`);
+            if (lines.length) attachDetails(card, 'permitted set', lines.join('\n'));
+        }
+        const named = event.capabilities;
+        if (named && typeof named === 'object') {
+            const lines = Object.entries(named).map(([kind, ids]) =>
+                `${kind}: ${Array.isArray(ids) ? ids.join(', ') : ids}`);
+            if (lines.length) attachDetails(card, 'named', lines.join('\n'));
+        }
+        const cached = event.cached;
+        if (cached && typeof cached === 'object') {
+            const hits = Object.entries(cached).filter(([, v]) => v === true).map(([k]) => k);
+            if (hits.length) attachDetails(card, 'cached', `${hits.join(', ')} answered from the gateway cache`);
+        }
+    }
+
     // Every gateway record names the actors of the delegation token, oldest
     // first (actorsChain). Shown as one line of display names; the trace id
     // of the request is the tooltip.
@@ -1350,6 +1381,17 @@
         const service = document.createElement('span');
         service.className = 'audit-service';
         service.textContent = event.service || 'unknown';
+        // Gateway 2.0.3 names the question a record answers: ADMISSION (may
+        // the subject reach the agent over this chain), DISCOVERY (which
+        // capabilities the caller may see), INVOCATION (may the caller use
+        // the named ones), INTENT, or noop (refused before any question).
+        const question = (event.action || '').toUpperCase();
+        if (['ADMISSION', 'DISCOVERY', 'INVOCATION', 'NOOP'].includes(question)) {
+            const tag = document.createElement('span');
+            tag.className = `audit-action audit-action-${question.toLowerCase()}`;
+            tag.textContent = question === 'NOOP' ? 'refused early' : question.toLowerCase();
+            service.appendChild(tag);
+        }
         const time = document.createElement('span');
         time.className = 'audit-time';
         time.textContent = formatAuditTime(event.timestamp)
@@ -1404,14 +1446,17 @@
             attachDetails(card, 'prompt', event.prompt);
         }
         attachDetails(card, decision === 'token_exchanged' ? 'token' : 'reason', event.reason);
+        attachCapabilities(card, event);
 
         // "why?": render the live authorization path behind this decision.
-        // Only for actual authorization outcomes - an ERROR / introspection
-        // card has no workflow decision for the graph to explain.
+        // Only for admission outcomes - an ERROR / introspection card has no
+        // workflow decision for the graph to explain, and a capability card
+        // (DISCOVERY / INVOCATION) answers another question.
         // For gateways with deliberately-unpinned workflow ids the grant map's
         // -console workflow is the last-resort guess for DENY cards.
         const grantBundle = (GRANT_MAP[event.service] || []);
-        if (EXPLAIN_ENABLED && (decision === 'authorized' || decision === 'not_authorized')) {
+        const isAdmission = !['DISCOVERY', 'INVOCATION', 'INTENT', 'NOOP'].includes(question);
+        if (EXPLAIN_ENABLED && isAdmission && (decision === 'authorized' || decision === 'not_authorized')) {
             const wf = parseWorkflow(event.reason) || EXPLAIN_WF_MAP[event.service]
                 || grantBundle[grantBundle.length - 1] || '';
             if (wf && event.subject) {

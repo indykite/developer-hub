@@ -772,7 +772,7 @@ function renderHandoff(trace) {
     ["token", gw.http_status === 401 ? "refused at the bridge" : trace.auth_mode === "none" ? "none presented" : "active at the bridge (Auth0)"],
     ["exchange", ex ? `delegated token: ${ex.subject} acting through ${ex.actor}` : "no exchange"],
     ["whoami", adm || intent ? `${trace.persona.type} ${trace.persona.id}` : "not resolved"],
-    ["admission", adm ? `${adm.decision}: ${adm.reason}` : gw.http_status === 403 ? "refused (403)" : "not recorded"],
+    ["admission", adm ? `${adm.decision}: ${adm.reason}${adm.cached?.admission ? " · from the gateway's cache, no platform call" : " · asked the platform"}` : gw.http_status === 403 ? "refused (403)" : "not recorded"],
     ["intent", intent ? `${intent.decision} · ${intent.durationMs ?? "—"} ms` : gw.kind === "intent_error" ? "no intent" : "not asked"],
   ];
   const inStatus = gw.kind === "refused" ? "fail" : gw.kind === "intent_error" ? "warn" : "ok";
@@ -841,7 +841,7 @@ function renderHandoff(trace) {
     outTitle = `forwarded to ${agentName(trace.agent)}`;
     outStatus = "ok";
     outRows = [
-      ["Authorization", recv.authorization ? "the caller's token, untouched" : "—"],
+      ["Authorization", recv.authorization ? "the caller's token, passed on (authorization_header.forward = correct_audience)" : "not forwarded: the agent holds the delegated token only (authorization_header.forward = none)"],
       ["X-IK-Token", recv.x_ik_token?.sub ? `${recv.x_ik_token.sub} ← ${actChain(recv.x_ik_token.act)}` : "—"],
       ["intent in token", recv.x_ik_token?.sub ? intentRow(recv.x_ik_token.act) : "—", intentInToken(recv.x_ik_token?.act) ? "" : "muted"],
       ["A2A-Extensions", recv.a2a_extensions || "not sent"],
@@ -921,7 +921,7 @@ function renderActors(trace) {
   const adm = admissionRecord(trace);
   const intent = intentRecord(trace);
   hops.push(["gateway", "platform", "ContX IQ whoami", adm || intent ? `${trace.persona.type} ${trace.persona.id}` : gw.http_status === 401 ? "not reached" : "no record", adm || intent ? "ok" : "skip"]);
-  hops.push(["gateway", "platform", "AuthZEN admission ($ik_token.act_chain)", adm ? `${adm.decision} · ${adm.reason}` : gw.http_status === 403 ? "refused" : "no record", adm ? (adm.decision === "AUTHORIZED" ? "ok" : "fail") : gw.http_status === 403 ? "fail" : "skip"]);
+  hops.push(["gateway", "platform", "AuthZEN admission ($ik_token.act_chain)", adm ? `${adm.decision}${adm.cached?.admission ? " · from cache" : ""} · ${adm.reason}` : gw.http_status === 403 ? "refused" : "no record", adm ? (adm.decision === "AUTHORIZED" ? "ok" : "fail") : gw.http_status === 403 ? "fail" : "skip"]);
   // 7. the Intent Agent
   hops.push(["gateway", "agent", "SendMessage · the prompt (ibac.enabled)", intent ? `${intent.decision} · ${ms(intent.durationMs)}` : gw.kind === "intent_error" ? "no intent" : "not asked", intent ? (intent.decision === "INTENT_FOUND" ? "ok" : "warn") : "skip"]);
   hops.push(["agent", "console", "audit record (webhook)", rec ? `${rec.outcome} · ${rec.llm_model} · ${rec.validation_retries} retr${rec.validation_retries === 1 ? "y" : "ies"}` : intent ? "not received yet" : "—", rec ? "ok" : intent ? "warn" : "skip"]);
@@ -1694,7 +1694,7 @@ function gwBlock(a, primary) {
       : `${a.verdict} · HTTP ${a.http_status ?? "—"}${a.error_text ? ` · ${a.error_text.slice(0, 60)}` : ""}`;
   block.append(el("b", "", primary ? "sent through this gateway" : "its gateway"), el("span", "", line));
   const bits = [];
-  if (a.admission) bits.push(`admission ${a.admission.decision}`);
+  if (a.admission) bits.push(`admission ${a.admission.decision}${a.admission.cached ? " (cached)" : ""}`);
   if (a.intent) bits.push(`intent ${a.intent.decision.replace("INTENT_", "").toLowerCase()}`);
   if (a.chain?.length) bits.push(`chain ${a.chain.join(" ← ")}`);
   if (bits.length) block.append(el("small", "", bits.join(" · ")));

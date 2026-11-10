@@ -42,6 +42,17 @@ usecases/ibac/
 engine matches a prompt's intent against; the agent merges them into its
 public card. Keep the actions in step with the dataset's KBAC policies.
 
+The skill ids are also graph data: the dataset holds one `Skill` node per
+skill id and one `Tool` node per MCP tool name, attached to the agent that
+offers them with `HAS {workflow_name}` edges, which the gateway's capability
+checks (release 2.0.3) read through the `person-can-use-*` policies. A new
+skill or tool needs its node and edges in the dataset, or the gateway hides
+it from the extended card and refuses the tool call. Every `HAS` edge also
+carries `discriminating_property: workflow_name`, like the `INVOKES` edges:
+the platform keeps one relationship per source, target and type unless a
+discriminating property tells the parallel edges apart, and without it only
+the last workflow written would survive for each tool.
+
 ## Adding a usecase
 
 1. Copy the `ibac` bundle and adapt: `usecase.env`, `app.json`, the

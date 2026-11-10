@@ -3,11 +3,18 @@ version: '3.9'
 
 services:
   iag-base:
-    # Pinned to a version tag: the `latest` tag on Docker Hub lags behind the
-    # newest release. MCP proxying (JARVIS_PROTECTED_AGENT_PROTOCOL: mcp, used
-    # by mcp-iag, drive-mcp-iag and erp-mcp-iag) needs 2.21 or newer. All
-    # gateways share this tag. See https://hub.docker.com/r/indykite/agent-gateway/tags.
-    image: indykite/agent-gateway:2.65.1
+    # The published Agent Gateway release 2.0.3, pinned by digest; .env may
+    # name another image as AGENT_GATEWAY_IMAGE. Never use `latest`: on Docker
+    # Hub it points at an older build. What the demo relies on: MCP proxying
+    # (JARVIS_PROTECTED_AGENT_PROTOCOL: mcp, used by mcp-iag, drive-mcp-iag
+    # and erp-mcp-iag) with one MCP endpoint per gateway and OAuth discovery;
+    # admission decided by ONE AuthZEN evaluation over the delegation chain
+    # ($ik_token.act_chain, policy *-can-reach-agent in the dataset); the
+    # capability checks (CAN_USE on the Tool, McpResource, Prompt and Skill
+    # nodes the dataset attaches to each agent per workflow); and the agent
+    # cards the A2A gateways serve. All gateways share this image.
+    # See https://hub.docker.com/r/indykite/agent-gateway/tags.
+    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.0.3@sha256:8368f151cfec343f679dce6f320f43ab8c14cebb5465f683213de66c857aed33}
     environment:
       JARVIS_SERVICE_LOG_LEVEL: debug
       JARVIS_SERVICE_ENVIRONMENT: demo
@@ -16,24 +23,50 @@ services:
       # "local" turns on Prometheus metrics at :9090/metrics (in-network only,
       # no host port is published).
       JARVIS_SERVICE_TRACING_DETECTOR: local
+      # Identity provider: introspects the bearer token, issues each gateway
+      # its client-credentials (actor) token and mints the delegation token
+      # (RFC 8693 token exchange). There is no token_service section, so the
+      # delegation token replaces the bearer token in Authorization on the way
+      # to the agent, and the next gateway receives it as its bearer token.
       JARVIS_IDENTITY_PROVIDER_BASE_URL: "${IDP_BASE_URL:-https://idsvr.indykite.one/oauth/v2/}"
       JARVIS_IDENTITY_PROVIDER_INTROSPECT_ENDPOINT: "oauth-introspect"
       JARVIS_IDENTITY_PROVIDER_CLIENT_CREDENTIAL_ENDPOINT: "oauth-token"
       JARVIS_IDENTITY_PROVIDER_EXCHANGE_ENDPOINT: "oauth-token"
+      # Advertised in the agent cards the A2A gateways serve as the security
+      # scheme callers get their token from, and named as the authorization
+      # server in the OAuth protected resource metadata of the MCP gateways.
+      # The issuer is written exactly as the `iss` of the IdP's tokens.
+      JARVIS_IDENTITY_PROVIDER_OPENID_CONFIGURATION_URL: "${IDP_ISSUER:-https://idsvr.indykite.one/oauth/v2/oauth-anonymous}/.well-known/openid-configuration"
+      JARVIS_IDENTITY_PROVIDER_ISSUER: "${IDP_ISSUER:-https://idsvr.indykite.one/oauth/v2/oauth-anonymous}"
+      # ContX IQ resolves the subject of every request (whoami): node type
+      # from the project's token introspect configuration, id from the token.
       JARVIS_CONTX_IQ_BASE_URL: ${INDYKITE_BASE_URL}/contx-iq/v1
-      JARVIS_CONTX_IQ_QUERY_ID: ${CIQ_QUERY_ID}
       JARVIS_CONTX_IQ_APP_AGENT_CREDENTIALS_TOKEN: ${APP_AGENT_CREDENTIALS_TOKEN}
-      JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID: ${WORKFLOW_ID}
+      # Admission: one AuthZEN evaluation per request - subject = whoami,
+      # action CAN_TRIGGER, resource = the Agent node of this gateway's own
+      # IdP client (the newest hop of the chain), with the delegation token in
+      # X-IK-Token; the dataset's *-can-reach-agent policy compares
+      # $ik_token.act_chain with the workflow's path of agents. To restrict a
+      # gateway to some workflows, write the restriction into a tagged policy
+      # and send JARVIS_AUTHZEN_INPUT_PARAMS (JSON map) and
+      # JARVIS_AUTHZEN_POLICY_TAGS (space-separated) here.
       JARVIS_AUTHZEN_BASE_URL: ${INDYKITE_BASE_URL}/access/v1
       JARVIS_AUTHZEN_ACTION: CAN_TRIGGER
-      # Subject node types the gateways evaluate for CAN_TRIGGER. Default
-      # covers staff logins (User). Subjects with customer logins (e.g. the
-      # insurance demo's roy, a Person) set AUTHZEN_SUBJECT_TYPES=User Person
-      # in .env; each extra type needs a matching CAN_TRIGGER KBAC policy.
-      JARVIS_AUTHZEN_SUBJECT_TYPES: ${AUTHZEN_SUBJECT_TYPES:-User}
-      # Subject workflow-set cache: how long a gateway keeps a subject's
-      # CAN_TRIGGER decisions before asking the platform again, i.e. how fast
-      # a grant or revoke reaches gateway decisions. Keep both values equal.
+      # Capability checks: an MCP gateway reads the set of tools, resources
+      # and prompts the caller may use with one AuthZEN search/resource per
+      # kind (action CAN_USE, resource types Tool, McpResource, Prompt),
+      # filters the server's lists to it and refuses a call outside it with
+      # 403 / -31403; an A2A gateway filters the skills of the extended agent
+      # card (type Skill). The dataset attaches the capabilities to each Agent
+      # with HAS {workflow_name} edges and the *-can-use-* policies. false =
+      # every request gets the admission decision only, the lists pass
+      # through unfiltered.
+      JARVIS_AUTHZEN_CAPABILITIES_ENABLED: ${IAG_CAPABILITY_CHECKS:-true}
+      # Decision cache: how long a gateway keeps an admission decision and a
+      # permitted set per subject and chain before asking the platform again,
+      # i.e. how fast a grant or revoke reaches gateway decisions. Keep both
+      # values equal. (The subject type comes from whoami; the console and
+      # the ERP server read AUTHZEN_SUBJECT_TYPES, the gateways do not.)
       JARVIS_AUTHZEN_CACHE_TTL: ${IAG_AUTHZEN_CACHE_TTL:-30s}
       JARVIS_AUTHZEN_CACHE_UPDATE_AFTER: ${IAG_AUTHZEN_CACHE_TTL:-30s}
 

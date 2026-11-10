@@ -8,31 +8,44 @@ request:
   auth: inherit
 
 docs: |-
-  Mirror of the jarvis-proto e2e suite "12 IAG Tests / 06 WF4 - Parallel
-  Multi-Agent MCP" (ENG-8855), adapted to this demo stack.
+  Skipped hops are refused. Based on the jarvis-proto e2e suite "12 IAG
+  Tests / 06 WF4 - Parallel Multi-Agent MCP" (ENG-8855), adapted to this
+  demo stack: every request carries a user's own token straight to one
+  gateway, so the delegation chain the gateway builds is that gateway's
+  agent alone, and the admission policy user-can-reach-agent admits a chain
+  only when it is the path of a workflow from its start.
 
-  Three users/agents reach the same MCP gateway (mcp-iag) concurrently:
-  millicent + carol both via the shared retriever agent (two users, one agent)
-  and millicent via the analyst agent. The MCP requests are interleaved
-  round-robin (init A/B/C, initialized A/B/C, list A/B/C, ...) so all three
-  sessions stay live at once and the gateway juggles them together - a
-  stronger isolation check than draining one session before the next. All
-  three session ids must be distinct. The MCP subject is bound to the bearer
-  token, so authorization reflects each user even on the shared retriever:
-  millicent CAN_TRIGGER wf3 (allow), carol cannot (deny).
+  - seq 1-2, millicent and carol call the retriever gateway: chain
+    [indykiteagent-2]. No workflow starts at the retriever (wf1 is
+    orchestrator -> retriever -> mcp): 403.
+  - seq 3, millicent calls the analyst gateway: chain [indykiteagent-4], the
+    start of wf3 (analyst -> mcp), which millicent can trigger: 200. The
+    analyst's own MCP call then carries [indykiteagent-4, indykiteagent-mcp],
+    the whole of wf3, and is served.
+  - seq 4-9, initialize and the initialized notification at the MCP gateway
+    with a user token: chain [indykiteagent-mcp]. No workflow starts at the
+    MCP agent: 403, no session.
+  - seq 10-12, tools/list: a capability question, answered by the gateway
+    with an empty list (nothing is permitted over that chain): 200.
+  - seq 13-18, tools/call: outside the empty permitted set: 403 with the
+    JSON-RPC error -31403; the MCP server is not called.
 
-  Differences from the e2e original:
-  - Tokens come from the real IdP (idsvr.indykite.one), not the
-    super-octo-waffle mock: log in to the chatbot (http://localhost:3000) as
-    each user and copy the access token into the user_token_millicent /
-    user_token_carol secret environment variables.
-  - The demo agents are real A2A agents without a test inbox, so there is no
-    delegated-token capture step; the gateway calls (seq 1-3) exercise the
-    full chain (IAG -> agent -> mcp-iag -> MCP server) server-side, and the
-    MCP session requests (seq 4+) talk to mcp-iag with the user tokens.
-  - Subject type is User (this demo's convention) instead of Person.
+  The outcome is the same for millicent and carol: the chain decides before
+  the person does. The three round-robin "sessions" (millicent/retriever,
+  carol/retriever, millicent/analyst) keep the interleaving of the e2e
+  original. To see per-user decisions over full chains, use the console:
+  two users in two browsers, both through the orchestrator.
+
+  Tokens come from the IdP (idsvr.indykite.one): log in to the chatbot
+  (http://localhost:3000) as each user and copy the access token into the
+  user_token_millicent / user_token_carol secret environment variables.
+  Subject type is User.
 
   Prerequisites: the "Agent Workflow" ingest has been run (carol, wf3,
   indykiteagent-4, indykiteagent-mcp and the workflow_name /
   discriminating_property edges), the compose stack is up with the analyst
   services, and a CAN_TRIGGER KBAC policy over Workflow resources is active.
+  The gateways additionally need the admission policy user-can-reach-agent,
+  the capability policies user-can-use-* (authzen/), the capability ingest
+  ("Create Capability Nodes" / "Create Capability Relationships") and the
+  Token Introspect configurations (token-introspect/).

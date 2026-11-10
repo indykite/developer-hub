@@ -21,8 +21,9 @@ prompt as a beat in one continuous story - see [SCENARIO.md](SCENARIO.md).
 | 4 | any staff | Documents (graph vs Drive), CRM cases, weather, why? cards |
 
 Watch the audit terminal throughout: every hop shows the gateway decision
-(subject → actor, AUTHORIZED / NOT AUTHORIZED, reason) and the exchanged
-delegation TOKEN card for that hop.
+(subject → actor, AUTHORIZED / NOT AUTHORIZED, reason), a tag with what was
+decided (`admission`, `discovery`, `invocation`), the delegation **chain**,
+and the exchanged delegation TOKEN card for that hop.
 
 The console opens on its **App** layer - the SecureHome web app. **Home**
 has a free-text assistant; the nav opens Policies, Documents, Claims,
@@ -42,14 +43,18 @@ in the header flips at any time; the audit terminal stays visible in both.
 
 1. **Dataset provisioned**: instant-stack `data/insurance` (set
    `DATASET=insurance`) - Mitchell family et al., SecureHome staff users,
-   agent workflows, KBAC, document `CAN_VIEW` policies (staff-can-view /
+   agent workflows, the agents' tools, resources and skills (`HAS` edges),
+   KBAC (the gateways' admission policy `person-can-reach-agent` and the
+   capability policies `person-can-use-*` included), the Token Introspect
+   configurations (one per token audience, all `Person`), document
+   `CAN_VIEW` policies (staff-can-view /
    published-document-viewable, both subject `Person`) plus the
    `Department -[CAN_VIEW]-> Document` and `InsuranceCompany -[PUBLISHES]->
    Document` edges they read, the CIQ
    queries (`get-self`, `get-home-insurance-access`, `get-family-overview`,
    `get-teens-driving-age`, `get-authorized-drivers`, `get-policy-documents`,
-   `get-hq-weather`, `get-my-household`) plus `get-agent-workflows` for the
-   gateways, weather resolvers - and the CRM workflow (`wf-crm`, agent
+   `get-hq-weather`, `get-my-household`), weather resolvers - and the CRM
+   workflow (`wf-crm`, agent
    `indykiteagent-crm`, `CAN_TRIGGER` from support and sales only).
 2. **Salesforce (CRM acts)**: a Developer Edition org with a connected app
    for the OAuth 2.0 JWT Bearer flow (RFC 7523). Generate a keypair:
@@ -98,7 +103,8 @@ in the header flips at any time; the audit terminal stays visible in both.
 ## The cast
 
 Every login in this dataset - staff and customer - is a `Person` (the
-token introspect binds `ikg_node_type: Person`). Staff are `Person`s who
+Token Introspect configurations bind `ikg_node_type: Person`, which is the
+subject type the gateways get from whoami). Staff are `Person`s who
 `WORKS_IN` a department; the customer is a `Person` with none.
 
 - **millicent** (login, `Person`, `WORKS_IN` Customer Support) - CSR.
@@ -108,7 +114,8 @@ token introspect binds `ikg_node_type: Person`). Staff are `Person`s who
 - **james** (login, `Person`, no department) - James Mitchell, the end
   customer: engineer, pays the mortgage, may trigger the chat workflows but
   NOT the Drive ones. Every login in this dataset is a `Person`, so set
-  `AUTHZEN_SUBJECT_TYPES=Person` in `.env`.
+  `AUTHZEN_SUBJECT_TYPES=Person` in `.env` (read by the console and the
+  ERP server).
 - **The rest of the Mitchells** (data, not logins): Sarah (`adult-002`,
   primary policyholder of HI-2024-001), Ethan (15) and Olivia (16);
   123 Oak Avenue, Chicago; a 2022 Honda Accord (IL-ABC1234); neighbor
@@ -157,6 +164,10 @@ token introspect binds `ikg_node_type: Person`). Staff are `Person`s who
    serves his household. (The exact same prompt gets james an authorization
    error in Act 3.)
 10. **"what are the knowledge queries?"**
+    → the retriever reads the MCP server's knowledge-queries resource. Watch
+    the `discovery` cards from `mcp-iag`: the gateway filters the server's
+    tool and resource lists to the caller's permitted set (`CAN_USE`), here
+    everything `wf1` has in the graph.
 
 ## Act 2 - Sales: the teen-driver lead (log in as rebecca)
 
@@ -197,7 +208,8 @@ token introspect binds `ikg_node_type: Person`). Staff are `Person`s who
    same question, different AuthZEN decisions - the graph + KBAC decide.
 4. **"List the files in the Google Drive"**
    → **NOT AUTHORIZED**: james may trigger the chat workflows but not
-   `wf-drive` - watch the red DENY card in the audit terminal.
+   the `wf-drive*` ones - watch the red DENY card (tagged `admission`) in
+   the audit terminal.
    Authorization working is best shown by a denial. Then run the
    **deny → remediate → allow** beat below.
 5. **"Open a Salesforce case about my water-backup claim"**
@@ -213,7 +225,11 @@ token introspect binds `ikg_node_type: Person`). Staff are `Person`s who
    view invoice inv-hi-003 - no CAN_VIEW path in the knowledge graph
    connects them." He can name the id; the graph still says no.
 8. **"What's the weather at SecureHome HQ?"**
-   → works: `wf2` is granted.
+   → works: `wf2` is granted. Expand **permitted set** on the `mcp-iag`
+   card: the weather path sees only `ciq_execute` and `get-hq-weather`,
+   not the `authzen_*` tools or the other knowledge queries the retriever
+   path (`wf1`) lists - the capability checks follow the workflow. A call
+   outside the set is refused with `403` / `-31403`.
 
 ### The deny → remediate → allow beat (live)
 
@@ -234,8 +250,9 @@ terminal too.
    → the Capture write adds `james -CAN_TRIGGER-> wf-drive*` and the why?
    graph pops open showing the new direct edge.
 4. james: **"List the files in the Google Drive"** (same prompt again,
-   about 30 seconds later - the gateways cache each subject's workflow set
-   for `IAG_AUTHZEN_CACHE_TTL`, 30 s by default; see iag-base-docker.yaml)
+   about 30 seconds later - the gateways cache their decisions per subject
+   and delegation chain for `IAG_AUTHZEN_CACHE_TTL`, 30 s by default; see
+   iag-base-docker.yaml)
    → **green**, the real Drive listing. Punchline: *authorization is data -
    change the graph, behavior changes now.*
 5. millicent clicks **revoke access** to reset the demo.
@@ -251,8 +268,8 @@ The document story has two corpora - keep them distinct on stage:
   quotes their `content_excerpt`.
 - **Drive product PDFs** (customer-facing): the auto/teen-driver, umbrella,
   and water-backup guides - the analyst route reads them through the
-  drive-mcp gateway. The gateway now extracts PDF text, so the analyst can
-  answer *about the contents*, not just list filenames.
+  drive-mcp gateway. The `drive-mcp` server extracts PDF text, so the
+  analyst can answer *about the contents*, not just list filenames.
 
 ### Drive prompts
 
@@ -361,3 +378,7 @@ and the console asks the live graph for the authorization path.
   as two disconnected nodes: **no path in the graph, that is the whole
   reason**. Nothing was configured to deny him; the relationship is just
   not there.
+
+The audit record names the delegation chain, not a workflow; the console
+picks the workflow to explain from the gateway (`*_WORKFLOW_ID` in `.env`,
+else the gateway's grant bundle).

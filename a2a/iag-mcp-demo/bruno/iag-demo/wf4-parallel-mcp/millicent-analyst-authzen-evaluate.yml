@@ -12,8 +12,6 @@ http:
       value: application/json, text/event-stream
     - name: Content-Type
       value: application/json
-    - name: Mcp-Session-Id
-      value: "{{wf4_millicent_analyst_session_id}}"
     - name: Mcp-Protocol-Version
       value: "2025-11-25"
   body:
@@ -44,34 +42,31 @@ runtime:
       code: |
         var rawBody = res.body;
 
-        // SSE stream - parse the JSON from the event data
+        // The answer is JSON, or an SSE stream carrying the JSON in its data.
         var jsonData;
         if (typeof rawBody === "string" && rawBody.includes("event:")) {
           var dataMatch = rawBody.match(/data:\s*({.*})/s);
           if (dataMatch) {
             jsonData = JSON.parse(dataMatch[1]);
           }
+        } else if (typeof rawBody === "string" && rawBody.trim().startsWith("{")) {
+          jsonData = JSON.parse(rawBody);
         } else if (typeof rawBody === "object") {
           jsonData = rawBody;
         }
 
-        test("Status code is 200", function () {
-          expect(res.status).to.equal(200);
+        // A tools/call gets the capability decision: the tool is outside the
+        // (empty) permitted set of the chain [indykiteagent-mcp], so the
+        // gateway refuses it and the MCP server is not called.
+        test("Status code is 403", function () {
+          expect(res.status).to.equal(403);
         });
 
-        test("Response has a result with content", function () {
-          expect(jsonData).to.not.be.null;
-          expect(jsonData).to.have.property("result");
-          expect(jsonData.result).to.have.property("content");
-          expect(jsonData.result.content).to.be.an("array");
-          expect(jsonData.result.content.length).to.be.greaterThan(0);
-        });
-
-        // Subject is bound to the bearer token, not the payload subject_id.
-        test("AuthZEN evaluation returns decision=true (millicent CAN_TRIGGER wf1)", function () {
-          var toolResult = jsonData.result.content[0].text;
-          var parsed = JSON.parse(toolResult);
-          expect(parsed.decision).to.be.true;
+        test("JSON-RPC error -31403 (the caller may not use the named tool)", function () {
+          expect(jsonData).to.not.be.undefined;
+          expect(jsonData).to.have.property("error");
+          expect(jsonData.error.code).to.equal(-31403);
+          expect(jsonData).to.not.have.property("result");
         });
 
 settings:

@@ -9,8 +9,9 @@ usecase-agnostic.
 
 Each usecase owns a **complete** env file - `.env.canbank`, `.env.insurance`
 (gitignored; they hold the usecase's platform bindings and secrets:
-`USECASE`, `CIQ_QUERY_ID`, `MCP_SERVER_URL`, `APP_AGENT_CREDENTIALS_TOKEN`,
-`WORKFLOW_ID`, `AUTHZEN_SUBJECT_TYPES`, ports, IdP clients, ...). The
+`USECASE`, `MCP_SERVER_PATH`, `MCP_SERVER_URL`, `APP_AGENT_CREDENTIALS_TOKEN`,
+`AUTHZEN_SUBJECT_TYPES`, the console's `*_WORKFLOW_ID` values, ports, IdP
+clients, ...). The
 committed template is the single `.example.env` (its comments flag the
 per-usecase values) - copy it to `.env.<usecase>` and fill the placeholders,
 taking the usecase's values from that usecase's provisioning output. `.env` is a
@@ -50,8 +51,11 @@ usecases/<name>/
    skill (`<name>-authz` - keep its KBAC vocabulary table in sync with the
    dataset manifest), and the examples inside the generic skills.
 2. Author and provision the dataset (instant-stack `data/<name>`): users,
-   departments, workflows, documents, the KBAC policies, and the CIQ
-   queries referenced by `usecase.env`.
+   departments, workflows with their agent chains, the capability nodes
+   (`Tool`, `McpResource`, `Skill`) and their `HAS` edges, documents, the
+   KBAC policies (the gateways' admission and capability policies
+   included), the Token Introspect configurations (one per token audience
+   the gateways present), and the CIQ queries referenced by `usecase.env`.
 3. Point `USECASE=<name>` in `.env` and recreate the agents.
 
 The graph dataset is the other half of a usecase: prompts only return data

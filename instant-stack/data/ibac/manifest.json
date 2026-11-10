@@ -1,7 +1,7 @@
 {
   "dataset": "ibac",
   "display_name": "CanBank IBAC demo (Auth0 people, Token Service)",
-  "description": "Config-as-data for a2a/ibac-demo: the CanBank graph (departments, documents, accounts, invoices, agent workflows) with the music demo's people as the only identities. Every Person external_id is an Auth0 subject (auth0|<id>): the twelve real users of the music tenant plus their relatives with synthetic subs of the same shape. Logins are Persons; staff WORKS_IN a Department, customers IS_CUSTOMER a Customer record of the core banking system, parents are PARENT_OF their children and minors are IS_AGE_GROUP minor. Agents are Auth0 machine-to-machine subjects supplied by instant-stack .env as AUTH0_SUB_<AGENT>; the Auth0 issuer comes from AUTH0_ISSUER and the Token Service public key from TOKEN_SERVICE_PUBLIC_JWK. KBAC policies cover the Agent Gateway admission (CAN_TRIGGER on the Agent the delegation chain ends at, compared with $ik_token.act_chain), the console's workflow grants (CAN_TRIGGER on Workflow), the ERP (CAN_VIEW Invoice), the chain guard, and the Intent Agent vocabulary for staff, customers and guardians.",
+  "description": "Config-as-data for a2a/ibac-demo: the CanBank graph (departments, documents, accounts, invoices, agent workflows) with the music demo's people as the only identities. Every Person external_id is an Auth0 subject (auth0|<id>): the twelve real users of the music tenant plus their relatives with synthetic subs of the same shape. Logins are Persons; staff WORKS_IN a Department, customers IS_CUSTOMER a Customer record of the core banking system, parents are PARENT_OF their children and minors are IS_AGE_GROUP minor. Agents are Auth0 machine-to-machine subjects supplied by instant-stack .env as AUTH0_SUB_<AGENT>; the Auth0 issuer comes from AUTH0_ISSUER and the Token Service public key from TOKEN_SERVICE_PUBLIC_JWK. KBAC policies cover the Agent Gateway admission (CAN_TRIGGER on the Agent the delegation chain ends at, compared with $ik_token.act_chain), its capability checks (CAN_USE on the Tool, McpResource, Prompt and Skill nodes an Agent HAS per workflow), its capability checks (CAN_USE on the Tool, McpResource, Prompt and Skill nodes an Agent HAS per workflow), its capability checks (CAN_USE on the Tool, McpResource, Prompt and Skill nodes an Agent HAS per workflow), the console's workflow grants (CAN_TRIGGER on Workflow), the ERP (CAN_VIEW Invoice), the chain guard, and the Intent Agent vocabulary for staff, customers and guardians.",
   "ciq_queries": [
     {
       "slot": "1",
@@ -1655,6 +1655,144 @@
         },
         "condition": {
           "cypher": "MATCH (subject:Person)-[:WORKS_IN|CAN_TRIGGER*..3]->(wf:Workflow) MATCH (wf)-[rels:INVOKES*]->(resource:Agent) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain"
+        }
+      }
+    },
+    {
+      "name": "person-can-view-profile",
+      "display_name": "Person can view their own profile",
+      "description": "A person may view their own profile: the resource is the person's own node. Gives prompts such as 'who am I' a vocabulary the Intent Agent can map (action CAN_VIEW_PROFILE on Person); the data itself comes from the get-self knowledge query.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_VIEW_PROFILE"
+        ],
+        "resource": {
+          "type": "Person"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person) MATCH (resource:Person) WHERE resource.external_id = subject.external_id"
+        }
+      }
+    },
+    {
+      "name": "person-can-read-weather",
+      "display_name": "Person can read the weather",
+      "description": "Any person may read a Weather node (the HQ weather the external data resolvers populate). Gives the weather prompts a vocabulary the Intent Agent can map (action CAN_READ on Weather); the data itself comes from the get-hq-weather knowledge query.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_READ"
+        ],
+        "resource": {
+          "type": "Weather"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person) MATCH (resource:Weather)"
+        }
+      }
+    },
+    {
+      "name": "person-can-use-tool",
+      "display_name": "Person can use tool (gateway capability)",
+      "description": "The Agent Gateway's capability check for tools: the tools of an MCP server (tools/list is filtered to them, a tools/call outside them is refused with -31403). The gateway reads the permitted set with one AuthZEN search/resource (action CAN_USE, resource type Tool) per request that lists or names a capability, with the delegation in X-IK-Token. A capability is permitted when a workflow the person can trigger - directly or through their department - has exactly the delegation chain as its path of agents and the agent at the end of the chain HAS the capability for that workflow (HAS.workflow_name).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_USE"
+        ],
+        "resource": {
+          "type": "Tool"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN|CAN_TRIGGER*..3]->(wf:Workflow) MATCH (wf)-[rels:INVOKES*]->(agent:Agent)-[h:HAS]->(resource:Tool) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain AND h.workflow_name = wf.external_id"
+        }
+      }
+    },
+    {
+      "name": "person-can-use-mcp-resource",
+      "display_name": "Person can use mcp resource (gateway capability)",
+      "description": "The Agent Gateway's capability check for MCP resources: the resources of an MCP server (resources/list, resources/read, subscriptions). The gateway reads the permitted set with one AuthZEN search/resource (action CAN_USE, resource type McpResource) per request that lists or names a capability, with the delegation in X-IK-Token. A capability is permitted when a workflow the person can trigger - directly or through their department - has exactly the delegation chain as its path of agents and the agent at the end of the chain HAS the capability for that workflow (HAS.workflow_name).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_USE"
+        ],
+        "resource": {
+          "type": "McpResource"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN|CAN_TRIGGER*..3]->(wf:Workflow) MATCH (wf)-[rels:INVOKES*]->(agent:Agent)-[h:HAS]->(resource:McpResource) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain AND h.workflow_name = wf.external_id"
+        }
+      }
+    },
+    {
+      "name": "person-can-use-prompt",
+      "display_name": "Person can use prompt (gateway capability)",
+      "description": "The Agent Gateway's capability check for prompts: the prompts of an MCP server (prompts/list, prompts/get); none is modelled in this dataset, so the lists are empty. The gateway reads the permitted set with one AuthZEN search/resource (action CAN_USE, resource type Prompt) per request that lists or names a capability, with the delegation in X-IK-Token. A capability is permitted when a workflow the person can trigger - directly or through their department - has exactly the delegation chain as its path of agents and the agent at the end of the chain HAS the capability for that workflow (HAS.workflow_name).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_USE"
+        ],
+        "resource": {
+          "type": "Prompt"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN|CAN_TRIGGER*..3]->(wf:Workflow) MATCH (wf)-[rels:INVOKES*]->(agent:Agent)-[h:HAS]->(resource:Prompt) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain AND h.workflow_name = wf.external_id"
+        }
+      }
+    },
+    {
+      "name": "person-can-use-skill",
+      "display_name": "Person can use skill (gateway capability)",
+      "description": "The Agent Gateway's capability check for skills: the skills of an A2A agent (the extended agent card the gateway serves lists only these; an A2A message names no skill, so this is discovery only). The gateway reads the permitted set with one AuthZEN search/resource (action CAN_USE, resource type Skill) per request that lists or names a capability, with the delegation in X-IK-Token. A capability is permitted when a workflow the person can trigger - directly or through their department - has exactly the delegation chain as its path of agents and the agent at the end of the chain HAS the capability for that workflow (HAS.workflow_name).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "CAN_USE"
+        ],
+        "resource": {
+          "type": "Skill"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN|CAN_TRIGGER*..3]->(wf:Workflow) MATCH (wf)-[rels:INVOKES*]->(agent:Agent)-[h:HAS]->(resource:Skill) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain AND h.workflow_name = wf.external_id"
         }
       }
     }

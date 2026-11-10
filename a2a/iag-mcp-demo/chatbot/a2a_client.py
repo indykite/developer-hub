@@ -1,9 +1,9 @@
 # Copyright (c) 2026 IndyKite
 """A2A client that forwards messages to the Orchestrator Agent via a plain HTTP gateway.
 
-The gateway is a simple reverse proxy — it has no A2A agent card and does not implement
-agent discovery. We post raw JSON-RPC 2.0 directly and poll tasks/get ourselves.
-No SDK client or card resolver is involved here.
+The console knows the gateway's URL from its configuration, so it does not read the
+agent card the gateway serves. We post raw JSON-RPC 2.0 directly and poll tasks/get
+ourselves. No SDK client or card resolver is involved here.
 """
 
 import asyncio

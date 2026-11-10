@@ -5740,6 +5740,456 @@
       "type": "Agent",
       "is_identity": false,
       "properties": []
+    },
+    {
+      "external_id": "ciq_execute",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "ciq_execute"
+        },
+        {
+          "type": "description",
+          "value": "Run a Knowledge Query by id (deprecated on the IndyKite MCP server; the agents still call it)."
+        }
+      ]
+    },
+    {
+      "external_id": "authzen_evaluate",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "authzen_evaluate"
+        },
+        {
+          "type": "description",
+          "value": "One AuthZEN decision: may this subject do this action on this resource."
+        }
+      ]
+    },
+    {
+      "external_id": "authzen_evaluations",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "authzen_evaluations"
+        },
+        {
+          "type": "description",
+          "value": "Several AuthZEN decisions in one call."
+        }
+      ]
+    },
+    {
+      "external_id": "authzen_search_resource",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "authzen_search_resource"
+        },
+        {
+          "type": "description",
+          "value": "The resources of a type a subject may perform an action on."
+        }
+      ]
+    },
+    {
+      "external_id": "authzen_search_subject",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "authzen_search_subject"
+        },
+        {
+          "type": "description",
+          "value": "The subjects of a type that may perform an action on a resource."
+        }
+      ]
+    },
+    {
+      "external_id": "authzen_search_action",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "authzen_search_action"
+        },
+        {
+          "type": "description",
+          "value": "The actions a subject may perform on a resource."
+        }
+      ]
+    },
+    {
+      "external_id": "get-self",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "get-self"
+        },
+        {
+          "type": "description",
+          "value": "The Knowledge Query get-self, served as a tool of the IndyKite MCP server."
+        }
+      ]
+    },
+    {
+      "external_id": "get-home-insurance-access",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "get-home-insurance-access"
+        },
+        {
+          "type": "description",
+          "value": "The Knowledge Query get-home-insurance-access, served as a tool of the IndyKite MCP server."
+        }
+      ]
+    },
+    {
+      "external_id": "get-family-overview",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "get-family-overview"
+        },
+        {
+          "type": "description",
+          "value": "The Knowledge Query get-family-overview, served as a tool of the IndyKite MCP server."
+        }
+      ]
+    },
+    {
+      "external_id": "get-teens-driving-age",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "get-teens-driving-age"
+        },
+        {
+          "type": "description",
+          "value": "The Knowledge Query get-teens-driving-age, served as a tool of the IndyKite MCP server."
+        }
+      ]
+    },
+    {
+      "external_id": "get-authorized-drivers",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "get-authorized-drivers"
+        },
+        {
+          "type": "description",
+          "value": "The Knowledge Query get-authorized-drivers, served as a tool of the IndyKite MCP server."
+        }
+      ]
+    },
+    {
+      "external_id": "get-policy-documents",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "get-policy-documents"
+        },
+        {
+          "type": "description",
+          "value": "The Knowledge Query get-policy-documents, served as a tool of the IndyKite MCP server."
+        }
+      ]
+    },
+    {
+      "external_id": "get-my-household",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "get-my-household"
+        },
+        {
+          "type": "description",
+          "value": "The Knowledge Query get-my-household, served as a tool of the IndyKite MCP server."
+        }
+      ]
+    },
+    {
+      "external_id": "get-hq-weather",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "get-hq-weather"
+        },
+        {
+          "type": "description",
+          "value": "The weather at the headquarters, populated live by the external data resolvers."
+        }
+      ]
+    },
+    {
+      "external_id": "indykite://knowledge-queries/",
+      "type": "McpResource",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Knowledge query catalogue"
+        },
+        {
+          "type": "description",
+          "value": "The IndyKite MCP server's catalogue of Knowledge Queries and their parameters."
+        }
+      ]
+    },
+    {
+      "external_id": "search",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "search"
+        },
+        {
+          "type": "description",
+          "value": "Search files in Google Drive (the Drive MCP server's only tool)."
+        }
+      ]
+    },
+    {
+      "external_id": "list_invoices",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "list_invoices"
+        },
+        {
+          "type": "description",
+          "value": "The ERP invoices the caller may view, pre-filtered by AuthZEN search/resource."
+        }
+      ]
+    },
+    {
+      "external_id": "get_invoice",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "get_invoice"
+        },
+        {
+          "type": "description",
+          "value": "One ERP invoice by id, after an AuthZEN CAN_VIEW decision."
+        }
+      ]
+    },
+    {
+      "external_id": "orchestrator",
+      "type": "Skill",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "orchestrator"
+        },
+        {
+          "type": "description",
+          "value": "Route a prompt to the right agent and compose the answer."
+        }
+      ]
+    },
+    {
+      "external_id": "web-search",
+      "type": "Skill",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "web-search"
+        },
+        {
+          "type": "description",
+          "value": "Answer general questions from the web."
+        }
+      ]
+    },
+    {
+      "external_id": "query-retriever",
+      "type": "Skill",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "query-retriever"
+        },
+        {
+          "type": "description",
+          "value": "Ask the retriever agent for graph data and documents."
+        }
+      ]
+    },
+    {
+      "external_id": "query-erp",
+      "type": "Skill",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "query-erp"
+        },
+        {
+          "type": "description",
+          "value": "Ask the analyst for ERP invoices through the ERP MCP server."
+        }
+      ]
+    },
+    {
+      "external_id": "query-crm",
+      "type": "Skill",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "query-crm"
+        },
+        {
+          "type": "description",
+          "value": "File a Salesforce case through the CRM agent (staff only)."
+        }
+      ]
+    },
+    {
+      "external_id": "retriever",
+      "type": "Skill",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "retriever"
+        },
+        {
+          "type": "description",
+          "value": "Retrieve graph data through the IndyKite MCP server."
+        }
+      ]
+    },
+    {
+      "external_id": "authzen",
+      "type": "Skill",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "authzen"
+        },
+        {
+          "type": "description",
+          "value": "Ask AuthZEN a decision or a search with the caller's own token."
+        }
+      ]
+    },
+    {
+      "external_id": "ciq-execute",
+      "type": "Skill",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "ciq-execute"
+        },
+        {
+          "type": "description",
+          "value": "Run a Knowledge Query with the caller's own token."
+        }
+      ]
+    },
+    {
+      "external_id": "insurance-authz",
+      "type": "Skill",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "insurance-authz"
+        },
+        {
+          "type": "description",
+          "value": "The dataset's vocabulary: policies, actions, resources and the cast."
+        }
+      ]
+    },
+    {
+      "external_id": "erp-invoices",
+      "type": "Skill",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "erp-invoices"
+        },
+        {
+          "type": "description",
+          "value": "List and open ERP invoices the caller may view."
+        }
+      ]
+    },
+    {
+      "external_id": "current-weather",
+      "type": "Skill",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "current-weather"
+        },
+        {
+          "type": "description",
+          "value": "Current weather for a place, or at the headquarters through the graph."
+        }
+      ]
+    },
+    {
+      "external_id": "create-crm-case",
+      "type": "Skill",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "create-crm-case"
+        },
+        {
+          "type": "description",
+          "value": "Create a Salesforce case on behalf of the person."
+        }
+      ]
     }
   ]
 }

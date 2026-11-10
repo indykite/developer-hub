@@ -106,8 +106,8 @@ visible at all times - it is the co-star.
    → granted; the why? graph pops open showing the new edge. *Say*: "One
    relationship was just written: james CAN_TRIGGER the drive workflows."
 4. james, **type**: "List the files in the Google Drive" (after the
-   gateway cache clears - ~5 min, or restart the gateways; fill the wait
-   with the why? modal, which shows the new edge instantly)
+   gateway cache clears - about 30 seconds, `IAG_AUTHZEN_CACHE_TTL`; fill
+   the wait with the why? modal, which shows the new edge instantly)
    → **green**, the real file list.
    *Say the punchline*: "**Authorization is data.** We changed the graph;
    the behavior changed. No deploy, no config, no feature flag."

@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Person Can Use Tool
+  type: http
+  seq: 35
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "person-can-use-tool",
+        "display_name": "Person can use tool (gateway capability)",
+        "description": "The Agent Gateway's capability check for tools: the tools of an MCP server (tools/list is filtered to them, a tools/call outside them is refused with -31403). The gateway reads the permitted set with one AuthZEN search/resource (action CAN_USE, resource type Tool) per request that lists or names a capability, with the delegation in X-IK-Token. A capability is permitted when a workflow the person can trigger - directly or through their department - has exactly the delegation chain as its path of agents and the agent at the end of the chain HAS the capability for that workflow (HAS.workflow_name).",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"CAN_USE\"],\"resource\":{\"type\":\"Tool\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WORKS_IN|CAN_TRIGGER*..3]->(wf:Workflow) MATCH (wf)-[rels:INVOKES*]->(agent:Agent)-[h:HAS]->(resource:Tool) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain AND h.workflow_name = wf.external_id\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_person_can_use_tool", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

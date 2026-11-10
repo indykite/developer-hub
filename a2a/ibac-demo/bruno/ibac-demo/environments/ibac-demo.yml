@@ -163,6 +163,18 @@ variables:
     value: ""
   - name: kbac_person_can_reach_agent
     value: ""
+  - name: kbac_person_can_use_tool
+    value: ""
+  - name: kbac_person_can_use_mcp_resource
+    value: ""
+  - name: kbac_person_can_use_prompt
+    value: ""
+  - name: kbac_person_can_use_skill
+    value: ""
+  - name: kbac_person_can_view_profile
+    value: ""
+  - name: kbac_person_can_read_weather
+    value: ""
   - name: get_self_policy
     value: ""
   - name: get_self_query

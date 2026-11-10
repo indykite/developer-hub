@@ -24,9 +24,11 @@ prompt as a beat in one continuous story - see [SCENARIO.md](SCENARIO.md).
 | 5 | two users | Parallel multi-agent MCP through one gateway |
 
 Watch the audit terminal throughout: every hop shows the gateway decision
-(subject → actor, AUTHORIZED / NOT AUTHORIZED, reason) and the exchanged
-delegation TOKEN card - a new token with the user as the subject and the
-agent as the actor, so the agent provably acts on the user's behalf.
+(subject → actor, AUTHORIZED / NOT AUTHORIZED, reason), a tag with what was
+decided (`admission`, `discovery`, `invocation`), the delegation **chain**,
+and the exchanged delegation TOKEN card - a new token with the user as the
+subject and the chain of gateway clients as the actors, so the agent
+provably acts on the user's behalf.
 
 The console opens on its **App** layer - the CanBank web app. **Home** has
 a free-text assistant; the nav opens Accounts, Investments, Documents and
@@ -76,11 +78,13 @@ different answer.
 
 1. **Dataset provisioned**: instant-stack `data/canbank` (set
    `DATASET=canbank`) - documents, customers, decisions, departments, agent
-   workflows, KBAC policies, and the CIQ queries (`get-self`,
+   workflows, the agents' tools, resources and skills (`HAS` edges), KBAC
+   policies (the gateways' admission policy `user-can-reach-agent` and the
+   capability policies `user-can-use-*` included), the Token Introspect
+   configurations (one per token audience), the CIQ queries (`get-self`,
    `get-stock-quote`, `get-stock-trade-threshold`, `get-internal-documents`,
    `get-customer-facing-documents`, `get-regulatory-agreements`,
-   `get-decisions`, `get-hq-weather`, `store-decision`) plus
-   `get-agent-workflows` for the gateways, and the `weather` /
+   `get-decisions`, `get-hq-weather`, `store-decision`), and the `weather` /
    `weather-units` external data resolvers. The Bruno collection
    (`bruno/iag-demo`) mirrors the same data request-by-request for manual
    provisioning or debugging.
@@ -136,7 +140,10 @@ different answer.
    runs.
 7. **"what are the knowledge queries?"**
    → the retriever reads the MCP server's knowledge-queries resource and
-   lists every query it may call.
+   lists every query it may call. Watch the `discovery` cards from
+   `mcp-iag`: the gateway filters the server's tool and resource lists to
+   the caller's permitted set (`CAN_USE`), here everything `wf1` has in
+   the graph.
 
 ## Act 2 - Trading desk: quotes and authorization (log in as millicent)
 
@@ -184,7 +191,13 @@ by design.
    server: the `hq_weather` Weather node's `current` and `units` properties
    are populated live by the `weather` / `weather-units` external data
    resolvers hitting [open-meteo](https://open-meteo.com). Requires
-   `CIQ_QUERY_HQ_WEATHER` and the resolver setup.
+   `CIQ_QUERY_HQ_WEATHER` and the resolver setup. The capability beat:
+   expand **permitted set** on the `mcp-iag` card - the weather path
+   (`wf2`) sees only `ciq_execute` and `get-hq-weather`, while the
+   retriever path (`wf1`) sees the `authzen_*` tools and the other knowledge
+   queries. Same MCP server, same user; the workflow decides the tool list,
+   and a call outside the set is refused with `403` / `-31403` before the
+   server is reached.
 
 ## Act 4 - Google Drive (compose profile `drive`, log in as millicent)
 
@@ -209,7 +222,9 @@ receives every audit card, so roy's red card appears in millicent's
 terminal too.
 
 1. roy: **"List the files in my Google Drive."**
-   → red **NOT AUTHORIZED** card (from `drive-mcp-iag`) in both consoles.
+   → red **NOT AUTHORIZED** card (from `drive-mcp-iag`, tagged
+   `admission`: no workflow roy can trigger has this delegation chain) in
+   both consoles.
    roy sees **why?** and **request access** on his own card; millicent
    (staff) sees **why?** and **grant access** on the same card in her console.
 2. roy clicks **request access** on his card
@@ -221,8 +236,9 @@ terminal too.
    → the Capture write adds `roy -CAN_TRIGGER-> wf-drive*` and the why?
    graph shows the new edge.
 4. roy: **"List the files in my Google Drive."** (same prompt again,
-   about 30 seconds later - the gateways cache each subject's workflow set
-   for `IAG_AUTHZEN_CACHE_TTL`, 30 s by default; see iag-base-docker.yaml)
+   about 30 seconds later - the gateways cache their decisions per subject
+   and delegation chain for `IAG_AUTHZEN_CACHE_TTL`, 30 s by default; see
+   iag-base-docker.yaml)
    → **green**, the real Drive listing. *Authorization is data - change
    the graph, behavior changes now.*
 5. millicent clicks **revoke access** to reset the beat.
@@ -233,15 +249,19 @@ terminal too.
 
 Two users, two agents, one MCP gateway — at the same time.
 
-Log in as two different users in two browsers (or run the Bruno suite
-`bruno/iag-demo/wf4-parallel-mcp`, which drives it deterministically: millicent
-and carol through the shared retriever, millicent through the analyst). All the
-MCP sessions flow through the same `mcp-iag` gateway concurrently, each with
-its own `Mcp-Session-Id`, and the authorization decisions follow each user's
-token: the identical `authzen_evaluate` call on workflow `wf3` is **allowed**
-for millicent and **denied** for carol, even though both ride the same retriever
-agent. The audit stream in the chatbot UI shows the interleaved sessions and
-the per-user allow/deny decisions.
+Log in as two different users in two browsers and prompt both at the same
+time. All the MCP sessions flow through the same `mcp-iag` gateway
+concurrently, each with its own `Mcp-Session-Id`, and the decisions follow
+each user's token even though both ride the same retriever agent. The audit
+stream in the chatbot UI shows the interleaved sessions, each card with its
+own delegation chain and allow/deny decision.
+
+The Bruno suite `bruno/iag-demo/wf4-parallel-mcp` shows the counterpart:
+the same users sending their own token straight to `retriever-iag` or
+`mcp-iag`. The chain is then a single agent that no workflow starts at, so
+the gateways refuse (`403`, an empty tool list, `-31403` on a tool call) -
+only millicent's direct call of the analyst gateway, the start of `wf3`,
+passes.
 
 ### The ERP stagecraft
 
@@ -270,4 +290,6 @@ authorization path - e.g.
 `(leslie)-[WORKS_IN]->(Department)-[CAN_TRIGGER]->(wf1)`, or two
 disconnected nodes when no path exists (the denial explained). Capture a new
 `CAN_TRIGGER` edge and the same card's why? shows the path - authorization
-is data.
+is data. The audit record names the delegation chain, not a workflow; the
+console picks the workflow to explain from the gateway (`*_WORKFLOW_ID` in
+`.env`, else the gateway's grant bundle).

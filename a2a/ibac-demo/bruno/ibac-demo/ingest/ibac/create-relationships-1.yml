@@ -608,7 +608,7 @@ http:
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_orchestrator}}"
+              "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
             },
             "properties": [
               {
@@ -621,11 +621,11 @@ http:
           {
             "source": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_orchestrator}}"
+              "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_retriever}}"
+              "external_id": "${AUTH0_SUB_RETRIEVER}"
             },
             "properties": [
               {
@@ -642,11 +642,11 @@ http:
           {
             "source": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_retriever}}"
+              "external_id": "${AUTH0_SUB_RETRIEVER}"
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_mcp}}"
+              "external_id": "${AUTH0_SUB_MCP}"
             },
             "properties": [
               {
@@ -667,7 +667,7 @@ http:
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_orchestrator}}"
+              "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
             },
             "properties": [
               {
@@ -680,11 +680,11 @@ http:
           {
             "source": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_orchestrator}}"
+              "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_weather}}"
+              "external_id": "${AUTH0_SUB_WEATHER}"
             },
             "properties": [
               {
@@ -701,11 +701,11 @@ http:
           {
             "source": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_weather}}"
+              "external_id": "${AUTH0_SUB_WEATHER}"
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_mcp}}"
+              "external_id": "${AUTH0_SUB_MCP}"
             },
             "properties": [
               {
@@ -726,7 +726,7 @@ http:
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_analyst}}"
+              "external_id": "${AUTH0_SUB_ANALYST}"
             },
             "properties": [
               {
@@ -743,7 +743,7 @@ http:
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_drive}}"
+              "external_id": "${AUTH0_SUB_DRIVE}"
             },
             "properties": [
               {
@@ -756,11 +756,11 @@ http:
           {
             "source": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_analyst}}"
+              "external_id": "${AUTH0_SUB_ANALYST}"
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_mcp}}"
+              "external_id": "${AUTH0_SUB_MCP}"
             },
             "properties": [
               {
@@ -781,7 +781,7 @@ http:
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_analyst}}"
+              "external_id": "${AUTH0_SUB_ANALYST}"
             },
             "properties": [
               {
@@ -794,11 +794,11 @@ http:
           {
             "source": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_analyst}}"
+              "external_id": "${AUTH0_SUB_ANALYST}"
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_drive}}"
+              "external_id": "${AUTH0_SUB_DRIVE}"
             },
             "properties": [
               {
@@ -819,7 +819,7 @@ http:
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_orchestrator}}"
+              "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
             },
             "properties": [
               {
@@ -832,11 +832,11 @@ http:
           {
             "source": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_orchestrator}}"
+              "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_analyst}}"
+              "external_id": "${AUTH0_SUB_ANALYST}"
             },
             "properties": [
               {
@@ -853,11 +853,11 @@ http:
           {
             "source": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_analyst}}"
+              "external_id": "${AUTH0_SUB_ANALYST}"
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_drive}}"
+              "external_id": "${AUTH0_SUB_DRIVE}"
             },
             "properties": [
               {
@@ -878,7 +878,7 @@ http:
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_orchestrator}}"
+              "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
             },
             "properties": [
               {
@@ -891,32 +891,11 @@ http:
           {
             "source": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_orchestrator}}"
+              "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_analyst}}"
-            },
-            "properties": [
-              {
-                "type": "workflow_name",
-                "value": "wf3-console"
-              },
-              {
-                "type": "discriminating_property",
-                "value": "workflow_name"
-              }
-            ],
-            "type": "INVOKES"
-          },
-          {
-            "source": {
-              "type": "Agent",
-              "external_id": "{{auth0_sub_analyst}}"
-            },
-            "target": {
-              "type": "Agent",
-              "external_id": "{{auth0_sub_mcp}}"
+              "external_id": "${AUTH0_SUB_ANALYST}"
             },
             "properties": [
               {
@@ -933,73 +912,22 @@ http:
           {
             "source": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_orchestrator}}"
+              "external_id": "${AUTH0_SUB_ANALYST}"
             },
             "target": {
-              "type": "Skill",
-              "external_id": "s1"
-            },
-            "properties": [],
-            "type": "INVOKES"
-          },
-          {
-            "source": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_orchestrator}}"
+              "external_id": "${AUTH0_SUB_MCP}"
             },
-            "target": {
-              "type": "Skill",
-              "external_id": "s2"
-            },
-            "properties": [],
-            "type": "INVOKES"
-          },
-          {
-            "source": {
-              "type": "Skill",
-              "external_id": "s2"
-            },
-            "target": {
-              "type": "Tool",
-              "external_id": "t1"
-            },
-            "properties": [],
-            "type": "INVOKES"
-          },
-          {
-            "source": {
-              "type": "Skill",
-              "external_id": "s2"
-            },
-            "target": {
-              "type": "Tool",
-              "external_id": "t2"
-            },
-            "properties": [],
-            "type": "INVOKES"
-          },
-          {
-            "source": {
-              "type": "Agent",
-              "external_id": "{{auth0_sub_retriever}}"
-            },
-            "target": {
-              "type": "Skill",
-              "external_id": "s3"
-            },
-            "properties": [],
-            "type": "INVOKES"
-          },
-          {
-            "source": {
-              "type": "Skill",
-              "external_id": "s3"
-            },
-            "target": {
-              "type": "Tool",
-              "external_id": "t2"
-            },
-            "properties": [],
+            "properties": [
+              {
+                "type": "workflow_name",
+                "value": "wf3-console"
+              },
+              {
+                "type": "discriminating_property",
+                "value": "workflow_name"
+              }
+            ],
             "type": "INVOKES"
           },
           {
@@ -1858,7 +1786,7 @@ http:
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_erp}}"
+              "external_id": "${AUTH0_SUB_ERP}"
             },
             "properties": [
               {
@@ -1875,7 +1803,7 @@ http:
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_analyst}}"
+              "external_id": "${AUTH0_SUB_ANALYST}"
             },
             "properties": [
               {
@@ -1888,11 +1816,11 @@ http:
           {
             "source": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_analyst}}"
+              "external_id": "${AUTH0_SUB_ANALYST}"
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_erp}}"
+              "external_id": "${AUTH0_SUB_ERP}"
             },
             "properties": [
               {
@@ -1913,7 +1841,7 @@ http:
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_orchestrator}}"
+              "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
             },
             "properties": [
               {
@@ -1926,11 +1854,11 @@ http:
           {
             "source": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_orchestrator}}"
+              "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_analyst}}"
+              "external_id": "${AUTH0_SUB_ANALYST}"
             },
             "properties": [
               {
@@ -1947,11 +1875,11 @@ http:
           {
             "source": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_analyst}}"
+              "external_id": "${AUTH0_SUB_ANALYST}"
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_erp}}"
+              "external_id": "${AUTH0_SUB_ERP}"
             },
             "properties": [
               {
@@ -2044,7 +1972,7 @@ http:
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_orchestrator}}"
+              "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
             },
             "type": "INVOKES",
             "properties": [
@@ -2057,11 +1985,11 @@ http:
           {
             "source": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_orchestrator}}"
+              "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
             },
             "target": {
               "type": "Agent",
-              "external_id": "{{auth0_sub_crm}}"
+              "external_id": "${AUTH0_SUB_CRM}"
             },
             "type": "INVOKES",
             "properties": [
@@ -2987,6 +2915,72 @@ http:
               "external_id": "tier_3"
             },
             "type": "IS_TIER"
+          },
+          {
+            "source": {
+              "type": "Customer",
+              "external_id": "cust-cashmere"
+            },
+            "target": {
+              "type": "Invoice",
+              "external_id": "inv-cb-009"
+            },
+            "type": "HAS_INVOICE"
+          },
+          {
+            "source": {
+              "type": "Invoice",
+              "external_id": "inv-cb-009"
+            },
+            "target": {
+              "type": "InvoiceStatus",
+              "external_id": "open"
+            },
+            "type": "HAS_STATUS"
+          },
+          {
+            "source": {
+              "type": "Person",
+              "external_id": "auth0|69c4e616c7f64bc45838a6b1"
+            },
+            "target": {
+              "type": "Customer",
+              "external_id": "cust-tokenina"
+            },
+            "type": "IS_CUSTOMER"
+          },
+          {
+            "source": {
+              "type": "System",
+              "external_id": "sys_canbank_core"
+            },
+            "target": {
+              "type": "Customer",
+              "external_id": "cust-tokenina"
+            },
+            "type": "CONTAINS"
+          },
+          {
+            "source": {
+              "type": "Department",
+              "external_id": "support"
+            },
+            "target": {
+              "type": "Customer",
+              "external_id": "cust-tokenina"
+            },
+            "type": "SERVES"
+          },
+          {
+            "source": {
+              "type": "Customer",
+              "external_id": "cust-tokenina"
+            },
+            "target": {
+              "type": "Account",
+              "external_id": "acc_tokenina_youth"
+            },
+            "type": "OWNS"
           }
         ]
       }

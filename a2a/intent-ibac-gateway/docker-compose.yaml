@@ -6,7 +6,7 @@
 #                                                      │ data schema + policies ──▶ IndyKite platform
 #                                                      │ extraction ──▶ Gemini
 #                                                      └ audit record ──▶ console (webhook)
-#   console ──A2A SendMessage, Bearer = the person's Auth0 token──▶ iag-<agent> (Agent Gateway 2.99)
+#   console ──A2A SendMessage, Bearer = the person's Auth0 token──▶ iag-<agent> (Agent Gateway 2.0.3)
 #       gateway: introspect at auth0-bridge ─▶ whoami ─▶ Intent Agent (ibac.enabled) ─▶ Token Service
 #                exchange ─▶ AuthZEN admission ($ik_token.act_chain) ─▶ forward to agent-<agent>
 #                every step an audit record ──▶ console (webhook)

@@ -103,15 +103,18 @@ redis:
     requests: {cpu: 50m, memory: 64Mi}
     limits: {cpu: 250m, memory: 128Mi}
 
-# The Agent Gateway in front of every fleet agent: the release image loaded into the
-# cluster (`minikube image load agent-gateway:latest`), never pulled.
+# The Agent Gateway in front of every fleet agent: the published release on Docker Hub.
 gateway:
   image:
-    repository: agent-gateway
-    tag: latest
-    pullPolicy: Never
+    repository: indykite/agent-gateway
+    tag: 2.0.3
+    pullPolicy: IfNotPresent
   logLevel: info
   authzenCacheTtl: 30s
+  # What the agent receives in Authorization next to the delegated token: none, correct_audience or all.
+  authorizationForward: none
+  # How long a gateway keeps an agent's card before reading it again.
+  a2aCacheTtl: 5s
   intentAgentTimeout: 45s
   tokenServiceAudience: intent-ibac-agents
   resources:

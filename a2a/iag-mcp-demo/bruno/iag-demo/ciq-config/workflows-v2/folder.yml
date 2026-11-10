@@ -6,3 +6,7 @@ info:
 
 request:
   auth: inherit
+
+docs: |-
+  Not used by the Agent Gateway: admission is decided by the
+  user-can-reach-agent policy (see authzen/)

@@ -15,7 +15,9 @@ Demonstrates the Indykite Agent Gateway, a smart, context-enabled gateway that s
     - [7. Troubleshooting](#7-troubleshooting)
     - [8. Stop](#8-stop)
 - Feature deep-dives
+    - [How a request is authorized](#how-a-request-is-authorized)
     - [Protecting MCP traffic (mcp-iag)](#protecting-mcp-traffic-mcp-iag)
+    - [Capability checks](#capability-checks)
     - [Google Drive behind the gateway (profile drive)](#proxying-a-non-indykite-mcp-server-google-drive-profile-drive)
     - [Deny → remediate → allow (grant button)](#deny--remediate--allow-grant-button)
     - [Salesforce cases (profile crm)](#salesforce-cases-profile-crm)
@@ -87,7 +89,7 @@ authorization bound to each Bearer token. See
 ### `crm_agent`
 
 An A2A agent that files **Salesforce cases on behalf of a person** (optional
-`crm` compose profile, insurance usecase). It receives the gateway-minted
+`crm` compose profile, insurance usecase). It receives the gateway's
 delegation token, then performs a second, standards-based token exchange - an
 OAuth 2.0 JWT Bearer assertion (RFC 7523) signed with the connected app's
 private key - for a Salesforce access token, and creates the Case via the
@@ -186,11 +188,13 @@ before step 5.
   `data/insurance` for **insurance** (`DATASET=insurance`; see
   [`usecases/insurance/DEMO_SCRIPT.md`](usecases/insurance/DEMO_SCRIPT.md)).
   The instant-stack manifests cover everything: capture
-  nodes/relationships, CIQ policies + knowledge queries incl.
-  `get-agent-workflows`, KBAC policies, App Agent, Token Introspect, MCP
-  server config, and external data resolvers. For canbank, the **Bruno
-  collection** (`bruno/iag-demo`) mirrors the same data request-by-request
-  as a manual alternative, as linked below.
+  nodes/relationships, CIQ policies + knowledge queries, KBAC policies
+  (admission and capability policies included), App Agent, the Token
+  Introspect configurations, MCP server config, and external data
+  resolvers. Re-provision an existing project with the dataset whenever the
+  dataset changes. For canbank, the **Bruno collection** (`bruno/iag-demo`)
+  mirrors the same data request-by-request as a manual alternative, as
+  linked below.
 
   Required in either case:
     - the canbank graph ingested (instant-stack `data/canbank`, or Bruno:
@@ -199,26 +203,47 @@ before step 5.
     [`bruno/iag-demo/ingest/agent-workflow`](bruno/iag-demo/ingest/agent-workflow)):
     `User`s, `Workflow`s (`wf1`/`wf2`/`wf3` plus the Drive/console shapes
     `wf-drive`, `wf-drive-analyst`, `wf-drive-console`, `wf3-console`) and the
-    `Agent` chains. The `INVOKES` edges between workflows and agents carry a
+    `Agent` chains. Each `Agent` node's `external_id` is the IdP client id
+    of its gateway. The `INVOKES` edges between workflows and agents carry a
     `workflow_name` property (and `discriminating_property: workflow_name` on
-    edges into shared agent nodes): the gateways' `get_agent_workflows`
-    ContX IQ query (v2) filters on it at every hop, so ingest without these
-    properties resolves **no** workflows,
-    - a `CAN_TRIGGER` edge from the calling `User` to the workflow (see
+    edges into shared agent nodes): the admission policy filters on it at
+    every hop, so ingest without these properties admits **no** request,
+    - a `CAN_TRIGGER` edge from the calling `User` (or their department) to
+    the workflow (see
     [`bruno/iag-demo/authzen/subject-can-trigger-workflow.yml`](bruno/iag-demo/authzen/subject-can-trigger-workflow.yml)),
+    - the capability nodes (`Tool`, `McpResource`, `Skill`) and the
+    `(:Agent)-[:HAS {workflow_name}]->` edges that attach them to the agents
+    (see [Capability checks](#capability-checks)),
+    - the KBAC policies (Bruno: [`bruno/iag-demo/authzen`](bruno/iag-demo/authzen)):
+    the admission policy `user-can-reach-agent` (insurance:
+    `person-can-reach-agent`), the capability policies `user-can-use-tool`,
+    `user-can-use-mcp-resource`, `user-can-use-prompt` and
+    `user-can-use-skill` (insurance: `person-...`), and
+    `user-can-trigger-workflow` (insurance: `person-can-trigger-workflow`)
+    for the console's grant self-check; see
+    [How a request is authorized](#how-a-request-is-authorized),
     - a ContX IQ knowledge query + policy: pick any pair from
     [`bruno/iag-demo/ciq-context`](bruno/iag-demo/ciq-context),
     - an App Agent with a credentials token,
-    - a Token Introspect config pointing at the Curity issuer,
+    - the Token Introspect configurations, all for the Curity issuer and the
+    usecase's node type (`User` in canbank, `Person` in insurance): the
+    MCP-bound one (audience `indykiteagent-mcp`), the console user token
+    (audience `chatbot-mcp`), and one per gateway client audience
+    (`indykiteagent`, `indykiteagent-2`, `indykiteagent-3`, `indykiteagent-4`,
+    `indykiteagent-drive`, `indykiteagent-erp`, plus `indykiteagent-crm` in
+    insurance). The platform must resolve every token a gateway sends it:
+    the bearer token for whoami and the delegation token in `X-IK-Token`,
     - the project's **MCP server configuration** `enabled` and bound to that App
-    Agent (`app_agent_id`) and Token Introspect (`token_introspect_id`). This
-    config is created together with the project (it can't be created from the
-    demo); enable and configure it in the IndyKite console. The MCP server
-    resolves the App Agent server-side from it, so MCP callers no longer send an
-    App Agent token.
-- **Provider clients** for `console` (chatbot login), `indykiteagent`
-  (orchestrator), `indykiteagent-2` (retriever), `indykiteagent-3`
-  (weather), and `indykiteagent-4` (analyst): each with its secret.
+    Agent (`app_agent_id`) and the MCP-bound Token Introspect
+    (`token_introspect_id`). This config is created together with the project
+    (it can't be created from the demo); enable and configure it in the
+    IndyKite console. The MCP server resolves the App Agent server-side from
+    it, so MCP callers send only the user's Bearer token.
+- **Provider clients** at the IdP (Curity, `idsvr.indykite.one`, which logs
+  users in and performs the RFC 8693 token exchange) for `console` (chatbot
+  login), `indykiteagent` (orchestrator), `indykiteagent-2` (retriever),
+  `indykiteagent-3` (weather), `indykiteagent-4` (analyst), and
+  `indykiteagent-mcp` (`mcp-iag`): each with its secret.
   The optional Drive MCP PoC additionally needs `indykiteagent-drive`, the
   optional CRM profile `indykiteagent-crm`, and the optional ERP profile
   `indykiteagent-erp`.
@@ -246,22 +271,28 @@ Fill in, at a minimum:
 | Variable | Where to get it |
 | --- | --- |
 | `INDYKITE_BASE_URL` | `https://api.eu.indykite.com` or `https://api.us.indykite.com` |
-| `CIQ_QUERY_ID` | Knowledge query ID or name from your project |
-| `WORKFLOW_ID` | The `external_id` of the single `Workflow` node to whitelist (sets `JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID` in [`iag-base-docker.yaml`](iag-base-docker.yaml)). If unset/removed, all workflows defined in the IKG are considered when authorizing requests. |
-| `APP_AGENT_CREDENTIALS_TOKEN` | App Agent credentials token used by the gateway for its ContX IQ calls (`JARVIS_CONTX_IQ_APP_AGENT_CREDENTIALS_TOKEN`) |
-| `MCP_SERVER_ORIGIN` | Scheme + host of the MCP server, e.g. `https://us.mcp.indykite.com` / `https://eu.mcp.indykite.com`. Used as the downstream target of `mcp-iag`. |
-| `MCP_SERVER_PATH` | MCP endpoint path, e.g. `/mcp/v1/<PROJECT_GID_URL_ENCODED>`. The compose file appends this to the `mcp-iag` host that the agents call. |
-| `MCP_SERVER_URL` | Direct URL to the MCP server (`<MCP_SERVER_ORIGIN><MCP_SERVER_PATH>`). Kept for reference / bypassing `mcp-iag`; by default the agents are routed through the gateway instead. |
+| `IDP_BASE_URL` | Base URL of the IdP where the `console` / `indykiteagent*` clients live. The chatbot login and all gateways (introspection, client credentials, token exchange) use the same instance. |
+| `IDP_ISSUER` | Issuer of that IdP, exactly as written into the `iss` of its tokens (default `https://idsvr.indykite.one/oauth/v2/oauth-anonymous`). The gateways advertise it: OpenID discovery URL on the agent cards, authorization server in the MCP gateways' protected resource metadata. |
+| `WORKFLOW_ID` | Read by the console only: the workflow the "why?" cards of the orchestrator, retriever and MCP gateways explain (`wf1`). The gateways take no workflow setting; the admission policy decides. |
+| `APP_AGENT_CREDENTIALS_TOKEN` | App Agent credentials token the gateways use for their whoami and AuthZEN calls (`JARVIS_CONTX_IQ_APP_AGENT_CREDENTIALS_TOKEN`) |
+| `MCP_SERVER_ORIGIN` | Scheme + host of the MCP server, e.g. `https://us.mcp.indykite.com` / `https://eu.mcp.indykite.com`. `mcp-iag` forwards to `<MCP_SERVER_ORIGIN><MCP_SERVER_PATH>`. |
+| `MCP_SERVER_PATH` | MCP endpoint path, `/mcp/v1/<PROJECT_GID>`, with the gid written unencoded (`gid:...`, not `gid%3A...`; a gateway does not start with an encoded path). The compose file appends this to the `mcp-iag` host: it is the one endpoint `mcp-iag` serves and the agents call. |
+| `MCP_SERVER_URL` | Direct URL to the MCP server (`<MCP_SERVER_ORIGIN><MCP_SERVER_PATH>`, same unencoded gid). Kept for reference / bypassing `mcp-iag`; by default the agents are routed through the gateway instead. |
 | `MCP_IDP_CLIENT_ID` / `_SECRET` | IdP Provider client `mcp-iag` uses to authenticate to the MCP server (e.g. `indykiteagent-mcp`). |
 | `CHATBOT_IDP_CLIENT_ID` / `_SECRET` | IdP Provider `console` client |
 | `ORCHESTRATOR_IDP_CLIENT_ID` / `_SECRET` | IdP Provider `indykiteagent` client |
 | `RETRIEVER_IDP_CLIENT_ID` / `_SECRET` | IdP Provider `indykiteagent-2` client |
 | `WEATHER_IDP_CLIENT_ID` / `_SECRET` | IdP Provider `indykiteagent-3` client (weather agent) |
 | `ANALYST_IDP_CLIENT_ID` / `_SECRET` | IdP Provider `indykiteagent-4` client (analyst agent) |
-| `ANALYST_WORKFLOW_ID` | Workflow the analyst gateway allows. Leave **empty** (default) so all analyst call shapes authorize (`wf3` direct, `wf3-console`/`wf-drive-*` via the console); `JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID` takes a single value per gateway, so pinning breaks the other shapes. |
-| `WEATHER_WORKFLOW_ID` | Workflow the weather gateway allows (default `wf2`). |
-| `DRIVE_WORKFLOW_ID` | *(Drive profile)* Workflow the drive gateway allows. Leave **empty** so `wf-drive`, `wf-drive-analyst` and `wf-drive-console` all authorize. |
-| `ANALYST_MCP_SERVER_URLS` | *(Drive profile)* Multi-backend analyst: `indykite=http://mcp-iag:8886/mcp/v1/<PROJECT_GID_URL_ENCODED>,drive=http://drive-mcp-iag:8887/mcp`. Required for Drive prompts; see the Drive section. |
+| `ANALYST_WORKFLOW_ID` | Read by the console only: the workflow the analyst gateway's "why?" cards explain. Leave **empty** (default): the analyst serves several call shapes (`wf3` direct, `wf3-console`, `wf-drive-*`, `wf-erp-*`), so no single workflow fits its cards. |
+| `WEATHER_WORKFLOW_ID` | Read by the console only: the workflow the weather gateway's "why?" cards explain (`wf2`). |
+| `DRIVE_WORKFLOW_ID` / `ERP_WORKFLOW_ID` | *(Drive / ERP profile)* Read by the console only. Leave **empty**: these gateways serve one workflow per call shape, and their "why?" cards take the workflow from the gateway's grant bundle (`GRANT_WORKFLOW_MAP`). |
+| `CRM_WORKFLOW_ID` | *(CRM profile)* Read by the console only: the workflow the CRM gateway's "why?" cards explain (`wf-crm`). |
+| `AUTHZEN_SUBJECT_TYPES` | Subject node type the console (grant self-check, `CAN_TRIGGER` edges) and the ERP server (AuthZEN search) use: `User` for canbank, `Person` for insurance. The gateways do not read it; they take the type from whoami. |
+| `IAG_CAPABILITY_CHECKS` | Optional, default `true`. Capability checks of the gateways (`JARVIS_AUTHZEN_CAPABILITIES_ENABLED`); `false` = admission decision only, lists unfiltered. See [Capability checks](#capability-checks). |
+| `IAG_AUTHZEN_CACHE_TTL` | Optional, default `30s`. How long a gateway keeps an admission decision and a permitted set per subject and chain, i.e. how fast a grant or revoke reaches the gateways. |
+| `AGENT_GATEWAY_IMAGE` | Optional. Agent Gateway image for all gateways; the default is the published `2.0.3` release pinned by digest in [`iag-base-docker.yaml`](iag-base-docker.yaml). Never use the `latest` tag. |
+| `ANALYST_MCP_SERVER_URLS` | *(Drive profile)* Multi-backend analyst: `indykite=http://mcp-iag:8886/mcp/v1/<PROJECT_GID>,drive=http://drive-mcp-iag:8887/mcp` (same unencoded gid as `MCP_SERVER_PATH`). Required for Drive prompts; see the Drive section. |
 | `CIQ_QUERY_HQ_WEATHER` | Optional. Name/GID of the `get-hq-weather` knowledge query used by the weather agent for HQ prompts (default: `get-hq-weather`). Create it in `canbank` (slot 9 + the `weather` / `weather-units` EDRs). Without it, all weather prompts go to Open-Meteo. |
 | `FLASK_SECRET_KEY` | Generate a fresh one: `python -c "import secrets; print(secrets.token_hex(32))"` |
 
@@ -297,26 +328,28 @@ make new-erp-mcp     # optional, profile "erp"   - outside the default build
 
 ### 4. Pin the Agent Gateway image tag
 
-[`iag-base-docker.yaml`](iag-base-docker.yaml) pins a concrete version:
+[`iag-base-docker.yaml`](iag-base-docker.yaml) pins the published release
+`2.0.3` by digest:
 
 ```yaml
 services:
   iag-base:
-    image: indykite/agent-gateway:2.65.1   # or any newer version tag from Docker Hub (`latest` lags behind)
+    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.0.3@sha256:8368f151cfec343f679dce6f320f43ab8c14cebb5465f683213de66c857aed33}
 ```
 
-All gateways inherit this tag. `2.21.1` and newer implement MCP proxying
-(`JARVIS_PROTECTED_AGENT_PROTOCOL: mcp`), which the `mcp-iag` and
-`drive-mcp-iag` services need - the published `2.0.x` tags ignore the protocol
-and 404 every MCP method after the auth pipeline passes. Avoid floating tags
-like `latest` so the demo behaviour is reproducible.
+All gateways inherit this image. The demo relies on what it implements: MCP
+proxying (`JARVIS_PROTECTED_AGENT_PROTOCOL: mcp`, used by `mcp-iag`,
+`drive-mcp-iag` and `erp-mcp-iag`) with one MCP endpoint per gateway and
+OAuth discovery, admission by one AuthZEN evaluation over the delegation
+chain, the capability checks, and the agent cards of the A2A gateways. To
+run another image, set `AGENT_GATEWAY_IMAGE` in `.env`. Never use the
+`latest` tag: on Docker Hub it points at an older build.
 
 If you are on Apple Silicon, add a `platform` attribute:
 
 ```yaml
 services:
   iag-base:
-    image: indykite/agent-gateway:2.65.1
     platform: linux/amd64
 ```
 
@@ -351,13 +384,69 @@ This brings up:
 | `analyst-iag` | `8885` | Agent Gateway protecting the analyst agent (`wf3` direct, `wf3-console`/`wf-drive-console` via the orchestrator) |
 | `analyst` | `6005` | Analyst agent (multi-backend MCP client: `mcp-iag` + optionally `drive-mcp-iag`; reachable directly or via the orchestrator's `query_drive`) |
 | `mcp-iag` | `8886` | Agent Gateway protecting the IndyKite MCP server (MCP proxy mode) |
-| `drive-mcp-iag` | `8887` | *(profile `drive`)* Agent Gateway protecting the Google Drive MCP server (workflows `wf-drive`/`wf-drive-analyst`/`wf-drive-console`) |
+| `drive-mcp-iag` | `8887` | *(profile `drive`)* Agent Gateway protecting the Google Drive MCP server (MCP proxy mode; workflows `wf-drive`/`wf-drive-analyst`/`wf-drive-console`) |
 | `drive-mcp` | `8000` | *(profile `drive`)* Google Drive MCP server (stdio, wrapped by supergateway into Streamable HTTP) |
 
 Open `http://localhost:3000` in a browser and log in as one of the demo users
 (e.g. `leslie`, `roy`, …). Make sure you use the same hostname as
 `CHATBOT_HOST` in `.env`: don't mix `localhost` and `127.0.0.1`, the OAuth
 redirect URL has to match the Provider client.
+
+### How a request is authorized
+
+Every gateway runs the same pipeline on every request; the settings live in
+[`iag-base-docker.yaml`](iag-base-docker.yaml), which all gateways extend.
+
+1. **Tokens.** The IdP (Curity, `idsvr.indykite.one`) logs the users in and
+   performs the RFC 8693 token exchange. The gateway introspects the bearer
+   token, gets its own client-credentials token, and exchanges both for a
+   **delegation token**: `sub` is the user, the nested `act` claims are the
+   chain of gateway clients the request has passed. The gateway forwards
+   that delegation token in `Authorization` to its agent, and the agent
+   passes it on as the bearer token to the next gateway - so the chain grows
+   by one client per hop.
+2. **Subject.** The gateway asks ContX IQ `whoami` which graph node the
+   bearer token belongs to. The node type comes from the project's Token
+   Introspect configuration (`User` in canbank, `Person` in insurance), the
+   id from the token.
+3. **Admission.** ONE AuthZEN evaluation per request: subject = the whoami
+   answer, action `CAN_TRIGGER`, resource type `Agent`, resource id = the
+   gateway's own IdP client id (the newest hop of the delegation chain). The
+   delegation token travels in `X-IK-Token` on that call, and the platform
+   exposes its chain to the policy as `$ik_token.act_chain` (client ids,
+   oldest first).
+
+The decision is taken by one KBAC policy, `user-can-reach-agent` in canbank
+(`person-can-reach-agent`, subject `Person`, in insurance):
+
+```cypher
+MATCH (subject:User)-[:WORKS_IN|CAN_TRIGGER*..3]->(wf:Workflow)
+MATCH (wf)-[rels:INVOKES*]->(resource:Agent)
+WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent)
+  AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain
+```
+
+A subject reaches an agent when a workflow they can trigger - directly or
+through their department - has exactly the delegation chain as its path of
+agents. One policy serves all eight gateways and no gateway carries a
+workflow setting; the `INVOKES` edges need their `workflow_name` property
+because the policy filters on it.
+
+Decisions are cached per subject and chain for `IAG_AUTHZEN_CACHE_TTL` (30 s
+by default) - that is how fast a grant or revoke reaches the gateways.
+
+The A2A gateways each set `JARVIS_SERVICE_BASE_URL` (e.g.
+`http://orchestrator-iag:8881`) and serve `GET /.well-known/agent-card.json`:
+without a token the public card (no skills), with a bearer token the
+extended card with the skills the caller is permitted (see
+[Capability checks](#capability-checks)).
+
+Every gateway audit record carries the `action` (`ADMISSION`, `DISCOVERY`,
+`INVOCATION`, or `noop` when the request is refused before any question is
+asked), the `decision` (`AUTHORIZED`, `NOT_AUTHORIZED`, `ERROR`), the
+`actorsChain`, a `reason` and `cached`. An admission reason reads like
+"subject User/millicent may reach Agent/indykiteagent-2 through the
+delegation chain" - it names the chain, not a workflow.
 
 ### Protecting MCP traffic (`mcp-iag`)
 
@@ -368,44 +457,115 @@ audit logging as the A2A flows.
 
 How it is wired:
 
-- `mcp-iag` extends `iag-base` (so it inherits the IdP / AuthZEN / CIQ / audit
-  config) and sets `JARVIS_PROTECTED_AGENT_PROTOCOL: mcp`, which switches the
-  gateway from the default A2A proxy into MCP (Streamable HTTP) proxy mode.
-- Its downstream target is `JARVIS_PROTECTED_AGENT_BASE_URL: ${MCP_SERVER_ORIGIN}`:
-  only the origin is needed, because the gateway forwards the incoming request
-  path (`${MCP_SERVER_PATH}`) on top of it.
+- `mcp-iag` extends `iag-base` (so it inherits the IdP / whoami / AuthZEN /
+  audit config) and sets `JARVIS_PROTECTED_AGENT_PROTOCOL: mcp`, which switches
+  the gateway from the default A2A proxy into MCP (Streamable HTTP) proxy mode.
+- An MCP gateway serves **one endpoint**: only the path of
+  `JARVIS_SERVICE_BASE_URL`, forwarded to exactly
+  `JARVIS_PROTECTED_AGENT_BASE_URL`; any other path answers `404`.
+
+  | Gateway | Serves | Forwards to |
+  | --- | --- | --- |
+  | `mcp-iag` | `http://mcp-iag:8886${MCP_SERVER_PATH}` | `${MCP_SERVER_ORIGIN}${MCP_SERVER_PATH}` |
+  | `drive-mcp-iag` | `http://drive-mcp-iag:8887/mcp` | `http://drive-mcp:8000/mcp` |
+  | `erp-mcp-iag` | `http://erp-mcp-iag:8889/mcp` | `http://erp-mcp:8010/mcp` |
+
+- `MCP_SERVER_PATH` is `/mcp/v1/<PROJECT_GID>` with the gid **unencoded**
+  (`gid:...`, not `gid%3A...`): a gateway does not start with a
+  percent-encoded path. `MCP_SERVER_URL` and `ANALYST_MCP_SERVER_URLS` use
+  the same form.
 - The agents call `http://mcp-iag:8886${MCP_SERVER_PATH}` (set via `MCP_SERVER_URL`
   in [`docker-compose.yaml`](docker-compose.yaml)). The gateway introspects the
-  caller's token, runs the AuthZEN check, then mints its own token (via
+  caller's token, runs the admission check (resource `Agent` /
+  `indykiteagent-mcp`), then exchanges for its own delegation token (via
   `MCP_IDP_CLIENT_ID` / `_SECRET`) for the downstream MCP server.
-
-> [!IMPORTANT]
-> The pinned `indykite/agent-gateway` tag must be **recent enough to support MCP
-> proxying** (the `JARVIS_PROTECTED_AGENT_PROTOCOL: mcp` mode). Older images
-> ignore the protocol and behave as an A2A proxy. Check
-> [the tag list on Docker Hub](https://hub.docker.com/r/indykite/agent-gateway/tags).
-
-<!-- -->
+- Each MCP gateway answers `GET /.well-known/oauth-protected-resource<path>`
+  without a token (RFC 9728: `resource`, and `authorization_servers` = the
+  IdP issuer, `IDP_ISSUER`), and its `401` carries
+  `WWW-Authenticate: Bearer resource_metadata=...` pointing there.
+- The gateway forwards the MCP protocol revisions `2025-06-18`, `2025-11-25`
+  and `2026-07-28`.
 
 > [!NOTE]
-> MCP calls now carry **only** the user's Bearer token: the same chatbot user
-> token used by the A2A flows - so `mcp-iag` runs the same AuthZEN check inherited
-> from `iag-base` (`JARVIS_AUTHZEN_ACTION: CAN_TRIGGER`, `JARVIS_AUTHZEN_SUBJECT_TYPES: User`),
-> with the Bearer token's `sub` as the subject. The downstream IndyKite MCP server
-> resolves the App Agent it uses to call IndyKite APIs **server-side**, from the
-> project's MCP server configuration (`app_agent_id`) - callers no longer send an
-> App Agent token (`IK_APP_AGENT_KEY` / `X-IK-ClientKey`), which the MCP server has
-> removed.
+> MCP calls carry **only** a Bearer token: the delegation token of the
+> calling agent's gateway. `mcp-iag` runs the same admission check as every
+> other gateway, inherited from `iag-base` (`JARVIS_AUTHZEN_ACTION:
+> CAN_TRIGGER`, subject from whoami), so a user's own token sent straight to
+> `mcp-iag` is refused: no workflow starts at the MCP agent. The downstream
+> IndyKite MCP server resolves the App Agent it uses to call IndyKite APIs
+> **server-side**, from the project's MCP server configuration
+> (`app_agent_id`); callers send no App Agent token.
 
-**To bypass the gateway** (talk to the MCP server directly, the original
-behaviour), set `MCP_SERVER_URL` back to `${MCP_SERVER_URL}` in the `retriever`,
-`weather`, and `analyst` service definitions in
-[`docker-compose.yaml`](docker-compose.yaml).
+**To bypass the gateway** (talk to the MCP server directly), set
+`MCP_SERVER_URL` to `${MCP_SERVER_URL}` in the `retriever`, `weather`, and
+`analyst` service definitions in [`docker-compose.yaml`](docker-compose.yaml).
+
+### Capability checks
+
+Admission decides whether a caller reaches an agent or MCP server at all;
+the capability checks decide **what** the caller may use there - per tool,
+resource, prompt and skill. The switch is `IAG_CAPABILITY_CHECKS` in `.env`
+(default `true`), which sets `JARVIS_AUTHZEN_CAPABILITIES_ENABLED`; `false`
+leaves every request with the admission decision only and the lists
+unfiltered.
+
+- **MCP gateways** (`mcp-iag`, `drive-mcp-iag`, `erp-mcp-iag`): for
+  `tools/list`, `resources/list`, `prompts/list` (discovery) and `tools/call`,
+  `resources/read`, `prompts/get` (invocation) the gateway reads the caller's
+  permitted set with one AuthZEN `search/resource` per kind (action
+  `CAN_USE`, resource types `Tool`, `McpResource`, `Prompt`). It filters the
+  server's lists to that set and refuses a call outside it with HTTP `403`
+  and the JSON-RPC error `-31403`; the server is not called. Such a request
+  gets the capability decision in place of the admission decision;
+  `initialize` and all other requests get the admission decision.
+- **A2A gateways**: filter the skills of the extended agent card (resource
+  type `Skill`); discovery only.
+
+The graph model, in both datasets:
+
+```text
+(:Agent)-[:HAS {workflow_name}]->(:Tool|:McpResource|:Skill {external_id})
+```
+
+The `external_id` is the tool name, the resource URI or the skill id, with
+one `HAS` edge per workflow in which the capability may be used. The
+policies `user-can-use-tool`, `user-can-use-mcp-resource`,
+`user-can-use-prompt` and `user-can-use-skill` (canbank; `person-...` in
+insurance) repeat the admission condition and add the agent's edge to the
+capability, e.g. `(agent:Agent)-[h:HAS]->(resource:Tool)` with
+`h.workflow_name = wf.external_id`.
+
+What the datasets model:
+
+| Agent | Capability | Workflows |
+| --- | --- | --- |
+| `indykiteagent-mcp` | tool `ciq_execute` | `wf1`, `wf2`, `wf3`, `wf3-console` |
+| `indykiteagent-mcp` | the `authzen_*` tools, one tool per knowledge query of the usecase, resource `indykite://knowledge-queries/` | `wf1`, `wf3`, `wf3-console` |
+| `indykiteagent-mcp` | tool `get-hq-weather` | `wf2` |
+| `indykiteagent-drive` | tool `search` | `wf-drive`, `wf-drive-analyst`, `wf-drive-console` |
+| `indykiteagent-erp` | tools `list_invoices`, `get_invoice` | `wf-erp`, `wf-erp-analyst`, `wf-erp-console` |
+| the A2A agents | their skills | per agent, per workflow |
+
+No `Prompt` is modelled, so prompt lists come back empty. The visible
+effect: the weather path (`wf2`) sees only `ciq_execute` and
+`get-hq-weather` on the IndyKite MCP server, and a caller admitted nowhere
+gets empty lists and a `403` on calls.
+
+The Drive gateway runs with the checks **off** (`IAG_DRIVE_CAPABILITY_CHECKS`,
+default `false`): the Drive server serves one resource per file
+(`gdrive:///<file id>`), URIs the graph does not list, so with the checks on
+a file read is refused and only the modelled `search` tool passes. Admission
+still decides who reaches Drive. Set it to `true` to show exactly that
+refusal.
+
+Capability audit records add `capabilities` (what an invocation named),
+`permittedSet` and `discovery` (`serverCalled` / `listed` / `kept`) to the
+fields of an admission record.
 
 ### Proxying a non-IndyKite MCP server: Google Drive (profile `drive`)
 
-The gateway's MCP proxy mode is downstream-agnostic: it forwards any
-Streamable HTTP MCP server (any method/path, SSE streaming, `Mcp-Session-Id`
+The gateway's MCP proxy mode is downstream-agnostic: it fronts the MCP
+endpoint of any Streamable HTTP MCP server (SSE streaming, `Mcp-Session-Id`
 passthrough). The `drive` compose profile proves it with a Google Drive MCP
 server: the reference stdio server wrapped by
 [supergateway](https://github.com/supercorp-ai/supergateway), protected by
@@ -443,7 +603,8 @@ Actual steps to get Drive working end-to-end:
    ```
 
 The graph data (instant-stack datasets and the Bruno ingest) always includes
-the Drive workflows and the `indykiteagent-drive` agent: they are inert while
+the Drive workflows, the `indykiteagent-drive` agent and its `search` tool
+node (see [Capability checks](#capability-checks)): they are inert while
 the profile is off, so the same provisioning works for both modes.
 
 Three ways to exercise it, in increasing order of demo value:
@@ -474,7 +635,7 @@ The analyst agent can connect to several MCP servers in one session. Set in
 `.env` (see `.example.env`):
 
 ```bash
-ANALYST_MCP_SERVER_URLS=indykite=http://mcp-iag:8886/mcp/v1/<PROJECT_GID_URL_ENCODED>,drive=http://drive-mcp-iag:8887/mcp
+ANALYST_MCP_SERVER_URLS=indykite=http://mcp-iag:8886/mcp/v1/<PROJECT_GID>,drive=http://drive-mcp-iag:8887/mcp
 ```
 
 When set, this overrides the single `MCP_SERVER_URL` and every backend's tool
@@ -484,8 +645,9 @@ names are prefixed with its alias (`indykite_ciq_execute`, `drive_search`,
 appropriate. A backend that is down is skipped with a warning instead of
 failing the request.
 
-A workflow in the IKG holds exactly **one** agent chain (the gateway keeps one
-chain per workflow id), so each call shape is its own workflow:
+A workflow in the IKG holds exactly **one** agent chain (the admission policy
+compares the delegation chain with the workflow's path of agents), so each
+call shape is its own workflow:
 
 | Workflow | Chain | Used by |
 | --- | --- | --- |
@@ -495,11 +657,11 @@ chain per workflow id), so each call shape is its own workflow:
 | `wf3-console` | `indykiteagent -> indykiteagent-4 -> indykiteagent-mcp` | console-routed analyst reaching the IndyKite MCP |
 
 Parallel `INVOKES` edges between the same agent pair are discriminated by the
-`workflow_name` property (`discriminating_property: workflow_name`). Because
-`allowed_workflow_id` is single-valued, the analyst and drive gateways run
-unpinned (`ANALYST_WORKFLOW_ID=` / `DRIVE_WORKFLOW_ID=` empty, like `mcp-iag`)
-so all shapes authorize. Re-ingest the workflow data after upgrading
-(instant-stack, or bruno `ingest/agent-workflow`).
+`workflow_name` property (`discriminating_property: workflow_name`). The
+admission policy admits whichever workflow has the request's delegation
+chain as its path, so one policy serves every shape on the analyst and
+drive gateways. The workflow data comes from instant-stack, or bruno
+[`ingest/agent-workflow`](bruno/iag-demo/ingest/agent-workflow).
 
 #### Deny → remediate → allow (grant button)
 
@@ -536,10 +698,13 @@ gateway's card. A gateway missing from the map still takes requests, they
 just show in the inbox without a Grant button. Grant rights are re-checked
 by `/api/auth/status` at most once a minute and whenever a grant, revoke or
 request event arrives. The chatbot also
-needs `AUTHZEN_SUBJECT_TYPES` (insurance `Person`, canbank `User`). The
-gateway pins stay empty - only the chatbot reads this map.
+needs `AUTHZEN_SUBJECT_TYPES` (insurance `Person`, canbank `User`) for the
+self-check (policy `user-can-trigger-workflow` /
+`person-can-trigger-workflow`, resource `Workflow`) and the edges it writes.
+Only the chatbot reads this map - the gateways take no workflow setting.
 
-Timing: each gateway caches a subject's workflow set for
+Timing: each gateway caches its admission decisions and permitted sets per
+subject and delegation chain for
 `IAG_AUTHZEN_CACHE_TTL` (30 s by default, set in `.env`; see
 [`iag-base-docker.yaml`](iag-base-docker.yaml)), so a grant or revoke reaches
 gateway decisions within that window. The platform itself is consistent at
@@ -565,11 +730,11 @@ console -> orchestrator-iag -> orchestrator --query_crm--> crm-iag (wf-crm) -> c
                                                                                 +-> Salesforce /services/oauth2/token -> Case via REST
 ```
 
-The CRM agent receives the gateway-minted delegation token, reads its `sub` +
+The CRM agent receives the gateway's delegation token, reads its `sub` +
 `act` chain, then exchanges a signed JWT Bearer assertion (RFC 7523) for a
 Salesforce access token and creates the Case - the description records
 "Filed on behalf of `<subject>` via agent chain ...". The audit terminal shows
-**two** TOKEN cards per run: the IndyKite delegation token and the Salesforce
+**two** TOKEN cards per run: the delegation token from the IdP and the Salesforce
 access token (redacted by default - it is a third-party credential; set
 `SF_REPORT_FULL_TOKEN=true` to display it in full).
 `wf-crm` is staff-only (`support`/`sales` hold `CAN_TRIGGER`;
@@ -594,7 +759,8 @@ Setup, once (details in the insurance
    container's non-root user: `chmod 644 crm_agent/keys/sf-jwt.key`.
 3. Fill `.env`: `CRM_IDP_CLIENT_ID/SECRET` (`indykiteagent-crm`),
    `IAG_CRM_HOST=crm-iag`, `SF_CONSUMER_KEY`, `SF_USERNAME`, and add `crm` to
-   `COMPOSE_PROFILES`. The dataset must carry the `wf-crm` workflow
+   `COMPOSE_PROFILES`. The dataset must carry the `wf-crm` workflow and the
+   Token Introspect configuration for the `indykiteagent-crm` audience
    (instant-stack `data/insurance`).
 
 The orchestrator registers `query_crm` only when `CRM_HOST` is set (empty in
@@ -620,8 +786,8 @@ why? click -> chatbot GET /api/explain?subject=millicent&workflow=wf1
            -> cytoscape modal: (millicent)-[WORKS_IN]->(Support)-[CAN_TRIGGER]->(wf1)
 ```
 
-The two `_Application`-subject explain queries mirror the KBAC policy's two
-path shapes with every hop aliased (a `*..3` pattern cannot expose its
+The two `_Application`-subject explain queries mirror the two path shapes
+by which the KBAC policies link a subject to a workflow with every hop aliased (a `*..3` pattern cannot expose its
 intermediate nodes): the staff leg `Subject-[WORKS_IN]->Department-
 [CAN_TRIGGER]->Workflow` and the direct leg `Subject-[CAN_TRIGGER]->Workflow`.
 A **denial renders as the two nodes with no connecting path** - the graph
@@ -632,17 +798,26 @@ Setup: the queries ship in both datasets (instant-stack `data/canbank` slots
 11/12, `data/insurance` slots 10/11 - subject `User` vs `Person`); provision
 them and put the two gids in `.env` (`EXPLAIN_STAFF_QUERY_ID`,
 `EXPLAIN_DIRECT_QUERY_ID`). The buttons appear only when both are set. The
-audit events don't carry the workflow id, so the UI parses it from the
-AUTHORIZED reason text and falls back to a gateway->workflow map
-(`EXPLAIN_WORKFLOW_MAP`, assembled in compose from the `*_WORKFLOW_ID` vars)
-for DENY cards. Cytoscape is vendored at
+audit records name the delegation chain, not a workflow, so the card takes
+the workflow from a gateway->workflow map (`EXPLAIN_WORKFLOW_MAP`, assembled
+in compose from the `*_WORKFLOW_ID` vars, which only the console reads),
+else from the last workflow of the gateway's grant bundle
+(`GRANT_WORKFLOW_MAP`). Cytoscape is vendored at
 `chatbot/static/assets/js/cytoscape.min.js` (no CDN).
+
+Each gateway card also shows what the record says about the decision: a
+small tag with the action next to the gateway name (`admission`,
+`discovery`, `invocation`, or `refused early` for `noop`), a **chain** line
+with the delegation chain, the reason, and - where the record has them -
+expandable **permitted set**, **named**, **discovery** and **cached**
+details (see [Capability checks](#capability-checks)).
 
 ### Graph-filtered ERP rows (profile `erp`)
 
 An ordinary Postgres "ERP" (one invoices table) whose rows are pre-filtered
-per caller by the knowledge graph - the so-far-unused **AuthZEN
-search/resource** API finally gets its showcase:
+per caller by the knowledge graph through the **AuthZEN search/resource**
+API - the enumeration the gateways use for capability checks, here applied
+to data rows:
 
 ```text
 console -> orchestrator --query_erp--> analyst --erp_list_invoices--> erp-mcp-iag -> erp-mcp
@@ -662,7 +837,8 @@ evaluation API (yes/no) used elsewhere in the demo.
 
 Setup: create the `indykiteagent-erp` IdP client; provision the dataset
 additions (Invoice nodes, SERVES/HAS_INVOICE edges, `staff-can-view-invoice`
-KBAC + the `wf-erp-*` workflow chains - in both datasets); then per usecase
+KBAC, the `wf-erp-*` workflow chains and the `list_invoices` / `get_invoice`
+tool nodes of `indykiteagent-erp` - in both datasets); then per usecase
 `.env`: add `erp` to `COMPOSE_PROFILES`, append
 `,erp=http://erp-mcp-iag:8889/mcp` to `ANALYST_MCP_SERVER_URLS`, set
 `ERP_TOOL_ENABLED=true` and the IdP secret; `make new-erp-mcp` and rebuild
@@ -670,7 +846,7 @@ orchestrator/analyst for the new prompts.
 
 Trust boundary: like the CRM agent, `erp-mcp` (and `erp-db`) are **not**
 published to the host - only `erp-mcp-iag` reaches them. The server reads the
-subject from the gateway-minted delegation token; exposing it directly would
+subject from the gateway's delegation token; exposing it directly would
 let a self-crafted JWT read other subjects' rows.
 
 ### Parallel multi-agent MCP (WF4)
@@ -685,21 +861,22 @@ The graph models this with three workflows converging on the MCP agent node
 
 - `wf1`: `millicent`/`carol`/… → orchestrator (`indykiteagent`) → retriever
   (`indykiteagent-2`) → MCP
-- `wf2`: `jane` → weather (`indykiteagent-3`) → MCP
+- `wf2`: `jane` → orchestrator (`indykiteagent`) → weather
+  (`indykiteagent-3`) → MCP
 - `wf3`: `millicent` (only) → analyst (`indykiteagent-4`) → MCP
 
 Two ways to see it:
 
-- **Bruno**: run
-  [`bruno/iag-demo/wf4-parallel-mcp`](bruno/iag-demo/wf4-parallel-mcp) in
-  order. It opens three MCP sessions against `mcp-iag` (millicent via retriever,
-  carol via retriever, millicent via analyst), interleaves them round-robin
-  (initialize A/B/C, list-tools A/B/C, tool-calls A/B/C), asserts the three
-  `Mcp-Session-Id`s are distinct, and shows the per-user decisions: the same
-  `authzen_evaluate` call on `wf3` returns `decision: true` for millicent and
-  `decision: false` for carol, because the MCP subject is bound to the bearer
-  token. Fill the `user_token_millicent` / `user_token_carol` secrets in the
-  Bruno environment first (see the folder docs).
+- **Bruno**: [`bruno/iag-demo/wf4-parallel-mcp`](bruno/iag-demo/wf4-parallel-mcp)
+  shows the other side of the same rule: **skipped hops are refused**. Its
+  requests carry a user's own token straight to `retriever-iag` or `mcp-iag`,
+  so the delegation chain is that one agent, and no workflow starts there.
+  The retriever gateway and an MCP `initialize` answer `403`, `tools/list`
+  comes back empty, and a `tools/call` answers `403` with JSON-RPC error
+  `-31403` - for millicent and carol alike. Only millicent's call of the
+  analyst gateway passes: `indykiteagent-4` is the start of `wf3`. Fill the
+  `user_token_millicent` / `user_token_carol` secrets in the Bruno
+  environment first (see the folder docs).
 - **Chatbot**: log in as two different users in two browsers (or a private
   window) and prompt both at the same time. Both ride the shared retriever
   into `mcp-iag`; the audit webhook stream in the chatbot UI (see
@@ -718,6 +895,13 @@ Quick canbank prompts once you're logged in as **Leslie**:
 - *"Tell me how many shares of NVDA the user with the id: rebecca can purchase"*
 - *"What's the weather in London?"* (routed to the `weather_agent` → direct Open-Meteo)
 - *"What's the weather at CanBank HQ?"* (routed to the `weather_agent` → CIQ `get-hq-weather` → `weather` + `weather-units` resolvers; requires `CIQ_QUERY_HQ_WEATHER` and the canbank EDR setup)
+
+With capability checks on (the default), each path sees only the tools its
+workflow has in the graph: the retriever path (`wf1`) lists `ciq_execute`,
+the `authzen_*` tools and one tool per knowledge query, the weather path
+(`wf2`) only `ciq_execute` and `get-hq-weather`. The audit terminal shows
+these as `discovery` and `invocation` cards with their permitted set; see
+[Capability checks](#capability-checks).
 
 Stock quotes and AuthZEN decisions (as **millicent**, who works in both
 `support` and `trading` - the `trading` department holds the
@@ -772,41 +956,56 @@ Drive" (or "Drive") in the prompt - that's what routes it to the orchestrator's
 - *"According to the canbank retail onboarding notes in Google Drive, what steps are required to onboard a new customer?"*
 
 Each one shows the full chain in the audit terminal: `orchestrator-iag` →
-`analyst-iag` (`wf-drive-console`) → `drive-mcp-iag`.
+`analyst-iag` → `drive-mcp-iag` (workflow `wf-drive-console`), with the
+delegation chain growing by one client on each card's **chain** line.
 
 ### 7. Troubleshooting
 
 - **`manifest unknown` / `manifest for indykite/agent-gateway:<tag> not found`**:
-  the pinned tag doesn't exist for your platform. Pick a valid one from
-  [Docker Hub](https://hub.docker.com/r/indykite/agent-gateway/tags) (`2.21.1`
-  or newer for MCP proxying) and, on Apple Silicon, add `platform: linux/amd64`.
+  the image named in `AGENT_GATEWAY_IMAGE` doesn't exist for your platform.
+  Remove the override to run the default `2.0.3` digest from
+  [`iag-base-docker.yaml`](iag-base-docker.yaml) (never `latest`) and, on
+  Apple Silicon, add `platform: linux/amd64`.
+- **A gateway exits at start**: a setting is missing or invalid, and the
+  gateway's log names it. Typical: a percent-encoded `MCP_SERVER_PATH`
+  (write the gid as `gid:...`), or a leftover
+  `JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID` in a compose override.
 - **OAuth redirect mismatch**: the Provider `console` client's redirect URL
   must exactly match `http://${CHATBOT_HOST}:${CHATBOT_PORT}/auth/callback`.
-- **`401 Unauthorized` / `403 Forbidden` on every prompt**: the user you're
-  logged in as isn't allowed to `CAN_TRIGGER` the workflow, or the CIQ query
-  isn't returning rows. Verify with
-  [`bruno/iag-demo/authzen/subject-can-trigger-workflow.yml`](bruno/iag-demo/authzen/subject-can-trigger-workflow.yml)
-  and the matching CIQ query in `bruno/iag-demo/ciq-context`.
-- **`401` / `403` on MCP calls (retriever/weather data lookups)**: the user's
-  Bearer token isn't being accepted. Confirm it's introspectable and bound to the
-  project's Token Introspect issuer/audience, that it passes the `mcp-iag` AuthZEN
-  check (`CAN_TRIGGER` / `User`), and that the project has an **enabled MCP server
+- **`401 Unauthorized` on every request**: the project has no Token
+  Introspect configuration for the issuer + audience of the token the
+  gateway presents - the bearer token (whoami) or the delegation token of
+  that gateway's client (`X-IK-Token`). Each gateway client audience needs
+  its own configuration; the datasets carry the full list.
+- **`403 Forbidden` with an `ADMISSION` / `NOT_AUTHORIZED` audit record**:
+  the admission policy (`user-can-reach-agent` / `person-can-reach-agent`)
+  is missing, the record's chain differs from the workflow's `INVOKES` path,
+  or the subject has no `CAN_TRIGGER` path to that workflow. Compare the
+  card's **chain** line with the graph
+  ([`bruno/iag-demo/ingest/agent-workflow`](bruno/iag-demo/ingest/agent-workflow))
+  and check the policies in [`bruno/iag-demo/authzen`](bruno/iag-demo/authzen).
+  Remember: one workflow holds exactly one chain.
+- **A card tagged `refused early`** (action `noop`): the gateway refused the
+  request before asking any question; the record's reason says why.
+- **Empty tool lists, or `403` with JSON-RPC error `-31403`**: the capability
+  nodes, their `HAS` edges or the `*-can-use-*` policy are missing for that
+  workflow (see [Capability checks](#capability-checks)); to rule the checks
+  out, set `IAG_CAPABILITY_CHECKS=false` and recreate the gateways.
+- **`404` from an MCP gateway**: the client calls another path than the
+  gateway's one endpoint (see
+  [Protecting MCP traffic](#protecting-mcp-traffic-mcp-iag)).
+- **`401` / `403` on MCP calls (retriever/weather data lookups)**: besides the
+  causes above, confirm that the project has an **enabled MCP server
   configuration** with a valid `app_agent_id` (the App Agent is resolved
-  server-side; a missing/disabled config rejects all MCP requests). A `401` that
-  returns `.well-known/oauth-protected-resource` metadata means the Bearer token
-  is missing/expired/wrongly-bound: not a missing App Agent key. To isolate
-  whether the gateway is the cause, temporarily bypass it (set `MCP_SERVER_URL`
-  back to the direct URL).
+  server-side; a missing/disabled config rejects all MCP requests). A `401`
+  whose `WWW-Authenticate` header points at
+  `.well-known/oauth-protected-resource` means the Bearer token is
+  missing/expired/wrongly-bound: not a missing App Agent key. To isolate
+  whether the gateway is the cause, temporarily bypass it (set
+  `MCP_SERVER_URL` to the direct URL).
 - **`.env` changes don't take effect**: `docker compose restart` does **not**
   re-read `.env` - environment is baked at container creation. Recreate
   instead: `docker compose up -d --force-recreate <service>`.
-- **`403 {"message":"Authorization check failed"}` from a gateway, with
-  `no workflow matches the actors chain` in its debug log**: the delegation
-  chain of the call (visible as `actorsChain` in the log) has no matching
-  workflow in the IKG - either the shape isn't ingested, or the gateway's
-  `JARVIS_CONTX_IQ_ALLOWED_WORKFLOW_ID` pin excludes it (`skipping workflow
-  not allowed by configuration`). Remember: one workflow holds exactly one
-  chain.
 - **Drive calls fail with `invalid_request` / Google `403 API not enabled`**:
   enable the Google Drive API in the OAuth client's GCP project (step 1 of the
   Drive section); `invalid_request` right after an auth run that *was* working
@@ -852,7 +1051,7 @@ Each one shows the full chain in the audit terminal: `orchestrator-iag` →
   `:9090/metrics` inside its network (enabled via
   `JARVIS_SERVICE_TRACING_DETECTOR: local` in `iag-base-docker.yaml`; no host
   port is published - probe from a member container).
-- **Tail gateway logs** to see the introspect / exchange / CIQ / AuthZen
+- **Tail gateway logs** to see the introspect / exchange / whoami / AuthZEN
   decisions:
 
   ```bash

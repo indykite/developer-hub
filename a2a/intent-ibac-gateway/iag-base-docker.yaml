@@ -3,21 +3,23 @@
 # docker-compose.yaml extends this service and adds its own name, port, the
 # agent it protects and the Auth0 Machine-to-Machine client it is known by.
 #
-# The image is loaded locally and never pulled (pull_policy never fails loudly
-# instead): load the release you want and tag it agent-gateway:latest, or name
-# it in .env as AGENT_GATEWAY_IMAGE. What this demo relies on: Token Service
-# mode (the delegated token in X-IK-Token, the user's token untouched in
-# Authorization); admission as one AuthZEN evaluation over the delegation chain
-# ($ik_token.act_chain, policies user-can-reach-agent and customer-can-reach-agent
-# in the intent-ibac dataset); ibac.enabled, which has the gateway ask the Intent
-# Agent about every prompt and answer the caller itself when there is no intent;
-# the INTENT audit records with the prompt; and the delegated token extension
-# declared on the cards and named in A2A-Extensions on every forwarded call.
+# The image is the published release indykite/agent-gateway:2.0.3 (Docker Hub),
+# pulled when missing; another tag can be named in .env as AGENT_GATEWAY_IMAGE.
+# What this demo relies on: Token Service mode (the delegated token in
+# X-IK-Token, nothing in Authorization: the agent never holds the person's
+# token); admission as one
+# AuthZEN evaluation over the delegation chain ($ik_token.act_chain, policy
+# person-can-reach-agent in the intent-ibac dataset); the capability checks
+# (the extended card filtered to the CAN_USE Skill set); ibac.enabled, which
+# has the gateway ask the Intent Agent about every prompt and answer the caller
+# itself when there is no intent; the INTENT audit records with the prompt; and
+# the delegated token extension declared on the cards and named in
+# A2A-Extensions on every forwarded call. No browser calls a gateway directly
+# (the console does, server side), so cors.allowed_origins stays empty.
 
 services:
   iag-base:
-    image: ${AGENT_GATEWAY_IMAGE:-agent-gateway:latest}
-    pull_policy: never
+    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.0.3}
     environment:
       JARVIS_SERVICE_LOG_LEVEL: ${IAG_LOG_LEVEL:-info}
       JARVIS_SERVICE_ENVIRONMENT: demo
@@ -47,6 +49,11 @@ services:
       # Every delegated token is minted for the agents' audience; the platform
       # reads it in X-IK-Token through the token-service-intent-ibac introspect.
       JARVIS_TOKEN_SERVICE_AUDIENCE: intent-ibac-agents
+      # What the agent gets in Authorization next to the delegated token: none
+      # here, so the agent holds only the delegated token and cannot replay the
+      # person's token to start a new workflow as them. correct_audience (the
+      # gateway's default) would pass the person's token on; all, anything sent.
+      JARVIS_AUTHORIZATION_HEADER_FORWARD: ${IAG_AUTHORIZATION_FORWARD:-none}
       # A workflow starts with a user's Auth0 access token issued for the people's
       # API: every login is a Person; whoami resolves it to its Person node, and
       # whether that person is staff or a customer is found on the graph.
@@ -75,6 +82,13 @@ services:
       JARVIS_INTENT_AGENT_BASE_URL: http://${INTENT_AGENT_ENTRY:-intent-agent}:${INTENT_AGENT_PORT:-6003}
       JARVIS_INTENT_AGENT_AUDIENCE: intent_agent
       JARVIS_INTENT_AGENT_TIMEOUT: ${INTENT_AGENT_TIMEOUT:-45s}
+      # The gateway keeps the agent's card (its A2A client) and reads it again
+      # in the background after this interval, 5 minutes by default. Kept very
+      # short here so an edit to a card in console/data/fleet.json reaches the
+      # gateway, and the extended card it filters, within seconds.
+      JARVIS_A2A_CACHE_TTL: ${IAG_A2A_CACHE_TTL:-5s}
+      JARVIS_A2A_CACHE_UPDATE_AFTER: ${IAG_A2A_CACHE_TTL:-5s}
+      JARVIS_A2A_CACHE_UPDATE_AFTER_ERROR: ${IAG_A2A_CACHE_TTL:-5s}
     volumes:
       # Audit: every decision of the gateway lands on the console's webhook,
       # next to the Token Service's and the Intent Agent's records. The file

@@ -12,8 +12,6 @@ http:
       value: application/json, text/event-stream
     - name: Content-Type
       value: application/json
-    - name: Mcp-Session-Id
-      value: "{{wf4_millicent_analyst_session_id}}"
     - name: Mcp-Protocol-Version
       value: "2025-11-25"
   body:
@@ -32,8 +30,9 @@ runtime:
   scripts:
     - type: after-response
       code: |
-        test("Status code is 200 (or 202 for notification)", function () {
-          expect(res.status).to.be.oneOf([200, 202, 204]);
+        // A notification gets the admission decision, like initialize.
+        test("Status code is 403 (admission refused)", function () {
+          expect(res.status).to.equal(403);
         });
 
 settings:

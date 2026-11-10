@@ -107,8 +107,8 @@ cards - title, description, optional input, the prompt with `{input}`, a
 render hint, the `services` chain the card depends on (first gateway to
 last), `access: "request"` for cards that may be denied, and an optional
 `denied` text shown instead of the generic notice and the agent's apology
-when the denial is outright). A request targets the deepest denied hop of
-the card's chain, so the staff grant writes that gateway's workflow bundle
+when the denial is outright). A request names the last gateway of the
+card's chain, so the staff grant writes that gateway's workflow bundle
 from `GRANT_WORKFLOW_MAP`. The file is mounted into the container
 at `/app/usecase-app.json` by docker-compose (`USECASE_APP_FILE` to override
 when running locally). Branding stays in `usecase.env` (`ORG_NAME`,
