@@ -193,7 +193,7 @@ by design.
    resolvers hitting [open-meteo](https://open-meteo.com). Requires
    `CIQ_QUERY_HQ_WEATHER` and the resolver setup. The capability beat:
    expand **permitted set** on the `mcp-iag` card - the weather path
-   (`wf2`) sees only `ciq_execute` and `get-hq-weather`, while the
+   (`wf2`) sees only the `get-hq-weather` tool, while the
    retriever path (`wf1`) sees the `authzen_*` tools and the other knowledge
    queries. Same MCP server, same user; the workflow decides the tool list,
    and a call outside the set is refused with `403` / `-31403` before the

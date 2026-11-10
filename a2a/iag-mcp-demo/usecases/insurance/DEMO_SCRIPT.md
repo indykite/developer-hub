@@ -226,7 +226,7 @@ subject type the gateways get from whoami). Staff are `Person`s who
    connects them." He can name the id; the graph still says no.
 8. **"What's the weather at SecureHome HQ?"**
    → works: `wf2` is granted. Expand **permitted set** on the `mcp-iag`
-   card: the weather path sees only `ciq_execute` and `get-hq-weather`,
+   card: the weather path sees only the `get-hq-weather` tool,
    not the `authzen_*` tools or the other knowledge queries the retriever
    path (`wf1`) lists - the capability checks follow the workflow. A call
    outside the set is refused with `403` / `-31403`.

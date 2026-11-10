@@ -45,27 +45,6 @@ http:
             "properties": [
               {
                 "type": "workflow_name",
-                "value": "wf2"
-              },
-              {
-                "type": "discriminating_property",
-                "value": "workflow_name"
-              }
-            ],
-            "type": "HAS"
-          },
-          {
-            "source": {
-              "type": "Agent",
-              "external_id": "indykiteagent-mcp"
-            },
-            "target": {
-              "type": "Tool",
-              "external_id": "ciq_execute"
-            },
-            "properties": [
-              {
-                "type": "workflow_name",
                 "value": "wf3"
               },
               {

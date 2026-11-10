@@ -293,7 +293,7 @@ Fill in, at a minimum:
 | `IAG_AUTHZEN_CACHE_TTL` | Optional, default `30s`. How long a gateway keeps an admission decision and a permitted set per subject and chain, i.e. how fast a grant or revoke reaches the gateways. |
 | `AGENT_GATEWAY_IMAGE` | Optional. Agent Gateway image for all gateways; the default is the published `2.0.3` release pinned by digest in [`iag-base-docker.yaml`](iag-base-docker.yaml). Never use the `latest` tag. |
 | `ANALYST_MCP_SERVER_URLS` | *(Drive profile)* Multi-backend analyst: `indykite=http://mcp-iag:8886/mcp/v1/<PROJECT_GID>,drive=http://drive-mcp-iag:8887/mcp` (same unencoded gid as `MCP_SERVER_PATH`). Required for Drive prompts; see the Drive section. |
-| `CIQ_QUERY_HQ_WEATHER` | Optional. Name/GID of the `get-hq-weather` knowledge query used by the weather agent for HQ prompts (default: `get-hq-weather`). Create it in `canbank` (slot 9 + the `weather` / `weather-units` EDRs). Without it, all weather prompts go to Open-Meteo. |
+| `CIQ_QUERY_HQ_WEATHER` | Optional. Name (not gid) of the `get-hq-weather` knowledge query; the weather agent calls the MCP tool of that name for HQ prompts (default: `get-hq-weather`). Needs slot 9 + the `weather` / `weather-units` EDRs. Without it, weather prompts go to Open-Meteo. |
 | `FLASK_SECRET_KEY` | Generate a fresh one: `python -c "import secrets; print(secrets.token_hex(32))"` |
 
 LLM selection:
@@ -539,17 +539,24 @@ What the datasets model:
 
 | Agent | Capability | Workflows |
 | --- | --- | --- |
-| `indykiteagent-mcp` | tool `ciq_execute` | `wf1`, `wf2`, `wf3`, `wf3-console` |
-| `indykiteagent-mcp` | the `authzen_*` tools, one tool per knowledge query of the usecase, resource `indykite://knowledge-queries/` | `wf1`, `wf3`, `wf3-console` |
+| `indykiteagent-mcp` | tool `ciq_execute`, the `authzen_*` tools, one tool per knowledge query of the usecase, resource `indykite://knowledge-queries/` | `wf1`, `wf3`, `wf3-console` |
 | `indykiteagent-mcp` | tool `get-hq-weather` | `wf2` |
 | `indykiteagent-drive` | tool `search` | `wf-drive`, `wf-drive-analyst`, `wf-drive-console` |
 | `indykiteagent-erp` | tools `list_invoices`, `get_invoice` | `wf-erp`, `wf-erp-analyst`, `wf-erp-console` |
 | the A2A agents | their skills | per agent, per workflow |
 
 No `Prompt` is modelled, so prompt lists come back empty. The visible
-effect: the weather path (`wf2`) sees only `ciq_execute` and
-`get-hq-weather` on the IndyKite MCP server, and a caller admitted nowhere
-gets empty lists and a `403` on calls.
+effect: the weather path (`wf2`) sees only `get-hq-weather` on the IndyKite
+MCP server, and a caller admitted nowhere gets empty lists and a `403` on
+calls.
+
+`ciq_execute` is the server's generic executor: it runs any knowledge query
+by id, and the gateway decides on the tool name, not on its arguments. A
+workflow that is meant to reach only some queries therefore gets their named
+tools and **not** `ciq_execute` - the weather agent calls the `get-hq-weather`
+tool. On `wf1`, `wf3` and `wf3-console` the retriever and the analyst call
+`ciq_execute`, so there the queries a caller can run are limited by the
+ContX IQ policy of each query, not by the tool list.
 
 The Drive gateway runs with the checks **off** (`IAG_DRIVE_CAPABILITY_CHECKS`,
 default `false`): the Drive server serves one resource per file
@@ -894,12 +901,12 @@ Quick canbank prompts once you're logged in as **Leslie**:
 - *"Retrieve past decisions that incorporated the 'refund_policy' document."*
 - *"Tell me how many shares of NVDA the user with the id: rebecca can purchase"*
 - *"What's the weather in London?"* (routed to the `weather_agent` → direct Open-Meteo)
-- *"What's the weather at CanBank HQ?"* (routed to the `weather_agent` → CIQ `get-hq-weather` → `weather` + `weather-units` resolvers; requires `CIQ_QUERY_HQ_WEATHER` and the canbank EDR setup)
+- *"What's the weather at CanBank HQ?"* (routed to the `weather_agent` → MCP tool `get-hq-weather` → `weather` + `weather-units` resolvers; requires `CIQ_QUERY_HQ_WEATHER` and the canbank EDR setup)
 
 With capability checks on (the default), each path sees only the tools its
 workflow has in the graph: the retriever path (`wf1`) lists `ciq_execute`,
 the `authzen_*` tools and one tool per knowledge query, the weather path
-(`wf2`) only `ciq_execute` and `get-hq-weather`. The audit terminal shows
+(`wf2`) only `get-hq-weather`. The audit terminal shows
 these as `discovery` and `invocation` cards with their permitted set; see
 [Capability checks](#capability-checks).
 

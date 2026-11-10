@@ -3,8 +3,9 @@
 
 For requests targeting the organization's headquarters (phrases listed in
 WEATHER_HQ_KEYWORDS, e.g. "HQ", "headquarters", "office") the agent calls the
-subject dataset's HQ-weather knowledge query (CIQ_QUERY_HQ_WEATHER) through
-the IndyKite MCP server. The query reads the `hq_weather` Weather node, which
+subject dataset's HQ-weather knowledge query through the IndyKite MCP server,
+as the tool the server names after the query (CIQ_QUERY_HQ_WEATHER, the
+query's name). The query reads the `hq_weather` Weather node, which
 carries `latitude` and `longitude` properties feeding the `weather` and
 `weather-units` external data resolvers. For any other city the agent falls
 back to a direct open-meteo call.
@@ -303,7 +304,7 @@ def _format_call_tool_result(result: CallToolResult) -> str:
 
 
 def _extract_node_props(result: CallToolResult) -> dict[str, Any]:
-    """Pull the first row of `data[0].nodes` out of a ciq_execute response.
+    """Pull the first row of `data[0].nodes` out of a knowledge-query tool response.
 
     The response shape from /contx-iq/v1/execute is:
       {"data": [{"nodes": {"<alias>": {...}, "<alias>.property.<name>": <value>, ...}}]}
@@ -666,23 +667,21 @@ def _format_exception_chain(exc: BaseException) -> str:
 async def _fetch_hq_weather_via_ciq(access_token: str) -> str:
     """Run the subject's HQ-weather query and format the standard weather sentence."""
     async with _mcp_session(access_token) as session:
-        result = await session.call_tool(
-            "ciq_execute",
-            {"id": CIQ_QUERY_HQ_WEATHER, "input_params": {}},
-        )
+        # The MCP server serves every named knowledge query as a tool of that
+        # name. Calling the named tool, not the generic ciq_execute, lets the
+        # gateway's capability check confine this agent to this one query.
+        result = await session.call_tool(CIQ_QUERY_HQ_WEATHER, {"input_params": {}})
 
     nodes = _extract_node_props(result)
     if not nodes:
-        msg = f"ciq_execute({CIQ_QUERY_HQ_WEATHER}) returned no rows: {_format_call_tool_result(result)[:300]}"
+        msg = f"{CIQ_QUERY_HQ_WEATHER} returned no rows: {_format_call_tool_result(result)[:300]}"
         raise RuntimeError(msg)
 
     location = nodes.get("weather.property.location") or WEATHER_HQ_NAME
     current = nodes.get("weather.property.current")
     units = nodes.get("weather.property.units")
     if not isinstance(current, dict) or not isinstance(units, dict):
-        msg = (
-            f"ciq_execute({CIQ_QUERY_HQ_WEATHER}) missing weather.property.current/units; got keys={list(nodes.keys())}"
-        )
+        msg = f"{CIQ_QUERY_HQ_WEATHER} missing weather.property.current/units; got keys={list(nodes.keys())}"
         raise TypeError(msg)
 
     return _format_weather_sentence(str(location), current, units)
@@ -775,7 +774,7 @@ class WeatherExecutor(AgentExecutor):
         use_ciq = is_hq and bool(MCP_SERVER_URL)
         try:
             if use_ciq:
-                _logger.info("HQ weather request — calling ciq_execute(%s)", CIQ_QUERY_HQ_WEATHER)
+                _logger.info("HQ weather request — calling the %s tool", CIQ_QUERY_HQ_WEATHER)
                 try:
                     result_text = await _fetch_hq_weather_via_ciq(access_token)
                 except Exception as ciq_exc:
@@ -833,7 +832,7 @@ if __name__ == "__main__":
     )
     _logger.info("Starting %s on port %d", WEATHER_AGENT_NAME, WEATHER_PORT)
     if MCP_SERVER_URL:
-        _logger.info("HQ weather route enabled: ciq_execute(%s) via %s", CIQ_QUERY_HQ_WEATHER, MCP_SERVER_URL)
+        _logger.info("HQ weather route enabled: tool %s via %s", CIQ_QUERY_HQ_WEATHER, MCP_SERVER_URL)
     else:
         _logger.info("MCP_SERVER_URL not set — HQ weather will fall back to the direct open-meteo path")
     uvicorn.run(
