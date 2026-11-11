@@ -39,6 +39,7 @@ What is not enforced here: the audience. The gateway checks it against
 | `AUTH0_DOMAIN` | required | Tenant domain, e.g. `your-tenant.eu.auth0.com`; issuer, token endpoint and JWKS URI derive from it. |
 | `AUTH0_DEFAULT_AUDIENCE` | empty | Audience added to a grant that names none (the gateways' actor tokens). |
 | `TOKEN_CACHE_MIN_REMAINING` | `300` | A kept token is handed back until this many seconds before it expires. |
+| `TOKEN_CACHE_MAX_ENTRIES` | `256` | The most tokens kept at once; beyond it a new token replaces the one closest to its expiry. Expired tokens are dropped. |
 | `BRIDGE_PORT` | `8090` | Listening port. |
 | `UPSTREAM_TIMEOUT_SECONDS` | `10` | Timeout of calls to Auth0. |
 | `LOG_LEVEL` | `INFO` | One log line per introspection and token request; never the tokens. |
