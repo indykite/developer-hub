@@ -11,16 +11,22 @@ URL for the whole stack:
 | Endpoint | What it does |
 | --- | --- |
 | `POST /oauth/introspect` | Verifies an Auth0 JWT against the tenant JWKS (signature, `iss`, `exp`) and answers it as RFC 7662: `active`, `sub`, `aud`, `iss`, `exp`, `iat`, `scope`, `client_id` (Auth0's `azp`). A token it cannot vouch for answers `{"active": false}`. |
-| `POST /oauth/token` | Forwards the request to Auth0's `/oauth/token` unchanged, adding `audience=AUTH0_DEFAULT_AUDIENCE` when the caller sent none. |
+| `POST /oauth/token` | Forwards the request to Auth0's `/oauth/token` unchanged, adding `audience=AUTH0_DEFAULT_AUDIENCE` when the caller sent none. A client-credentials grant is answered from the kept token when there is one. |
 | `GET /healthz` | Liveness. |
 
 Who may introspect: the caller presents HTTP Basic (or `client_id` +
 `client_secret` in the form). The bridge verifies the pair with a
-client-credentials grant at Auth0 and remembers the answer for
-`CLIENT_AUTH_CACHE_TTL` seconds, so every machine-to-machine application of
+client-credentials grant at Auth0, so every machine-to-machine application of
 the tenant may introspect and none has to be listed here. The gateways
 introspect with their own M2M client; the Intent Agent with the client named
 by its `INTROSPECT_CLIENT_ID`.
+
+Tokens are reused: a client-credentials token is kept in memory, per
+application and audience, and handed back until `TOKEN_CACHE_MIN_REMAINING`
+seconds before it expires. A gateway that restarts gets its token back, and
+the check of an introspection caller uses the caller's own kept token, so
+Auth0 issues one token per application and audience per token lifetime.
+Restarting the bridge forgets them all.
 
 What is not enforced here: the audience. The gateway checks it against
 `JARVIS_PROTECTED_AGENT_AUTHENTICATION_AUDIENCES`, the Intent Agent against
@@ -32,7 +38,7 @@ What is not enforced here: the audience. The gateway checks it against
 | --- | --- | --- |
 | `AUTH0_DOMAIN` | required | Tenant domain, e.g. `your-tenant.eu.auth0.com`; issuer, token endpoint and JWKS URI derive from it. |
 | `AUTH0_DEFAULT_AUDIENCE` | empty | Audience added to a grant that names none (the gateways' actor tokens). |
-| `CLIENT_AUTH_CACHE_TTL` | `600` | Seconds a verified caller stays accepted without asking Auth0 again. |
+| `TOKEN_CACHE_MIN_REMAINING` | `300` | A kept token is handed back until this many seconds before it expires. |
 | `BRIDGE_PORT` | `8090` | Listening port. |
 | `UPSTREAM_TIMEOUT_SECONDS` | `10` | Timeout of calls to Auth0. |
 | `LOG_LEVEL` | `INFO` | One log line per introspection and token request; never the tokens. |

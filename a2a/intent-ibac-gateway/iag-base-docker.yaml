@@ -12,7 +12,8 @@
 # person-can-reach-agent in the intent-ibac dataset); the capability checks
 # (the extended card filtered to the CAN_USE Skill set); ibac.enabled, which
 # has the gateway ask the Intent Agent about every prompt and answer the caller
-# itself when there is no intent; the INTENT audit records with the prompt; and
+# itself when there is no intent; the second exchange with the intent, when the
+# gateway and the Token Service both know it; the INTENT audit records with the prompt; and
 # the delegated token extension declared on the cards and named in
 # A2A-Extensions on every forwarded call. No browser calls a gateway directly
 # (the console does, server side), so cors.allowed_origins stays empty.

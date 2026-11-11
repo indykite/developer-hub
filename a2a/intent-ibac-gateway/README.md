@@ -9,7 +9,7 @@ front of a fleet of six agents:
   `{subject, action, resource, context}` evaluations constrained to the
   vocabulary of your IndyKite Knowledge Graph and the caller's active KBAC
   policies;
-- the **Agent Gateway** (release 2.0.3) sits in front of each agent of the
+- the **Agent Gateway** sits in front of each agent of the
   fleet. With `ibac.enabled` it sends every prompt to the Intent Agent first
   and answers the caller itself when no intent comes back; then it resolves
   the caller (whoami), grows the delegation chain at the Token Service, asks
@@ -27,10 +27,11 @@ person ──Auth0 login──▶ access token (aud ibac-people)
 console ──A2A SendMessage · Bearer = the person's token──▶ iag-<agent> (Agent Gateway)
     gateway ──introspect the token──▶ auth0-bridge (RFC 7662 over the tenant JWKS)
             ──client credentials (its own M2M token)──▶ auth0-bridge ──▶ Auth0
-            ──whoami──▶ IndyKite platform
-            ──SendMessage · subject in metadata──▶ intent-agent ──introspect──▶ auth0-bridge
             ──exchange persona + gateway token──▶ token-service ──▶ delegated token (X-IK-Token)
+            ──whoami──▶ IndyKite platform
             ──AuthZEN evaluation · CAN_TRIGGER own Agent node · $ik_token.act_chain──▶ IndyKite platform
+            ──SendMessage · subject in metadata──▶ intent-agent ──introspect──▶ auth0-bridge
+            ──exchange again, with the intent──▶ token-service ──▶ delegated token with act.intent
             ──forward · A2A-Extensions · X-IK-Token──▶ agent-<agent>
             every step: one audit record ──▶ console webhook
 console ──intent──▶ mapping preview (the cards' x-coaz-mappings)
@@ -120,26 +121,32 @@ then does, in order, and audits each step:
    (RFC 7662 over the tenant's JWKS). Only a token issued for the people's
    API `ibac-people` is accepted; the three token guardrails fail here
    with 401.
-2. **Resolves the caller** with the platform's whoami: the token's subject
+2. **Exchanges** the person's token and its own at the Token Service (RFC
+   8693): the delegated token carries `sub` = the persona and
+   `act` = the gateway, so the chain grows by one hop per gateway.
+3. **Resolves the caller** with the platform's whoami: the token's subject
    becomes a `Person` node of the graph. Every login is a Person; whether that
    person is staff or a customer is found on the graph, never in the token.
-3. **Asks the Intent Agent** (`ibac.enabled`): the prompt, with the resolved
+4. **Asks for admission**: one AuthZEN evaluation, subject = the whoami
+   result, action `CAN_TRIGGER`, resource = the gateway's own `Agent` node,
+   with the chain in `$ik_token.act_chain`. The policy
+   `person-can-reach-agent` compares that chain
+   with the `Workflow` → `INVOKES` → `Agent` path in the graph. `false` is a
+   403 to the caller, and the prompt is never read.
+5. **Asks the Intent Agent** (`ibac.enabled`): the prompt, with the resolved
    subject in the message metadata and the gateway's own client-credentials
    token as Bearer. No intent, and the gateway answers the caller itself with
    the agent's reason (the `metadata.intent_error` of the answer); the agent
    behind it is never called. The audit record is `INTENT_FOUND` or
-   `INTENT_FAILED`, with the prompt.
-4. **Exchanges** the person's token and its own at the Token Service (RFC
-   8693): the delegated token carries `sub` = the persona and
-   `act` = the gateway, so the chain grows by one hop per gateway.
-5. **Asks for admission**: one AuthZEN evaluation, subject = the whoami
-   result, action `CAN_TRIGGER`, resource = the gateway's own `Agent` node,
-   with the chain in `$ik_token.act_chain`. The policies
-   `person-can-reach-agent` compares that chain
-   with the `Workflow` → `INVOKES` → `Agent` path in the graph. `false` is a
-   403 to the caller.
+   `INTENT_FAILED`, with the prompt. With an intent, a gateway that passes
+   it on exchanges a second time, same subject and actor plus the
+   evaluations, which the Token Service writes into `act.intent` of the
+   hop. An intent with more evaluations than the Token Service takes (10)
+   is not cut down: the gateway answers the caller itself here too, with
+   the obligation to split the request (`intent_too_large`).
 6. **Forwards** the message to the agent with the delegated token in
-   `X-IK-Token` and the delegated token extension named in `A2A-Extensions`.
+   `X-IK-Token` (the one of the second exchange, with the intent, when
+   there was one) and the delegated token extension named in `A2A-Extensions`.
    `Authorization` is left empty (`authorization_header.forward: none`,
    `IAG_AUTHORIZATION_FORWARD` in `.env`): the agent never holds the person's
    token, so it cannot start a new workflow as them; it acts through the
@@ -179,8 +186,9 @@ as a page (**How IBAC works**, item 07 in the rail), with the examples drawn.
    resource type? action listed? Three yes on one mapping and the skill
    matches; ids are ignored at this stage. One matching skill makes the card
    AUTHORIZED; none makes it NOT_AUTHORIZED (`intent_mismatch`). A card
-   without mappings is settled by the gateway's setting before the engine is
-   asked: *allow* (the default, the `no mapping` switch next to the composer)
+   without mappings is settled by a setting before the engine is asked (the
+   gateway has it for MCP capabilities, `ibac.capabilities.unmapped`; the
+   preview applies the same rule to a card): *allow* (the default, the `no mapping` switch next to the composer)
    skips the check and KBAC alone decides; *deny* hands it to the engine,
    which answers `missing_coaz_mapping`. An intent carries at most 10
    evaluations; a larger one is refused and the caller asked to split it.
@@ -201,7 +209,9 @@ as a page (**How IBAC works**, item 07 in the rail), with the examples drawn.
    no decision: the generated requests go to the platform's AuthZEN API,
    which answers ALLOW or DENY.
 
-The released gateway does not read the cards' mappings yet, so in this demo
+The gateway checks mappings in front of an MCP server, on the tools,
+resources and prompts a call names; it does not read the mappings of an A2A
+agent card, so in this demo
 the check runs in the console, as a preview, first against the card of the
 gateway the prompt went through, then against the other cards. The gateway on
 the path does the rest for real. In the product there is no central engine and
@@ -515,8 +525,13 @@ Two issuers take part, and every token is a JWT:
    introspect, which is how `$ik_token.act_chain` reaches the admission
    policy. The exchange also accepts an `intent` parameter, a JSON list of
    evaluations (at most 10), which the Token Service writes as
-   `act.intent.evaluations` of that hop; the released gateway does not send
-   it yet, and the token card says so until it does.
+   `act.intent.evaluations` of that hop. Release 2.0.3 does not send it, and
+   the token card says so. A newer gateway does: after the Intent Agent
+   answered, it exchanges a second time, same subject and actor plus the
+   evaluations, admits on the first token and hands the agent the second.
+   An intent over the limit is not cut down: the gateway forwards nothing
+   and answers the caller with the obligation to split the request
+   (`intent_too_large`).
 
 The platform reads the person's token in whoami through the `auth0-people`
 introspect, against the tenant's keys.
