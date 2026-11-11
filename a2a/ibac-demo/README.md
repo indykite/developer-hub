@@ -295,9 +295,10 @@ gateway, A2A and MCP alike: all gateways inherit the `JARVIS_TOKEN_SERVICE_*`
 block from [`iag-base-docker.yaml`](iag-base-docker.yaml). Details in
 [`token-service/README.md`](token-service/README.md); in short:
 
-1. **Image**: [`indykite/token-service`](https://hub.docker.com/r/indykite/token-service),
-   pinned in `docker-compose.yaml` (`linux/amd64`; arm64 hosts run it under
-   emulation).
+1. **Image**: loaded locally and named in `.env` as `TOKEN_SERVICE_IMAGE`,
+   the same release as the gateways (see
+   [The Agent Gateway image](#7-the-agent-gateway-image)). It is
+   `linux/amd64`; arm64 hosts run it under emulation.
 2. **Configure**: copy `token-service/token-service.example.yaml` to
    `token-service/token-service.yaml` (gitignored); fill a fresh RSA private
    JWK (`idp.signing_keys`) and the client secret the gateways present
@@ -380,17 +381,22 @@ local build of the [public repo](https://github.com/indykite/intent-agent).
 
 ### 7. The Agent Gateway image
 
-The gateways run the published release
-[`indykite/agent-gateway:2.0.3`](https://hub.docker.com/layers/indykite/agent-gateway/2.0.3),
-pinned by digest in [`iag-base-docker.yaml`](iag-base-docker.yaml) and
-pulled from Docker Hub with the rest of the stack; `AGENT_GATEWAY_IMAGE` in
-`.env` names another image when you need one. Check what runs with:
+The gateways and the Token Service run images of one release, loaded
+locally and named in `.env`:
 
 ```sh
-docker image inspect indykite/agent-gateway:2.0.3 --format '{{index .Config.Labels "org.opencontainers.image.version"}}'
+AGENT_GATEWAY_IMAGE=agent-gateway:2.108.1
+TOKEN_SERVICE_IMAGE=token-service:2.108.1
 ```
 
-What the demo relies on, all in 2.0.3:
+Keep the two on the same release: the gateway sends the intent to the Token
+Service, which has to write it into the token. Check what runs with:
+
+```sh
+docker image inspect agent-gateway:2.108.1 --format '{{index .Config.Labels "org.opencontainers.image.version"}}'
+```
+
+What the demo relies on:
 
 - **Token Service mode**: the person's token stays in `Authorization`, the
   delegation travels in `X-IK-Token` and nests the chain hop by hop; one
@@ -415,6 +421,17 @@ What the demo relies on, all in 2.0.3:
   extension** on the agent cards, the MCP capabilities and the protected
   resource metadata; the `ibac.enabled` switch with the INTENT records; the
   reuse of client-credentials tokens until shortly before `expires_in`.
+- **The intent in the delegated token** (IBAC on): after the Intent Agent
+  answered, the entry gateway exchanges the token a second time with the
+  evaluations of the intent, and the Token Service writes them into
+  `act.intent` of the hop. The gateway authorizes on the first token; the
+  agent receives the second in `X-IK-Token`.
+- **Limits on the intent**: an intent with more evaluations than the Token
+  Service accepts (`idp.max_intent_evaluations`, 10 by default) is not
+  forwarded; the gateway answers in place of the agent and asks the caller
+  to split the request. A delegated token over the Token Service's size
+  limit (`idp.max_token_bytes`, 8000 by default) is refused like any other
+  authorization refusal, and audited.
 - CORS is available (`JARVIS_CORS_ALLOWED_ORIGINS`) but not set: the console
   calls the gateways server-side, no browser origin reaches them.
 
@@ -536,12 +553,12 @@ vocabulary). What the gateway does with it:
 - the agent unreachable or unreadable: 502; a timeout
   (`INTENT_AGENT_TIMEOUT`, 45 s): 504.
 
-**What the switch buys today, and what it costs.** In this release the
-gateway uses the intent for one thing: a prompt the Intent Agent cannot map
-onto a policy never reaches the agent. It does not yet take an authorization
-decision from the intent (the IBAC engine is not linked into the gateway,
-see below), and the admission and capability checks run exactly the same
-with the switch off. So `IBAC_ENABLED=true` is a vocabulary gate: it refuses
+**What the switch buys, and what it costs.** The gateway uses the intent
+for two things: a prompt the Intent Agent cannot map onto a policy never
+reaches the agent, and the evaluations of a mapped prompt travel to the
+agent in `act.intent` of the delegated token. It takes no authorization
+decision from the intent in front of an A2A agent (see below), and the
+admission and capability checks run exactly the same with the switch off. So `IBAC_ENABLED=true` is a vocabulary gate: it refuses
 greetings, web search and Drive prompts, and it refuses any prompt the model
 fails to map, at the price of one Gemini round trip per prompt. The model
 maps from the policies' actions and the node types' property **names**, so a
@@ -565,8 +582,8 @@ resource type and allowed actions (literal ids where fixed), read from
 card JSON the agents serve at `/.well-known/agent-card.json`. The gateway's
 discovery rule accepts a skill when any mapping matches any evaluation of
 the intent on those three fields; usage then resolves ids and runs AuthZEN.
-Until the release that enables it ships, the console previews the discovery
-decision on every INTENT card from the orchestrator's raw card
+The gateway does not run this rule on agent cards; the console previews the
+discovery decision on every INTENT card from the orchestrator's raw card
 (`IBAC_CARD_URL`): "matches query-erp" for an invoice prompt, "no skill
 matches" for an intent outside the agent's declared skills. Note what
 `IBAC_ENABLED=true` means: a prompt the Intent Agent finds no intent for
@@ -594,7 +611,7 @@ the `X-IK-Token` delegation; the IndyKite MCP server resolves the app agent
 server-side from the project's MCP server configuration.
 
 **Protocol revisions.** The gateway forwards the MCP revisions `2025-06-18`,
-`2025-11-25` and `2026-07-28` and, since 2.94, checks the server's answer to
+`2025-11-25` and `2026-07-28` and checks the server's answer to
 `initialize` as well: a server that answers with another revision gets the
 client an `Internal error` (`-32603`) under the id of the `initialize`,
 whose `data` names the revision the server `offered` and the `supported`
@@ -785,14 +802,10 @@ environment.
   `up`**: those images are local builds behind compose profiles; run
   `make new-erp-mcp`, `make new-drive-mcp` or `make new-crm` before enabling
   the profile.
-- **The retriever answers `MCP error. Detail: unhandled errors in a TaskGroup`
-  right after `resources/list`**: the MCP gateway permitted no resource for
-  this chain and answered the empty list itself; that answer carries no
-  `resultType`, which the MCP client of revision `2026-07-28` requires, so
-  the client rejects it (gateway 2.0.3). The agents tolerate it and go on
-  without resources; the chain gets its resource back once the `HAS` edges
-  of the dataset are captured with their `discriminating_property` (see
-  below).
+- **Every prompt is a `502` with `IBAC_ENABLED=true`**: the Token Service
+  does not write the intent into the token, because its image is not the
+  gateways' release. Set `TOKEN_SERVICE_IMAGE` in `.env` to the same release
+  as `AGENT_GATEWAY_IMAGE` and recreate `token-service`.
 - **Only a few of the modelled tools are permitted, or a different set than
   the workflow's**: the `HAS` edges were captured without
   `discriminating_property: workflow_name`, so the platform kept one edge
@@ -844,7 +857,7 @@ environment.
   `person-can-reach-agent` policy is not provisioned. An `ERROR` card with
   "unable to evaluate the admission" is the platform call failing, not a
   denial. A gateway that refuses to start naming `service.base_url` or
-  `identity_provider.issuer` is missing those 2.93 settings.
+  `identity_provider.issuer` is missing those settings.
 - **The Intent Agent answers `policy_unavailable_error`**: no ACTIVE policy
   for subject type `Person` is visible to the app agent (provisioning
   incomplete, or the credential lacks `ReadAuthZConfigs`), or the data

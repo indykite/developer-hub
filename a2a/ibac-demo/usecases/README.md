@@ -45,7 +45,7 @@ public card. Keep the actions in step with the dataset's KBAC policies.
 The skill ids are also graph data: the dataset holds one `Skill` node per
 skill id and one `Tool` node per MCP tool name, attached to the agent that
 offers them with `HAS {workflow_name}` edges, which the gateway's capability
-checks (release 2.0.3) read through the `person-can-use-*` policies. A new
+checks read through the `person-can-use-*` policies. A new
 skill or tool needs its node and edges in the dataset, or the gateway hides
 it from the extended card and refuses the tool call. Every `HAS` edge also
 carries `discriminating_property: workflow_name`, like the `INVOKES` edges:

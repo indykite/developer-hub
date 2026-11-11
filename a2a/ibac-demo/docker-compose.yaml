@@ -153,9 +153,13 @@ services:
   # travels in X-IK-Token beside the user's untouched Authorization header
   # (policies read it as $ik_token). See token-service/.
   token-service:
-    # Official image; pin the tag like the gateways pin agent-gateway in
-    # iag-base-docker.yaml. See https://hub.docker.com/r/indykite/token-service/tags.
-    image: indykite/token-service:1.0.0@sha256:a1248b73ab22fb939e533455a89468b7112b2b938486d8feca818e17776a97e2
+    # Official image. The default is the published release pinned by digest
+    # (https://hub.docker.com/r/indykite/token-service/tags); .env may name
+    # another image as TOKEN_SERVICE_IMAGE. Keep it in step with the gateways'
+    # AGENT_GATEWAY_IMAGE: a gateway that passes the intent on (2.105 and
+    # later, with IBAC on) needs a Token Service that writes it into the
+    # token, which 1.0.0 does not.
+    image: ${TOKEN_SERVICE_IMAGE:-indykite/token-service:1.0.0@sha256:a1248b73ab22fb939e533455a89468b7112b2b938486d8feca818e17776a97e2}
     # The image is linux/amd64 only - request it explicitly so arm64 hosts
     # (Apple Silicon) pull it under emulation instead of failing with
     # "no matching manifest".
@@ -212,8 +216,14 @@ services:
       # audience): an intent lets the message through, a failed intent is
       # answered to the caller in place of the agent (error + obligation,
       # `intent_error` in the message metadata), an unreachable agent is 502
-      # and a timeout 504. Every call is an INTENT audit record. Off = the
-      # agent is never asked. Only the entry gateway asks, once per prompt.
+      # and a timeout 504. Every call is an INTENT audit record. A message
+      # with an intent gets a second exchange at the Token Service, which
+      # writes the evaluations into act.intent of the token the agent
+      # receives in X-IK-Token (gateway and Token Service 2.105 or later);
+      # an intent with more evaluations than the Token Service accepts
+      # (idp.max_intent_evaluations, 10 by default) is answered by the
+      # gateway, asking the caller to split the request. Off = the agent is
+      # never asked. Only the entry gateway asks, once per prompt.
       JARVIS_IBAC_ENABLED: ${IBAC_ENABLED:-false}
       JARVIS_INTENT_AGENT_BASE_URL: ${INTENT_AGENT_BASE_URL:-http://intent-agent:6003}
       JARVIS_INTENT_AGENT_AUDIENCE: ${INTENT_AGENT_AUDIENCE:-intent_agent}

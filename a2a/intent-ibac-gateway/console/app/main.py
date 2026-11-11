@@ -455,6 +455,9 @@ class CompareRequest(BaseModel):
 
 RECORD_SETTLE_SECONDS = 1.0
 HTTP_FORBIDDEN = 403
+HTTP_UNAUTHORIZED = 401
+UNRESOLVED_TEXT = "the platform could not resolve this token to a person"
+INTENT_TOO_LARGE = "intent_too_large"
 
 
 def summarize_gateway_answer(answer: dict[str, Any], records: list[dict[str, Any]]) -> dict[str, Any]:
@@ -464,20 +467,28 @@ def summarize_gateway_answer(answer: dict[str, Any], records: list[dict[str, Any
     replied with, the chain in the delegated token the agent received, and the gateway's admission and
     INTENT records. The console adds only a one-word verdict for the card.
     """
+    unresolved = _unresolved_record(answer, records)
     admission = next(
         (r for r in records if r.get("action") != "INTENT" and r.get("decision") in ("AUTHORIZED", "NOT_AUTHORIZED")),
         None,
     )
+    if answer.get("http_status") == HTTP_UNAUTHORIZED:
+        # A 401 comes before the admission question is asked.
+        admission = None
     intent = next((r for r in records if r.get("action") == "INTENT"), None)
     failure = next((r for r in records if r.get("decision") == "ERROR"), None)
     delegated = (answer.get("received") or {}).get("x_ik_token") or {}
     return {
         "agent": answer.get("agent"),
-        "verdict": _gateway_verdict(answer, failed=failure is not None),
+        "verdict": _gateway_verdict(answer, failed=failure is not None, unresolved=unresolved is not None),
         "kind": answer.get("kind"),
         "http_status": answer.get("http_status"),
         "latency_ms": answer.get("latency_ms"),
-        "error_text": (failure or {}).get("reason") or answer.get("error_text") or answer.get("transport_error") or "",
+        "error_text": (failure or {}).get("reason")
+        or (UNRESOLVED_TEXT if unresolved else "")
+        or answer.get("error_text")
+        or answer.get("transport_error")
+        or "",
         "skill": answer.get("skill"),
         "reply_text": answer.get("reply_text") or "",
         "chain": [delegated.get("sub"), *_act_chain(delegated.get("act"))] if delegated.get("sub") else [],
@@ -496,7 +507,19 @@ def summarize_gateway_answer(answer: dict[str, Any], records: list[dict[str, Any
     }
 
 
-def _gateway_verdict(answer: dict[str, Any], *, failed: bool) -> str:
+def _unresolved_record(answer: dict[str, Any], records: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """Return the gateway's record of a caller the platform's whoami could not resolve, when that is the 401.
+
+    The bridge accepted the token and the gateway exchanged it, so its refusal names the actor; a 401 from
+    the bridge leaves no record with an actor.
+    """
+    if answer.get("http_status") != HTTP_UNAUTHORIZED:
+        return None
+    refusals = (r for r in records if r.get("decision") == "NOT_AUTHORIZED" and r.get("action") != "INTENT")
+    return next((r for r in refusals if r.get("actor")), None)
+
+
+def _gateway_verdict(answer: dict[str, Any], *, failed: bool, unresolved: bool = False) -> str:
     """Name what the gateway did, in one or two words, for the board."""
     if answer.get("transport_error"):
         return "unreachable"
@@ -507,9 +530,12 @@ def _gateway_verdict(answer: dict[str, Any], *, failed: bool) -> str:
     if kind == "task":
         return "forwarded"
     if kind == "intent_error":
-        return "no intent"
+        # The gateway also answers in place of the agent when the intent does not fit one delegated token.
+        too_large = (answer.get("intent_error") or {}).get("reason") == INTENT_TOO_LARGE
+        return "intent too large" if too_large else "no intent"
     if kind == "refused":
-        return "admission refused" if answer.get("http_status") == HTTP_FORBIDDEN else "token refused"
+        refused_401 = "caller unknown" if unresolved else "token refused"
+        return "admission refused" if answer.get("http_status") == HTTP_FORBIDDEN else refused_401
     return "error"
 
 

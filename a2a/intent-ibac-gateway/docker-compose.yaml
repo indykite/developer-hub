@@ -1,15 +1,15 @@
 ---
 # intent-ibac-gateway: the IndyKite Intent Agent and the IBAC engine, shown together.
 #
-#   console ──(mint persona + actor JWT)──▶ token-service ──▶ delegation token (aud intent_agent)
-#   console ──A2A SendMessage, Bearer = delegation──▶ intent-agent ──introspect──▶ token-service
-#                                                      │ data schema + policies ──▶ IndyKite platform
-#                                                      │ extraction ──▶ Gemini
-#                                                      └ audit record ──▶ console (webhook)
 #   console ──A2A SendMessage, Bearer = the person's Auth0 token──▶ iag-<agent> (Agent Gateway 2.0.3)
-#       gateway: introspect at auth0-bridge ─▶ whoami ─▶ Intent Agent (ibac.enabled) ─▶ Token Service
-#                exchange ─▶ AuthZEN admission ($ik_token.act_chain) ─▶ forward to agent-<agent>
+#       gateway: introspect at auth0-bridge ─▶ Token Service exchange ─▶ whoami
+#                ─▶ AuthZEN admission ($ik_token.act_chain) ─▶ Intent Agent (ibac.enabled)
+#                ─▶ exchange again with the intent (a gateway that passes it on) ─▶ forward to agent-<agent>
 #                every step an audit record ──▶ console (webhook)
+#       intent-agent: introspects the gateway's token at auth0-bridge
+#                     │ data schema + policies ──▶ IndyKite platform
+#                     │ extraction ──▶ Gemini
+#                     └ audit record ──▶ console (webhook)
 #   console ──mapping preview + AuthZEN evaluations/search──▶ IndyKite platform (the decision step)
 #
 # Build the console image with `make images`; the Intent Agent is the published
@@ -65,10 +65,10 @@ services:
       retries: 5
 
   # IndyKite Token Service: RFC 8693 exchange + RFC 7662 introspection. Issues
-  # the delegation token the console presents to the Intent Agent, and is the
-  # agent's INTROSPECT_URL. Official image; linux/amd64 only.
+  # the delegated token each gateway forwards to its agent in X-IK-Token, with
+  # the intent in it when the gateway sends one. Official image; linux/amd64 only.
   token-service:
-    image: indykite/token-service:1.0.0@sha256:a1248b73ab22fb939e533455a89468b7112b2b938486d8feca818e17776a97e2
+    image: ${TOKEN_SERVICE_IMAGE:-indykite/token-service:1.0.0@sha256:a1248b73ab22fb939e533455a89468b7112b2b938486d8feca818e17776a97e2}
     platform: linux/amd64
     # Published for curl-level inspection only, on loopback (see CONSOLE_BIND).
     # The container listens on 8102; the host port is TOKEN_SERVICE_HOST_PORT.

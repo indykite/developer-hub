@@ -10,13 +10,17 @@ introspects its bearer the same way. This service is that base URL:
   (signature, issuer, expiry) and answers it as RFC 7662 describes; a token it
   cannot vouch for answers ``{"active": false}``. The caller authenticates
   with HTTP Basic (or ``client_id``/``client_secret`` in the form): the
-  credentials are checked by a client-credentials grant at Auth0 and the
-  answer is cached, so every machine-to-machine application of the tenant may
+  credentials are checked by a client-credentials grant at Auth0, the same
+  kept token as the caller's own, so every machine-to-machine application of the tenant may
   introspect and nothing is listed here.
 - ``POST /oauth/token`` forwards the request to Auth0 unchanged, adding
   ``audience=AUTH0_DEFAULT_AUDIENCE`` when the caller sent none: Auth0 refuses
   a client-credentials grant without an audience and the gateway sends none
   for its actor token.
+
+A client-credentials token is kept in memory, per application and audience,
+and handed back until shortly before it expires: a caller that restarts, and
+the check of an introspection caller, cost no new token at Auth0.
 
 The audience of an introspected token is not enforced here: the gateway and
 the Intent Agent check it against their own configuration.
@@ -55,17 +59,20 @@ JWKS_URI = f"https://{AUTH0_DOMAIN}/.well-known/jwks.json"
 # Audience added to a client-credentials grant that names none (the gateways'
 # actor tokens); the Token Service matches actor tokens on it.
 DEFAULT_AUDIENCE = (os.getenv("AUTH0_DEFAULT_AUDIENCE") or "").strip()
-# How long a caller's verified client credentials stay accepted without
-# asking Auth0 again (seconds).
-CLIENT_AUTH_CACHE_TTL = int(os.getenv("CLIENT_AUTH_CACHE_TTL", "600"))
+# A kept client-credentials token is handed back until this many seconds
+# before it expires; then Auth0 is asked for a new one.
+TOKEN_CACHE_MIN_REMAINING = int(os.getenv("TOKEN_CACHE_MIN_REMAINING", "300"))
 BRIDGE_PORT = int(os.getenv("BRIDGE_PORT", "8090"))
 UPSTREAM_TIMEOUT = float(os.getenv("UPSTREAM_TIMEOUT_SECONDS", "10"))
 ALGORITHMS = ["RS256"]
 
 app = FastAPI(title="auth0-bridge", docs_url=None, redoc_url=None)
 
-# client_id -> (sha256 of the secret, verified-until epoch seconds)
-_verified_clients: dict[str, tuple[str, float]] = {}
+# (client_id, sha256 of the secret, the grant's other parameters) -> (Auth0's answer, monotonic
+# time it expires at). In memory only: a restart of the bridge forgets every token.
+TokenKey = tuple[str, str, tuple[tuple[str, str], ...]]
+_tokens: dict[TokenKey, tuple[dict, float]] = {}
+_token_locks: dict[TokenKey, asyncio.Lock] = {}
 
 
 @functools.lru_cache(maxsize=1)
@@ -109,22 +116,67 @@ def _caller_credentials(request: Request, form: dict[str, str]) -> tuple[str, st
     return creds
 
 
+def _single_credentials(request: Request, form: dict[str, str]) -> tuple[str, str] | None:
+    """Return the caller's credentials when the request names one application only.
+
+    A request that carries one pair in the Basic header and another in the form is ambiguous about
+    which application Auth0 answers for, so its token is never kept.
+    """
+    basic = _basic_credentials(request)
+    in_form = (
+        (form["client_id"], form["client_secret"]) if form.get("client_id") and form.get("client_secret") else None
+    )
+    if basic and in_form and basic != in_form:
+        return None
+    if basic and not in_form and (form.get("client_id") or form.get("client_secret")):
+        return None
+    return basic or in_form
+
+
+async def _client_credentials(
+    client_id: str,
+    secret: str,
+    form: dict[str, str],
+    headers: dict[str, str],
+) -> tuple[int, object]:
+    """Answer a client-credentials grant from the kept token, or ask Auth0 and keep what it issues.
+
+    The token is kept per application, secret and parameters of the grant (audience, scope, ...), so
+    only a caller presenting the same credentials and asking for the same thing gets it back. A
+    refusal is never kept.
+    """
+    asked = tuple(sorted((k, v) for k, v in form.items() if k not in ("client_id", "client_secret")))
+    key = (client_id, hashlib.sha256(secret.encode()).hexdigest(), asked)
+    async with _token_locks.setdefault(key, asyncio.Lock()):
+        kept = _tokens.get(key)
+        remaining = kept[1] - time.monotonic() if kept else 0
+        if kept and remaining > TOKEN_CACHE_MIN_REMAINING:
+            return HTTPStatus.OK, {**kept[0], "expires_in": int(remaining)}
+        status, body = await _post_auth0(form, headers)
+        if status == HTTPStatus.OK and isinstance(body, dict) and body.get("access_token"):
+            lifetime = body.get("expires_in")
+            if isinstance(lifetime, (int, float)) and lifetime > TOKEN_CACHE_MIN_REMAINING:
+                _tokens[key] = (dict(body), time.monotonic() + lifetime)
+            log.info("token issued by Auth0 client=%s audience=%s", client_id, form.get("audience"))
+        else:
+            # Nothing is kept for refused credentials, not even their lock.
+            _tokens.pop(key, None)
+            _token_locks.pop(key, None)
+        return status, body
+
+
 async def _caller_is_tenant_client(client_id: str, secret: str) -> bool:
-    """Return True when Auth0 accepts these credentials for a client-credentials grant (cached)."""
-    digest = hashlib.sha256(secret.encode()).hexdigest()
-    cached = _verified_clients.get(client_id)
-    now = time.monotonic()
-    if cached and cached[0] == digest and cached[1] > now:
-        return True
+    """Return True when Auth0 accepts these credentials for a client-credentials grant.
+
+    The grant is the one for the default audience, kept like any other: a caller that already
+    holds that token, or was checked before, costs no new one.
+    """
     form = {"grant_type": "client_credentials", "client_id": client_id, "client_secret": secret}
     if DEFAULT_AUDIENCE:
         form["audience"] = DEFAULT_AUDIENCE
-    status, body = await _post_auth0(form, {})
+    status, body = await _client_credentials(client_id, secret, form, {})
     ok = status == HTTPStatus.OK and isinstance(body, dict) and bool(body.get("access_token"))
-    if ok:
-        _verified_clients[client_id] = (digest, now + CLIENT_AUTH_CACHE_TTL)
-    else:
-        _verified_clients.pop(client_id, None)
+    if not ok:
         log.warning("caller %s rejected by Auth0 (%s)", client_id, status)
     return ok
 
@@ -194,14 +246,21 @@ async def introspect(request: Request) -> Response:
 
 @app.post("/oauth/token")
 async def token(request: Request) -> Response:
-    """Pass a token request through to Auth0, adding the default audience when absent."""
+    """Pass a token request through to Auth0, adding the default audience when absent.
+
+    A client-credentials grant is answered from the kept token when there is one.
+    """
     form = {k: v for k, v in (await request.form()).items() if isinstance(v, str)}
     if DEFAULT_AUDIENCE and not form.get("audience"):
         form["audience"] = DEFAULT_AUDIENCE
     headers = {}
     if request.headers.get("authorization"):
         headers["Authorization"] = request.headers["authorization"]
-    status, body = await _post_auth0(form, headers)
+    creds = _single_credentials(request, form)
+    if form.get("grant_type") == "client_credentials" and creds:
+        status, body = await _client_credentials(*creds, form, headers)
+    else:
+        status, body = await _post_auth0(form, headers)
     caller = form.get("client_id") or (_basic_credentials(request) or ("?",))[0]
     log.info(
         "token caller=%s grant=%s audience=%s status=%s",

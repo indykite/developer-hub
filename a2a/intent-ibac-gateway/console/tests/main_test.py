@@ -104,6 +104,10 @@ def test_fleet_summary_reads_the_gateway_records_and_the_chain_the_agent_receive
     ("overrides", "verdict"),
     [
         ({"kind": "intent_error", "received": None}, "no intent"),
+        (
+            {"kind": "intent_error", "received": None, "intent_error": {"reason": "intent_too_large"}},
+            "intent too large",
+        ),
         ({"kind": "refused", "http_status": 403, "received": None}, "admission refused"),
         ({"kind": "refused", "http_status": 401, "received": None}, "token refused"),
         ({"kind": "error", "http_status": 502, "received": None}, "error"),
@@ -173,3 +177,22 @@ def test_card_summary_splits_kept_and_hidden_skills_and_reads_the_discovery_reco
         ]
         is None
     )
+
+
+def test_fleet_summary_tells_an_unknown_caller_from_a_refused_token():
+    """A 401 with a refusal that names the actor: the token was accepted and exchanged, whoami found no one."""
+    unresolved = {
+        "action": "noop",
+        "decision": "NOT_AUTHORIZED",
+        "reason": "the caller could not be resolved",
+        "subject": "bob",
+        "actor": "billing@clients",
+    }
+
+    summary = summarize_gateway_answer(answer(kind="refused", http_status=401, received=None), [unresolved])
+
+    assert summary["verdict"] == "caller unknown"
+    assert summary["admission"] is None
+    assert "could not resolve" in summary["error_text"]
+    refused = summarize_gateway_answer(answer(kind="refused", http_status=401, received=None), [])
+    assert refused["verdict"] == "token refused"

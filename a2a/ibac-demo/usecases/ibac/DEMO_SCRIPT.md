@@ -43,26 +43,27 @@ Support, each with action cards that send the prompts below (see
 things: customers also get a **Family** group, staff get the Trading desk
 and the Support inbox.
 
-## The gateway on stage (release 2.0.3)
+## The gateway on stage
 
-Every agent sits behind the published Agent Gateway release 2.0.3 (see the
-README). What a gateway does on each hop, and where the audience sees it in
-this script:
+Every agent sits behind an Agent Gateway, with a Token Service of the same
+release (see the README). What a gateway does on each hop, and where the
+audience sees it in this script:
 
-| Gateway behaviour | Since | Where to see it |
-| --- | --- | --- |
-| Token Service mode | 2.89 | The TOKEN card of every hop (two in a row in Act 7); the **chain** line under every card; Bruno `chain-guard` |
-| One admission question per hop | 2.93 | Every `admission` card; Act 4: deny, grant, allow with no gateway touched |
-| Capability checks | 2.0.3 | Stagecraft, *the tools beat*: the `discovery` cards of `mcp-iag` with their permitted set; Act 3 (two tools) against Act 2 (sixteen). Off on `drive-mcp-iag`: Drive files are dynamic resources, admission alone decides there |
-| Audit records name their question | 2.0.3 | The small tag on every card: `admission`, `discovery`, `invocation`, `refused early` |
-| The subject comes from the graph | 2.82 | "who am I" in every act; the subject on the cards is the Auth0 `sub` |
-| Tokens reused | 2.91 | Stagecraft, *the token-reuse beat* |
-| The agent card at the gateway | 2.87 | Stagecraft, *the card beat* |
-| The delegated token extension | 2.99 | Stagecraft, *the card beat* and *the discovery beat*: `capabilities.extensions` and `mcp_extensions` |
-| MCP front door | 2.93, 2.94 | Stagecraft, *the discovery beat*; Act 5 (two people, one MCP gateway) |
-| IBAC switch | 2.90 | Stagecraft, *the intent beat* |
-| The chain in every audit record | audit | The chain line under every card; the trace id is its tooltip |
-| No clock on the answer | 2.82 | Act 2 step 2 and Act 4 step 3: slow composite answers arrive whole |
+| Gateway behaviour | Where to see it |
+| --- | --- |
+| Token Service mode | The TOKEN card of every hop (two in a row in Act 7); the **chain** line under every card; Bruno `chain-guard` |
+| One admission question per hop | Every `admission` card; Act 4: deny, grant, allow with no gateway touched |
+| Capability checks | Stagecraft, *the tools beat*: the `discovery` cards of `mcp-iag` with their permitted set; Act 3 (two tools) against Act 2 (sixteen). Off on `drive-mcp-iag`: Drive files are dynamic resources, admission alone decides there |
+| Audit records name their question | The small tag on every card: `admission`, `discovery`, `invocation`, `refused early` |
+| The intent in the delegated token | With `IBAC_ENABLED=true` only: a second TOKEN card after the INTENT card of `orchestrator-iag`; the token the orchestrator receives carries `act.intent` |
+| The subject comes from the graph | "who am I" in every act; the subject on the cards is the Auth0 `sub` |
+| Tokens reused | Stagecraft, *the token-reuse beat* |
+| The agent card at the gateway | Stagecraft, *the card beat* |
+| The delegated token extension | Stagecraft, *the card beat* and *the discovery beat*: `capabilities.extensions` and `mcp_extensions` |
+| MCP front door | Stagecraft, *the discovery beat*; Act 5 (two people, one MCP gateway) |
+| IBAC switch | Stagecraft, *the intent beat* |
+| The chain in every audit record | The chain line under every card; the trace id is its tooltip |
+| No clock on the answer | Act 2 step 2 and Act 4 step 3: slow composite answers arrive whole |
 
 What each line means:
 
@@ -109,19 +110,24 @@ What each line means:
   header carries the delegation to pass on.
 - **MCP front door**: one endpoint at `service.base_url`, protocol revisions
   enforced (2025-06-18 to 2026-07-28), RFC 9728 protected-resource metadata
-  and a `WWW-Authenticate` that points at it; since 2.94 the server's
-  `initialize` answer is checked too.
+  and a `WWW-Authenticate` that points at it; the server's `initialize`
+  answer is checked too.
 - **IBAC switch**: with `ibac.enabled` every prompt goes to the Intent Agent
   first; a prompt without an intent is answered by the gateway itself, with
-  `intent_error`, and audited as `INTENT`.
+  `intent_error`, and audited as `INTENT`. A prompt with an intent gets a
+  second exchange: the Token Service writes the evaluations into
+  `act.intent` of the token the agent receives. An intent of more than ten
+  evaluations is answered by the gateway, asking to split the request.
 - **The chain in every audit record**: `actorsChain`, `traceID` and the
   `tokenID` it concerns.
 - **No clock on the answer**: a long agent answer is never cut by the gateway.
 
-Not in 2.0.3: the IBAC discovery engine (`IBAC_DISCOVERY` records, the
-`x-coaz-mappings` of the agent cards matched against the intent) is in the
-gateway's source but not linked into the binary. The console's "IBAC
-discovery preview" line shows what it would decide.
+Not on stage: the gateway checks an intent against capability mappings only
+for MCP calls, and only at a gateway with `ibac.enabled` (`IBAC_USAGE`
+records); here the entry gateway alone has it, in front of an A2A agent. The
+`x-coaz-mappings` of the agent cards are not matched against the intent by
+the gateway; the console's "IBAC discovery preview" line shows what such a
+check would decide.
 
 Each act below ends with a **Spot the gateway** line: the one thing on the
 terminal that is the gateway's work in that act.
@@ -372,7 +378,7 @@ never enters.
   or show the refusal as the beat. A prompt the model refuses although a
   policy exists is rephrased closer to the action ("Retrieve the stock quote
   for META").
-- **The card beat** (gateway 2.87): the gateway serves the protected
+- **The card beat**: the gateway serves the protected
   agent's card itself -
 
   ```bash
@@ -382,12 +388,12 @@ never enters.
   the orchestrator's card with every interface URL rewritten to the
   gateway, Auth0 as the security scheme and **no skills**: the public card.
   Under `capabilities.extensions` sits the delegated token extension
-  (`https://indykite.com/extensions/delegated-token/v1`, gateway 2.99): the
+  (`https://indykite.com/extensions/delegated-token/v1`): the
   gateway's promise that this agent takes an `X-IK-Token`. Add
   `-H "Authorization: Bearer <a person's token>"` (copied from the console
   session, as for Bruno) and the skills appear - after the same admission
   question as any prompt.
-- **The discovery beat** (gateway 2.93): the MCP gateway tells a client
+- **The discovery beat**: the MCP gateway tells a client
   where to get a token, as the MCP authorization specification asks -
 
   ```bash
@@ -399,11 +405,10 @@ never enters.
 
   The first answers the RFC 9728 metadata without any token: `resource` is
   the gateway's `service.base_url`, `authorization_servers` the Auth0
-  issuer, and `mcp_extensions` lists `com.indykite/delegated-token` (gateway
-  2.99). The second, tokenless, is a `401` whose `WWW-Authenticate` names
+  issuer, and `mcp_extensions` lists `com.indykite/delegated-token`. The second, tokenless, is a `401` whose `WWW-Authenticate` names
   that metadata URL. Any other path on that port is a `404` before a token
   is read: the gateway serves one MCP endpoint.
-- **The tools beat** (gateway 2.0.3): the same MCP server, two workflows, two
+- **The tools beat**: the same MCP server, two workflows, two
   tool lists. After Act 2 step 1 (Millicent, a stock quote, `wf1`) open the
   `discovery` card of `mcp-iag`: *permitted set* lists `ciq_execute`, the
   four `authzen_*` tools and the retriever's knowledge queries, and
@@ -416,7 +421,7 @@ never enters.
   appears when a tool is called; a red one with `-31403` is a tool outside
   the set. The Bruno `wf4-parallel-mcp` folder calls `mcp-iag` directly: its
   `tools/list` is the fastest way to show the list change by hand.
-- **The token-reuse beat** (gateway 2.91):
+- **The token-reuse beat**:
 
   ```bash
   docker logs ibac-demo-auth0-bridge-1 2>&1 | grep "token caller"
