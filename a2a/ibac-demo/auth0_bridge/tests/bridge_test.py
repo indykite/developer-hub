@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import base64
 import time
 
@@ -245,4 +246,76 @@ def test_refused_credentials_leave_nothing_behind(client, auth0):
     """A refusal keeps neither a token nor a lock, so wrong credentials cannot fill the memory."""
     client.post("/oauth/token", data={"grant_type": "client_credentials"}, headers=_basic("x", "y"))
     assert not server._tokens
+    assert not server._token_locks
+
+
+def test_failed_auth0_call_leaves_no_lock(auth0, monkeypatch):
+    """A call to Auth0 that raises keeps neither a token nor a lock."""
+
+    async def broken_post(form, headers):
+        raise ConnectionError
+
+    monkeypatch.setattr(server, "_post_auth0", broken_post)
+    with pytest.raises(ConnectionError):
+        asyncio.run(server._client_credentials("x", "y", {"grant_type": "client_credentials"}, {}))
+    assert not server._tokens
+    assert not server._token_locks
+
+
+def test_cancelled_caller_leaves_no_lock_and_waiters_stay_in_line(auth0, monkeypatch):
+    """A cancelled call releases its place; a caller waiting for the same grant is still answered."""
+    release = asyncio.Event()
+    asked = 0
+
+    async def slow_post(form, headers):
+        nonlocal asked
+        asked += 1
+        await release.wait()
+        return 200, {"access_token": "t", "token_type": "Bearer", "expires_in": 86400}  # nosec B105
+
+    async def scenario():
+        grant = ("x", "y", {"grant_type": "client_credentials"}, {})
+        first = asyncio.create_task(server._client_credentials(*grant))
+        await asyncio.sleep(0)
+        second = asyncio.create_task(server._client_credentials(*grant))
+        await asyncio.sleep(0)
+        assert asked == 1  # the second waits for the first
+        first.cancel()
+        release.set()
+        return await second
+
+    monkeypatch.setattr(server, "_post_auth0", slow_post)
+    status, _ = asyncio.run(scenario())
+    assert status == 200
+    assert asked == 2
+    assert not server._token_locks
+
+
+def test_lock_is_released_after_a_kept_token(client, auth0):
+    """A kept token needs no lock between requests."""
+    client.post("/oauth/token", data={"grant_type": "client_credentials"}, headers=_basic(*GOOD_CLIENT))
+    assert len(server._tokens) == 1
+    assert not server._token_locks
+
+
+def test_expired_tokens_are_dropped(client, auth0, monkeypatch):
+    """A token past its expiry is removed when the next one is kept."""
+    form = {"grant_type": "client_credentials", "scope": "old"}
+    client.post("/oauth/token", data=form, headers=_basic(*GOOD_CLIENT))
+    (old_key,) = server._tokens
+    server._tokens[old_key] = (server._tokens[old_key][0], time.monotonic() - 1)
+    form = {"grant_type": "client_credentials", "scope": "new"}
+    client.post("/oauth/token", data=form, headers=_basic(*GOOD_CLIENT))
+    assert old_key not in server._tokens
+    assert len(server._tokens) == 1
+
+
+def test_kept_tokens_are_bounded(client, auth0, monkeypatch):
+    """Beyond TOKEN_CACHE_MAX_ENTRIES a new token replaces the one closest to its expiry."""
+    monkeypatch.setattr(server, "TOKEN_CACHE_MAX_ENTRIES", 2)
+    for scope in ("a", "b", "c"):
+        form = {"grant_type": "client_credentials", "scope": scope}
+        client.post("/oauth/token", data=form, headers=_basic(*GOOD_CLIENT))
+    kept_scopes = sorted(dict(key[2])["scope"] for key in server._tokens)
+    assert kept_scopes == ["b", "c"]
     assert not server._token_locks

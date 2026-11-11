@@ -30,6 +30,7 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import contextlib
 import hashlib
 import logging
 import os
@@ -60,6 +61,9 @@ DEFAULT_AUDIENCE = (os.getenv("AUTH0_DEFAULT_AUDIENCE") or "").strip()
 # A kept client-credentials token is handed back until this many seconds
 # before it expires; then Auth0 is asked for a new one.
 TOKEN_CACHE_MIN_REMAINING = int(os.getenv("TOKEN_CACHE_MIN_REMAINING", "300"))
+# The most client-credentials tokens kept at once; a new one beyond it replaces
+# the one closest to its expiry.
+TOKEN_CACHE_MAX_ENTRIES = int(os.getenv("TOKEN_CACHE_MAX_ENTRIES", "256"))
 BRIDGE_PORT = int(os.getenv("BRIDGE_PORT", "8090"))
 UPSTREAM_TIMEOUT = float(os.getenv("UPSTREAM_TIMEOUT_SECONDS", "10"))
 ALGORITHMS = ["RS256"]
@@ -71,7 +75,9 @@ _jwks: PyJWKClient | None = None
 # time it expires at). In memory only: a restart of the bridge forgets every token.
 TokenKey = tuple[str, str, tuple[tuple[str, str], ...]]
 _tokens: dict[TokenKey, tuple[dict, float]] = {}
-_token_locks: dict[TokenKey, asyncio.Lock] = {}
+# One lock per grant being answered, with the number of callers holding or waiting for it. An
+# entry exists only while that number is above zero.
+_token_locks: dict[TokenKey, list] = {}
 
 
 def _jwks_client() -> PyJWKClient:
@@ -132,6 +138,40 @@ def _single_credentials(request: Request, form: dict[str, str]) -> tuple[str, st
     return basic or in_form
 
 
+@contextlib.asynccontextmanager
+async def _token_lock(key: TokenKey):
+    """Let one caller at a time answer a grant; the others asking for the same one wait.
+
+    The lock is removed when its last caller leaves, also when that caller fails or is cancelled,
+    so neither refused credentials nor an Auth0 outage leave anything behind.
+    """
+    entry = _token_locks.setdefault(key, [asyncio.Lock(), 0])
+    entry[1] += 1
+    try:
+        async with entry[0]:
+            yield
+    finally:
+        entry[1] -= 1
+        if entry[1] == 0 and _token_locks.get(key) is entry:
+            del _token_locks[key]
+
+
+def _keep_token(key: TokenKey, body: dict, lifetime: float) -> None:
+    """Keep a token Auth0 issued, within TOKEN_CACHE_MAX_ENTRIES.
+
+    Expired tokens are dropped first; when the limit is still reached, the token closest to its
+    expiry makes room.
+    """
+    now = time.monotonic()
+    for expired in [k for k, (_, expires_at) in _tokens.items() if expires_at <= now]:
+        del _tokens[expired]
+    if TOKEN_CACHE_MAX_ENTRIES < 1:
+        return
+    while len(_tokens) >= TOKEN_CACHE_MAX_ENTRIES:
+        del _tokens[min(_tokens, key=lambda k: _tokens[k][1])]
+    _tokens[key] = (dict(body), now + lifetime)
+
+
 async def _client_credentials(
     client_id: str,
     secret: str,
@@ -146,21 +186,18 @@ async def _client_credentials(
     """
     asked = tuple(sorted((k, v) for k, v in form.items() if k not in ("client_id", "client_secret")))
     key = (client_id, hashlib.sha256(secret.encode()).hexdigest(), asked)
-    async with _token_locks.setdefault(key, asyncio.Lock()):
+    async with _token_lock(key):
         kept = _tokens.get(key)
         remaining = kept[1] - time.monotonic() if kept else 0
         if kept and remaining > TOKEN_CACHE_MIN_REMAINING:
             return HTTPStatus.OK, {**kept[0], "expires_in": int(remaining)}
+        _tokens.pop(key, None)
         status, body = await _post_auth0(form, headers)
         if status == HTTPStatus.OK and isinstance(body, dict) and body.get("access_token"):
             lifetime = body.get("expires_in")
             if isinstance(lifetime, (int, float)) and lifetime > TOKEN_CACHE_MIN_REMAINING:
-                _tokens[key] = (dict(body), time.monotonic() + lifetime)
+                _keep_token(key, body, lifetime)
             log.info("token issued by Auth0 client=%s audience=%s", client_id, form.get("audience"))
-        else:
-            # Nothing is kept for refused credentials, not even their lock.
-            _tokens.pop(key, None)
-            _token_locks.pop(key, None)
         return status, body
 
 
