@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Control Room</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  <header class="mast">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div>
+        <h1><span id="orgName">Meridian</span> <em>Control Room</em></h1>
+        <p><span id="orgTagline">An autonomous agent, governed by the knowledge graph</span> · <button type="button" class="about-link" id="aboutOpen">What this app does</button></p>
+      </div>
+    </div>
+
+    <div class="agent-card" id="agentCard" title="The subject of every request">
+      <svg class="ring" viewBox="0 0 44 44" aria-hidden="true">
+        <circle class="ring-track" cx="22" cy="22" r="18"></circle>
+        <circle class="ring-arc" id="ringArc" cx="22" cy="22" r="18"></circle>
+      </svg>
+      <div class="agent-meta">
+        <span class="eyebrow">Autonomous subject</span>
+        <strong id="agentName">Sentinel</strong>
+        <span class="agent-line" id="agentLine">waiting for the first heartbeat</span>
+      </div>
+      <div class="agent-facts">
+        <span class="fact"><i>sub</i><b id="factSub">–</b></span>
+        <span class="fact"><i>aud</i><b id="factAud">–</b></span>
+        <span class="fact"><i>mind</i><b id="factPlanner">–</b></span>
+        <span class="fact"><i>wire</i><b id="factWire">–</b></span>
+        <span class="fact wide" title="Client-credentials grants since the bridge started: issued by Auth0, and answered from a token the bridge kept"><i>auth0 tokens</i><b id="factTokens">–</b></span>
+      </div>
+    </div>
+
+    <div class="mast-actions">
+      <button class="btn" id="wakeBtn" type="button">Wake now</button>
+      <button class="btn ghost" id="resetBtn" type="button">Reset the board</button>
+    </div>
+  </header>
+
+  <main class="floor">
+    <section class="col col-wire" aria-label="Events">
+      <div class="panel">
+        <header class="panel-head">
+          <h2>Upstream feed</h2>
+          <span class="hint">writes to the graph</span>
+        </header>
+        <div class="feed" id="feed"></div>
+      </div>
+      <div class="panel grow">
+        <header class="panel-head">
+          <h2>The wire</h2>
+          <span class="hint" id="wireCount">0 messages</span>
+        </header>
+        <ol class="wire" id="wire"></ol>
+        <p class="empty" id="wireEmpty">Nothing on the subscription yet. Write an event to the graph and the platform publishes it here.</p>
+      </div>
+    </section>
+
+    <section class="col col-stage" aria-label="Graph and audit">
+      <div class="panel stage">
+        <header class="panel-head">
+          <h2>The wall</h2>
+          <div class="legend">
+            <span><i class="dot seed"></i>provisioned</span>
+            <span><i class="dot feed"></i>fed</span>
+            <span><i class="dot sentinel"></i>written by the Sentinel</span>
+            <span id="liveTag" class="live-tag">graph read-back off</span>
+          </div>
+        </header>
+        <svg id="wall" viewBox="0 0 1000 560" role="img" aria-label="Graph of the fleet, the private side and the public side"></svg>
+        <div class="boundaries">
+          <div class="boundary" data-b="admission"><b>1</b><div><strong>Admission</strong><span>Is this chain of agents a workflow the Sentinel may trigger?</span></div></div>
+          <div class="boundary" data-b="capability"><b>2</b><div><strong>Capability</strong><span>Which tools does that workflow give the last agent?</span></div></div>
+          <div class="boundary" data-b="graph"><b>3</b><div><strong>Graph</strong><span>Does the data sit inside the Sentinel's coverage?</span></div></div>
+        </div>
+      </div>
+
+      <div class="panel grow audit-panel">
+        <header class="panel-head">
+          <h2><button type="button" class="open-layer" id="auditOpen" title="Open the full audit">Audit <span id="auditCount" class="count">0</span><i>open full view</i></button></h2>
+          <div class="filters" id="filters">
+            <button type="button" data-f="all" class="on">all</button>
+            <button type="button" data-f="gateway">gateways</button>
+            <button type="button" data-f="token-service">token service</button>
+            <button type="button" data-f="denied">refusals</button>
+          </div>
+        </header>
+        <ol class="audit" id="audit"></ol>
+        <p class="empty" id="auditEmpty">Gateway decisions and token exchanges appear here as the Sentinel works.</p>
+      </div>
+    </section>
+
+    <section class="col col-missions" aria-label="Missions">
+      <div class="panel grow missions">
+        <header class="panel-head">
+          <h2>Missions</h2>
+          <div class="run-tabs" id="runTabs"></div>
+        </header>
+        <div id="escalations"></div>
+        <div id="mission"></div>
+        <p class="empty" id="missionEmpty">No mission yet. The Sentinel starts one on its own when a mandate or an order appears on the wire.</p>
+      </div>
+    </section>
+  </main>
+
+  <section class="layer" id="auditLayer" hidden aria-label="Full audit">
+    <header class="layer-head">
+      <div>
+        <h2>Audit</h2>
+        <p id="layerCount">0 records</p>
+      </div>
+      <div class="layer-tools">
+        <div class="filters" id="layerFilters">
+          <button type="button" data-f="all" class="on">all</button>
+          <button type="button" data-f="gateway">gateways</button>
+          <button type="button" data-f="token-service">token service</button>
+          <button type="button" data-f="agent">agents</button>
+          <button type="button" data-f="denied">refusals</button>
+        </div>
+        <input type="search" id="layerSearch" placeholder="Filter: service, agent, decision, text…" autocomplete="off">
+        <button type="button" class="btn ghost" id="layerClose">Close</button>
+      </div>
+    </header>
+    <div class="layer-cols" aria-hidden="true">
+      <span>time</span><span>service</span><span>decision</span><span>action</span><span>subject › delegation chain</span><span>reason</span><span>mission</span>
+    </div>
+    <ol class="layer-rows" id="layerRows"></ol>
+    <p class="empty" id="layerEmpty">No record matches.</p>
+  </section>
+
+  <section class="layer about" id="aboutLayer" hidden aria-label="What this app does">
+    <header class="layer-head">
+      <div>
+        <h2>What this app does</h2>
+        <p>An agent that acts on its own, and the graph that keeps it in bounds</p>
+      </div>
+      <button type="button" class="btn ghost" id="aboutClose">Close</button>
+    </header>
+    <div class="about-body">
+      <div class="about-lead">
+        <p class="about-intro">No person asks anything here. The <em>Control Room Sentinel</em> is an autonomous agent in a corporate and investment bank. It wakes on a schedule, reads the events of the knowledge graph, and when a new mandate or a new trade order appears it starts a mission by itself. Every request it makes carries its own identity, so the agent, not a person, is the subject the gateways admit or refuse.</p>
+        <p>Its duty is the <strong>information barrier</strong> between the private side of the bank (advisory, which holds confidential deal information) and the public side (trading). When the bank takes a mandate on a company, that company goes on the restricted list and open orders in its securities are put on hold.</p>
+      </div>
+
+      <section>
+        <h3>How it works</h3>
+        <ol class="about-steps">
+          <li><b>Something feeds the graph.</b> An upstream system writes a mandate or an order to the IndyKite knowledge graph. On this page the four cards of the upstream feed play that system.</li>
+          <li><b>The platform publishes the change.</b> The project's event sink sends every audit event, including that write, to a Google Cloud Pub/Sub topic.</li>
+          <li><b>The Sentinel wakes and reads the wire.</b> On its schedule it pulls its subscription. A new mandate or order starts a mission; everything else is shown and ignored.</li>
+          <li><b>It decides its next task.</b> Either a language model chooses each move from the goal, the event and what happened so far, or it follows a written procedure.</li>
+          <li><b>It acts as itself.</b> Each task goes to a fleet of agents, every one behind an Agent Gateway. The Sentinel presents its own access token from Auth0; the Token Service turns it into a delegation that records each agent it passes through.</li>
+          <li><b>The graph decides.</b> At every hop the platform is asked whether this subject, through this chain of agents, may go on. What is allowed is written in the graph, not in the agents.</li>
+        </ol>
+      </section>
+
+      <section>
+        <h3>The three boundaries</h3>
+        <dl class="about-bounds">
+          <div><dt><b>1</b> Admission</dt><dd>Is this chain of agents a workflow the Sentinel may trigger? The deal room's gateway turns it away: only the advisory desk's workflow passes there.</dd></div>
+          <div><dt><b>2</b> Capability</dt><dd>Which tools does that workflow give the last agent? The Sentinel may place a hold but is never offered the tool that releases one.</dd></div>
+          <div><dt><b>3</b> Graph</dt><dd>Does the data sit inside the Sentinel's coverage? A mandate booked in a region it does not cover is invisible to it, and a hold on an order in an unrestricted company writes nothing.</dd></div>
+        </dl>
+      </section>
+
+      <section>
+        <h3>The four events</h3>
+        <table class="about-table">
+          <thead><tr><th>Event</th><th>What the Sentinel does</th><th>What it shows</th></tr></thead>
+          <tbody>
+            <tr><td>New mandate: Project Aurora</td><td>Reads the mandate, restricts the company, holds its open order, and is refused the term sheet.</td><td>A full mission, with one refusal at admission.</td></tr>
+            <tr><td>New mandate: Project Monsoon</td><td>Cannot read the mandate and hands over to a person.</td><td>The graph boundary, then an escalation.</td></tr>
+            <tr><td>New order in a restricted name</td><td>Finds the company on the restricted list and holds the order.</td><td>A write the graph accepts.</td></tr>
+            <tr><td>New order in an unrestricted name</td><td>Finds no restriction and leaves the order alone.</td><td>A write the graph would not accept.</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section>
+        <h3>Reading the page</h3>
+        <dl class="about-panels">
+          <div><dt>Upstream feed</dt><dd>Writes an event to the graph.</dd></div>
+          <div><dt>The wire</dt><dd>Every message the Sentinel pulled. The one that starts a mission is marked.</dd></div>
+          <div><dt>The wall</dt><dd>The fleet on top, the graph below, the barrier between the two sides. It draws the route of one task: numbered hops, then the nodes it touched. Amber was fed, green was written by the Sentinel.</dd></div>
+          <div><dt>Missions</dt><dd>Each task with the Sentinel's reason, its hops, what was refused and the answer. Click a task to show it on the wall.</dd></div>
+          <div><dt>Audit</dt><dd>The records of the gateways, the Token Service and the agents. Open the full view for every record, untruncated.</dd></div>
+          <div><dt>Header</dt><dd>The Sentinel's identity, its schedule, and how many tokens Auth0 issued against how many were reused.</dd></div>
+        </dl>
+      </section>
+
+      <section>
+        <h3>With intent on</h3>
+        <p>The stack can also run with the Intent Agent. The first gateway then reads each task as an <strong>intent</strong>: a list of questions in the vocabulary of the graph's policies, such as "may this agent restrict this company?". A task that cannot be put in those words is not passed on. The intent travels inside the delegation token to the agents that carry out the task. The gateway carries the intent; it does not decide on it. The verdict shown beside each question on a mission card is asked by this console.</p>
+      </section>
+
+      <section>
+        <h3>Why it matters</h3>
+        <p>An agent that works without a person still needs an identity, limits and a record. Here the agent has its own identity in the graph, its limits are relationships in that graph that can be changed without touching the agent, and every decision about it is recorded, by the gateways as it happens and by the platform on the wire.</p>
+      </section>
+    </div>
+  </section>
+
+  <aside class="drawer" id="drawer" hidden>
+    <header><h3 id="drawerTitle">Record</h3><button type="button" class="btn ghost" id="drawerClose">Close</button></header>
+    <div id="drawerBody"></div>
+  </aside>
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

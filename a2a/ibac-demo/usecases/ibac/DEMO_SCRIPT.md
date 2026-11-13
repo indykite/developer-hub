@@ -122,12 +122,13 @@ What each line means:
   `tokenID` it concerns.
 - **No clock on the answer**: a long agent answer is never cut by the gateway.
 
-Not on stage: the gateway checks an intent against capability mappings only
-for MCP calls, and only at a gateway with `ibac.enabled` (`IBAC_USAGE`
-records); here the entry gateway alone has it, in front of an A2A agent. The
-`x-coaz-mappings` of the agent cards are not matched against the intent by
-the gateway; the console's "IBAC discovery preview" line shows what such a
-check would decide.
+Not on stage: a gateway with `ibac.enabled` checks an intent against
+capability mappings, for MCP calls (`IBAC_USAGE` records) and for the skills
+of the extended agent card (`IBAC_DISCOVERY` records), and only when the
+delegated token of the request carries an intent. Here the entry gateway
+alone has it, and the console reaches it with the person's token only, so
+neither check runs; the console's "IBAC discovery preview" line shows what
+the card check would decide.
 
 Each act below ends with a **Spot the gateway** line: the one thing on the
 terminal that is the gateway's work in that act.

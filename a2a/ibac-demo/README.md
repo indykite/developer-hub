@@ -385,15 +385,15 @@ The gateways and the Token Service run images of one release, loaded
 locally and named in `.env`:
 
 ```sh
-AGENT_GATEWAY_IMAGE=agent-gateway:2.108.1
-TOKEN_SERVICE_IMAGE=token-service:2.108.1
+AGENT_GATEWAY_IMAGE=agent-gateway:2.109.1
+TOKEN_SERVICE_IMAGE=token-service:2.109.1
 ```
 
 Keep the two on the same release: the gateway sends the intent to the Token
 Service, which has to write it into the token. Check what runs with:
 
 ```sh
-docker image inspect agent-gateway:2.108.1 --format '{{index .Config.Labels "org.opencontainers.image.version"}}'
+docker image inspect agent-gateway:2.109.1 --format '{{index .Config.Labels "org.opencontainers.image.version"}}'
 ```
 
 What the demo relies on:
@@ -582,10 +582,17 @@ resource type and allowed actions (literal ids where fixed), read from
 card JSON the agents serve at `/.well-known/agent-card.json`. The gateway's
 discovery rule accepts a skill when any mapping matches any evaluation of
 the intent on those three fields; usage then resolves ids and runs AuthZEN.
-The gateway does not run this rule on agent cards; the console previews the
-discovery decision on every INTENT card from the orchestrator's raw card
-(`IBAC_CARD_URL`): "matches query-erp" for an invoice prompt, "no skill
-matches" for an intent outside the agent's declared skills. Note what
+A gateway with IBAC on runs this rule on the extended agent card: of the
+skills the caller may use (of every skill, with capability checks off) it
+keeps the ones that fit the newest intent in the delegated token of the
+request, and writes `IBAC_DISCOVERY` records; a skill without a mapping stays
+(`ibac.capabilities.unmapped`, `allow` by default). A request without an
+intent in its delegated token gets the card filtered to the permitted set
+only. In this demo only the entry gateway has IBAC on, and the console asks
+it for the card with the person's token alone, so that filter stays idle;
+the console previews the discovery decision on every INTENT card from the
+orchestrator's raw card (`IBAC_CARD_URL`): "matches query-erp" for an invoice
+prompt, "no skill matches" for an intent outside the agent's declared skills. Note what
 `IBAC_ENABLED=true` means: a prompt the Intent Agent finds no intent for
 never reaches the agent, because the policies have no vocabulary for it.
 The Intent Agent reads only the project's KBAC policies, so the dataset

@@ -17,8 +17,8 @@ Published on Docker Hub as
 docker pull indykite/token-service:1.0.0
 ```
 
-The demo runs release `2.108.1`, the same release as the gateways, loaded
-locally and named in `.env` as `TOKEN_SERVICE_IMAGE=token-service:2.108.1`.
+The demo runs release `2.109.1`, the same release as the gateways, loaded
+locally and named in `.env` as `TOKEN_SERVICE_IMAGE=token-service:2.109.1`.
 It accepts the same `token-service.yaml`, and on an exchange with an
 `intent` parameter it writes the evaluations into `act.intent` of the issued
 token (at most `idp.max_intent_evaluations`, 10 by default; the token at

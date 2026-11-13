@@ -1,0 +1,648 @@
+{
+  "nodes": [
+    {
+      "external_id": "${AUTH0_SUB_SENTINEL}",
+      "type": "Agent",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "control-room-sentinel"
+        },
+        {
+          "type": "role",
+          "value": "autonomous"
+        },
+        {
+          "type": "description",
+          "value": "Autonomous control-room agent: reacts to graph events and keeps the information barrier."
+        }
+      ]
+    },
+    {
+      "external_id": "${AUTH0_SUB_ORCHESTRATOR}",
+      "type": "Agent",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "orchestrator-agent"
+        },
+        {
+          "type": "role",
+          "value": "fleet"
+        },
+        {
+          "type": "description",
+          "value": "Routes each task of a mission to the agent that can do it."
+        }
+      ]
+    },
+    {
+      "external_id": "${AUTH0_SUB_RETRIEVER}",
+      "type": "Agent",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "retriever-agent"
+        },
+        {
+          "type": "role",
+          "value": "fleet"
+        },
+        {
+          "type": "description",
+          "value": "Reads and writes the knowledge graph through the MCP gateway."
+        }
+      ]
+    },
+    {
+      "external_id": "${AUTH0_SUB_ANALYST}",
+      "type": "Agent",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "analyst-agent"
+        },
+        {
+          "type": "role",
+          "value": "fleet"
+        },
+        {
+          "type": "description",
+          "value": "Works on the deal room documents of a mandate."
+        }
+      ]
+    },
+    {
+      "external_id": "${AUTH0_SUB_MCP}",
+      "type": "Agent",
+      "is_identity": true,
+      "properties": [
+        {
+          "type": "name",
+          "value": "mcp-gateway"
+        },
+        {
+          "type": "role",
+          "value": "fleet"
+        },
+        {
+          "type": "description",
+          "value": "Agent Gateway in front of the IndyKite MCP server."
+        }
+      ]
+    },
+    {
+      "external_id": "wf-wall-control",
+      "type": "Workflow",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Barrier control"
+        },
+        {
+          "type": "description",
+          "value": "Read a mandate, restrict its company, hold orders in restricted names."
+        }
+      ]
+    },
+    {
+      "external_id": "wf-deal-room",
+      "type": "Workflow",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Deal room access"
+        },
+        {
+          "type": "description",
+          "value": "Read the documents of a mandate; deal team only."
+        }
+      ]
+    },
+    {
+      "external_id": "emea",
+      "type": "Region",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "EMEA"
+        }
+      ]
+    },
+    {
+      "external_id": "amer",
+      "type": "Region",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Americas"
+        }
+      ]
+    },
+    {
+      "external_id": "apac",
+      "type": "Region",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "APAC"
+        }
+      ]
+    },
+    {
+      "external_id": "advisory",
+      "type": "Desk",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "M&A Advisory"
+        },
+        {
+          "type": "side",
+          "value": "private"
+        }
+      ]
+    },
+    {
+      "external_id": "equities-trading",
+      "type": "Desk",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Equities Trading"
+        },
+        {
+          "type": "side",
+          "value": "public"
+        }
+      ]
+    },
+    {
+      "external_id": "credit-trading",
+      "type": "Desk",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Credit Trading"
+        },
+        {
+          "type": "side",
+          "value": "public"
+        }
+      ]
+    },
+    {
+      "external_id": "compliance-control",
+      "type": "Desk",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Compliance Control Room"
+        },
+        {
+          "type": "side",
+          "value": "control"
+        }
+      ]
+    },
+    {
+      "external_id": "halcyon-energy",
+      "type": "Company",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Halcyon Energy"
+        },
+        {
+          "type": "ticker",
+          "value": "HLCN"
+        },
+        {
+          "type": "sector",
+          "value": "Energy"
+        }
+      ]
+    },
+    {
+      "external_id": "brightwater-pharma",
+      "type": "Company",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Brightwater Pharma"
+        },
+        {
+          "type": "ticker",
+          "value": "BWPH"
+        },
+        {
+          "type": "sector",
+          "value": "Healthcare"
+        }
+      ]
+    },
+    {
+      "external_id": "kestrel-logistics",
+      "type": "Company",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Kestrel Logistics"
+        },
+        {
+          "type": "ticker",
+          "value": "KSTL"
+        },
+        {
+          "type": "sector",
+          "value": "Industrials"
+        }
+      ]
+    },
+    {
+      "external_id": "orchid-semiconductors",
+      "type": "Company",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Orchid Semiconductors"
+        },
+        {
+          "type": "ticker",
+          "value": "ORCS"
+        },
+        {
+          "type": "sector",
+          "value": "Technology"
+        }
+      ]
+    },
+    {
+      "external_id": "mnd-1001",
+      "type": "Mandate",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Project Lighthouse"
+        },
+        {
+          "type": "kind",
+          "value": "Sell-side M&A advisory"
+        },
+        {
+          "type": "summary",
+          "value": "Advising Halcyon Energy on the sale of its offshore wind unit."
+        }
+      ]
+    },
+    {
+      "external_id": "doc-mnd-1001-termsheet",
+      "type": "DealDocument",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Project Lighthouse term sheet"
+        },
+        {
+          "type": "kind",
+          "value": "Term sheet"
+        },
+        {
+          "type": "summary",
+          "value": "Indicative terms of the offshore wind unit sale."
+        }
+      ]
+    },
+    {
+      "external_id": "rst-mnd-1001",
+      "type": "Restriction",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Restriction on Halcyon Energy"
+        },
+        {
+          "type": "reason",
+          "value": "Project Lighthouse: advisory mandate, private-side information held."
+        }
+      ]
+    },
+    {
+      "external_id": "ord-7001",
+      "type": "TradeOrder",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "BUY 25,000 BWPH"
+        },
+        {
+          "type": "side",
+          "value": "BUY"
+        },
+        {
+          "type": "quantity",
+          "value": "25000"
+        }
+      ]
+    },
+    {
+      "external_id": "ord-7002",
+      "type": "TradeOrder",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "SELL 4,000,000 KSTL 2031 notes"
+        },
+        {
+          "type": "side",
+          "value": "SELL"
+        },
+        {
+          "type": "quantity",
+          "value": "4000000"
+        }
+      ]
+    },
+    {
+      "external_id": "ord-7003",
+      "type": "TradeOrder",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "BUY 60,000 ORCS"
+        },
+        {
+          "type": "side",
+          "value": "BUY"
+        },
+        {
+          "type": "quantity",
+          "value": "60000"
+        }
+      ]
+    },
+    {
+      "external_id": "get-mandate",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "get-mandate"
+        },
+        {
+          "type": "description",
+          "value": "Read a mandate with the company it concerns and its booking region."
+        }
+      ]
+    },
+    {
+      "external_id": "get-restricted-list",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "get-restricted-list"
+        },
+        {
+          "type": "description",
+          "value": "List the restrictions in force and the companies they cover."
+        }
+      ]
+    },
+    {
+      "external_id": "get-orders-in-company",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "get-orders-in-company"
+        },
+        {
+          "type": "description",
+          "value": "List the trade orders in the securities of a company."
+        }
+      ]
+    },
+    {
+      "external_id": "raise-restriction",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "raise-restriction"
+        },
+        {
+          "type": "description",
+          "value": "Put a company on the restricted list because of a mandate."
+        }
+      ]
+    },
+    {
+      "external_id": "hold-order",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "hold-order"
+        },
+        {
+          "type": "description",
+          "value": "Place a hold on a trade order in a restricted company."
+        }
+      ]
+    },
+    {
+      "external_id": "release-hold",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "release-hold"
+        },
+        {
+          "type": "description",
+          "value": "Release a hold on a trade order; compliance officers only."
+        }
+      ]
+    },
+    {
+      "external_id": "get-deal-documents",
+      "type": "Tool",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "get-deal-documents"
+        },
+        {
+          "type": "description",
+          "value": "Read the deal room documents of a mandate; deal team only."
+        }
+      ]
+    },
+    {
+      "external_id": "indykite://knowledge-queries/",
+      "type": "McpResource",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "Knowledge query catalogue"
+        },
+        {
+          "type": "description",
+          "value": "The IndyKite MCP server's catalogue of Knowledge Queries and their parameters."
+        }
+      ]
+    },
+    {
+      "external_id": "orchestrator",
+      "type": "Skill",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "orchestrator"
+        },
+        {
+          "type": "description",
+          "value": "Answer without a tool when no data is needed."
+        }
+      ]
+    },
+    {
+      "external_id": "query-retriever",
+      "type": "Skill",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "query-retriever"
+        },
+        {
+          "type": "description",
+          "value": "Send a control-room task to the retriever."
+        }
+      ]
+    },
+    {
+      "external_id": "deal-room",
+      "type": "Skill",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "deal-room"
+        },
+        {
+          "type": "description",
+          "value": "Send a deal room document request to the analyst."
+        }
+      ]
+    },
+    {
+      "external_id": "retriever",
+      "type": "Skill",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "retriever"
+        },
+        {
+          "type": "description",
+          "value": "General retriever behaviour."
+        }
+      ]
+    },
+    {
+      "external_id": "ciq-execute",
+      "type": "Skill",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "ciq-execute"
+        },
+        {
+          "type": "description",
+          "value": "Run a knowledge query through the MCP gateway."
+        }
+      ]
+    },
+    {
+      "external_id": "wall-control",
+      "type": "Skill",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "wall-control"
+        },
+        {
+          "type": "description",
+          "value": "The control-room procedure: mandates, restrictions, orders, holds."
+        }
+      ]
+    },
+    {
+      "external_id": "analyst",
+      "type": "Skill",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "analyst"
+        },
+        {
+          "type": "description",
+          "value": "General analyst behaviour."
+        }
+      ]
+    },
+    {
+      "external_id": "deal-documents",
+      "type": "Skill",
+      "is_identity": false,
+      "properties": [
+        {
+          "type": "name",
+          "value": "deal-documents"
+        },
+        {
+          "type": "description",
+          "value": "Read the deal room documents of a mandate."
+        }
+      ]
+    }
+  ]
+}

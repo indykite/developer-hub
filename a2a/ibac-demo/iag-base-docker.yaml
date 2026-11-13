@@ -3,7 +3,7 @@ version: '3.9'
 
 services:
   iag-base:
-    # The demo runs Agent Gateway 2.108.1, a locally loaded image named in
+    # The demo runs Agent Gateway 2.109.1, a locally loaded image named in
     # .env as AGENT_GATEWAY_IMAGE; without it the published release 2.0.3,
     # pinned by digest, is pulled. What the demo relies on: MCP
     # proxying (JARVIS_PROTECTED_AGENT_PROTOCOL: mcp, used by mcp-iag,

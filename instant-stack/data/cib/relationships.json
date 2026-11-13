@@ -1,0 +1,761 @@
+{
+  "relationships": [
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_SENTINEL}"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-wall-control"
+      },
+      "type": "CAN_TRIGGER",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "Desk",
+        "external_id": "advisory"
+      },
+      "target": {
+        "type": "Workflow",
+        "external_id": "wf-deal-room"
+      },
+      "type": "CAN_TRIGGER",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-wall-control"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-wall-control"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_RETRIEVER}"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-wall-control"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_RETRIEVER}"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-wall-control"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Workflow",
+        "external_id": "wf-deal-room"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-deal-room"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-deal-room"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "type": "INVOKES",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-deal-room"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_SENTINEL}"
+      },
+      "target": {
+        "type": "Region",
+        "external_id": "emea"
+      },
+      "type": "COVERS",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_SENTINEL}"
+      },
+      "target": {
+        "type": "Region",
+        "external_id": "amer"
+      },
+      "type": "COVERS",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "Mandate",
+        "external_id": "mnd-1001"
+      },
+      "target": {
+        "type": "Company",
+        "external_id": "halcyon-energy"
+      },
+      "type": "CONCERNS",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "Mandate",
+        "external_id": "mnd-1001"
+      },
+      "target": {
+        "type": "Region",
+        "external_id": "emea"
+      },
+      "type": "BOOKED_IN",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "Desk",
+        "external_id": "advisory"
+      },
+      "target": {
+        "type": "Mandate",
+        "external_id": "mnd-1001"
+      },
+      "type": "WORKS_ON",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "DealDocument",
+        "external_id": "doc-mnd-1001-termsheet"
+      },
+      "target": {
+        "type": "Mandate",
+        "external_id": "mnd-1001"
+      },
+      "type": "PART_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "Restriction",
+        "external_id": "rst-mnd-1001"
+      },
+      "target": {
+        "type": "Company",
+        "external_id": "halcyon-energy"
+      },
+      "type": "RESTRICTS",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "Restriction",
+        "external_id": "rst-mnd-1001"
+      },
+      "target": {
+        "type": "Mandate",
+        "external_id": "mnd-1001"
+      },
+      "type": "ARISES_FROM",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_SENTINEL}"
+      },
+      "target": {
+        "type": "Restriction",
+        "external_id": "rst-mnd-1001"
+      },
+      "type": "RAISED",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "TradeOrder",
+        "external_id": "ord-7001"
+      },
+      "target": {
+        "type": "Company",
+        "external_id": "brightwater-pharma"
+      },
+      "type": "IN_SECURITY_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "TradeOrder",
+        "external_id": "ord-7001"
+      },
+      "target": {
+        "type": "Desk",
+        "external_id": "equities-trading"
+      },
+      "type": "PLACED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "TradeOrder",
+        "external_id": "ord-7001"
+      },
+      "target": {
+        "type": "Region",
+        "external_id": "emea"
+      },
+      "type": "BOOKED_IN",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "TradeOrder",
+        "external_id": "ord-7002"
+      },
+      "target": {
+        "type": "Company",
+        "external_id": "kestrel-logistics"
+      },
+      "type": "IN_SECURITY_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "TradeOrder",
+        "external_id": "ord-7002"
+      },
+      "target": {
+        "type": "Desk",
+        "external_id": "credit-trading"
+      },
+      "type": "PLACED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "TradeOrder",
+        "external_id": "ord-7002"
+      },
+      "target": {
+        "type": "Region",
+        "external_id": "emea"
+      },
+      "type": "BOOKED_IN",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "TradeOrder",
+        "external_id": "ord-7003"
+      },
+      "target": {
+        "type": "Company",
+        "external_id": "orchid-semiconductors"
+      },
+      "type": "IN_SECURITY_OF",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "TradeOrder",
+        "external_id": "ord-7003"
+      },
+      "target": {
+        "type": "Desk",
+        "external_id": "equities-trading"
+      },
+      "type": "PLACED_BY",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "TradeOrder",
+        "external_id": "ord-7003"
+      },
+      "target": {
+        "type": "Region",
+        "external_id": "apac"
+      },
+      "type": "BOOKED_IN",
+      "properties": []
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-mandate"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-wall-control"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-restricted-list"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-wall-control"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-orders-in-company"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-wall-control"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "raise-restriction"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-wall-control"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "hold-order"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-wall-control"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "McpResource",
+        "external_id": "indykite://knowledge-queries/"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-wall-control"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "Tool",
+        "external_id": "get-deal-documents"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-deal-room"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_MCP}"
+      },
+      "target": {
+        "type": "McpResource",
+        "external_id": "indykite://knowledge-queries/"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-deal-room"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "orchestrator"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-wall-control"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "orchestrator"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-deal-room"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "query-retriever"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-wall-control"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "query-retriever"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-deal-room"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "deal-room"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-wall-control"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ORCHESTRATOR}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "deal-room"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-deal-room"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_RETRIEVER}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "retriever"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-wall-control"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_RETRIEVER}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "ciq-execute"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-wall-control"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_RETRIEVER}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "wall-control"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-wall-control"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "analyst"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-deal-room"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_ANALYST}"
+      },
+      "target": {
+        "type": "Skill",
+        "external_id": "deal-documents"
+      },
+      "type": "HAS",
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-deal-room"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    }
+  ]
+}

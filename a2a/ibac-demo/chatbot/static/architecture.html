@@ -409,7 +409,7 @@
                 <li><b>IBAC switch</b><span>With <code>ibac.enabled</code> every prompt goes to the Intent Agent first; a prompt without an intent is answered by the gateway itself (<code>intent_error</code>) and audited as <code>INTENT</code>.</span></li>
                 <li><b>The chain in every record</b><span><code>actorsChain</code>, <code>traceID</code> and <code>tokenID</code>; the console shows the chain under each card, the trace as a tooltip.</span></li>
                 <li><b>The intent in the delegated token</b><span>A prompt with an intent gets a second exchange at the Token Service, which writes the evaluations into <code>act.intent</code> of the token the agent receives in <code>X-IK-Token</code>; an intent of more than ten evaluations is answered by the gateway, asking to split the request.</span></li>
-                <li><b>IBAC discovery</b><span>The gateway does not match the <code>x-coaz-mappings</code> of the agent cards against the intent; the console previews what such a check would decide, and the capability checks decide what a caller may use.</span></li>
+                <li><b>IBAC discovery</b><span>A gateway with IBAC on keeps on the extended agent card only the permitted skills whose <code>x-coaz-mappings</code> fit the intent in the delegated token of the request. Only the entry gateway has IBAC on, and the console reaches it without a delegated token, so the console previews what that check would decide.</span></li>
             </ul>
         </div>
     </div>

@@ -1,0 +1,13 @@
+---
+audit:
+  delivery: webhook
+  # The record of the gateway asking the Intent Agent carries the task's text
+  # only with this on; the console shows it in the audit.
+  include_prompt: true
+  http:
+    # The console listens on 3500 inside the compose network; CONSOLE_PORT in
+    # .env only moves the published host port.
+    url: http://console:3500/api/push-update
+    method: post
+    auth:
+      type: no-auth

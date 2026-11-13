@@ -1,0 +1,986 @@
+{
+  "dataset": "cib",
+  "display_name": "Meridian CIB control room (autonomous agents, Auth0, Token Service)",
+  "description": "Config-as-data for a2a/cib-sentinel: a small corporate and investment banking graph (mandates, companies, restrictions, trade orders, desks, regions) whose only identities are agents. The subject of every request is the autonomous control-room agent, an Auth0 machine-to-machine application (AUTH0_SUB_SENTINEL) whose client-credentials token for the audience cib-autonomous resolves to an Agent node; the fleet agents are the Auth0 applications AUTH0_SUB_ORCHESTRATOR, _RETRIEVER, _ANALYST and _MCP. The Auth0 issuer comes from AUTH0_ISSUER and the Token Service public key from TOKEN_SERVICE_PUBLIC_JWK. KBAC policies, all with subject type Agent, cover the Agent Gateway admission (CAN_TRIGGER on the Agent the delegation chain ends at, compared with $ik_token.act_chain) and its capability checks (CAN_USE on the Tool, McpResource, Prompt and Skill nodes an Agent HAS per workflow). Knowledge queries read mandates, the restricted list and orders, and write restrictions and holds, each bound to the regions the agent COVERS. The event sink delivers every audit event, including the Capture upserts that feed the graph, to Google Cloud Pub/Sub.",
+  "ciq_queries": [
+    {
+      "slot": "1",
+      "name": "get-mandate",
+      "display_name": "Get Mandate",
+      "description": "get-mandate reads one advisory mandate: its code name, kind and summary, the company it concerns (name, ticker, sector) and the region it is booked in. Use it first when a new mandate is reported. An empty answer means the mandate is booked in a region the calling agent does not cover. Arguments: input_params mandate_external_id. Example: { \"input_params\": { \"mandate_external_id\": \"mnd-1001\" } }.",
+      "query": {
+        "nodes": [
+          "mandate.external_id",
+          "mandate.property.name",
+          "mandate.property.kind",
+          "mandate.property.summary",
+          "company.external_id",
+          "company.property.name",
+          "company.property.ticker",
+          "company.property.sector",
+          "region.external_id"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "2",
+      "name": "get-restricted-list",
+      "display_name": "Get Restricted List",
+      "description": "get-restricted-list returns the restricted list: every restriction in force, the company it covers and the mandate it arises from. Use it to check whether a company is already restricted. No arguments. Example: { \"input_params\": { } }.",
+      "query": {
+        "nodes": [
+          "restriction.external_id",
+          "restriction.property.reason",
+          "company.external_id",
+          "company.property.name",
+          "company.property.ticker",
+          "mandate.external_id"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "3",
+      "name": "get-orders-in-company",
+      "display_name": "Get Orders In Company",
+      "description": "get-orders-in-company lists the trade orders in the securities of one company, with the desk that placed each. Use it after a company is restricted, to find the orders to hold. Arguments: input_params company_external_id (the company id, e.g. brightwater-pharma, not the ticker). Example: { \"input_params\": { \"company_external_id\": \"brightwater-pharma\" } }.",
+      "query": {
+        "nodes": [
+          "trade.external_id",
+          "trade.property.name",
+          "trade.property.side",
+          "trade.property.quantity",
+          "desk.external_id",
+          "desk.property.name",
+          "company.external_id"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "4",
+      "name": "raise-restriction",
+      "display_name": "Raise Restriction",
+      "description": "raise-restriction puts the company a mandate concerns on the restricted list: it creates a Restriction and links it to the company (RESTRICTS), the mandate (ARISES_FROM) and the calling agent (RAISED) in one operation. Use it when a new mandate is confirmed. Arguments: input_params restriction_id (use rst-<mandate id>), reason, mandate_external_id. Example: { \"input_params\": { \"restriction_id\": \"rst-mnd-1001\", \"reason\": \"Project Lighthouse: advisory mandate\", \"mandate_external_id\": \"mnd-1001\" } }.",
+      "query": {
+        "upsert_nodes": [
+          {
+            "name": "restriction",
+            "type": "Restriction",
+            "external_id": "$restriction_id",
+            "properties": [
+              {
+                "type": "reason",
+                "value": "$reason"
+              }
+            ]
+          }
+        ],
+        "upsert_relationships": [
+          {
+            "name": "r_restricts",
+            "source": "restriction",
+            "target": "company",
+            "type": "RESTRICTS"
+          },
+          {
+            "name": "r_arises",
+            "source": "restriction",
+            "target": "mandate",
+            "type": "ARISES_FROM"
+          },
+          {
+            "name": "r_raised",
+            "source": "subject",
+            "target": "restriction",
+            "type": "RAISED"
+          }
+        ],
+        "nodes": [
+          "restriction.external_id",
+          "restriction.property.reason"
+        ],
+        "relationships": [
+          "r_restricts",
+          "r_arises",
+          "r_raised"
+        ]
+      }
+    },
+    {
+      "slot": "5",
+      "name": "hold-order",
+      "display_name": "Hold Order",
+      "description": "hold-order places a hold on one trade order: it creates a Hold and links it to the order (HOLDS) and to the calling agent (RAISED). It works only for orders in a company that is on the restricted list; for any other order the answer is empty and nothing is written. Arguments: input_params hold_external_id (use hold-<order id>), reason, order_external_id. Example: { \"input_params\": { \"hold_external_id\": \"hold-ord-7001\", \"reason\": \"Company restricted under mnd-1002\", \"order_external_id\": \"ord-7001\" } }.",
+      "query": {
+        "upsert_nodes": [
+          {
+            "name": "hold",
+            "type": "Hold",
+            "external_id": "$hold_external_id",
+            "properties": [
+              {
+                "type": "reason",
+                "value": "$reason"
+              }
+            ]
+          }
+        ],
+        "upsert_relationships": [
+          {
+            "name": "r_holds",
+            "source": "hold",
+            "target": "trade",
+            "type": "HOLDS"
+          },
+          {
+            "name": "r_raised",
+            "source": "subject",
+            "target": "hold",
+            "type": "RAISED"
+          }
+        ],
+        "nodes": [
+          "hold.external_id",
+          "hold.property.reason"
+        ],
+        "relationships": [
+          "r_holds",
+          "r_raised"
+        ]
+      }
+    },
+    {
+      "slot": "6",
+      "name": "release-hold",
+      "display_name": "Release Hold",
+      "description": "release-hold lifts a hold from a trade order. Reserved to compliance officers. Arguments: input_params release_external_id, hold_external_id. Example: { \"input_params\": { \"release_external_id\": \"rel-hold-ord-7001\", \"hold_external_id\": \"hold-ord-7001\" } }.",
+      "query": {
+        "upsert_nodes": [
+          {
+            "name": "release",
+            "type": "Release",
+            "external_id": "$release_external_id",
+            "properties": []
+          }
+        ],
+        "upsert_relationships": [
+          {
+            "name": "r_releases",
+            "source": "release",
+            "target": "hold",
+            "type": "RELEASES"
+          },
+          {
+            "name": "r_raised",
+            "source": "subject",
+            "target": "release",
+            "type": "RAISED"
+          }
+        ],
+        "nodes": [
+          "release.external_id"
+        ],
+        "relationships": [
+          "r_releases",
+          "r_raised"
+        ]
+      }
+    },
+    {
+      "slot": "7",
+      "name": "get-deal-documents",
+      "display_name": "Get Deal Documents",
+      "description": "get-deal-documents reads the deal room documents of a mandate (term sheet, valuation). Deal team only. Arguments: input_params mandate_external_id. Example: { \"input_params\": { \"mandate_external_id\": \"mnd-1001\" } }.",
+      "query": {
+        "nodes": [
+          "document.external_id",
+          "document.property.name",
+          "document.property.kind",
+          "document.property.summary",
+          "mandate.external_id"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "8",
+      "name": "board-restrictions",
+      "display_name": "Board: restrictions",
+      "description": "Console read of the restricted list as stored in the graph. Run with the application's credentials.",
+      "query": {
+        "nodes": [
+          "agent.external_id",
+          "restriction.external_id",
+          "restriction.property.reason",
+          "company.external_id",
+          "mandate.external_id"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    },
+    {
+      "slot": "9",
+      "name": "board-holds",
+      "display_name": "Board: holds",
+      "description": "Console read of the holds as stored in the graph. Run with the application's credentials.",
+      "query": {
+        "nodes": [
+          "agent.external_id",
+          "hold.external_id",
+          "hold.property.reason",
+          "trade.external_id"
+        ],
+        "relationships": [],
+        "aggregate_values": []
+      }
+    }
+  ],
+  "ciq_policies": [
+    {
+      "slot": "1",
+      "name": "get-mandate",
+      "display_name": "Get Mandate",
+      "description": "A mandate, the company it concerns and its booking region, for an agent that covers the region.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "Agent"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Agent {external_id: $token.sub})-[:COVERS]->(region:Region)<-[:BOOKED_IN]-(mandate:Mandate {external_id: $mandate_external_id})-[:CONCERNS]->(company:Company)",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "mandate.*",
+            "company.*",
+            "region.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "cib",
+        "mandate",
+        "read"
+      ]
+    },
+    {
+      "slot": "2",
+      "name": "get-restricted-list",
+      "display_name": "Get Restricted List",
+      "description": "The restrictions in force for mandates booked in the regions the calling agent covers.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "Agent"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Agent {external_id: $token.sub})-[:COVERS]->(region:Region)<-[:BOOKED_IN]-(mandate:Mandate)<-[:ARISES_FROM]-(restriction:Restriction)-[:RESTRICTS]->(company:Company)",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "mandate.*",
+            "restriction.*",
+            "company.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "cib",
+        "restrictions",
+        "read"
+      ]
+    },
+    {
+      "slot": "3",
+      "name": "get-orders-in-company",
+      "display_name": "Get Orders In Company",
+      "description": "The trade orders in the securities of a company, booked in the regions the calling agent covers.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "Agent"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Agent {external_id: $token.sub})-[:COVERS]->(region:Region)<-[:BOOKED_IN]-(trade:TradeOrder)-[:IN_SECURITY_OF]->(company:Company {external_id: $company_external_id}) MATCH (trade)-[:PLACED_BY]->(desk:Desk)",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "trade.*",
+            "company.*",
+            "desk.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "cib",
+        "orders",
+        "read"
+      ]
+    },
+    {
+      "slot": "4",
+      "name": "raise-restriction",
+      "display_name": "Raise Restriction",
+      "description": "Create a Restriction on the company a mandate concerns, tied to the mandate and to the agent that raised it. Allowed only for mandates booked in a region the calling agent covers.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "Agent"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Agent {external_id: $token.sub})-[:COVERS]->(region:Region)<-[:BOOKED_IN]-(mandate:Mandate {external_id: $mandate_external_id})-[:CONCERNS]->(company:Company)",
+          "filter": []
+        },
+        "allowed_upserts": {
+          "nodes": {
+            "node_types": [
+              "Restriction"
+            ]
+          },
+          "relationships": {
+            "relationship_types": [
+              {
+                "type": "RESTRICTS",
+                "source_node_label": "Restriction",
+                "target_node_label": "Company"
+              },
+              {
+                "type": "ARISES_FROM",
+                "source_node_label": "Restriction",
+                "target_node_label": "Mandate"
+              },
+              {
+                "type": "RAISED",
+                "source_node_label": "Agent",
+                "target_node_label": "Restriction"
+              }
+            ]
+          }
+        }
+      },
+      "tags": [
+        "cib",
+        "restrictions",
+        "write"
+      ]
+    },
+    {
+      "slot": "5",
+      "name": "hold-order",
+      "display_name": "Hold Order",
+      "description": "Create a Hold on a trade order. Allowed only when the order is booked in a region the calling agent covers and the company it trades is on the restricted list.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "Agent"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Agent {external_id: $token.sub})-[:COVERS]->(region:Region)<-[:BOOKED_IN]-(trade:TradeOrder {external_id: $order_external_id})-[:IN_SECURITY_OF]->(company:Company)<-[:RESTRICTS]-(restriction:Restriction)",
+          "filter": []
+        },
+        "allowed_upserts": {
+          "nodes": {
+            "node_types": [
+              "Hold"
+            ]
+          },
+          "relationships": {
+            "relationship_types": [
+              {
+                "type": "HOLDS",
+                "source_node_label": "Hold",
+                "target_node_label": "TradeOrder"
+              },
+              {
+                "type": "RAISED",
+                "source_node_label": "Agent",
+                "target_node_label": "Hold"
+              }
+            ]
+          }
+        }
+      },
+      "tags": [
+        "cib",
+        "orders",
+        "write"
+      ]
+    },
+    {
+      "slot": "6",
+      "name": "release-hold",
+      "display_name": "Release Hold",
+      "description": "Create a Release for a hold. Allowed only to a member of the compliance control room.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "Agent"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Agent {external_id: $token.sub})-[:MEMBER_OF]->(:Desk {external_id: 'compliance-control'}) MATCH (hold:Hold {external_id: $hold_external_id})",
+          "filter": []
+        },
+        "allowed_upserts": {
+          "nodes": {
+            "node_types": [
+              "Release"
+            ]
+          },
+          "relationships": {
+            "relationship_types": [
+              {
+                "type": "RELEASES",
+                "source_node_label": "Release",
+                "target_node_label": "Hold"
+              },
+              {
+                "type": "RAISED",
+                "source_node_label": "Agent",
+                "target_node_label": "Release"
+              }
+            ]
+          }
+        }
+      },
+      "tags": [
+        "cib",
+        "orders",
+        "write"
+      ]
+    },
+    {
+      "slot": "7",
+      "name": "get-deal-documents",
+      "display_name": "Get Deal Documents",
+      "description": "The deal room documents of a mandate, for a member of a desk that works on the mandate.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "Agent"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Agent {external_id: $token.sub})-[:MEMBER_OF]->(:Desk)-[:WORKS_ON]->(mandate:Mandate {external_id: $mandate_external_id})<-[:PART_OF]-(document:DealDocument)",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "subject.*",
+            "mandate.*",
+            "document.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "cib",
+        "dealroom",
+        "read"
+      ]
+    },
+    {
+      "slot": "8",
+      "name": "board-restrictions",
+      "display_name": "Board: restrictions",
+      "description": "For the console: every restriction, its company, its mandate and the agent that raised it.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "_Application"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:_Application) MATCH (agent:Agent)-[:RAISED]->(restriction:Restriction)-[:RESTRICTS]->(company:Company) MATCH (restriction)-[:ARISES_FROM]->(mandate:Mandate)",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "agent.*",
+            "restriction.*",
+            "company.*",
+            "mandate.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "cib",
+        "console",
+        "read"
+      ]
+    },
+    {
+      "slot": "9",
+      "name": "board-holds",
+      "display_name": "Board: holds",
+      "description": "For the console: every hold, its order and the agent that raised it.",
+      "policy": {
+        "meta": {
+          "policy_version": "1.0-ciq"
+        },
+        "subject": {
+          "type": "_Application"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:_Application) MATCH (agent:Agent)-[:RAISED]->(hold:Hold)-[:HOLDS]->(trade:TradeOrder)",
+          "filter": []
+        },
+        "allowed_reads": {
+          "nodes": [
+            "agent.*",
+            "hold.*",
+            "trade.*"
+          ],
+          "relationships": [],
+          "aggregate_values": []
+        }
+      },
+      "tags": [
+        "cib",
+        "console",
+        "read"
+      ]
+    }
+  ],
+  "resolvers": [],
+  "app_agent": {
+    "name": "cib-agent",
+    "display_name": "CIB Agent",
+    "description": "App agent of the CIB control room demo: gateways (whoami, AuthZEN admission and capability checks) and console (Capture feed, board queries)",
+    "api_permissions": [
+      "Authorization",
+      "Capture",
+      "ContXIQ",
+      "ReadAuthZConfigs",
+      "ReadDataSchema",
+      "Audit"
+    ],
+    "credentials_expire_days": 180
+  },
+  "audit_signing": {
+    "name": "audit-signing-default",
+    "display_name": "Audit Signing",
+    "description": "Platform-managed key signs the project's tamper-proof audit chain",
+    "provider": "PLATFORM_MANAGED"
+  },
+  "event_sink": {
+    "name": "audit-events-pubsub",
+    "display_name": "Audit Events to Pub/Sub",
+    "description": "Delivers the project's audit events to Google Cloud Pub/Sub: the Capture upserts the autonomous agent reacts to and the decisions its actions cause; delivered events are chained",
+    "include_cdc_events": false,
+    "providers": {
+      "pubsub-provider": {
+        "pubsub": {
+          "display_name": "Pub/Sub topic ${PUBSUB_TOPIC}",
+          "project_id": "${PUBSUB_GCP_PROJECT}",
+          "topic_name": "${PUBSUB_TOPIC}"
+        }
+      }
+    },
+    "routes": [
+      {
+        "provider_id": "pubsub-provider",
+        "route_id": "all-audit-events",
+        "display_name": "All Audit Events",
+        "stop_processing": true,
+        "event_type_key_values_filter": {
+          "event_type": "indykite.audit.*"
+        }
+      }
+    ]
+  },
+  "mcp_server": {
+    "name": "cib-mcp-server",
+    "display_name": "CIB MCP Server",
+    "description": "MCP Server configuration of the CIB control room demo - binds the App Agent and the Auth0 Agent Token Introspect used to authenticate inbound MCP traffic.",
+    "enabled": true,
+    "scopes_supported": [
+      "email"
+    ]
+  },
+  "token_introspect": [
+    {
+      "name": "auth0-agent-introspect",
+      "display_name": "Auth0 Agent Token Introspect",
+      "description": "Auth0 client-credentials tokens of autonomous agents (audience cib-autonomous), validated offline against the tenant JWKS; the token sub (<client_id>@clients) is the Agent external_id. The issuer comes from .env (AUTH0_ISSUER, e.g. https://<tenant>.auth0.com/).",
+      "ikg_node_type": "Agent",
+      "jwt_matcher": {
+        "issuer": "${AUTH0_ISSUER}",
+        "audience": "cib-autonomous"
+      },
+      "claims_mapping": {},
+      "offline_validation": {},
+      "perform_upsert": true
+    },
+    {
+      "name": "token-service-cib-autonomous",
+      "display_name": "Token Service Delegations (cib-autonomous audience)",
+      "description": "Token-service-minted delegation JWTs arriving in X-IK-Token; audience inherited from the autonomous agent's subject token. The public JWK comes from .env (TOKEN_SERVICE_PUBLIC_JWK).",
+      "ikg_node_type": "Agent",
+      "jwt_matcher": {
+        "issuer": "https://token-service.cib-sentinel.local",
+        "audience": "cib-autonomous"
+      },
+      "claims_mapping": {},
+      "offline_validation": {
+        "public_jwks": [
+          "${TOKEN_SERVICE_PUBLIC_JWK}"
+        ]
+      },
+      "perform_upsert": true
+    }
+  ],
+  "kbac": [
+    {
+      "name": "agent-can-reach-agent",
+      "display_name": "Agent can reach agent (gateway admission)",
+      "description": "The Agent Gateway's admission check with an autonomous agent as the subject: the subject may reach the protected agent (the newest hop of the delegation chain) when a workflow it can trigger has exactly the delegation chain as its path of agents ($ik_token.act_chain, sent by the gateway in X-IK-Token). One policy serves every gateway; a chain from another workflow, or one that does not end at this agent, is refused.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Agent"
+        },
+        "actions": [
+          "CAN_TRIGGER"
+        ],
+        "resource": {
+          "type": "Agent"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Agent)-[:CAN_TRIGGER]->(wf:Workflow) MATCH (wf)-[rels:INVOKES*]->(resource:Agent) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain"
+        }
+      }
+    },
+    {
+      "name": "agent-can-trigger-workflow",
+      "display_name": "Agent can trigger workflow",
+      "description": "An autonomous agent can start the workflows it is directly assigned to.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Agent"
+        },
+        "actions": [
+          "CAN_TRIGGER"
+        ],
+        "resource": {
+          "type": "Workflow"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Agent)-[:CAN_TRIGGER]->(resource:Workflow)"
+        }
+      }
+    },
+    {
+      "name": "agent-can-use-tool",
+      "display_name": "Agent can use tool (gateway capability)",
+      "description": "The Agent Gateway's capability check for Tool: permitted when a workflow the autonomous agent can trigger has exactly the delegation chain as its path of agents and the agent at the end of the chain HAS the capability for that workflow (HAS.workflow_name).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Agent"
+        },
+        "actions": [
+          "CAN_USE"
+        ],
+        "resource": {
+          "type": "Tool"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Agent)-[:CAN_TRIGGER]->(wf:Workflow) MATCH (wf)-[rels:INVOKES*]->(agent:Agent)-[h:HAS]->(resource:Tool) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain AND h.workflow_name = wf.external_id"
+        }
+      }
+    },
+    {
+      "name": "agent-can-use-mcp-resource",
+      "display_name": "Agent can use mcp-resource (gateway capability)",
+      "description": "The Agent Gateway's capability check for McpResource: permitted when a workflow the autonomous agent can trigger has exactly the delegation chain as its path of agents and the agent at the end of the chain HAS the capability for that workflow (HAS.workflow_name).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Agent"
+        },
+        "actions": [
+          "CAN_USE"
+        ],
+        "resource": {
+          "type": "McpResource"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Agent)-[:CAN_TRIGGER]->(wf:Workflow) MATCH (wf)-[rels:INVOKES*]->(agent:Agent)-[h:HAS]->(resource:McpResource) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain AND h.workflow_name = wf.external_id"
+        }
+      }
+    },
+    {
+      "name": "agent-can-use-prompt",
+      "display_name": "Agent can use prompt (gateway capability)",
+      "description": "The Agent Gateway's capability check for Prompt: permitted when a workflow the autonomous agent can trigger has exactly the delegation chain as its path of agents and the agent at the end of the chain HAS the capability for that workflow (HAS.workflow_name).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Agent"
+        },
+        "actions": [
+          "CAN_USE"
+        ],
+        "resource": {
+          "type": "Prompt"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Agent)-[:CAN_TRIGGER]->(wf:Workflow) MATCH (wf)-[rels:INVOKES*]->(agent:Agent)-[h:HAS]->(resource:Prompt) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain AND h.workflow_name = wf.external_id"
+        }
+      }
+    },
+    {
+      "name": "agent-can-use-skill",
+      "display_name": "Agent can use skill (gateway capability)",
+      "description": "The Agent Gateway's capability check for Skill: permitted when a workflow the autonomous agent can trigger has exactly the delegation chain as its path of agents and the agent at the end of the chain HAS the capability for that workflow (HAS.workflow_name).",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Agent"
+        },
+        "actions": [
+          "CAN_USE"
+        ],
+        "resource": {
+          "type": "Skill"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Agent)-[:CAN_TRIGGER]->(wf:Workflow) MATCH (wf)-[rels:INVOKES*]->(agent:Agent)-[h:HAS]->(resource:Skill) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain AND h.workflow_name = wf.external_id"
+        }
+      }
+    },
+    {
+      "name": "agent-covers-region",
+      "display_name": "Agent covers region",
+      "description": "The booking regions an autonomous agent is responsible for.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Agent"
+        },
+        "actions": [
+          "COVERS"
+        ],
+        "resource": {
+          "type": "Region"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Agent)-[:COVERS]->(resource:Region)"
+        }
+      }
+    },
+    {
+      "name": "agent-can-read-mandate",
+      "display_name": "Agent can read mandate",
+      "description": "An autonomous agent can read the mandates booked in a region it covers.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Agent"
+        },
+        "actions": [
+          "CAN_READ"
+        ],
+        "resource": {
+          "type": "Mandate"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Agent)-[:COVERS]->(:Region)<-[:BOOKED_IN]-(resource:Mandate)"
+        }
+      }
+    },
+    {
+      "name": "agent-can-restrict-company",
+      "display_name": "Agent can restrict company",
+      "description": "An autonomous agent can put on the restricted list the company of a mandate booked in a region it covers.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Agent"
+        },
+        "actions": [
+          "CAN_RESTRICT"
+        ],
+        "resource": {
+          "type": "Company"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Agent)-[:COVERS]->(:Region)<-[:BOOKED_IN]-(:Mandate)-[:CONCERNS]->(resource:Company)"
+        }
+      }
+    },
+    {
+      "name": "agent-can-read-restriction",
+      "display_name": "Agent can read restriction",
+      "description": "An autonomous agent can read the restrictions that arise from mandates booked in a region it covers.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Agent"
+        },
+        "actions": [
+          "CAN_READ"
+        ],
+        "resource": {
+          "type": "Restriction"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Agent)-[:COVERS]->(:Region)<-[:BOOKED_IN]-(:Mandate)<-[:ARISES_FROM]-(resource:Restriction)"
+        }
+      }
+    },
+    {
+      "name": "agent-can-read-trade-order",
+      "display_name": "Agent can read trade order",
+      "description": "An autonomous agent can read the trade orders booked in a region it covers.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Agent"
+        },
+        "actions": [
+          "CAN_READ"
+        ],
+        "resource": {
+          "type": "TradeOrder"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Agent)-[:COVERS]->(:Region)<-[:BOOKED_IN]-(resource:TradeOrder)"
+        }
+      }
+    },
+    {
+      "name": "agent-can-hold-trade-order",
+      "display_name": "Agent can hold trade order",
+      "description": "An autonomous agent can place a hold on a trade order booked in a region it covers when the company it trades is on the restricted list.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Agent"
+        },
+        "actions": [
+          "CAN_HOLD"
+        ],
+        "resource": {
+          "type": "TradeOrder"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Agent)-[:COVERS]->(:Region)<-[:BOOKED_IN]-(resource:TradeOrder)-[:IN_SECURITY_OF]->(:Company)<-[:RESTRICTS]-(:Restriction)"
+        }
+      }
+    },
+    {
+      "name": "agent-can-read-deal-document",
+      "display_name": "Agent can read deal document",
+      "description": "An agent can read the deal room documents of a mandate when it is a member of a desk that works on it.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Agent"
+        },
+        "actions": [
+          "CAN_READ"
+        ],
+        "resource": {
+          "type": "DealDocument"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Agent)-[:MEMBER_OF]->(:Desk)-[:WORKS_ON]->(:Mandate)<-[:PART_OF]-(resource:DealDocument)"
+        }
+      }
+    }
+  ],
+  "application": {
+    "name": "cib-app",
+    "display_name": "CIB App",
+    "description": "Control room application whose autonomous agent is governed by the Agent Gateway and the Token Service"
+  },
+  "project": {
+    "name": "cib-sentinel",
+    "display_name": "CIB Sentinel",
+    "description": "Corporate and investment banking graph for the autonomous control-room agent demo (Agent Gateway, Token Service, event sink)",
+    "region": "europe-west1",
+    "db_connection": {
+      "name": "",
+      "password": "",
+      "url": "",
+      "username": ""
+    }
+  }
+}

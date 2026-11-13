@@ -10,7 +10,7 @@ const state = {
   persona: null,
   agent: null,
   authMode: "delegation",
-  unmapped: "allow", // what happens to a skill without a mapping (the gateway's MCP setting), as the preview applies it
+  unmapped: "allow", // what happens to a skill without a mapping (the gateway's ibac.capabilities.unmapped), as the preview applies it
   category: null,
   view: "playground",
   trace: null,
@@ -894,7 +894,7 @@ function renderHandoff(trace) {
   box.append(lane);
 
   const foot = el("div", "handoff-foot");
-  foot.append(el("span", "", "One gateway protects one agent: it validated the caller's Auth0 token at the bridge, exchanged it for a delegated token at the Token Service, resolved the caller with whoami, decided admission with one AuthZEN evaluation over the delegation chain, asked the Intent Agent about the prompt, exchanged once more with the intent when it passes the intent on, and forwarded the message with the delegated token and its extension header. The mapping preview is the console's own check of this gateway's card; the gateway reads mappings in front of MCP servers only. Nothing routes between gateways: to see what the others do with the same prompt, send it through them, on the board below."));
+  foot.append(el("span", "", "One gateway protects one agent: it validated the caller's Auth0 token at the bridge, exchanged it for a delegated token at the Token Service, resolved the caller with whoami, decided admission with one AuthZEN evaluation over the delegation chain, asked the Intent Agent about the prompt, exchanged once more with the intent when it passes the intent on, and forwarded the message with the delegated token and its extension header. The mapping preview is the console's own check of this gateway's card; a gateway that reads the mappings runs it on its authenticated card, for a token that carries an intent. Nothing routes between gateways: to see what the others do with the same prompt, send it through them, on the board below."));
   box.append(foot);
 }
 
@@ -1658,6 +1658,8 @@ function fleetCard(d, trace, evaluations, answer) {
     slot.append(el("b", "", "its gateway"), el("span", "", "not asked yet"), el("small", "", "the product answers per gateway: send the prompt through it to know"));
     card.append(slot);
   }
+  const hop = (trace.gateway?.downstream || []).find((h) => h.agent === d.agent);
+  if (hop) card.append(hopBlock(hop, trace));
   const you = el("div", "fa-you");
   you.dataset.agent = d.agent;
   card.append(you);
@@ -1685,6 +1687,36 @@ function fleetCard(d, trace, evaluations, answer) {
   card.append(skills);
   queueMicrotask(refreshBoardMarks);
   return card;
+}
+
+// What this card's gateway answered when the agent behind the chosen gateway asked it for its extended card with the
+// delegated token it held: a later hop of the same workflow. The product's own discovery: the skills the person may
+// use there that fit the intent in the token, and the records the gateway wrote about it.
+function hopBlock(hop, trace) {
+  const ok = hop.http_status === 200;
+  const kept = hop.skills || [];
+  const block = el("div", `fa-hop ${ok ? (kept.length ? "ok" : "warn") : "fail"}`);
+  const line = ok
+    ? kept.length ? `kept ${kept.length}: ${kept.join(", ")}` : "kept no skill for this intent"
+    : hop.http_status ? `refused · HTTP ${hop.http_status}${hop.error ? ` · ${String(hop.error).slice(0, 70)}` : ""}` : `unreachable${hop.error ? ` · ${String(hop.error).slice(0, 70)}` : ""}`;
+  block.append(el("b", "", `asked by ${agentName(trace.agent)}, second hop`), el("span", "", line));
+  const records = hop.records || [];
+  const card = records.find((r) => r.action === "DISCOVERY");
+  const engine = records.filter((r) => r.action === "IBAC_DISCOVERY");
+  const refusal = records.find((r) => ["NOT_AUTHORIZED", "ERROR"].includes(r.decision) && !["DISCOVERY", "IBAC_DISCOVERY"].includes(r.action));
+  const bits = [];
+  if (refusal) bits.push(`${refusal.decision}: ${refusal.reason || ""}`);
+  if (card) bits.push(`DISCOVERY: ${card.reason || card.decision}`);
+  if (engine.length) {
+    // One record per group of skills the gateway sorted or asked the engine about: name each decision once.
+    const decisions = [...new Set(engine.map((r) => r.decision).filter(Boolean))];
+    const codes = [...new Set(engine.map((r) => r.reasonCode || r.reason_code).filter(Boolean))];
+    const why = engine.find((r) => r.decision !== "AUTHORIZED" && r.reason)?.reason;
+    bits.push(`IBAC_DISCOVERY: ${decisions.join(" + ") || "recorded"}${codes.length ? ` (${codes.join(", ")})` : ""}${why ? `, ${why}` : ""}`);
+  }
+  if (bits.length) block.append(el("small", "", bits.join(" · ")));
+  block.title = "The gateway's own answer to GetExtendedAgentCard carrying only X-IK-Token: admission over the two-hop chain, the skills the person may use, then the ones that fit the intent in the token.";
+  return block;
 }
 
 // What the gateway of the current trace did, in the shape /api/compare returns for the others.

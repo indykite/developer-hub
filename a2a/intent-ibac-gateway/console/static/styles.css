@@ -821,6 +821,12 @@ textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px
 .fa-gw.warn { border-color: #FCD34D; background: var(--amber-soft); color: var(--amber); }
 .fa-gw.fail { border-color: var(--red); background: var(--red-soft); color: var(--red); }
 .fa-gw.ok small, .fa-gw.warn small, .fa-gw.fail small { color: inherit; opacity: .85; }
+.fa-hop { margin: -2px 0 8px; padding: 6px 8px; border-radius: 8px; font-size: 11.5px; border: 1px solid var(--line); background: var(--card); color: var(--sub); }
+.fa-hop b { display: block; font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; }
+.fa-hop small { display: block; font-family: var(--mono); font-size: 10px; margin-top: 2px; color: inherit; opacity: .85; }
+.fa-hop.ok { border-color: var(--teal); background: var(--teal-soft); color: var(--teal); }
+.fa-hop.warn { border-color: #FCD34D; background: var(--amber-soft); color: var(--amber); }
+.fa-hop.fail { border-color: var(--red); background: var(--red-soft); color: var(--red); }
 .fa-preview-tag { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--plum-ink); margin-bottom: 2px; }
 
 /* login: who is asking */
@@ -880,5 +886,5 @@ textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px
 .board-legend .legend-item b { color: var(--text); font-weight: 600; }
 .board-legend .legend-item code { font-size: 11px; background: var(--muted-bg); padding: 0 4px; border-radius: 4px; color: var(--text); }
 .board-legend .sample { flex-shrink: 0; margin: 0; }
-.board-legend .fa-gw.sample { padding: 2px 8px; font-size: 11px; }
+.board-legend .fa-gw.sample, .board-legend .fa-hop.sample { padding: 2px 8px; font-size: 11px; }
 .board-legend .legend-note { font-size: 12px; color: var(--sub); font-style: italic; }

@@ -260,6 +260,9 @@ services:
       - "8000"
     environment:
       AGENT_ID: support-desk
+      # The agents this one may hand work to, each behind its own gateway: with the delegated token it
+      # received it asks them for their extended card, as a later hop of the same workflow.
+      DOWNSTREAM_GATEWAYS: billing=http://iag-billing:9903,people-directory=http://iag-people-directory:9904
       ADVERTISED_URL: http://agent-support-desk:8000/
       FLEET_FILE: /app/fleet.json
     volumes:
@@ -380,6 +383,8 @@ services:
       - "8000"
     environment:
       AGENT_ID: workflow-runner
+      DOWNSTREAM_GATEWAYS: >-
+        trading-desk=http://iag-trading-desk:9901,support-desk=http://iag-support-desk:9902,billing=http://iag-billing:9903,people-directory=http://iag-people-directory:9904,weather=http://iag-weather:9906
       ADVERTISED_URL: http://agent-workflow-runner:8000/
       FLEET_FILE: /app/fleet.json
     volumes:
