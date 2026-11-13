@@ -535,29 +535,27 @@ def resolve_key(key: str, params: dict[str, Any] | None) -> tuple[str, bool]:
 
 
 def lookup_value(key: str, params: dict[str, Any]) -> tuple[str, bool]:
-    """Look `key` up in params; `a.b.c` walks nested maps. Missing, non-string or empty values are not found."""
-    if key in params:
-        value = params[key]
-        if isinstance(value, str) and value == "":
-            return "", False
-        return (value, True) if isinstance(value, str) else ("", False)
+    """Look `key` up in params; `a.b.c` always walks nested maps. Missing, non-string or empty values are not found.
+
+    A dot always separates two field names, so a key of params that contains a dot itself is never read:
+    a path has one reading only.
+    """
     head, sep, rest = key.partition(".")
-    if not sep:
-        return "", False
-    nested = params.get(head)
-    if not isinstance(nested, dict):
-        return "", False
-    return lookup_value(rest, nested)
+    if sep:
+        nested = params.get(head)
+        return lookup_value(rest, nested) if isinstance(nested, dict) else ("", False)
+    value = params.get(key)
+    return (value, True) if isinstance(value, str) and value else ("", False)
 
 
 def _resolve_entities(entities: list[Entity], params: dict[str, Any] | None) -> list[Entity]:
-    """Copy the entities with their ids resolved; drop an entity whose id cannot be resolved."""
-    resolved: list[Entity] = []
-    for entity in entities:
-        value, ok = resolve_key(entity.id, params)
-        if ok:
-            resolved.append(Entity(type=entity.type, id=value))
-    return resolved
+    """Copy the entities with their ids resolved; the caller has checked that every id resolves."""
+    return [Entity(type=entity.type, id=resolve_key(entity.id, params)[0]) for entity in entities]
+
+
+def _resolves_all(entities: list[Entity], params: dict[str, Any] | None) -> bool:
+    """Tell whether every id of the mapping's entities resolves, whatever their type."""
+    return all(resolve_key(entity.id, params)[1] for entity in entities)
 
 
 def _mapping_requests_usage(
@@ -565,10 +563,16 @@ def _mapping_requests_usage(
     mapping: CoazMapping,
     params: dict[str, Any] | None,
 ) -> list[Evaluation]:
-    """Build one request per resolved (subject, resource) pair when the mapping matches the evaluation."""
+    """Build one request per (subject, resource) pair when the mapping matches the evaluation.
+
+    A mapping with any reference that has no value does not match at all, so a call without a value the
+    mapping reads never passes unchecked.
+    """
     subjects = _find_matching_entities(evaluation.subject, mapping.subject)
     resources = _find_matching_entities(evaluation.resource, mapping.resource)
     if not (subjects and resources and _action_match(evaluation.action, mapping.actions)):
+        return []
+    if not (_resolves_all(mapping.subject, params) and _resolves_all(mapping.resource, params)):
         return []
     return [
         Evaluation(

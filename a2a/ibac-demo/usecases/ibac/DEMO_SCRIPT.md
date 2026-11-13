@@ -62,6 +62,7 @@ audience sees it in this script:
 | The delegated token extension | Stagecraft, *the card beat* and *the discovery beat*: `capabilities.extensions` and `mcp_extensions` |
 | MCP front door | Stagecraft, *the discovery beat*; Act 5 (two people, one MCP gateway) |
 | IBAC switch | Stagecraft, *the intent beat* |
+| The intent decides on MCP calls | Stagecraft, *the intent beat*: the `intent check` and `data check` cards of `erp-mcp-iag` |
 | The chain in every audit record | The chain line under every card; the trace id is its tooltip |
 | No clock on the answer | Act 2 step 2 and Act 4 step 3: slow composite answers arrive whole |
 
@@ -122,13 +123,14 @@ What each line means:
   `tokenID` it concerns.
 - **No clock on the answer**: a long agent answer is never cut by the gateway.
 
-Not on stage: a gateway with `ibac.enabled` checks an intent against
-capability mappings, for MCP calls (`IBAC_USAGE` records) and for the skills
-of the extended agent card (`IBAC_DISCOVERY` records), and only when the
-delegated token of the request carries an intent. Here the entry gateway
-alone has it, and the console reaches it with the person's token only, so
-neither check runs; the console's "IBAC discovery preview" line shows what
-the card check would decide.
+With `IBAC_ENABLED=true` two gateways decide by the intent in the delegated
+token. The entry gateway asks the Intent Agent and writes the intent into
+the token. `erp-mcp-iag` compares every call of an ERP tool with it: a call
+the intent does not match is refused, and for one invoice the gateway asks
+the platform whether the person may view it (`intent check` and `data
+check` cards). Not on stage: the filter of the extended agent card by the
+intent; the console's "IBAC discovery preview" line shows what it would
+decide.
 
 Each act below ends with a **Spot the gateway** line: the one thing on the
 terminal that is the gateway's work in that act.
@@ -378,7 +380,13 @@ never enters.
   prompts still have no policy vocabulary, so run those beats with IBAC off,
   or show the refusal as the beat. A prompt the model refuses although a
   policy exists is rephrased closer to the action ("Retrieve the stock quote
-  for META").
+  for META"). With the `erp` profile the intent also decides at the ERP: ask
+  *"Show me the invoices"* and `erp-mcp-iag` shows an `intent check` card
+  (the intent is about a Person viewing an Invoice, which is what
+  `list_invoices` is for); ask for one invoice by its id and a `data check`
+  card follows, with the platform's answer for that person and that invoice.
+  An ERP call made under an intent about something else is refused at
+  `erp-mcp-iag`, and the ERP server never sees it.
 - **The card beat**: the gateway serves the protected
   agent's card itself -
 

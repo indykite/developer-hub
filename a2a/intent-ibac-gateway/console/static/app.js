@@ -1995,7 +1995,7 @@ function mappingComparison(u, params) {
     });
     box.append(block);
   });
-  box.append(el("p", "cmp-note", "Discovery compares the types and the action only. Usage then resolves the ids as shown after ⇒; an unresolved reference drops that entity, an empty id makes the match a search."));
+  box.append(el("p", "cmp-note", "Discovery compares the types and the action only. Usage then resolves the ids as shown after ⇒; a mapping with a reference that has no value does not match, an empty id makes the match a search."));
   return box;
 }
 

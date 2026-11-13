@@ -61,3 +61,26 @@ def test_empty_chain_is_left_out(sent):
     app.app.test_client().post("/api/push-update", json={**RECORD, "actorsChain": []})
     assert "actors_chain" not in sent[0]
     assert sent[0]["decision"] == "AUTHORIZED"
+
+
+def test_intent_check_fields_are_forwarded(sent):
+    """IBAC_USAGE and RESOLVED_EVALUATIONS records keep the intent and the platform's answers."""
+    intent = [{"subject": {"type": "Person"}, "action": {"name": "CAN_VIEW"}, "resource": {"type": "Invoice"}}]
+    resolved = [
+        {
+            "allowed": True,
+            "subjectType": "Person",
+            "subjectID": RECORD["subject"],
+            "action": "CAN_VIEW",
+            "resourceType": "Invoice",
+            "resourceID": "inv-1",
+        },
+    ]
+    client = app.app.test_client()
+    usage = {**RECORD, "service": "erp-mcp-iag", "action": "IBAC_USAGE", "currentIntent": intent}
+    client.post("/api/push-update", json={**usage, "reasonCode": "intent_match_authzen_required"})
+    client.post("/api/push-update", json={**usage, "action": "RESOLVED_EVALUATIONS", "resolvedEvaluations": resolved})
+    assert sent[0]["current_intent"] == intent
+    assert sent[0]["reason_code"] == "intent_match_authzen_required"
+    assert sent[1]["action"] == "RESOLVED_EVALUATIONS"
+    assert sent[1]["resolved_evaluations"] == resolved

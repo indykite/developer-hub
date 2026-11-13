@@ -1374,8 +1374,9 @@
         // The explanation and the grant are about CAN_TRIGGER on a workflow,
         // i.e. about admission. A capability record (DISCOVERY, INVOCATION)
         // answers another question - what the caller may use at the agent -
-        // and a record refused early (noop) answers none.
-        const isAdmission = !['DISCOVERY', 'INVOCATION', 'INTENT', 'NOOP'].includes(question);
+        // a record refused early (noop) answers none, and the records of the
+        // Intent Agent and the IBAC engine are about the intent.
+        const isAdmission = question === 'ADMISSION';
         if (EXPLAIN_ENABLED && isAdmission && (decision === 'authorized' || decision === 'not_authorized')) {
             const wf = EXPLAIN_WF_MAP[event.service]
                 || grantBundle[grantBundle.length - 1] || '';

@@ -385,15 +385,15 @@ The gateways and the Token Service run images of one release, loaded
 locally and named in `.env`:
 
 ```sh
-AGENT_GATEWAY_IMAGE=agent-gateway:2.109.1
-TOKEN_SERVICE_IMAGE=token-service:2.109.1
+AGENT_GATEWAY_IMAGE=agent-gateway:2.112.0
+TOKEN_SERVICE_IMAGE=token-service:2.112.0
 ```
 
 Keep the two on the same release: the gateway sends the intent to the Token
 Service, which has to write it into the token. Check what runs with:
 
 ```sh
-docker image inspect agent-gateway:2.109.1 --format '{{index .Config.Labels "org.opencontainers.image.version"}}'
+docker image inspect agent-gateway:2.112.0 --format '{{index .Config.Labels "org.opencontainers.image.version"}}'
 ```
 
 What the demo relies on:
@@ -588,9 +588,25 @@ keeps the ones that fit the newest intent in the delegated token of the
 request, and writes `IBAC_DISCOVERY` records; a skill without a mapping stays
 (`ibac.capabilities.unmapped`, `allow` by default). A request without an
 intent in its delegated token gets the card filtered to the permitted set
-only. In this demo only the entry gateway has IBAC on, and the console asks
-it for the card with the person's token alone, so that filter stays idle;
-the console previews the discovery decision on every INTENT card from the
+only. In front of an MCP server, a gateway with IBAC on checks every call of
+a tool, resource or prompt that publishes mappings (`x-coaz-mappings` in its
+`_meta`) against that intent: a call the intent does not match is refused
+with `403`, and for a mapping that names ids (`$request.arguments.<name>`,
+`$token.sub`) the gateway asks the platform one AuthZEN `evaluations`
+question before it lets the call through (`IBAC_USAGE` and
+`RESOLVED_EVALUATIONS` records). A capability without a mapping passes
+unchecked. In this demo `IBAC_ENABLED=true` switches IBAC on at two
+gateways: the entry gateway, which asks the Intent Agent and writes the
+intent into the token, and `erp-mcp-iag`, which checks the ERP tools against
+it. Both ERP tools publish mappings (`erp_mcp/server.py`): `list_invoices`
+needs an intent about a `Person` viewing an `Invoice`, and `get_invoice`
+also has the gateway ask the platform whether that person may view the
+invoice the call names. So "show me the invoices" passes with an
+`intent check` card at `erp-mcp-iag`, and an ERP call under an intent about
+something else is refused there before the server sees it. The other MCP
+gateways have IBAC off. The card filter stays idle (the console asks the
+entry gateway for the card with the person's token alone); the console
+previews the discovery decision on every INTENT card from the
 orchestrator's raw card (`IBAC_CARD_URL`): "matches query-erp" for an invoice
 prompt, "no skill matches" for an intent outside the agent's declared skills. Note what
 `IBAC_ENABLED=true` means: a prompt the Intent Agent finds no intent for

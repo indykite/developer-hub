@@ -233,7 +233,7 @@ ol { list-style: none; }
 #wall .reach.t-run, #wall .edge.touch.t-run { stroke: var(--sub); }
 #wall .edge.touch { stroke-width: 2; }
 #wall .node.touched circle { stroke-width: 2.6; }
-#wall .node.touched.t-done circle { stroke: var(--green); fill: var(--green-fill); filter: drop-shadow(0 0 5px rgba(91, 228, 155, .55)); }
+#wall .node.touched.t-done circle { stroke: var(--green); fill: var(--green-fill); }
 #wall .node.touched.t-empty circle { stroke: var(--amber); fill: var(--amber-fill); stroke-dasharray: 4 3; }
 #wall .node.touched.t-fail circle { stroke: var(--red); fill: var(--red-fill); }
 #wall .node.touched.t-run circle { stroke: var(--text); }
@@ -246,7 +246,7 @@ ol { list-style: none; }
 #wall .region-chip text { font-family: var(--mono); font-size: 11px; fill: var(--sub); text-anchor: middle; dominant-baseline: central; }
 #wall .region-chip.covered text { fill: var(--amber); }
 
-.boundaries { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--rule); }
+.boundaries { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--rule); }
 .boundary { display: flex; gap: 10px; padding: 9px 12px; border-right: 1px solid var(--rule); transition: background .3s ease; }
 .boundary:last-child { border-right: 0; }
 .boundary b { font-family: var(--serif); font-weight: 400; font-size: 26px; line-height: .9; color: var(--faint); }
@@ -320,6 +320,10 @@ ol { list-style: none; }
 .verdict { font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase; padding: 1px 6px; border: 1px solid currentColor; color: var(--sub); }
 .verdict.permitted { color: var(--green); }
 .verdict.denied { color: var(--red); }
+.intent.checked { border-color: var(--green); background: var(--green-soft); }
+.intent.checked > b { color: var(--green); }
+.intent.checked.denied { border-color: var(--red); background: var(--red-soft); }
+.intent.checked.denied > b { color: var(--red); }
 .intent.refusal { border-color: var(--amber); background: var(--amber-soft); }
 .intent.refusal > b { color: var(--amber); }
 .intent.refusal span { color: var(--text); font-size: 12px; }
@@ -449,6 +453,7 @@ ol { list-style: none; }
 .about-bounds > div { padding: 11px 13px; border: 1px solid var(--rule); border-left: 3px solid var(--amber); background: var(--panel); }
 .about-bounds dt { font-weight: 500; font-size: 14px; margin-bottom: 3px; }
 .about-bounds dt b { font-family: var(--serif); font-weight: 400; font-size: 21px; color: var(--amber); margin-right: 8px; }
+.about-bounds dt small { font-family: var(--mono); font-weight: 400; font-size: 9.5px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--faint); margin-left: 8px; }
 .about-bounds dd, .about-panels dd { color: var(--sub); font-size: 13.5px; line-height: 1.55; }
 .about-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .about-table th {

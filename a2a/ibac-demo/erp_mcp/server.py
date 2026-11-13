@@ -52,6 +52,33 @@ _logger = logging.getLogger(__name__)
 
 mcp = MCPServer("erp-invoices")
 
+# What each tool is for, published in the `_meta` of its tools/list entry as
+# `x-coaz-mappings`. A gateway with IBAC on compares a call with the intent in
+# the delegated token: the subject type, the resource type and one of the
+# actions have to match an evaluation of the intent, or the call is refused.
+# A mapping that names ids also makes the gateway ask the platform, before the
+# call reaches this server, whether the caller may do that to that resource:
+# `$token.sub` is the subject of the delegated token, `$request.arguments.<name>`
+# an argument of the call.
+_INVOICE_ACTIONS = [{"name": name} for name in (ERP_ACTION, "VIEW_INVOICE", "VIEW_UNPAID_INVOICE")]
+LIST_INVOICES_MAPPINGS = [
+    {
+        "context": {},
+        "subject": [{"type": ERP_SUBJECT_TYPE}],
+        "resource": [{"type": ERP_RESOURCE_TYPE}],
+        "action": _INVOICE_ACTIONS,
+    },
+]
+GET_INVOICE_MAPPINGS = [
+    {
+        "context": {},
+        "subject": [{"type": ERP_SUBJECT_TYPE, "id": "$token.sub"}],
+        "resource": [{"type": ERP_RESOURCE_TYPE, "id": "$request.arguments.invoice_id"}],
+        "action": _INVOICE_ACTIONS,
+    },
+]
+COAZ_MAPPINGS_META_KEY = "x-coaz-mappings"
+
 _COLUMNS = (
     "external_id",
     "customer_id",
@@ -140,7 +167,7 @@ def _rows_as_json(rows: list[dict]) -> list[dict]:
     return [{k: (v if isinstance(v, (int, float)) or v is None else str(v)) for k, v in row.items()} for row in rows]
 
 
-@mcp.tool()
+@mcp.tool(meta={COAZ_MAPPINGS_META_KEY: LIST_INVOICES_MAPPINGS})
 def list_invoices(ctx: Context) -> str:
     """List the invoices the calling user is allowed to see.
 
@@ -176,7 +203,7 @@ def list_invoices(ctx: Context) -> str:
     )
 
 
-@mcp.tool()
+@mcp.tool(meta={COAZ_MAPPINGS_META_KEY: GET_INVOICE_MAPPINGS})
 def get_invoice(invoice_id: str, ctx: Context) -> str:
     """Read one invoice by id - only if the calling user is authorized to see it.
 

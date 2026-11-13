@@ -8,7 +8,7 @@
   const state = {
     messages: [], audit: [], runs: [], escalations: [], heartbeat: {}, identity: {}, fed: [], catalog: [],
     graph: { nodes: [], edges: [] }, agents: {}, selectedRun: null, filter: 'all', drift: 0,
-    known: new Set(), focus: null, pin: null, drawn: new Set(), once: new Map(), booting: true, bridge: {},
+    known: new Set(), focus: null, pin: null, drawn: new Set(), once: new Map(), booting: true, bridge: {}, auditById: new Map(),
     layer: { open: false, filter: 'all', query: '', expanded: new Set() },
   };
 
@@ -195,10 +195,10 @@
     const nodes = {};
     const edges = {};
     const order = [];
-    const bound = { admission: '', capability: '', graph: '' };
+    const bound = { admission: '', capability: '', intent: '', graph: '' };
     const mark = (name, verdict) => { if (bound[name] !== 'hit') bound[name] = verdict === 'deny' ? 'hit' : 'pass'; };
     for (const id of step.records || []) {
-      const r = state.audit.find((a) => a.id === id);
+      const r = state.auditById.get(id);
       if (!r || r.layer !== 'gateway') continue;
       const verdict = tone(r);
       if (verdict !== 'ok' && verdict !== 'deny') continue;
@@ -206,7 +206,10 @@
       const action = (r.action || '').toUpperCase();
       // Reading the intent is not an authorization decision: it never stops a hop on the route.
       if (action === 'INTENT') continue;
-      mark(action === 'ADMISSION' || !action ? 'admission' : 'capability', verdict);
+      if (action === 'IBAC_USAGE' || action === 'RESOLVED_EVALUATIONS') {
+        // A tool the intent check skipped (it publishes no mapping) says nothing about the intent boundary.
+        if (verdict === 'deny' || action === 'RESOLVED_EVALUATIONS' || String(r.reason_code).startsWith('intent_match')) mark('intent', verdict);
+      } else mark(action === 'ADMISSION' || !action ? 'admission' : 'capability', verdict);
       if (nodes[agent] === 'deny') continue;
       if (!nodes[agent]) order.push(agent);
       nodes[agent] = verdict;
@@ -357,16 +360,18 @@
   }
 
   // ------------------------------------------------------------ missions
+  // How a gateway record's action reads on a hop chip.
+  const HOP_WORDS = { ADMISSION: 'admission', DISCOVERY: 'discovery', INVOCATION: 'tool allowed', INTENT: 'intent read', IBAC_USAGE: 'fits the intent', RESOLVED_EVALUATIONS: 'platform decision' };
   function hopChips(step) {
     const chips = [h('span', { class: 'hop subject' }, 'sentinel')];
     const seen = new Set();
     for (const id of step.records || []) {
-      const r = state.audit.find((a) => a.id === id);
+      const r = state.auditById.get(id);
       if (!r || r.layer === 'agent' && r.decision !== 'token_exchanged') continue;
       const t = tone(r);
       let label;
       if (t === 'token') label = `token ${[r.subject, ...(r.chain || [])].map((x) => short(state.agents[x] || x, 14)).join(' › ')}`;
-      else label = `${r.service}${r.action ? ` · ${r.action.toLowerCase()}` : ''}${r.cached ? ' · cached' : ''}`;
+      else label = `${r.service}${r.action ? ` · ${HOP_WORDS[r.action] || r.action.toLowerCase()}` : ''}${r.cached ? ' · cached' : ''}`;
       const key = `${label}|${t}`;
       if (seen.has(key)) continue;
       seen.add(key);
@@ -384,8 +389,18 @@
       return h('div', { class: 'intent refusal' }, h('b', null, 'No intent in this task'),
         h('span', null, [e.reason, e.obligation].filter(Boolean).join(' ') || e.error || ''));
     }
-    if (!(step.intent || []).length) return null;
-    return h('div', { class: 'intent' },
+    if (!(step.intent || []).length && !(step.checked || []).length) return null;
+    const checked = step.checked || [];
+    // What the MCP gateway asked the platform about the tool calls of this task: the product's own decisions.
+    const byGateway = checked.length ? h('div', { class: `intent checked${checked.some((c) => c.allowed === false) ? ' denied' : ''}` },
+      h('b', null, 'Checked at the MCP gateway', h('i', null, 'what the tool call named · decided by the platform')),
+      checked.map((c) => h('div', { class: 'intent-row' },
+        h('span', { class: 'who' }, state.agents[c.subjectID] || c.subjectID || c.subjectType || ''),
+        h('span', { class: 'act' }, c.action || ''),
+        h('span', { class: 'what' }, `${c.resourceType || ''} ${c.resourceID || ''}`),
+        h('span', { class: `verdict ${c.allowed ? 'permitted' : 'denied'}` }, c.allowed ? 'allowed' : 'denied')))) : null;
+    if (!(step.intent || []).length) return byGateway;
+    return h('div', null, h('div', { class: 'intent' },
       h('b', null, 'Intent', h('i', null, 'carried in the delegation token · decisions asked by this console')),
       step.intent.map((entry) => {
         const ev = entry.evaluation || {};
@@ -396,7 +411,7 @@
           h('span', { class: 'what' }, `${res.type || ''} ${res.id || '(which ones?)'}`,
             !res.id && entry.detail && entry.verdict === 'permitted' ? h('small', null, entry.detail) : null),
           h('span', { class: `verdict ${entry.verdict}` }, entry.verdict));
-      }));
+      })), byGateway);
   }
   function renderMissions() {
     const runs = state.runs;
@@ -446,13 +461,13 @@
     openDrawer(`${r.service} · ${r.decision || 'record'}`, [
       ['Decision', r.decision], ['Action', r.action], ['Subject', r.subject], ['Delegation chain', (r.chain || []).join('  ›  ')],
       ['Reason', r.reason], ['Permitted set', r.permitted_set], ['Discovery', r.discovery], ['Capabilities', r.capabilities],
-      ['Token claims', r.claims], ['Token', r.token], ['Trace', r.trace_id],
+      ['Reason code', r.reason_code], ['Resolved evaluations', r.resolved], ['Intent checked', r.current_intent], ['Intent of the first hop', r.original_intent], ['Token claims', r.claims], ['Token', r.token], ['Trace', r.trace_id],
     ]);
   }
   function recordSections(r) {
     return [
       ['Reason', r.reason], ['Prompt', r.prompt], ['Duration (ms)', r.duration_ms], ['Delegation chain', (r.chain || []).join('  ›  ')], ['Permitted set', r.permitted_set],
-      ['Discovery', r.discovery], ['Capabilities', r.capabilities], ['Token claims', r.claims], ['Token', r.token],
+      ['Discovery', r.discovery], ['Capabilities', r.capabilities], ['Reason code', r.reason_code], ['Resolved evaluations', r.resolved], ['Intent checked', r.current_intent], ['Intent of the first hop', r.original_intent], ['Token claims', r.claims], ['Token', r.token],
       ['Trace', r.trace_id],
     ].filter(([, v]) => v != null && v !== '' && !(Array.isArray(v) && !v.length));
   }
@@ -514,6 +529,28 @@
   }
 
   // ---------------------------------------------------------------- data
+  // Records arrive in bursts of hundreds during a mission. Each one only marks the parts of the page it
+  // changes; the page redraws those parts once per frame, so it stays responsive whatever the burst.
+  const dirty = new Set();
+  let frame = 0;
+  function redraw() {
+    frame = 0;
+    const parts = new Set(dirty);
+    dirty.clear();
+    // Missions first: drawing them selects the mission the wall then traces.
+    const order = [['header', renderHeader], ['feed', renderFeed], ['wire', renderWire], ['missions', renderMissions],
+      ['wall', renderWall], ['audit', renderAudit], ['layer', renderLayer]];
+    for (const [name, draw] of order) if (parts.has(name)) draw();
+  }
+  function invalidate(...parts) {
+    for (const part of parts) dirty.add(part);
+    if (!frame) frame = window.requestAnimationFrame(redraw);
+  }
+  // The page keeps as many records as the console does.
+  function keep(list, item, limit) {
+    list.push(item);
+    if (list.length > limit) list.splice(0, list.length - limit);
+  }
   function upsertRun(run) {
     const i = state.runs.findIndex((r) => r.id === run.id);
     if (i < 0) {
@@ -525,9 +562,7 @@
       if (run.steps.length > state.runs[i].steps.length && state.selectedRun === run.id) state.pin = null;
       state.runs[i] = run;
     }
-    renderMissions();
-    renderWall();
-    renderHeader();
+    invalidate('missions', 'wall', 'header');
   }
   function load(snapshot) {
     Object.assign(state, {
@@ -537,6 +572,8 @@
     });
     state.known = new Set();
     state.pin = null;
+    state.auditById = new Map(state.audit.map((r) => [r.id, r]));
+    dirty.clear();
     $('orgName').textContent = snapshot.org.name;
     if (snapshot.org.tagline) $('orgTagline').textContent = snapshot.org.tagline;
     document.title = `${snapshot.org.name} · Control Room`;
@@ -556,15 +593,20 @@
     let broken = false;
     es.onopen = () => { if (broken) { broken = false; resync().catch(() => {}); } };
     const on = (name, fn) => es.addEventListener(name, (e) => fn(JSON.parse(e.data)));
-    on('heartbeat', (d) => { state.heartbeat = d; renderHeader(); });
-    on('identity', (d) => { state.identity = d; renderHeader(); });
-    on('message', (d) => { state.messages.push(d); renderWire(); });
-    on('audit', (d) => { state.audit.push(d); renderAudit(); renderLayer(); renderWall(); renderMissions(); });
-    on('bridge', (d) => { state.bridge = d; renderHeader(); });
+    on('heartbeat', (d) => { state.heartbeat = d; invalidate('header'); });
+    on('identity', (d) => { state.identity = d; invalidate('header'); });
+    on('message', (d) => { keep(state.messages, d, 300); invalidate('wire'); });
+    on('audit', (d) => {
+      keep(state.audit, d, 800);
+      state.auditById.set(d.id, d);
+      // Only a record of the task in progress changes the missions and the wall.
+      invalidate('audit', 'layer', ...(d.run_id ? ['missions', 'wall'] : []));
+    });
+    on('bridge', (d) => { state.bridge = d; invalidate('header'); });
     on('run', upsertRun);
-    on('escalation', (d) => { state.escalations.push(d); renderMissions(); });
-    on('graph', (d) => { state.graph = d; renderWall(); });
-    on('fed', (d) => { if (!state.fed.includes(d.id)) state.fed.push(d.id); state.focus = `${d.kind}:${d.focus}`; state.once.delete(`focus:${state.focus}`); renderFeed(); renderWall(); });
+    on('escalation', (d) => { state.escalations.push(d); invalidate('missions'); });
+    on('graph', (d) => { state.graph = d; invalidate('wall'); });
+    on('fed', (d) => { if (!state.fed.includes(d.id)) state.fed.push(d.id); state.focus = `${d.kind}:${d.focus}`; state.once.delete(`focus:${state.focus}`); invalidate('feed', 'wall'); });
     on('reset', load);
     es.onerror = () => { broken = true; $('agentLine').textContent = 'stream interrupted · reconnecting'; };
   }

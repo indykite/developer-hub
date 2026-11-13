@@ -330,7 +330,7 @@
                 </div>
               </div>
             </div>
-            <p class="how-note">A reference that cannot be resolved drops that entity, and the mapping does not match: a skill bound to <code>$request.arguments.tier</code> is not a match for a call that carries no tier (in the preview, a prompt that named none). Note also that the subject always comes from the mapping, so a prompt about someone else ("does cust-cashmere have…") generates a request about the caller; the board says so when it happens.</p>
+            <p class="how-note">A mapping with a reference that has no value does not match, whichever of its entities carries it: a skill bound to <code>$request.arguments.tier</code> is not a match for a call that carries no tier (in the preview, a prompt that named none). Note also that the subject always comes from the mapping, so a prompt about someone else ("does cust-cashmere have…") generates a request about the caller; the board says so when it happens.</p>
           </div>
         </article>
 
@@ -374,7 +374,7 @@
         <div class="rule">
           <span class="rule-n">2</span>
           <h3>Usage</h3>
-          <p>The step of a <b>tool call</b> (an A2A message has none): the current intent against the <b>one capability</b> the call names. The matching mapping's ids are resolved from the call and one AuthZEN request is built per (subject, resource) pair: <code>intent_match_authzen_required</code>. Ids left empty mean a <b>search</b> match, <code>intent_match_search</code>: nothing is generated, the intent's own evaluation decides.</p>
+          <p>The step of a <b>tool call</b>. In front of an MCP server the gateway runs it on every call (<code>IBAC_USAGE</code>), then asks the platform about the evaluations it resolved, with the caller as subject (<code>RESOLVED_EVALUATIONS</code>). An A2A message has no such step, so here it is the console's preview: the current intent against the <b>one capability</b> the call names. The matching mapping's ids are resolved from the call and one AuthZEN request is built per (subject, resource) pair: <code>intent_match_authzen_required</code>. Ids left empty mean a <b>search</b> match, <code>intent_match_search</code>: nothing is generated, the intent's own evaluation decides.</p>
         </div>
         <div class="rule">
           <span class="rule-n">$</span>

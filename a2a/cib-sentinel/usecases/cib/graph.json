@@ -175,7 +175,8 @@
       "props": {
         "name": "Project Lighthouse",
         "kind": "Sell-side M&A advisory",
-        "summary": "Advising Halcyon Energy on the sale of its offshore wind unit."
+        "summary": "Advising Halcyon Energy on the sale of its offshore wind unit.",
+        "company": "halcyon-energy"
       }
     },
     {
@@ -185,7 +186,8 @@
       "props": {
         "name": "Project Lighthouse term sheet",
         "kind": "Term sheet",
-        "summary": "Indicative terms of the offshore wind unit sale."
+        "summary": "Indicative terms of the offshore wind unit sale.",
+        "mandate": "mnd-1001"
       }
     },
     {
@@ -204,7 +206,8 @@
       "props": {
         "name": "BUY 25,000 BWPH",
         "side": "BUY",
-        "quantity": "25000"
+        "quantity": "25000",
+        "company": "brightwater-pharma"
       }
     },
     {
@@ -214,7 +217,8 @@
       "props": {
         "name": "SELL 4,000,000 KSTL 2031 notes",
         "side": "SELL",
-        "quantity": "4000000"
+        "quantity": "4000000",
+        "company": "kestrel-logistics"
       }
     },
     {
@@ -224,7 +228,8 @@
       "props": {
         "name": "BUY 60,000 ORCS",
         "side": "BUY",
-        "quantity": "60000"
+        "quantity": "60000",
+        "company": "orchid-semiconductors"
       }
     }
   ],

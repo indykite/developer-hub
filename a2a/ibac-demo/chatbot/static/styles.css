@@ -230,6 +230,7 @@ body {
 }
 .audit-action-discovery, .audit-action-invocation { border-color: rgba(120, 170, 255, 0.5); }
 .audit-action-noop { border-color: var(--warn); color: var(--warn); }
+.audit-action-ibac-usage, .audit-action-ibac-discovery, .audit-action-resolved-evaluations { border-color: rgba(157, 140, 255, 0.6); }
 .audit-chain-label {
     font-size: 10px;
     font-weight: 700;
