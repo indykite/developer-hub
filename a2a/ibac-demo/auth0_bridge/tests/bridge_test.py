@@ -61,6 +61,7 @@ def auth0(monkeypatch):
     monkeypatch.setattr(server, "_post_auth0", fake_post)
     monkeypatch.setattr(server, "_signing_key_for", lambda token: PUBLIC_KEY)
     server._tokens.clear()
+    server._grant_counts.update(issued=0, reused=0)
     server._token_locks.clear()
     return calls
 
@@ -319,3 +320,11 @@ def test_kept_tokens_are_bounded(client, auth0, monkeypatch):
     kept_scopes = sorted(dict(key[2])["scope"] for key in server._tokens)
     assert kept_scopes == ["b", "c"]
     assert not server._token_locks
+
+
+def test_stats_count_issued_and_reused_grants(client, auth0):
+    """One grant at Auth0, two answered from the kept token; a refused grant counts as neither."""
+    for _ in range(3):
+        client.post("/oauth/token", data={"grant_type": "client_credentials"}, headers=_basic(*GOOD_CLIENT))
+    client.post("/oauth/token", data={"grant_type": "client_credentials"}, headers=_basic("nobody", "wrong"))
+    assert client.get("/stats").json() == {"issued": 1, "reused": 2, "kept": 1}

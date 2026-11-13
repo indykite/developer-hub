@@ -378,6 +378,11 @@ async def send_prompt(request: Request, body: PromptRequest) -> dict[str, Any]:
     #    records (INTENT, admission), the Token Service's (the gateway's exchange).
     trace["audit"] = await _intent_record(ctx, answer, persona, body.prompt, seq_before)
     trace["gateway"]["records"] = _gateway_records(ctx, seq_before, agent)
+    if answer.downstream:
+        # The agent asked its downstream gateways for their cards: wait for their records, then attach them.
+        await asyncio.sleep(RECORD_SETTLE_SECONDS)
+        for hop in trace["gateway"]["downstream"]:
+            hop["records"] = _gateway_records(ctx, seq_before, str(hop["agent"]))
     tokens["token_audit"] = _token_service_records(ctx, seq_before, persona.id)
     # The delegated token the agent received, as the agent reported it, is the chain to show.
     tokens["delegated"] = (answer.received or {}).get("x_ik_token")

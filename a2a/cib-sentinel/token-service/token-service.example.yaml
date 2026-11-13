@@ -1,0 +1,83 @@
+---
+# Token Service configuration of the cib-sentinel app.
+# EXAMPLE - `make keys` renders token-service.yaml from this file with a fresh
+# signing key and client secret; or copy it and fill the three <...> values.
+# Reference for every field: https://developer.indykite.com/guides/guide-token-service
+
+service:
+  name: token-service
+  port: 8102
+  environment: local
+  log_level: debug
+  # Issuer: the `iss` of every token this service signs. An identifier, not a
+  # transport address: the gateways call the service at
+  # http://token-service:8102 inside the compose network, and the platform
+  # validates the tokens with the inline public JWK of the dataset's Token
+  # Introspect `token-service-cib-autonomous`, which names this issuer. It
+  # must be https://.
+  base_url: https://token-service.cib-sentinel.local
+
+idp:
+  # Allow-list of what a token may be issued for (`aud`). Every gateway asks
+  # for the autonomous audience, so a delegation carries the same audience as
+  # the autonomous agent's own token.
+  audiences:
+    - cib-autonomous
+  # Delegation tokens are short-lived on purpose - nothing revokes them.
+  token_ttl: 5m
+  # act.type written into issued tokens; the platform resolves the actor in
+  # the graph with it.
+  actor_type: Agent
+  # Credentials the gateways present on the token endpoint; mirror the secret
+  # as TOKEN_SERVICE_CLIENT_SECRET in .env.
+  client_auth:
+    type: client_secret_basic
+    client_id: agent-gateway
+    client_secret: "<CLIENT_SECRET>"
+  # First key signs. Its PUBLIC half (kty/n/e/alg/kid/use) goes into
+  # instant-stack's TOKEN_SERVICE_PUBLIC_JWK.
+  signing_keys:
+    - '<SIGNING_JWK>'
+
+# Which subject and actor tokens an exchange accepts. Both come from the
+# Auth0 tenant as RS256 JWTs and are verified offline against its JWKS. There
+# is no opaque fallback: a token of any other issuer or audience is refused.
+token_introspection:
+  configurations:
+    # The subject: the autonomous agent's own client-credentials token, issued
+    # for the autonomous audience. Its `sub` (<client_id>@clients) becomes the
+    # `sub` of every delegation and is the Agent external_id in the graph.
+    auth0-autonomous-subject:
+      token_types:
+        - subject_token
+      matcher:
+        type: jwt
+        issuer: https://<AUTH0_DOMAIN>/
+        audience: cib-autonomous
+      validation:
+        offline:
+          jwks_uri: https://<AUTH0_DOMAIN>/.well-known/jwks.json
+    # The actors: each gateway's client-credentials token, issued for the
+    # fleet's API (the bridge adds that audience). Its `sub` becomes act.sub.
+    auth0-actor:
+      token_types:
+        - actor_token
+      matcher:
+        type: jwt
+        issuer: https://<AUTH0_DOMAIN>/
+        audience: ibac-agents
+      validation:
+        offline:
+          jwks_uri: https://<AUTH0_DOMAIN>/.well-known/jwks.json
+
+# Every exchange attempt, authorized or not, goes to the console's audit
+# column beside the gateways' decisions.
+audit:
+  delivery: webhook
+  http:
+    url: http://console:3500/api/push-update
+    method: post
+    auth:
+      type: no-auth
+  async:
+    buffersize: 100

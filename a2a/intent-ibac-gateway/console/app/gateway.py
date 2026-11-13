@@ -54,6 +54,8 @@ class GatewayAnswer:
     reply_text: str = ""
     intent_error: dict[str, Any] | None = None
     received: dict[str, Any] | None = None
+    # What the gateways of the agent's downstream agents answered to its card requests, as the agent reported it.
+    downstream: list[dict[str, Any]] = field(default_factory=list)
     skill: str | None = None
     error_text: str = ""
     extensions_declared: list[str] = field(default_factory=list)
@@ -75,6 +77,7 @@ class GatewayAnswer:
             "reply_text": self.reply_text,
             "intent_error": self.intent_error,
             "received": self.received,
+            "downstream": self.downstream,
             "skill": self.skill,
             "error_text": self.error_text,
         }
@@ -101,6 +104,8 @@ def _read_task(answer: GatewayAnswer, task: dict[str, Any]) -> GatewayAnswer:
     meta = task.get("metadata") or {}
     answer.received = meta.get("received") if isinstance(meta.get("received"), dict) else None
     answer.skill = meta.get("skill") if isinstance(meta.get("skill"), str) else None
+    if isinstance(meta.get("downstream"), list):
+        answer.downstream = [d for d in meta["downstream"] if isinstance(d, dict) and d.get("agent")]
     return answer
 
 

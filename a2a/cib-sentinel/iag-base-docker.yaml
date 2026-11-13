@@ -1,0 +1,48 @@
+---
+# Shared Agent Gateway settings of the cib-sentinel fleet. Every gateway
+# (orchestrator, retriever, analyst, mcp) extends this service and adds its
+# own name, port, protected agent and Auth0 client.
+version: '3.9'
+services:
+  iag-base:
+    # Pin the tag: never `latest`.
+    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.0.3@sha256:8368f151cfec343f679dce6f320f43ab8c14cebb5465f683213de66c857aed33}
+    environment:
+      JARVIS_SERVICE_LOG_LEVEL: debug
+      JARVIS_SERVICE_ENVIRONMENT: demo
+      JARVIS_SERVICE_TRACING_DETECTOR: local
+      # Token Service: mints the delegation (X-IK-Token) of every hop. The
+      # subject of the exchange is the autonomous agent's own token.
+      JARVIS_TOKEN_SERVICE_BASE_URL: ${TOKEN_SERVICE_BASE_URL:-http://token-service:8102}
+      JARVIS_TOKEN_SERVICE_EXCHANGE_ENDPOINT: "oauth2/token"
+      JARVIS_TOKEN_SERVICE_INTROSPECT_ENDPOINT: "oauth2/introspect"
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_TYPE: client_secret_basic
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_ID: ${TOKEN_SERVICE_CLIENT_ID:-agent-gateway}
+      JARVIS_TOKEN_SERVICE_CLIENT_AUTH_CLIENT_SECRET: ${TOKEN_SERVICE_CLIENT_SECRET}
+      # Identity provider: Auth0 behind the bridge (RFC 7662 introspection of
+      # the caller's token, client credentials for the gateway's actor token).
+      JARVIS_IDENTITY_PROVIDER_BASE_URL: http://auth0-bridge:8090
+      JARVIS_IDENTITY_PROVIDER_INTROSPECT_ENDPOINT: oauth/introspect
+      JARVIS_IDENTITY_PROVIDER_CLIENT_CREDENTIAL_ENDPOINT: oauth/token
+      JARVIS_IDENTITY_PROVIDER_EXCHANGE_ENDPOINT: oauth/token
+      JARVIS_IDENTITY_PROVIDER_OPENID_CONFIGURATION_URL: https://${AUTH0_DOMAIN}/.well-known/openid-configuration
+      JARVIS_IDENTITY_PROVIDER_ISSUER: https://${AUTH0_DOMAIN}/
+      # The only tokens admitted at the first hop are those issued for the
+      # autonomous audience: an agent's own client-credentials token.
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_AUDIENCES: ${AUTH0_AUTONOMOUS_AUDIENCE:-cib-autonomous}
+      JARVIS_TOKEN_SERVICE_AUDIENCE: ${AUTH0_AUTONOMOUS_AUDIENCE:-cib-autonomous}
+      # ContX IQ resolves the subject of every request (whoami): an Agent node.
+      JARVIS_CONTX_IQ_BASE_URL: ${INDYKITE_BASE_URL}/contx-iq/v1
+      JARVIS_CONTX_IQ_APP_AGENT_CREDENTIALS_TOKEN: ${APP_AGENT_CREDENTIALS_TOKEN}
+      # Admission: one AuthZEN evaluation per request - subject = whoami,
+      # action CAN_TRIGGER, resource = the Agent the delegation chain ends at.
+      JARVIS_AUTHZEN_BASE_URL: ${INDYKITE_BASE_URL}/access/v1
+      JARVIS_AUTHZEN_ACTION: CAN_TRIGGER
+      # Capability checks: tools, resources, prompts and skills are limited to
+      # what the workflow gives the agent at the end of the chain (CAN_USE).
+      JARVIS_AUTHZEN_CAPABILITIES_ENABLED: ${IAG_CAPABILITY_CHECKS:-true}
+      # How long a decision is reused before the platform is asked again.
+      JARVIS_AUTHZEN_CACHE_TTL: ${IAG_AUTHZEN_CACHE_TTL:-30s}
+      JARVIS_AUTHZEN_CACHE_UPDATE_AFTER: ${IAG_AUTHZEN_CACHE_TTL:-30s}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

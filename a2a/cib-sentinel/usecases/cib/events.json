@@ -1,0 +1,348 @@
+{
+  "events": [
+    {
+      "id": "mandate-aurora",
+      "kind": "Mandate",
+      "title": "New mandate: Project Aurora",
+      "blurb": "Advisory signs a buy-side mandate on Brightwater Pharma, booked in EMEA.",
+      "focus": "mnd-1002",
+      "expect": [
+        "reads the mandate",
+        "restricts Brightwater Pharma",
+        "holds order ord-7001",
+        "is refused the term sheet at the deal room gateway"
+      ],
+      "nodes": [
+        {
+          "external_id": "mnd-1002",
+          "type": "Mandate",
+          "is_identity": false,
+          "properties": [
+            {
+              "type": "name",
+              "value": "Project Aurora"
+            },
+            {
+              "type": "kind",
+              "value": "Buy-side M&A advisory"
+            },
+            {
+              "type": "summary",
+              "value": "Advising a strategic buyer on the acquisition of Brightwater Pharma."
+            }
+          ]
+        },
+        {
+          "external_id": "doc-mnd-1002-termsheet",
+          "type": "DealDocument",
+          "is_identity": false,
+          "properties": [
+            {
+              "type": "name",
+              "value": "Project Aurora term sheet"
+            },
+            {
+              "type": "kind",
+              "value": "Term sheet"
+            },
+            {
+              "type": "summary",
+              "value": "Indicative terms of Project Aurora."
+            }
+          ]
+        }
+      ],
+      "relationships": [
+        {
+          "source": {
+            "type": "Mandate",
+            "external_id": "mnd-1002"
+          },
+          "target": {
+            "type": "Company",
+            "external_id": "brightwater-pharma"
+          },
+          "type": "CONCERNS",
+          "properties": []
+        },
+        {
+          "source": {
+            "type": "Mandate",
+            "external_id": "mnd-1002"
+          },
+          "target": {
+            "type": "Region",
+            "external_id": "emea"
+          },
+          "type": "BOOKED_IN",
+          "properties": []
+        },
+        {
+          "source": {
+            "type": "Desk",
+            "external_id": "advisory"
+          },
+          "target": {
+            "type": "Mandate",
+            "external_id": "mnd-1002"
+          },
+          "type": "WORKS_ON",
+          "properties": []
+        },
+        {
+          "source": {
+            "type": "DealDocument",
+            "external_id": "doc-mnd-1002-termsheet"
+          },
+          "target": {
+            "type": "Mandate",
+            "external_id": "mnd-1002"
+          },
+          "type": "PART_OF",
+          "properties": []
+        }
+      ]
+    },
+    {
+      "id": "mandate-monsoon",
+      "kind": "Mandate",
+      "title": "New mandate: Project Monsoon",
+      "blurb": "Advisory signs a mandate on Orchid Semiconductors, booked in APAC.",
+      "focus": "mnd-1003",
+      "expect": [
+        "cannot see the mandate: APAC is outside its coverage",
+        "escalates to a human"
+      ],
+      "nodes": [
+        {
+          "external_id": "mnd-1003",
+          "type": "Mandate",
+          "is_identity": false,
+          "properties": [
+            {
+              "type": "name",
+              "value": "Project Monsoon"
+            },
+            {
+              "type": "kind",
+              "value": "Equity capital markets"
+            },
+            {
+              "type": "summary",
+              "value": "Lead-managing a follow-on offering for Orchid Semiconductors."
+            }
+          ]
+        },
+        {
+          "external_id": "doc-mnd-1003-termsheet",
+          "type": "DealDocument",
+          "is_identity": false,
+          "properties": [
+            {
+              "type": "name",
+              "value": "Project Monsoon term sheet"
+            },
+            {
+              "type": "kind",
+              "value": "Term sheet"
+            },
+            {
+              "type": "summary",
+              "value": "Indicative terms of Project Monsoon."
+            }
+          ]
+        }
+      ],
+      "relationships": [
+        {
+          "source": {
+            "type": "Mandate",
+            "external_id": "mnd-1003"
+          },
+          "target": {
+            "type": "Company",
+            "external_id": "orchid-semiconductors"
+          },
+          "type": "CONCERNS",
+          "properties": []
+        },
+        {
+          "source": {
+            "type": "Mandate",
+            "external_id": "mnd-1003"
+          },
+          "target": {
+            "type": "Region",
+            "external_id": "apac"
+          },
+          "type": "BOOKED_IN",
+          "properties": []
+        },
+        {
+          "source": {
+            "type": "Desk",
+            "external_id": "advisory"
+          },
+          "target": {
+            "type": "Mandate",
+            "external_id": "mnd-1003"
+          },
+          "type": "WORKS_ON",
+          "properties": []
+        },
+        {
+          "source": {
+            "type": "DealDocument",
+            "external_id": "doc-mnd-1003-termsheet"
+          },
+          "target": {
+            "type": "Mandate",
+            "external_id": "mnd-1003"
+          },
+          "type": "PART_OF",
+          "properties": []
+        }
+      ]
+    },
+    {
+      "id": "order-restricted",
+      "kind": "TradeOrder",
+      "title": "New order in a restricted name",
+      "blurb": "Equities Trading enters an order in Halcyon Energy, which is on the restricted list.",
+      "focus": "ord-7004",
+      "expect": [
+        "finds Halcyon Energy on the restricted list",
+        "holds order ord-7004"
+      ],
+      "nodes": [
+        {
+          "external_id": "ord-7004",
+          "type": "TradeOrder",
+          "is_identity": false,
+          "properties": [
+            {
+              "type": "name",
+              "value": "BUY 40,000 HLCN"
+            },
+            {
+              "type": "side",
+              "value": "BUY"
+            },
+            {
+              "type": "quantity",
+              "value": "40000"
+            }
+          ]
+        }
+      ],
+      "relationships": [
+        {
+          "source": {
+            "type": "TradeOrder",
+            "external_id": "ord-7004"
+          },
+          "target": {
+            "type": "Company",
+            "external_id": "halcyon-energy"
+          },
+          "type": "IN_SECURITY_OF",
+          "properties": []
+        },
+        {
+          "source": {
+            "type": "TradeOrder",
+            "external_id": "ord-7004"
+          },
+          "target": {
+            "type": "Desk",
+            "external_id": "equities-trading"
+          },
+          "type": "PLACED_BY",
+          "properties": []
+        },
+        {
+          "source": {
+            "type": "TradeOrder",
+            "external_id": "ord-7004"
+          },
+          "target": {
+            "type": "Region",
+            "external_id": "emea"
+          },
+          "type": "BOOKED_IN",
+          "properties": []
+        }
+      ]
+    },
+    {
+      "id": "order-clean",
+      "kind": "TradeOrder",
+      "title": "New order in an unrestricted name",
+      "blurb": "Credit Trading enters an order in Kestrel Logistics, which is not restricted.",
+      "focus": "ord-7005",
+      "expect": [
+        "finds no restriction on Kestrel Logistics",
+        "places no hold; a hold would be refused by the graph"
+      ],
+      "nodes": [
+        {
+          "external_id": "ord-7005",
+          "type": "TradeOrder",
+          "is_identity": false,
+          "properties": [
+            {
+              "type": "name",
+              "value": "BUY 2,000,000 KSTL 2031 notes"
+            },
+            {
+              "type": "side",
+              "value": "BUY"
+            },
+            {
+              "type": "quantity",
+              "value": "2000000"
+            }
+          ]
+        }
+      ],
+      "relationships": [
+        {
+          "source": {
+            "type": "TradeOrder",
+            "external_id": "ord-7005"
+          },
+          "target": {
+            "type": "Company",
+            "external_id": "kestrel-logistics"
+          },
+          "type": "IN_SECURITY_OF",
+          "properties": []
+        },
+        {
+          "source": {
+            "type": "TradeOrder",
+            "external_id": "ord-7005"
+          },
+          "target": {
+            "type": "Desk",
+            "external_id": "credit-trading"
+          },
+          "type": "PLACED_BY",
+          "properties": []
+        },
+        {
+          "source": {
+            "type": "TradeOrder",
+            "external_id": "ord-7005"
+          },
+          "target": {
+            "type": "Region",
+            "external_id": "emea"
+          },
+          "type": "BOOKED_IN",
+          "properties": []
+        }
+      ]
+    }
+  ]
+}

@@ -2761,6 +2761,10 @@
         {
           "type": "workflow_name",
           "value": "wf-trading-desk"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
         }
       ]
     },
@@ -2778,6 +2782,10 @@
         {
           "type": "workflow_name",
           "value": "wf-trading-desk"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
         }
       ]
     },
@@ -2795,6 +2803,10 @@
         {
           "type": "workflow_name",
           "value": "wf-support-desk"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
         }
       ]
     },
@@ -2812,6 +2824,10 @@
         {
           "type": "workflow_name",
           "value": "wf-support-desk"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
         }
       ]
     },
@@ -2829,6 +2845,10 @@
         {
           "type": "workflow_name",
           "value": "wf-billing"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
         }
       ]
     },
@@ -2846,6 +2866,10 @@
         {
           "type": "workflow_name",
           "value": "wf-billing"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
         }
       ]
     },
@@ -2863,6 +2887,10 @@
         {
           "type": "workflow_name",
           "value": "wf-people-directory"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
         }
       ]
     },
@@ -2880,6 +2908,10 @@
         {
           "type": "workflow_name",
           "value": "wf-workflow-runner"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
         }
       ]
     },
@@ -2897,6 +2929,10 @@
         {
           "type": "workflow_name",
           "value": "wf-weather"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
         }
       ]
     },
@@ -2942,6 +2978,388 @@
         {
           "type": "workflow_name",
           "value": "wf-support-desk-lead"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_SUPPORT_DESK}"
+      },
+      "type": "INVOKES",
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_BILLING}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-support-desk"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_BILLING}"
+      },
+      "type": "HAS",
+      "target": {
+        "type": "Skill",
+        "external_id": "my-invoices"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-support-desk"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_BILLING}"
+      },
+      "type": "HAS",
+      "target": {
+        "type": "Skill",
+        "external_id": "my-accounts"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-support-desk"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_SUPPORT_DESK}"
+      },
+      "type": "INVOKES",
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_PEOPLE_DIRECTORY}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-support-desk"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_PEOPLE_DIRECTORY}"
+      },
+      "type": "HAS",
+      "target": {
+        "type": "Skill",
+        "external_id": "org-chart"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-support-desk"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_WORKFLOW_RUNNER}"
+      },
+      "type": "INVOKES",
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_TRADING_DESK}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-workflow-runner"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_TRADING_DESK}"
+      },
+      "type": "HAS",
+      "target": {
+        "type": "Skill",
+        "external_id": "quote-lookup"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-workflow-runner"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_TRADING_DESK}"
+      },
+      "type": "HAS",
+      "target": {
+        "type": "Skill",
+        "external_id": "core-banking"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-workflow-runner"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_WORKFLOW_RUNNER}"
+      },
+      "type": "INVOKES",
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_SUPPORT_DESK}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-workflow-runner"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_SUPPORT_DESK}"
+      },
+      "type": "HAS",
+      "target": {
+        "type": "Skill",
+        "external_id": "policy-library"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-workflow-runner"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_SUPPORT_DESK}"
+      },
+      "type": "HAS",
+      "target": {
+        "type": "Skill",
+        "external_id": "customer-360"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-workflow-runner"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_WORKFLOW_RUNNER}"
+      },
+      "type": "INVOKES",
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_BILLING}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-workflow-runner"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_BILLING}"
+      },
+      "type": "HAS",
+      "target": {
+        "type": "Skill",
+        "external_id": "my-invoices"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-workflow-runner"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_BILLING}"
+      },
+      "type": "HAS",
+      "target": {
+        "type": "Skill",
+        "external_id": "my-accounts"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-workflow-runner"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_WORKFLOW_RUNNER}"
+      },
+      "type": "INVOKES",
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_PEOPLE_DIRECTORY}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-workflow-runner"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_PEOPLE_DIRECTORY}"
+      },
+      "type": "HAS",
+      "target": {
+        "type": "Skill",
+        "external_id": "org-chart"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-workflow-runner"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_WORKFLOW_RUNNER}"
+      },
+      "type": "INVOKES",
+      "target": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_WEATHER}"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-workflow-runner"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
+        }
+      ]
+    },
+    {
+      "source": {
+        "type": "Agent",
+        "external_id": "${AUTH0_SUB_WEATHER}"
+      },
+      "type": "HAS",
+      "target": {
+        "type": "Skill",
+        "external_id": "forecast"
+      },
+      "properties": [
+        {
+          "type": "workflow_name",
+          "value": "wf-workflow-runner"
+        },
+        {
+          "type": "discriminating_property",
+          "value": "workflow_name"
         }
       ]
     }

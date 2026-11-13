@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.log
+
+# Project bindings and secrets
+.env
+.env.*
+!.example.env
+
+# Holds the private signing key and the gateways' client secret
+token-service/token-service.yaml

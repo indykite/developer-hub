@@ -49,6 +49,19 @@ spec:
               value: {{ printf "http://%s:%d/" $agentName (int $root.Values.agents.port) | quote }}
             - name: FLEET_FILE
               value: /app/fleet.json
+            {{- if .downstream }}
+            {{- $pairs := list -}}
+            {{- range $id := .downstream }}
+            {{- range $root.Values.fleet }}
+            {{- if eq .id $id }}
+            {{- $gw := include "demo.name" (merge (dict "component" (printf "iag-%s" .id)) $root) -}}
+            {{- $pairs = append $pairs (printf "%s=http://%s:%d" .id $gw (int .port)) -}}
+            {{- end }}
+            {{- end }}
+            {{- end }}
+            - name: DOWNSTREAM_GATEWAYS
+              value: {{ join "," $pairs | quote }}
+            {{- end }}
           securityContext: {{- include "demo.securityContext" $root | nindent 12 }}
           readinessProbe:
             httpGet:

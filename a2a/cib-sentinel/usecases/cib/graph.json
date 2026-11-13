@@ -1,0 +1,410 @@
+{
+  "nodes": [
+    {
+      "id": "Agent:sentinel",
+      "type": "Agent",
+      "label": "control-room-sentinel",
+      "props": {
+        "name": "control-room-sentinel",
+        "role": "autonomous",
+        "description": "Autonomous control-room agent: reacts to graph events and keeps the information barrier."
+      }
+    },
+    {
+      "id": "Agent:orchestrator",
+      "type": "Agent",
+      "label": "orchestrator-agent",
+      "props": {
+        "name": "orchestrator-agent",
+        "role": "fleet",
+        "description": "Routes each task of a mission to the agent that can do it."
+      }
+    },
+    {
+      "id": "Agent:retriever",
+      "type": "Agent",
+      "label": "retriever-agent",
+      "props": {
+        "name": "retriever-agent",
+        "role": "fleet",
+        "description": "Reads and writes the knowledge graph through the MCP gateway."
+      }
+    },
+    {
+      "id": "Agent:analyst",
+      "type": "Agent",
+      "label": "analyst-agent",
+      "props": {
+        "name": "analyst-agent",
+        "role": "fleet",
+        "description": "Works on the deal room documents of a mandate."
+      }
+    },
+    {
+      "id": "Agent:mcp",
+      "type": "Agent",
+      "label": "mcp-gateway",
+      "props": {
+        "name": "mcp-gateway",
+        "role": "fleet",
+        "description": "Agent Gateway in front of the IndyKite MCP server."
+      }
+    },
+    {
+      "id": "Workflow:wf-wall-control",
+      "type": "Workflow",
+      "label": "Barrier control",
+      "props": {
+        "name": "Barrier control",
+        "description": "Read a mandate, restrict its company, hold orders in restricted names."
+      }
+    },
+    {
+      "id": "Workflow:wf-deal-room",
+      "type": "Workflow",
+      "label": "Deal room access",
+      "props": {
+        "name": "Deal room access",
+        "description": "Read the documents of a mandate; deal team only."
+      }
+    },
+    {
+      "id": "Region:emea",
+      "type": "Region",
+      "label": "EMEA",
+      "props": {
+        "name": "EMEA"
+      }
+    },
+    {
+      "id": "Region:amer",
+      "type": "Region",
+      "label": "Americas",
+      "props": {
+        "name": "Americas"
+      }
+    },
+    {
+      "id": "Region:apac",
+      "type": "Region",
+      "label": "APAC",
+      "props": {
+        "name": "APAC"
+      }
+    },
+    {
+      "id": "Desk:advisory",
+      "type": "Desk",
+      "label": "M&A Advisory",
+      "props": {
+        "name": "M&A Advisory",
+        "side": "private"
+      }
+    },
+    {
+      "id": "Desk:equities-trading",
+      "type": "Desk",
+      "label": "Equities Trading",
+      "props": {
+        "name": "Equities Trading",
+        "side": "public"
+      }
+    },
+    {
+      "id": "Desk:credit-trading",
+      "type": "Desk",
+      "label": "Credit Trading",
+      "props": {
+        "name": "Credit Trading",
+        "side": "public"
+      }
+    },
+    {
+      "id": "Desk:compliance-control",
+      "type": "Desk",
+      "label": "Compliance Control Room",
+      "props": {
+        "name": "Compliance Control Room",
+        "side": "control"
+      }
+    },
+    {
+      "id": "Company:halcyon-energy",
+      "type": "Company",
+      "label": "Halcyon Energy",
+      "props": {
+        "name": "Halcyon Energy",
+        "ticker": "HLCN",
+        "sector": "Energy"
+      }
+    },
+    {
+      "id": "Company:brightwater-pharma",
+      "type": "Company",
+      "label": "Brightwater Pharma",
+      "props": {
+        "name": "Brightwater Pharma",
+        "ticker": "BWPH",
+        "sector": "Healthcare"
+      }
+    },
+    {
+      "id": "Company:kestrel-logistics",
+      "type": "Company",
+      "label": "Kestrel Logistics",
+      "props": {
+        "name": "Kestrel Logistics",
+        "ticker": "KSTL",
+        "sector": "Industrials"
+      }
+    },
+    {
+      "id": "Company:orchid-semiconductors",
+      "type": "Company",
+      "label": "Orchid Semiconductors",
+      "props": {
+        "name": "Orchid Semiconductors",
+        "ticker": "ORCS",
+        "sector": "Technology"
+      }
+    },
+    {
+      "id": "Mandate:mnd-1001",
+      "type": "Mandate",
+      "label": "Project Lighthouse",
+      "props": {
+        "name": "Project Lighthouse",
+        "kind": "Sell-side M&A advisory",
+        "summary": "Advising Halcyon Energy on the sale of its offshore wind unit."
+      }
+    },
+    {
+      "id": "DealDocument:doc-mnd-1001-termsheet",
+      "type": "DealDocument",
+      "label": "Project Lighthouse term sheet",
+      "props": {
+        "name": "Project Lighthouse term sheet",
+        "kind": "Term sheet",
+        "summary": "Indicative terms of the offshore wind unit sale."
+      }
+    },
+    {
+      "id": "Restriction:rst-mnd-1001",
+      "type": "Restriction",
+      "label": "Restriction on Halcyon Energy",
+      "props": {
+        "name": "Restriction on Halcyon Energy",
+        "reason": "Project Lighthouse: advisory mandate, private-side information held."
+      }
+    },
+    {
+      "id": "TradeOrder:ord-7001",
+      "type": "TradeOrder",
+      "label": "BUY 25,000 BWPH",
+      "props": {
+        "name": "BUY 25,000 BWPH",
+        "side": "BUY",
+        "quantity": "25000"
+      }
+    },
+    {
+      "id": "TradeOrder:ord-7002",
+      "type": "TradeOrder",
+      "label": "SELL 4,000,000 KSTL 2031 notes",
+      "props": {
+        "name": "SELL 4,000,000 KSTL 2031 notes",
+        "side": "SELL",
+        "quantity": "4000000"
+      }
+    },
+    {
+      "id": "TradeOrder:ord-7003",
+      "type": "TradeOrder",
+      "label": "BUY 60,000 ORCS",
+      "props": {
+        "name": "BUY 60,000 ORCS",
+        "side": "BUY",
+        "quantity": "60000"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "Agent:sentinel",
+      "target": "Workflow:wf-wall-control",
+      "type": "CAN_TRIGGER",
+      "workflow": ""
+    },
+    {
+      "source": "Desk:advisory",
+      "target": "Workflow:wf-deal-room",
+      "type": "CAN_TRIGGER",
+      "workflow": ""
+    },
+    {
+      "source": "Workflow:wf-wall-control",
+      "target": "Agent:orchestrator",
+      "type": "INVOKES",
+      "workflow": "wf-wall-control"
+    },
+    {
+      "source": "Agent:orchestrator",
+      "target": "Agent:retriever",
+      "type": "INVOKES",
+      "workflow": "wf-wall-control"
+    },
+    {
+      "source": "Agent:retriever",
+      "target": "Agent:mcp",
+      "type": "INVOKES",
+      "workflow": "wf-wall-control"
+    },
+    {
+      "source": "Workflow:wf-deal-room",
+      "target": "Agent:orchestrator",
+      "type": "INVOKES",
+      "workflow": "wf-deal-room"
+    },
+    {
+      "source": "Agent:orchestrator",
+      "target": "Agent:analyst",
+      "type": "INVOKES",
+      "workflow": "wf-deal-room"
+    },
+    {
+      "source": "Agent:analyst",
+      "target": "Agent:mcp",
+      "type": "INVOKES",
+      "workflow": "wf-deal-room"
+    },
+    {
+      "source": "Agent:sentinel",
+      "target": "Region:emea",
+      "type": "COVERS",
+      "workflow": ""
+    },
+    {
+      "source": "Agent:sentinel",
+      "target": "Region:amer",
+      "type": "COVERS",
+      "workflow": ""
+    },
+    {
+      "source": "Mandate:mnd-1001",
+      "target": "Company:halcyon-energy",
+      "type": "CONCERNS",
+      "workflow": ""
+    },
+    {
+      "source": "Mandate:mnd-1001",
+      "target": "Region:emea",
+      "type": "BOOKED_IN",
+      "workflow": ""
+    },
+    {
+      "source": "Desk:advisory",
+      "target": "Mandate:mnd-1001",
+      "type": "WORKS_ON",
+      "workflow": ""
+    },
+    {
+      "source": "DealDocument:doc-mnd-1001-termsheet",
+      "target": "Mandate:mnd-1001",
+      "type": "PART_OF",
+      "workflow": ""
+    },
+    {
+      "source": "Restriction:rst-mnd-1001",
+      "target": "Company:halcyon-energy",
+      "type": "RESTRICTS",
+      "workflow": ""
+    },
+    {
+      "source": "Restriction:rst-mnd-1001",
+      "target": "Mandate:mnd-1001",
+      "type": "ARISES_FROM",
+      "workflow": ""
+    },
+    {
+      "source": "Agent:sentinel",
+      "target": "Restriction:rst-mnd-1001",
+      "type": "RAISED",
+      "workflow": ""
+    },
+    {
+      "source": "TradeOrder:ord-7001",
+      "target": "Company:brightwater-pharma",
+      "type": "IN_SECURITY_OF",
+      "workflow": ""
+    },
+    {
+      "source": "TradeOrder:ord-7001",
+      "target": "Desk:equities-trading",
+      "type": "PLACED_BY",
+      "workflow": ""
+    },
+    {
+      "source": "TradeOrder:ord-7001",
+      "target": "Region:emea",
+      "type": "BOOKED_IN",
+      "workflow": ""
+    },
+    {
+      "source": "TradeOrder:ord-7002",
+      "target": "Company:kestrel-logistics",
+      "type": "IN_SECURITY_OF",
+      "workflow": ""
+    },
+    {
+      "source": "TradeOrder:ord-7002",
+      "target": "Desk:credit-trading",
+      "type": "PLACED_BY",
+      "workflow": ""
+    },
+    {
+      "source": "TradeOrder:ord-7002",
+      "target": "Region:emea",
+      "type": "BOOKED_IN",
+      "workflow": ""
+    },
+    {
+      "source": "TradeOrder:ord-7003",
+      "target": "Company:orchid-semiconductors",
+      "type": "IN_SECURITY_OF",
+      "workflow": ""
+    },
+    {
+      "source": "TradeOrder:ord-7003",
+      "target": "Desk:equities-trading",
+      "type": "PLACED_BY",
+      "workflow": ""
+    },
+    {
+      "source": "TradeOrder:ord-7003",
+      "target": "Region:apac",
+      "type": "BOOKED_IN",
+      "workflow": ""
+    }
+  ],
+  "capabilities": {
+    "wf-wall-control": {
+      "tools": [
+        "get-mandate",
+        "get-restricted-list",
+        "get-orders-in-company",
+        "raise-restriction",
+        "hold-order"
+      ],
+      "withheld": [
+        "release-hold",
+        "get-deal-documents"
+      ]
+    },
+    "wf-deal-room": {
+      "tools": [
+        "get-deal-documents"
+      ],
+      "withheld": []
+    }
+  }
+}

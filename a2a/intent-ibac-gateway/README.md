@@ -187,8 +187,8 @@ as a page (**How IBAC works**, item 07 in the rail), with the examples drawn.
    matches; ids are ignored at this stage. One matching skill makes the card
    AUTHORIZED; none makes it NOT_AUTHORIZED (`intent_mismatch`). A card
    without mappings is settled by a setting before the engine is asked (the
-   gateway has it for MCP capabilities, `ibac.capabilities.unmapped`; the
-   preview applies the same rule to a card): *allow* (the default, the `no mapping` switch next to the composer)
+   gateway's `ibac.capabilities.unmapped`, which the preview applies the
+   same way): *allow* (the default, the `no mapping` switch next to the composer)
    skips the check and KBAC alone decides; *deny* hands it to the engine,
    which answers `missing_coaz_mapping`. An intent carries at most 10
    evaluations; a larger one is refused and the caller asked to split it.
@@ -209,9 +209,12 @@ as a page (**How IBAC works**, item 07 in the rail), with the examples drawn.
    no decision: the generated requests go to the platform's AuthZEN API,
    which answers ALLOW or DENY.
 
-The gateway checks mappings in front of an MCP server, on the tools,
-resources and prompts a call names; it does not read the mappings of an A2A
-agent card, so in this demo
+A gateway that reads the mappings does this discovery itself, on the
+authenticated extended card: it keeps only the permitted skills that fit the
+intent carried by the delegated token, and audits it as `IBAC_DISCOVERY`. A
+message is still forwarded on admission and intent alone. In this demo the
+console asks for the cards with the person's token, which carries no intent,
+so that filter has nothing to compare and
 the check runs in the console, as a preview, first against the card of the
 gateway the prompt went through, then against the other cards. The gateway on
 the path does the rest for real. In the product there is no central engine and
@@ -219,6 +222,19 @@ nothing routes: each gateway checks its own card and answers for its own
 agent. The board keeps that shape: "compare across the fleet" sends the same
 prompt through the other gateways and shows what each one actually did next to
 the preview of its card.
+
+Two agents show the product's own discovery, as a second hop. The Support
+Desk Agent may hand work to Billing and People Directory, the Workflow Runner
+to every other agent (`DOWNSTREAM_GATEWAYS` in `docker-compose.yaml`). When
+one of them receives a message, it asks the gateway of each downstream agent
+for its extended card with the delegated token it holds, and nothing else.
+That gateway sees a later hop: it grows the chain, asks admission over the
+two hops, reads the skills the person may use there, and keeps the ones that
+fit the intent in the token. The board shows the answer on the card of each
+downstream agent ("asked by …, second hop"), next to the preview. The graph
+admits those hops through `INVOKES` edges from the first agent to the second
+inside the first agent's workflow, and `HAS` edges for the skills the second
+offers in it.
 
 ## The fleet
 

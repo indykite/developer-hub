@@ -78,6 +78,8 @@ _tokens: dict[TokenKey, tuple[dict, float]] = {}
 # One lock per grant being answered, with the number of callers holding or waiting for it. An
 # entry exists only while that number is above zero.
 _token_locks: dict[TokenKey, list] = {}
+# Client-credentials grants since the bridge started: answered by Auth0, and answered from a kept token.
+_grant_counts = {"issued": 0, "reused": 0}
 
 
 def _jwks_client() -> PyJWKClient:
@@ -190,6 +192,7 @@ async def _client_credentials(
         kept = _tokens.get(key)
         remaining = kept[1] - time.monotonic() if kept else 0
         if kept and remaining > TOKEN_CACHE_MIN_REMAINING:
+            _grant_counts["reused"] += 1
             return HTTPStatus.OK, {**kept[0], "expires_in": int(remaining)}
         _tokens.pop(key, None)
         status, body = await _post_auth0(form, headers)
@@ -197,6 +200,7 @@ async def _client_credentials(
             lifetime = body.get("expires_in")
             if isinstance(lifetime, (int, float)) and lifetime > TOKEN_CACHE_MIN_REMAINING:
                 _keep_token(key, body, lifetime)
+            _grant_counts["issued"] += 1
             log.info("token issued by Auth0 client=%s audience=%s", client_id, form.get("audience"))
         return status, body
 
@@ -233,6 +237,12 @@ def _inactive(reason: str, caller: str) -> JSONResponse:
 @app.get("/healthz")
 async def healthz() -> dict:
     return {"status": "ok", "issuer": ISSUER, "default_audience": DEFAULT_AUDIENCE}
+
+
+@app.get("/stats")
+async def stats() -> dict:
+    """Count the client-credentials grants since start: issued by Auth0, reused from a kept token, kept now."""
+    return {**_grant_counts, "kept": len(_tokens)}
 
 
 @app.post("/oauth/introspect")

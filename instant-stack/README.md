@@ -107,6 +107,10 @@ data/
                         # graph through IS_CUSTOMER), plus the fleet's agents, workflows,
                         # skills (CAN_USE), admission and skill policies and the two token
                         # introspects its six gateways need (DATASET=intent-ibac)
+  cib/                  # a2a/cib-sentinel: a corporate and investment banking graph whose
+                        # only identities are agents; the subject of every policy is the
+                        # autonomous control-room Agent (an Auth0 M2M subject), with the
+                        # event sink that publishes the graph's changes (DATASET=cib)
     manifest.json       # all Config-API elements: project, application,
                         # app_agent, mcp_server, token_introspect, kbac,
                         # resolvers, ciq_policies, ciq_queries

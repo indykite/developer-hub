@@ -1,0 +1,303 @@
+---
+# cib-sentinel: an autonomous control-room agent in front of the ibac-demo
+# fleet (orchestrator, retriever, analyst, MCP gateway). The agent images are
+# built from ../ibac-demo by `make`; this app adds the Sentinel, the console
+# and its own usecase bundle and dataset.
+name: cib-sentinel
+
+x-llm: &llm
+  GEMINI_ENABLED: ${GEMINI_ENABLED}
+  GEMINI_API_KEY: ${GEMINI_API_KEY}
+  GEMINI_MODEL: ${GEMINI_MODEL}
+  LLM_MODEL: ${LOCAL_LLM_MODEL}
+  OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  LIB_LOG_LEVEL: ${LIB_LOG_LEVEL:-WARNING}
+
+services:
+  # The page: the wire, the wall, the missions and the audit records. It has
+  # no login; the port is published on the host's loopback only.
+  console:
+    image: cib-console:cib-sentinel
+    env_file:
+      - ./usecases/${USECASE:-cib}/usecase.env
+    ports:
+      - "127.0.0.1:${CONSOLE_PORT:-3300}:3500"
+    networks: [orchestrator-net, retriever-net, analyst-net, mcp-net]
+    volumes:
+      - ./usecases/${USECASE:-cib}:/app/usecase:ro
+    environment:
+      INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
+      APP_AGENT_CREDENTIALS_TOKEN: ${APP_AGENT_CREDENTIALS_TOKEN}
+      SENTINEL_URL: http://sentinel:7100
+      BOARD_RESTRICTIONS_QUERY_ID: ${BOARD_RESTRICTIONS_QUERY_ID:-}
+      BOARD_HOLDS_QUERY_ID: ${BOARD_HOLDS_QUERY_ID:-}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      AGENT_DISPLAY_NAMES: >-
+        ${SENTINEL_IDP_CLIENT_ID}@clients=sentinel,
+        ${ORCHESTRATOR_IDP_CLIENT_ID}@clients=orchestrator,
+        ${RETRIEVER_IDP_CLIENT_ID}@clients=retriever,
+        ${ANALYST_IDP_CLIENT_ID}@clients=analyst,
+        ${MCP_IDP_CLIENT_ID}@clients=mcp
+
+  # The autonomous agent: pulls the event sink's subscription on a schedule
+  # and sends its tasks to the orchestrator's gateway with its own token.
+  sentinel:
+    image: cib-sentinel:cib-sentinel
+    # Runs as the host user that can read the subscriber key file (id -u).
+    user: "${SENTINEL_RUN_AS:-1000}"
+    networks: [orchestrator-net]
+    volumes:
+      - ./usecases/${USECASE:-cib}/mission.json:/app/mission.json:ro
+      - ${PUBSUB_SUBSCRIBER_KEY_FILE:-/dev/null}:/secrets/pubsub-subscriber.json:ro
+    environment:
+      !!merge <<: *llm
+      CONSOLE_URL: http://console:3500
+      ORCHESTRATOR_GATEWAY_URL: http://orchestrator-iag:${IAG_ORCHESTRATOR_PORT:-9981}
+      IDP_TOKEN_URL: http://auth0-bridge:8090/oauth/token
+      SENTINEL_IDP_CLIENT_ID: ${SENTINEL_IDP_CLIENT_ID}
+      SENTINEL_IDP_CLIENT_SECRET: ${SENTINEL_IDP_CLIENT_SECRET}
+      AUTH0_AUTONOMOUS_AUDIENCE: ${AUTH0_AUTONOMOUS_AUDIENCE:-cib-autonomous}
+      PUBSUB_GCP_PROJECT: ${PUBSUB_GCP_PROJECT:-}
+      PUBSUB_SUBSCRIPTION: ${PUBSUB_SUBSCRIPTION:-}
+      GOOGLE_APPLICATION_CREDENTIALS: /secrets/pubsub-subscriber.json
+      SENTINEL_POLL_SECONDS: ${SENTINEL_POLL_SECONDS:-20}
+      SENTINEL_PLANNER: ${SENTINEL_PLANNER:-llm}
+      SENTINEL_STEP_PAUSE_SECONDS: ${SENTINEL_STEP_PAUSE_SECONDS:-3}
+      SENTINEL_MAX_STEPS: ${SENTINEL_MAX_STEPS:-6}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      auth0-bridge:
+        condition: service_healthy
+
+  # Auth0 as the gateways' identity provider (RFC 7662 introspection and a
+  # token endpoint that keeps client-credentials tokens until they expire).
+  auth0-bridge:
+    image: auth0-bridge:cib-sentinel
+    networks: [orchestrator-net, retriever-net, analyst-net, mcp-net]
+    environment:
+      AUTH0_DOMAIN: ${AUTH0_DOMAIN}
+      AUTH0_DEFAULT_AUDIENCE: ${AUTH0_AGENTS_AUDIENCE:-ibac-agents}
+      BRIDGE_PORT: 8090
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8090/healthz', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+
+  token-service:
+    image: ${TOKEN_SERVICE_IMAGE:-indykite/token-service:1.0.0@sha256:a1248b73ab22fb939e533455a89468b7112b2b938486d8feca818e17776a97e2}
+    platform: linux/amd64
+    healthcheck:
+      test: ["CMD", "/bin/http_health_probe", "http://localhost:8102/.well-known/openid-configuration"]
+      interval: 10s
+      timeout: 1s
+      start_period: 10s
+    ports:
+      - "127.0.0.1:${TOKEN_SERVICE_PORT:-9202}:8102"
+    networks: [orchestrator-net, retriever-net, analyst-net, mcp-net]
+    volumes:
+      - ./token-service/token-service.yaml:/app/.configs/token-service.yaml:ro
+    command: ["--config=/app/.configs/token-service.yaml"]
+
+  orchestrator-iag:
+    extends:
+      service: iag-base
+      file: iag-base-docker.yaml
+    networks: [orchestrator-net]
+    environment:
+      K_SERVICE: orchestrator-iag
+      JARVIS_SERVICE_NAME: orchestrator-iag
+      JARVIS_SERVICE_PORT: ${IAG_ORCHESTRATOR_PORT:-9981}
+      JARVIS_SERVICE_BASE_URL: http://orchestrator-iag:${IAG_ORCHESTRATOR_PORT:-9981}
+      JARVIS_PROTECTED_AGENT_BASE_URL: http://orchestrator:${ORCHESTRATOR_PORT:-7101}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${ORCHESTRATOR_IDP_CLIENT_ID}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${ORCHESTRATOR_IDP_CLIENT_SECRET}
+      # Intent: with IBAC_ENABLED=true (and the intent profile running) this
+      # gateway, the one the Sentinel's tasks enter by, asks the Intent Agent
+      # what each task intends and carries the answer in the delegation token.
+      JARVIS_IBAC_ENABLED: ${IBAC_ENABLED:-false}
+      JARVIS_INTENT_AGENT_BASE_URL: ${INTENT_AGENT_BASE_URL:-http://intent-agent:6003}
+      JARVIS_INTENT_AGENT_AUDIENCE: ${INTENT_AGENT_AUDIENCE:-intent_agent}
+      JARVIS_INTENT_AGENT_TIMEOUT: ${INTENT_AGENT_TIMEOUT:-45s}
+    volumes:
+      - ./audit-config.yaml:/app/.configs/audit-config.yaml
+    command: ["--config=/app/.configs/audit-config.yaml"]
+
+  orchestrator:
+    image: orchestrator-agent:cib-sentinel
+    env_file:
+      - ./usecases/${USECASE:-cib}/usecase.env
+    volumes:
+      - ./usecases/${USECASE:-cib}/skills/orchestrator:/app/skills:ro
+    networks: [orchestrator-net, retriever-net, analyst-net]
+    environment:
+      !!merge <<: *llm
+      ADVERTISED_HOST: orchestrator
+      ORCHESTRATOR_PORT: ${ORCHESTRATOR_PORT:-7101}
+      ORCHESTRATOR_AGENT_NAME: orchestrator_agent
+      CHATBOT_UPDATES_URL: http://console:3500/api/push-update
+      RETRIEVER_HOST: retriever-iag
+      RETRIEVER_PORT: ${IAG_RETRIEVER_PORT:-9982}
+      ANALYST_HOST: analyst-iag
+      ANALYST_PORT: ${IAG_ANALYST_PORT:-9985}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  retriever-iag:
+    extends:
+      service: iag-base
+      file: iag-base-docker.yaml
+    networks: [retriever-net]
+    environment:
+      K_SERVICE: retriever-iag
+      JARVIS_SERVICE_NAME: retriever-iag
+      JARVIS_SERVICE_PORT: ${IAG_RETRIEVER_PORT:-9982}
+      JARVIS_SERVICE_BASE_URL: http://retriever-iag:${IAG_RETRIEVER_PORT:-9982}
+      JARVIS_PROTECTED_AGENT_BASE_URL: http://retriever:${RETRIEVER_PORT:-7102}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${RETRIEVER_IDP_CLIENT_ID}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${RETRIEVER_IDP_CLIENT_SECRET}
+    volumes:
+      - ./audit-config.yaml:/app/.configs/audit-config.yaml
+    command: ["--config=/app/.configs/audit-config.yaml"]
+
+  retriever:
+    image: retriever-agent:cib-sentinel
+    env_file:
+      - ./usecases/${USECASE:-cib}/usecase.env
+    volumes:
+      - ./usecases/${USECASE:-cib}/skills/retriever:/app/skills:ro
+    networks: [retriever-net, mcp-net]
+    environment:
+      !!merge <<: *llm
+      ADVERTISED_HOST: retriever
+      RETRIEVER_PORT: ${RETRIEVER_PORT:-7102}
+      RETRIEVER_AGENT_NAME: retriever_agent
+      CHATBOT_UPDATES_URL: http://console:3500/api/push-update
+      MCP_SERVER_URL: http://mcp-iag:${IAG_MCP_PORT:-9986}${MCP_SERVER_PATH}
+      MCP_SESSION_TTL: ${MCP_SESSION_TTL:-300}
+      INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # The deal room's gateway. The Sentinel's workflow does not pass here, so
+  # its requests are refused at admission; the analyst never sees them.
+  analyst-iag:
+    extends:
+      service: iag-base
+      file: iag-base-docker.yaml
+    networks: [analyst-net]
+    environment:
+      K_SERVICE: analyst-iag
+      JARVIS_SERVICE_NAME: analyst-iag
+      JARVIS_SERVICE_PORT: ${IAG_ANALYST_PORT:-9985}
+      JARVIS_SERVICE_BASE_URL: http://analyst-iag:${IAG_ANALYST_PORT:-9985}
+      JARVIS_PROTECTED_AGENT_BASE_URL: http://analyst:${ANALYST_PORT:-7105}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${ANALYST_IDP_CLIENT_ID}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${ANALYST_IDP_CLIENT_SECRET}
+    volumes:
+      - ./audit-config.yaml:/app/.configs/audit-config.yaml
+    command: ["--config=/app/.configs/audit-config.yaml"]
+
+  analyst:
+    image: analyst-agent:cib-sentinel
+    env_file:
+      - ./usecases/${USECASE:-cib}/usecase.env
+    volumes:
+      - ./usecases/${USECASE:-cib}/skills/analyst:/app/skills:ro
+    networks: [analyst-net, mcp-net]
+    environment:
+      !!merge <<: *llm
+      ADVERTISED_HOST: analyst
+      ANALYST_PORT: ${ANALYST_PORT:-7105}
+      ANALYST_AGENT_NAME: analyst_agent
+      CHATBOT_UPDATES_URL: http://console:3500/api/push-update
+      MCP_SERVER_URL: http://mcp-iag:${IAG_MCP_PORT:-9986}${MCP_SERVER_PATH}
+      MCP_SESSION_TTL: ${MCP_SESSION_TTL:-300}
+      INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Agent Gateway in front of the IndyKite MCP server: the knowledge queries
+  # are its tools, limited per workflow by the capability checks.
+  mcp-iag:
+    extends:
+      service: iag-base
+      file: iag-base-docker.yaml
+    networks: [mcp-net]
+    environment:
+      K_SERVICE: mcp-iag
+      JARVIS_SERVICE_NAME: mcp-iag
+      JARVIS_SERVICE_PORT: ${IAG_MCP_PORT:-9986}
+      JARVIS_PROTECTED_AGENT_PROTOCOL: mcp
+      JARVIS_SERVICE_BASE_URL: http://mcp-iag:${IAG_MCP_PORT:-9986}${MCP_SERVER_PATH}
+      JARVIS_PROTECTED_AGENT_BASE_URL: ${MCP_SERVER_ORIGIN}${MCP_SERVER_PATH}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${MCP_IDP_CLIENT_ID}
+      JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${MCP_IDP_CLIENT_SECRET}
+    volumes:
+      - ./audit-config.yaml:/app/.configs/audit-config.yaml
+    command: ["--config=/app/.configs/audit-config.yaml"]
+
+  # The Intent Agent (profile intent): turns a task into AuthZEN evaluations in
+  # the vocabulary of the project's KBAC policies and data schema.
+  intent-agent:
+    image: ${INTENT_AGENT_IMAGE:-docker.io/indykite/intent-agent:1.1.0@sha256:a9e8271ada04e13f52218046df0c88641274fdf7658bacd50e4c4bda6ee3d71c}
+    profiles: ["intent"]
+    networks: [orchestrator-net, intent-net]
+    environment:
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      INTENT_PORT: 6003
+      HEALTH_PORT: 8001
+      ADVERTISED_HOST: intent-agent
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${INTENT_GEMINI_MODEL:-${GEMINI_MODEL}}
+      INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
+      IK_APP_AGENT_KEY: ${APP_AGENT_CREDENTIALS_TOKEN}
+      INTROSPECT_URL: http://auth0-bridge:8090/oauth/introspect
+      INTROSPECT_CLIENT_ID: ${INTENT_INTROSPECT_CLIENT_ID:-${ORCHESTRATOR_IDP_CLIENT_ID}}
+      INTROSPECT_CLIENT_SECRET: ${INTENT_INTROSPECT_CLIENT_SECRET:-${ORCHESTRATOR_IDP_CLIENT_SECRET}}
+      EXPECTED_TOKEN_AUDIENCE: ${INTENT_AGENT_AUDIENCE:-intent_agent}
+      REQUEST_TIMEOUT_SECONDS: ${INTENT_REQUEST_TIMEOUT_SECONDS:-10.0}
+      LLM_TIMEOUT_SECONDS: ${INTENT_LLM_TIMEOUT_SECONDS:-3.0}
+      VALIDATION_MAX_RETRIES: ${INTENT_VALIDATION_MAX_RETRIES:-1}
+      POLICY_REFRESH_TTL_MINUTES: ${INTENT_REFRESH_TTL_MINUTES:-0.5}
+      SCHEMA_REFRESH_TTL_MINUTES: ${INTENT_REFRESH_TTL_MINUTES:-0.5}
+      CACHE_BACKEND: redis
+      REDIS_URL: redis://intent-redis:6379
+      AUDIT_DELIVERY: webhook
+      AUDIT_HTTP_URL: http://console:3500/api/push-update
+      AUDIT_HTTP_METHOD: POST
+      AUDIT_HTTP_AUTH_TYPE: no-auth
+      AUDIT_ASYNC: "true"
+    depends_on:
+      intent-redis:
+        condition: service_healthy
+      auth0-bridge:
+        condition: service_healthy
+
+  intent-redis:
+    image: redis:8-alpine@sha256:21090af93f8324db2f0f0f4f38a7c60369d47d917e000c3423d89d2ae2883537
+    profiles: ["intent"]
+    networks: [intent-net]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# One network per gateway: an agent is reachable only by its own gateway and
+# by the agents that call it through theirs.
+networks:
+  orchestrator-net:
+    driver: bridge
+  retriever-net:
+    driver: bridge
+  analyst-net:
+    driver: bridge
+  mcp-net:
+    driver: bridge
+  intent-net:
+    driver: bridge

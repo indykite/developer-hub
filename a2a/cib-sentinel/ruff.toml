@@ -1,0 +1,33 @@
+# Inherits the repository-wide rules (select = ALL, line length 120, double
+# quotes); only the test suites and the key generator relax what they cannot
+# satisfy.
+extend = "../../pyproject.toml"
+
+# Keep ruff's import sorting in agreement with the repo's isort hook, which
+# files the console's `app` and the Sentinel's `sentinel` modules with the
+# third-party imports.
+[lint.isort]
+known-third-party = ["app", "sentinel"]
+
+[lint.per-file-ignores]
+"sentinel/tests/*" = [
+    "S101",    # pytest asserts
+    "PLR2004", # expected values are literals by design
+    "ANN",     # test functions stay unannotated
+    "D",       # test names are the documentation
+    "E501",    # event fixtures read better on one line
+    "INP001",
+]
+"console/tests/*" = [
+    "S101",
+    "S105",
+    "PLR2004",
+    "ANN",
+    "D",
+    "E501",
+    "INP001",
+]
+"token-service/keygen.py" = [
+    "T201",    # a command-line tool: its output is the two values to copy
+    "INP001",
+]

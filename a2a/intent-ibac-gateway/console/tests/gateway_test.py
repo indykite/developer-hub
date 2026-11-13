@@ -96,3 +96,18 @@ def test_extended_card_answer_keeps_the_skill_ids_the_gateway_left():
         5,
     )
     assert (failed.kind, failed.error) == ("error", "upstream")
+
+
+def test_a_task_carries_what_the_downstream_gateways_answered_the_agent():
+    """The agent reports the card each downstream gateway gave it for the delegated token it held."""
+    downstream = [
+        {"agent": "billing", "http_status": 200, "skills": ["my-invoices"], "error": ""},
+        {"agent": "people-directory", "http_status": 403, "skills": [], "error": "Authorization check failed"},
+        "not an entry",
+    ]
+    task = {"id": "t1", "artifacts": [], "metadata": {"skill": "customer-360", "downstream": downstream}}
+    parsed = parse_answer(answer(200, {"jsonrpc": "2.0", "id": "1", "result": {"task": task}}))
+
+    assert parsed.kind == "task"
+    assert [d["agent"] for d in parsed.downstream] == ["billing", "people-directory"]
+    assert parsed.as_dict()["downstream"][0]["skills"] == ["my-invoices"]

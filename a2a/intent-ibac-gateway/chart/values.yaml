@@ -137,8 +137,11 @@ agents:
 # gateway's listening and service port, as in docker-compose.yaml.
 fleet:
   - {id: trading-desk, port: 9901, envPrefix: TRADING_DESK}
-  - {id: support-desk, port: 9902, envPrefix: SUPPORT_DESK}
+  - {id: support-desk, port: 9902, envPrefix: SUPPORT_DESK, downstream: [billing, people-directory]}
   - {id: billing, port: 9903, envPrefix: BILLING}
   - {id: people-directory, port: 9904, envPrefix: PEOPLE_DIRECTORY}
-  - {id: workflow-runner, port: 9905, envPrefix: WORKFLOW_RUNNER}
+  - id: workflow-runner
+    port: 9905
+    envPrefix: WORKFLOW_RUNNER
+    downstream: [trading-desk, support-desk, billing, people-directory, weather]
   - {id: weather, port: 9906, envPrefix: WEATHER}
