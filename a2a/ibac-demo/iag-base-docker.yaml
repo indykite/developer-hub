@@ -3,17 +3,18 @@ version: '3.9'
 
 services:
   iag-base:
-    # The demo runs Agent Gateway 2.112.0, a locally loaded image named in
-    # .env as AGENT_GATEWAY_IMAGE; without it the published release 2.0.3,
-    # pinned by digest, is pulled. What the demo relies on: MCP
+    # The gateways run the image named in .env as AGENT_GATEWAY_IMAGE; without
+    # it the release published on Docker Hub
+    # (https://hub.docker.com/r/indykite/agent-gateway/tags), pinned by digest
+    # below, is pulled. What the demo relies on: MCP
     # proxying (JARVIS_PROTECTED_AGENT_PROTOCOL: mcp, used by mcp-iag,
     # drive-mcp-iag and erp-mcp-iag); token service mode with hop-by-hop
     # nesting of the incoming X-IK-Token, the per-gateway user-token audience
     # check and token_service.audience; the ibac.enabled switch that gates the
     # intent_agent section, the INTENT audit records and the gateway answering
     # a failed intent in place of the agent; the second exchange that puts the
-    # intent into the delegated token (2.105 and later, with a Token Service
-    # of the same release); admission decided by ONE AuthZEN
+    # intent into the delegated token (with a Token Service of the same
+    # release); admission decided by ONE AuthZEN
     # evaluation over the delegation chain ($ik_token.act_chain, policy
     # person-can-reach-agent in the dataset); MCP gateways serving one endpoint
     # with OAuth discovery; the delegated token extension on the agent cards,

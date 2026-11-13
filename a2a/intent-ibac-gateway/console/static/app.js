@@ -585,6 +585,33 @@ const intentRecord = (trace) => gwRecords(trace).find((r) => r.action === "INTEN
 // A 401 after the bridge accepted the token: the gateway exchanged it (its record names the actor) and the platform's
 // whoami then could not resolve the caller. A 401 from the bridge leaves no record with an actor.
 const unresolvedRecord = (gw) => (gw?.http_status === 401 ? (gw.records || []).find((r) => r.decision === "NOT_AUTHORIZED" && r.actor && r.action !== "INTENT") : undefined);
+// A 403 after admission: the Intent Agent found an intent, the gateway compared it with the skills the caller may use
+// on its card, and none covers it. Its INTENT record is then a refusal.
+const uncoveredRecord = (gw) => (gw?.http_status === 403 ? (gw.records || []).find((r) => r.action === "INTENT" && r.decision === "NOT_AUTHORIZED") : undefined);
+// What to say under the banner when no skill of the chosen agent covers the intent: the gateway's own finding, then
+// the agents whose card declares a skill for it (the preview's reading of the fleet), each one click away.
+function uncoveredNote(trace) {
+  const gw = trace.gateway || {};
+  const nodes = [el("b", "", "A refusal by design, not a failure"), el("div", "", `The gateway compared the intent with the skills you may use on this agent's card${fitText(gw.skill_check) ? `: ${fitText(gw.skill_check)}` : ""}. An agent is only sent what its skills declare.`)];
+  const others = (trace.ibac?.summary?.matched_agents || []).filter((id) => id !== trace.agent);
+  const line = el("div", "obl");
+  if (others.length) {
+    line.append(el("span", "", "Declared by · "));
+    for (const id of others) {
+      const b = el("button", "fa-send inline", agentName(id));
+      b.title = "Send the same prompt through this agent's gateway";
+      b.addEventListener("click", () => sendPrompt($("#promptText").value || trace.a2a?.payload?.prompt || "", id));
+      line.append(b);
+    }
+  } else {
+    line.append(el("span", "", "Declared by · "), document.createTextNode(trace.ibac ? "no card of the fleet: no agent declares a skill for this intent" : "see the mapping preview below"));
+  }
+  nodes.push(line);
+  return nodes;
+}
+
+// The gateway's own comparison, as the server read it from the IBAC_DISCOVERY records: "2 of 3 fit".
+const fitText = (check) => (check && check.evaluations ? `${check.fit} of ${check.evaluations} evaluation${check.evaluations === 1 ? "" : "s"} fit${check.skills?.length ? ` (${check.skills.join(", ")})` : ""}` : check?.unmapped?.length ? `passes: ${check.unmapped.join(", ")} has no mapping` : "");
 const UNRESOLVED_TEXT = "the platform could not resolve this token to a person";
 const admissionRecord = (trace) => trace.gateway?.http_status === 401 ? undefined : gwRecords(trace).find((r) => /reach/.test(r.reason || "") || ["AUTHORIZED", "NOT_AUTHORIZED"].includes(r.decision) && r.action !== "INTENT");
 const exchangeRecord = (trace) => {
@@ -638,11 +665,12 @@ function paintPipeline(trace) {
   setStep("whoami", adm || intent ? "done" : gw.kind === "refused" ? "fail" : "warn", adm || intent ? `${trace.persona.type} ${who}` : gw.error_text || "no record");
   if (adm) setStep("admission", adm.decision === "AUTHORIZED" ? "done" : "fail", adm.decision === "AUTHORIZED" ? "may reach the agent" : "may not reach the agent");
   else setStep("admission", gw.http_status === 403 ? "fail" : "warn", gw.http_status === 403 ? "HTTP 403" : "no record");
-  if (intent) setStep("intent", intent.decision === "INTENT_FOUND" ? "done" : intent.decision === "INTENT_FAILED" ? "warn" : "fail", `${intent.decision.replace("INTENT_", "").toLowerCase()} · ${intent.durationMs ?? "—"} ms`);
+  if (uncoveredRecord(gw)) setStep("intent", "warn", `fits no skill you may use here · ${intent?.durationMs ?? "—"} ms`);
+  else if (intent) setStep("intent", intent.decision === "INTENT_FOUND" ? "done" : intent.decision === "INTENT_FAILED" ? "warn" : "fail", `${intent.decision.replace("INTENT_", "").toLowerCase()}${fitText(gw.skill_check) ? ` · ${gw.skill_check.evaluations ? `${gw.skill_check.fit}/${gw.skill_check.evaluations} fit` : "no mapping, passes"}` : ""} · ${intent.durationMs ?? "—"} ms`);
   else setStep("intent", gw.kind === "intent_error" ? "warn" : "skip", gw.kind === "intent_error" ? noIntentWord(gw) : "not asked");
   if (gw.kind === "task") setStep("forward", "done", `${gw.skill || "agent"} · ${gw.latency_ms} ms`);
   else if (gw.kind === "intent_error") setStep("forward", "skip", "gateway answered");
-  else setStep("forward", "fail", gw.error_text || "not forwarded");
+  else setStep("forward", uncoveredRecord(gw) ? "skip" : "fail", uncoveredRecord(gw) ? "refused: no skill for the intent" : gw.error_text || "not forwarded");
   paintIbacSteps(trace.ibac);
   const n = gwRecords(trace).length;
   const ibacRecords = trace.ibac ? trace.ibac.records.length : 0;
@@ -688,14 +716,17 @@ function renderResult(trace) {
     verdict.className = "result-verdict error";
     verdict.textContent = `The gateway of ${through} could not be reached.`;
   } else if (gw.kind === "refused") {
-    verdict.className = "result-verdict error";
-    verdict.textContent = gw.http_status === 403
+    verdict.className = uncoveredRecord(gw) ? "result-verdict refused" : "result-verdict error";
+    verdict.textContent = uncoveredRecord(gw)
+      ? `Intent not covered: the gateway of ${through} admitted the caller, but no skill they may use there fits the intent, so it refused the message (403).`
+      : gw.http_status === 403
       ? `Admission refused by the gateway of ${through}.`
       : unresolvedRecord(gw)
         ? `The gateway of ${through} could not resolve the caller: the bridge accepted the token, but ${UNRESOLVED_TEXT}.`
         : `The gateway of ${through} refused the token.`;
     $("#refusal").hidden = false;
-    $("#refusal").replaceChildren(el("b", "", `HTTP ${gw.http_status}`), el("div", "", gw.error_text || ""));
+    if (uncoveredRecord(gw)) $("#refusal").replaceChildren(...uncoveredNote(trace));
+    else $("#refusal").replaceChildren(el("b", "", `HTTP ${gw.http_status}`), el("div", "", gw.error_text || ""));
   } else if (gw.kind === "error") {
     verdict.className = "result-verdict error";
     verdict.textContent = `The gateway of ${through} answered an error.`;
@@ -798,11 +829,14 @@ function renderHandoff(trace) {
     ["whoami", adm || intent ? `${trace.persona.type} ${trace.persona.id}` : unresolvedRecord(gw) ? `refused (401): ${UNRESOLVED_TEXT}` : "not resolved"],
     ["admission", adm ? `${adm.decision}: ${adm.reason}${adm.cached?.admission ? " · from the gateway's cache, no platform call" : " · asked the platform"}` : gw.http_status === 403 ? "refused (403)" : "not recorded"],
     ["intent", intent ? `${intent.decision} · ${intent.durationMs ?? "—"} ms` : gw.kind === "intent_error" ? noIntentWord(gw) : "not asked"],
+    ...(fitText(gw.skill_check) ? [["skills", `${fitText(gw.skill_check)}: the gateway's own comparison with the skills you may use here (IBAC_DISCOVERY)`]] : []),
     ...(intentExchanged(trace) ? [["exchange, again", "the same subject and actor, plus the evaluations of the intent: the agent receives this token"]] : []),
   ];
-  const inStatus = gw.kind === "refused" ? "fail" : gw.kind === "intent_error" ? "warn" : "ok";
-  lane.append(stage("gateway", `${gwName} · in`, gw.kind === "refused" ? (gw.http_status === 403 ? "admission refused" : unresolvedRecord(gw) ? "caller not resolved" : "token refused") : "caller admitted", inRows, inStatus));
-  lane.append(arrow(gw.kind === "refused" ? "stopped here" : "the prompt, with the subject", gw.kind === "refused" ? "fail" : "ok"));
+  // An intent no skill covers stops the message after the Intent Agent, not on the way in.
+  const stoppedIn = gw.kind === "refused" && !uncoveredRecord(gw);
+  const inStatus = stoppedIn ? "fail" : gw.kind === "intent_error" || uncoveredRecord(gw) ? "warn" : "ok";
+  lane.append(stage("gateway", `${gwName} · in`, gw.kind === "refused" ? (uncoveredRecord(gw) ? "admitted, intent not covered" : gw.http_status === 403 ? "admission refused" : unresolvedRecord(gw) ? "caller not resolved" : "token refused") : "caller admitted", inRows, inStatus));
+  lane.append(arrow(stoppedIn ? "stopped here" : "the prompt, with the subject", stoppedIn ? "fail" : "ok"));
 
   // 2. the Intent Agent, out
   if (a?.outcome === "success") {
@@ -882,8 +916,8 @@ function renderHandoff(trace) {
       ["forwarded", "nothing: the agent was not called", "muted"],
     ];
   } else {
-    outTitle = gw.http_status === 403 ? "refused: admission" : "refused: token";
-    outStatus = "fail";
+    outTitle = uncoveredRecord(gw) ? "refused: no skill covers the intent" : gw.http_status === 403 ? "refused: admission" : "refused: token";
+    outStatus = uncoveredRecord(gw) ? "warn" : "fail";
     outRows = [
       ["answer", `HTTP ${gw.http_status ?? "—"} · ${gw.error_text || ""}`],
       ["forwarded", "nothing: the agent was not called", "muted"],
@@ -894,7 +928,7 @@ function renderHandoff(trace) {
   box.append(lane);
 
   const foot = el("div", "handoff-foot");
-  foot.append(el("span", "", "One gateway protects one agent: it validated the caller's Auth0 token at the bridge, exchanged it for a delegated token at the Token Service, resolved the caller with whoami, decided admission with one AuthZEN evaluation over the delegation chain, asked the Intent Agent about the prompt, exchanged once more with the intent when it passes the intent on, and forwarded the message with the delegated token and its extension header. The mapping preview is the console's own check of this gateway's card; a gateway that reads the mappings runs it on its authenticated card, for a token that carries an intent. Nothing routes between gateways: to see what the others do with the same prompt, send it through them, on the board below."));
+  foot.append(el("span", "", "One gateway protects one agent: it validated the caller's Auth0 token at the bridge, exchanged it for a delegated token at the Token Service, resolved the caller with whoami, decided admission with one AuthZEN evaluation over the delegation chain, asked the Intent Agent about the prompt, exchanged once more with the intent when it passes the intent on, and forwarded the message with the delegated token and its extension header. With the intent in hand it compared it with the skills you may use on its card and kept, in the delegated token, the evaluations they cover; an intent no skill covers is refused. The mapping preview is the console's reading of the same cards, for every agent of the fleet and for the usage step. Nothing routes between gateways: to see what the others do with the same prompt, send it through them, on the board below."));
   box.append(foot);
 }
 
@@ -1608,15 +1642,19 @@ async function renderIbac(trace) {
     ? `The gateway of ${through} admitted the caller, got an intent with ${n} evaluation${n === 1 ? "" : "s"} and forwarded the message.`
     : me.verdict === "no intent"
       ? `The gateway of ${through} got no intent and answered the caller itself.`
-      : `The gateway of ${through} refused the call (${me.verdict}).`;
+      : me.verdict === "intent not covered"
+        ? `The gateway of ${through} admitted the caller and got an intent with ${n} evaluation${n === 1 ? "" : "s"}, but none fits a skill they may use there, so it refused the message.`
+        : `The gateway of ${through} refused the call (${me.verdict}).`;
+  // What the gateway itself found when it compared the intent with the skills the caller may use on its card.
+  const real = fitText(me.skill_check) ? ` The gateway's own check: ${fitText(me.skill_check)}; the delegated token carries only the evaluations that fit.` : "";
   $("#ibacLede").textContent = mine.skipped
-    ? `${did} Its card publishes no mappings. Under the gateway setting "no mapping: allow", the default, the mapping check is skipped for it and KBAC alone decides, which is what the admission above did. Switch the setting to deny and send again to see the preview refuse it.`
+    ? `${did} Its card publishes no mappings. Under the gateway setting "no mapping: allow", the default, a skill without a mapping covers every intent, so KBAC alone decides. Switch the preview to deny to see what the gateway would do with ibac.capabilities.unmapped: deny.`
     : mine.decision
-      ? `${did} The console's preview of its card says it declares a skill for this intent (${mine.matched_skills.join(", ")}); this is the check a gateway reading the mappings of its card would run. Below, what a tool call on the matched skill would then be checked against.`
-      : `${did} The console's preview of its card says it declares no skill for this intent: a gateway reading its mappings would refuse here. The gateway forwards on admission and intent alone. Click a skill to see why nothing matched.`;
+      ? `${did}${real} The console's preview of its card agrees: it declares a skill for this intent (${mine.matched_skills.join(", ")}). The gateway compares the intent with the skills you may use; the preview reads every skill on the card. Below, what a tool call on the matched skill would then be checked against.`
+      : `${did}${real} The console's preview of its card says it declares no skill for this intent, which is what a gateway comparing the intent with its skills refuses. Click a skill to see why nothing matched.`;
   const skipped = (ib.summary.skipped_agents || []).length;
   $("#ibacSummary").replaceChildren(
-    stat(me.verdict, "this gateway did", me.verdict === "forwarded" ? "ok" : me.verdict === "no intent" ? "" : "fail"),
+    stat(me.verdict, "this gateway did", me.verdict === "forwarded" ? "ok" : ["no intent", "intent not covered"].includes(me.verdict) ? "" : "fail"),
     stat(mine.skipped ? "skipped" : mine.decision ? "declares" : "does not", mine.skipped ? "no mapping · allow" : "its card, in the preview", mine.decision ? "ok" : "fail"),
     stat(`${matched} / ${ib.summary.agents}`, "cards declare it (preview)", matched ? "ok" : "fail"),
   );
@@ -1738,19 +1776,20 @@ function traceAnswer(trace) {
     }
   }
   const failure = gwRecords(trace).find((r) => r.decision === "ERROR");
-  const verdict = gw.transport_error ? "unreachable" : failure ? "admission error" : gw.kind === "task" ? "forwarded" : gw.kind === "intent_error" ? noIntentWord(gw) : gw.kind === "refused" ? (gw.http_status === 403 ? "admission refused" : unresolvedRecord(gw) ? "caller unknown" : "token refused") : "error";
+  const verdict = gw.transport_error ? "unreachable" : failure ? "admission error" : gw.kind === "task" ? "forwarded" : gw.kind === "intent_error" ? noIntentWord(gw) : gw.kind === "refused" ? (uncoveredRecord(gw) ? "intent not covered" : gw.http_status === 403 ? "admission refused" : unresolvedRecord(gw) ? "caller unknown" : "token refused") : "error";
   return {
     agent: trace.agent, verdict, kind: gw.kind, http_status: gw.http_status, latency_ms: gw.latency_ms, skill: gw.skill,
     error_text: failure?.reason || (unresolvedRecord(gw) ? UNRESOLVED_TEXT : "") || gw.error_text || gw.transport_error || "",
     admission: adm ? { decision: adm.decision, reason: adm.reason, cached: Boolean(adm.cached?.admission) } : null,
     intent: intent ? { decision: intent.decision, duration_ms: intent.durationMs } : null,
     chain,
+    skill_check: gw.skill_check || null,
   };
 }
 
 // The product's answer for one card: verdict, then admission, intent and chain from the gateway's own records.
 function gwBlock(a, primary) {
-  const kind = a.verdict === "forwarded" ? "ok" : ["no intent", "intent too large"].includes(a.verdict) ? "warn" : "fail";
+  const kind = a.verdict === "forwarded" ? "ok" : ["no intent", "intent too large", "intent not covered"].includes(a.verdict) ? "warn" : "fail";
   const block = el("div", `fa-gw ${kind}`);
   block.dataset.agent = a.agent;
   const line = a.verdict === "forwarded"
@@ -1759,11 +1798,14 @@ function gwBlock(a, primary) {
       ? "no intent · the gateway answered the caller"
       : a.verdict === "intent too large"
         ? "intent too large for the token · the gateway asked to split the request"
-        : `${a.verdict} · HTTP ${a.http_status ?? "—"}${a.error_text ? ` · ${a.error_text.slice(0, 60)}` : ""}`;
+        : a.verdict === "intent not covered"
+          ? "intent not covered · no skill you may use here fits it (403)"
+          : `${a.verdict} · HTTP ${a.http_status ?? "—"}${a.error_text ? ` · ${a.error_text.slice(0, 60)}` : ""}`;
   block.append(el("b", "", primary ? "sent through this gateway" : "its gateway"), el("span", "", line));
   const bits = [];
   if (a.admission) bits.push(`admission ${a.admission.decision}${a.admission.cached ? " (cached)" : ""}`);
   if (a.intent) bits.push(`intent ${a.intent.decision.replace("INTENT_", "").toLowerCase()}`);
+  if (fitText(a.skill_check)) bits.push(`skills: ${fitText(a.skill_check)}`);
   if (a.chain?.length) bits.push(`chain ${a.chain.join(" ← ")}`);
   if (bits.length) block.append(el("small", "", bits.join(" · ")));
   return block;
@@ -1810,7 +1852,7 @@ function applyCompare(data) {
   const parts = [`${count("forwarded")} forwarded`];
   if (count("no intent")) parts.push(`${count("no intent")} no intent`);
   if (count("intent too large")) parts.push(`${count("intent too large")} intent too large`);
-  const refused = data.answers.filter((a) => /refused|unknown/.test(a.verdict)).length;
+  const refused = data.answers.filter((a) => /refused|unknown|not covered/.test(a.verdict)).length;
   if (refused) parts.push(`${refused} refused`);
   const rest = data.answers.length - count("forwarded") - count("no intent") - count("intent too large") - refused;
   if (rest) parts.push(`${rest} error`);

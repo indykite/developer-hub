@@ -124,13 +124,13 @@ What each line means:
 - **No clock on the answer**: a long agent answer is never cut by the gateway.
 
 With `IBAC_ENABLED=true` two gateways decide by the intent in the delegated
-token. The entry gateway asks the Intent Agent and writes the intent into
-the token. `erp-mcp-iag` compares every call of an ERP tool with it: a call
-the intent does not match is refused, and for one invoice the gateway asks
-the platform whether the person may view it (`intent check` and `data
-check` cards). Not on stage: the filter of the extended agent card by the
-intent; the console's "IBAC discovery preview" line shows what it would
-decide.
+token. The entry gateway asks the Intent Agent, compares the intent with
+the orchestrator's skills (an `intent check` card names the skills each
+evaluation fits) and writes it into the token. `erp-mcp-iag` shows and
+allows the ERP tools only under an intent about invoices, and for one
+invoice asks the platform whether the person may view it (`intent check`
+and `data check` cards). With `IBAC_UNMAPPED=deny` the entry gateway also
+refuses a prompt whose intent fits none of the caller's mapped skills.
 
 Each act below ends with a **Spot the gateway** line: the one thing on the
 terminal that is the gateway's work in that act.

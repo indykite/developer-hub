@@ -239,6 +239,7 @@ textarea:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px
 .refusal b { font-family: var(--serif); font-size: 17px; display: block; margin-bottom: 4px; }
 .refusal .obl { color: var(--sub); }
 .refusal .obl span { color: var(--amber); font-weight: 500; }
+.refusal .fa-send.inline { display: inline-block; width: auto; margin: 4px 6px 0 0; padding: 3px 10px; }
 
 /* wire */
 .wire { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--card); box-shadow: var(--shadow); }

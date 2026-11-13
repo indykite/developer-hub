@@ -387,6 +387,7 @@ async def send_prompt(request: Request, body: PromptRequest) -> dict[str, Any]:
     #    records (INTENT, admission), the Token Service's (the gateway's exchange).
     trace["audit"] = await _intent_record(ctx, answer, persona, body.prompt, seq_before)
     trace["gateway"]["records"] = _gateway_records(ctx, seq_before, agent)
+    trace["gateway"]["skill_check"] = skill_check(trace["gateway"]["records"])
     if answer.downstream:
         # The agent asked its downstream gateways for their cards: wait for their records, then attach them.
         await asyncio.sleep(RECORD_SETTLE_SECONDS)
@@ -418,15 +419,22 @@ async def _intent_record(
     prompt: str,
     seq_before: int,
 ) -> dict[str, Any] | None:
-    """Wait for the Intent Agent's own record of this prompt when the gateway asked it; else let records settle."""
-    if answer.kind in ("task", "intent_error"):
-        return await ctx.audit.wait_until(
-            lambda e: _is_intent_record(e, persona, prompt),
-            seq_before,
-            AUDIT_WAIT_SECONDS,
-        )
-    await asyncio.sleep(0.5)
-    return None
+    """Wait for the Intent Agent's own record of this prompt when the gateway asked it; else let records settle.
+
+    The gateway asked it for every forwarded message, for a message it answered itself, and for one it
+    refused because the intent fits no skill of the agent: that refusal has an INTENT record of the gateway.
+    """
+    asked = answer.kind in ("task", "intent_error")
+    if not asked:
+        await asyncio.sleep(0.5)
+        asked = any(r.get("action") == "INTENT" for r in _gateway_records(ctx, seq_before, answer.agent))
+    if not asked:
+        return None
+    return await ctx.audit.wait_until(
+        lambda e: _is_intent_record(e, persona, prompt),
+        seq_before,
+        AUDIT_WAIT_SECONDS,
+    )
 
 
 def _intent_payload(answer: GatewayAnswer, record: dict[str, Any], prompt: str) -> dict[str, Any] | None:
@@ -482,6 +490,7 @@ def summarize_gateway_answer(answer: dict[str, Any], records: list[dict[str, Any
     INTENT records. The console adds only a one-word verdict for the card.
     """
     unresolved = _unresolved_record(answer, records)
+    uncovered = _uncovered_record(answer, records)
     admission = next(
         (r for r in records if r.get("action") != "INTENT" and r.get("decision") in ("AUTHORIZED", "NOT_AUTHORIZED")),
         None,
@@ -494,7 +503,11 @@ def summarize_gateway_answer(answer: dict[str, Any], records: list[dict[str, Any
     delegated = (answer.get("received") or {}).get("x_ik_token") or {}
     return {
         "agent": answer.get("agent"),
-        "verdict": _gateway_verdict(answer, failed=failure is not None, unresolved=unresolved is not None),
+        "verdict": "intent not covered"
+        if uncovered
+        else _gateway_verdict(answer, failed=failure is not None, unresolved=unresolved is not None),
+        # The gateway's own comparison of the intent with the skills the caller may use on this card.
+        "skill_check": skill_check(records),
         "kind": answer.get("kind"),
         "http_status": answer.get("http_status"),
         "latency_ms": answer.get("latency_ms"),
@@ -531,6 +544,41 @@ def _unresolved_record(answer: dict[str, Any], records: list[dict[str, Any]]) ->
         return None
     refusals = (r for r in records if r.get("decision") == "NOT_AUTHORIZED" and r.get("action") != "INTENT")
     return next((r for r in refusals if r.get("actor")), None)
+
+
+def _uncovered_record(answer: dict[str, Any], records: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """Return the gateway's record of an intent that fits no skill of the agent, when that is the 403.
+
+    The caller was admitted and the Intent Agent found an intent, but none of its evaluations matches a
+    mapping of a skill the caller may use here: the gateway's INTENT record is a refusal.
+    """
+    if answer.get("http_status") != HTTP_FORBIDDEN:
+        return None
+    return next((r for r in records if r.get("action") == "INTENT" and r.get("decision") == "NOT_AUTHORIZED"), None)
+
+
+def skill_check(records: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """Read the gateway's comparison of the intent with the agent's skills from its IBAC_DISCOVERY records.
+
+    One record lists every evaluation with the skills it matched (several records for a long card: an
+    evaluation fits when any of them names a skill for it); a skill without a mapping that the gateway let
+    through has a record of its own, with its id. None when the gateway wrote no such record.
+    """
+    engine = [r for r in records if r.get("action") == "IBAC_DISCOVERY"]
+    if not engine:
+        return None
+    matched: dict[tuple[str, str, str], set[str]] = {}
+    for record in engine:
+        for item in record.get("evaluations") or []:
+            key = (str(item.get("subjectType")), str(item.get("action")), str(item.get("resourceType")))
+            matched.setdefault(key, set()).update(str(s) for s in item.get("matchedSkills") or [])
+    unmapped = sorted({str(r["skillID"]) for r in engine if r.get("skillID") and not r.get("evaluations")})
+    return {
+        "evaluations": len(matched),
+        "fit": sum(1 for skills in matched.values() if skills),
+        "skills": sorted({s for skills in matched.values() for s in skills}),
+        "unmapped": unmapped,
+    }
 
 
 def _gateway_verdict(answer: dict[str, Any], *, failed: bool, unresolved: bool = False) -> str:

@@ -188,6 +188,10 @@ spec:
               value: {{ $root.Values.gateway.authzenCacheTtl | quote }}
             - name: JARVIS_AUTHORIZATION_HEADER_FORWARD
               value: {{ $root.Values.gateway.authorizationForward | default "none" | quote }}
+            - name: JARVIS_IBAC_CAPABILITIES_UNMAPPED
+              value: {{ $root.Values.gateway.ibacUnmapped | default "allow" | quote }}
+            - name: JARVIS_IBAC_CAPABILITIES_CACHE_TTL
+              value: {{ $root.Values.gateway.a2aCacheTtl | default "5s" | quote }}
             - name: JARVIS_A2A_CACHE_TTL
               value: {{ $root.Values.gateway.a2aCacheTtl | default "5s" | quote }}
             - name: JARVIS_A2A_CACHE_UPDATE_AFTER

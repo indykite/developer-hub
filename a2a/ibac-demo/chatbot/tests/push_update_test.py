@@ -84,3 +84,16 @@ def test_intent_check_fields_are_forwarded(sent):
     assert sent[0]["reason_code"] == "intent_match_authzen_required"
     assert sent[1]["action"] == "RESOLVED_EVALUATIONS"
     assert sent[1]["resolved_evaluations"] == resolved
+
+
+def test_intent_comparison_is_forwarded(sent):
+    """An IBAC_DISCOVERY record keeps the skills each evaluation of the intent fits."""
+    matches = [
+        {"subjectType": "Person", "resourceType": "Invoice", "action": "CAN_VIEW", "matchedSkills": ["query-erp"]},
+        {"subjectType": "Person", "resourceType": "Weather", "action": "CAN_READ", "matchedSkills": []},
+    ]
+    record = {**RECORD, "service": "orchestrator-iag", "action": "IBAC_DISCOVERY", "evaluations": matches}
+    app.app.test_client().post("/api/push-update", json={**record, "skillIDs": ["query-erp", "orchestrator"]})
+    assert sent[0]["action"] == "IBAC_DISCOVERY"
+    assert sent[0]["evaluations"] == matches
+    assert sent[0]["skill_ids"] == ["query-erp", "orchestrator"]

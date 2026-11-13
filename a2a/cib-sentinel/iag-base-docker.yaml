@@ -6,7 +6,7 @@ version: '3.9'
 services:
   iag-base:
     # Pin the tag: never `latest`.
-    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.0.3@sha256:8368f151cfec343f679dce6f320f43ab8c14cebb5465f683213de66c857aed33}
+    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.114.0@sha256:88fa2732d2db24b42fd188c0df968e29d561a7b2ae13a20f6f658ba1fc7b428a}
     environment:
       JARVIS_SERVICE_LOG_LEVEL: debug
       JARVIS_SERVICE_ENVIRONMENT: demo

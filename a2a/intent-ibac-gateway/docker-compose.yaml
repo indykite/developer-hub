@@ -1,7 +1,7 @@
 ---
 # intent-ibac-gateway: the IndyKite Intent Agent and the IBAC engine, shown together.
 #
-#   console ──A2A SendMessage, Bearer = the person's Auth0 token──▶ iag-<agent> (Agent Gateway 2.0.3)
+#   console ──A2A SendMessage, Bearer = the person's Auth0 token──▶ iag-<agent> (Agent Gateway)
 #       gateway: introspect at auth0-bridge ─▶ Token Service exchange ─▶ whoami
 #                ─▶ AuthZEN admission ($ik_token.act_chain) ─▶ Intent Agent (ibac.enabled)
 #                ─▶ exchange again with the intent (a gateway that passes it on) ─▶ forward to agent-<agent>

@@ -319,6 +319,13 @@
             "all"
           ]
         },
+        "ibacUnmapped": {
+          "type": "string",
+          "enum": [
+            "allow",
+            "deny"
+          ]
+        },
         "a2aCacheTtl": {
           "type": "string",
           "pattern": "^[0-9]+(ms|s|m|h)$"

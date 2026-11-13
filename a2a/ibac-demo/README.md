@@ -295,10 +295,10 @@ gateway, A2A and MCP alike: all gateways inherit the `JARVIS_TOKEN_SERVICE_*`
 block from [`iag-base-docker.yaml`](iag-base-docker.yaml). Details in
 [`token-service/README.md`](token-service/README.md); in short:
 
-1. **Image**: loaded locally and named in `.env` as `TOKEN_SERVICE_IMAGE`,
-   the same release as the gateways (see
-   [The Agent Gateway image](#7-the-agent-gateway-image)). It is
-   `linux/amd64`; arm64 hosts run it under emulation.
+1. **Image**: [`indykite/token-service`](https://hub.docker.com/r/indykite/token-service/tags)
+   on Docker Hub, named in `.env` as `TOKEN_SERVICE_IMAGE`, the same release
+   as the gateways (see [The Agent Gateway image](#7-the-agent-gateway-image)).
+   It is `linux/amd64`; arm64 hosts run it under emulation.
 2. **Configure**: copy `token-service/token-service.example.yaml` to
    `token-service/token-service.yaml` (gitignored); fill a fresh RSA private
    JWK (`idp.signing_keys`) and the client secret the gateways present
@@ -381,19 +381,19 @@ local build of the [public repo](https://github.com/indykite/intent-agent).
 
 ### 7. The Agent Gateway image
 
-The gateways and the Token Service run images of one release, loaded
-locally and named in `.env`:
+The gateways and the Token Service run the images named in `.env` as
+`AGENT_GATEWAY_IMAGE` and `TOKEN_SERVICE_IMAGE`. Both are published on
+Docker Hub, and `.example.env` names the latest release there:
 
-```sh
-AGENT_GATEWAY_IMAGE=agent-gateway:2.112.0
-TOKEN_SERVICE_IMAGE=token-service:2.112.0
-```
+- [`indykite/agent-gateway`](https://hub.docker.com/r/indykite/agent-gateway/tags)
+- [`indykite/token-service`](https://hub.docker.com/r/indykite/token-service/tags)
 
 Keep the two on the same release: the gateway sends the intent to the Token
-Service, which has to write it into the token. Check what runs with:
+Service, which has to write it into the token. Check what a gateway runs
+with:
 
 ```sh
-docker image inspect agent-gateway:2.112.0 --format '{{index .Config.Labels "org.opencontainers.image.version"}}'
+docker compose images orchestrator-iag
 ```
 
 What the demo relies on:
@@ -553,12 +553,13 @@ vocabulary). What the gateway does with it:
 - the agent unreachable or unreadable: 502; a timeout
   (`INTENT_AGENT_TIMEOUT`, 45 s): 504.
 
-**What the switch buys, and what it costs.** The gateway uses the intent
-for two things: a prompt the Intent Agent cannot map onto a policy never
-reaches the agent, and the evaluations of a mapped prompt travel to the
-agent in `act.intent` of the delegated token. It takes no authorization
-decision from the intent in front of an A2A agent (see below), and the
-admission and capability checks run exactly the same with the switch off. So `IBAC_ENABLED=true` is a vocabulary gate: it refuses
+**What the switch buys, and what it costs.** The entry gateway uses the
+intent for three things: a prompt the Intent Agent cannot map onto a policy
+never reaches the agent; the intent is compared with the skills of the
+orchestrator the caller may use, and one that fits none is refused; and the
+evaluations that fit travel to the agent in `act.intent` of the delegated
+token. The admission and capability checks run exactly the same with the
+switch off. So `IBAC_ENABLED=true` is a vocabulary gate: it refuses
 greetings, web search and Drive prompts, and it refuses any prompt the model
 fails to map, at the price of one Gemini round trip per prompt. The model
 maps from the policies' actions and the node types' property **names**, so a
@@ -573,7 +574,7 @@ Every call is an **INTENT** audit record of the gateway (`INTENT_FOUND` /
 AUTHORIZED card; the Intent Agent's own record arrives too, with the
 evaluations.
 
-**IBAC, prepared.** Intent-based access control is the gateway comparing
+**IBAC at the gateways.** Intent-based access control is the gateway comparing
 that intent with what the invoked agent *declares* it can do. The agents
 already publish the declaration: each skill on their public agent card
 carries `x-coaz-mappings`, coarse-authorization mappings of subject type,
@@ -582,35 +583,43 @@ resource type and allowed actions (literal ids where fixed), read from
 card JSON the agents serve at `/.well-known/agent-card.json`. The gateway's
 discovery rule accepts a skill when any mapping matches any evaluation of
 the intent on those three fields; usage then resolves ids and runs AuthZEN.
-A gateway with IBAC on runs this rule on the extended agent card: of the
-skills the caller may use (of every skill, with capability checks off) it
-keeps the ones that fit the newest intent in the delegated token of the
-request, and writes `IBAC_DISCOVERY` records; a skill without a mapping stays
-(`ibac.capabilities.unmapped`, `allow` by default). A request without an
-intent in its delegated token gets the card filtered to the permitted set
-only. In front of an MCP server, a gateway with IBAC on checks every call of
-a tool, resource or prompt that publishes mappings (`x-coaz-mappings` in its
-`_meta`) against that intent: a call the intent does not match is refused
-with `403`, and for a mapping that names ids (`$request.arguments.<name>`,
-`$token.sub`) the gateway asks the platform one AuthZEN `evaluations`
-question before it lets the call through (`IBAC_USAGE` and
-`RESOLVED_EVALUATIONS` records). A capability without a mapping passes
-unchecked. In this demo `IBAC_ENABLED=true` switches IBAC on at two
-gateways: the entry gateway, which asks the Intent Agent and writes the
-intent into the token, and `erp-mcp-iag`, which checks the ERP tools against
-it. Both ERP tools publish mappings (`erp_mcp/server.py`): `list_invoices`
-needs an intent about a `Person` viewing an `Invoice`, and `get_invoice`
-also has the gateway ask the platform whether that person may view the
-invoice the call names. So "show me the invoices" passes with an
-`intent check` card at `erp-mcp-iag`, and an ERP call under an intent about
-something else is refused there before the server sees it. The ERP server
-then searches with the action of the intent, so the rows are the ones the
-prompt asked for: an intent about unpaid invoices (`VIEW_UNPAID_INVOICE`)
-returns the open ones only, where `CAN_VIEW` returns every invoice the
-person may see. The other MCP
-gateways have IBAC off. The card filter stays idle (the console asks the
-entry gateway for the card with the person's token alone); the console
-previews the discovery decision on every INTENT card from the
+A gateway with IBAC on runs this rule in four places, always against the
+intent in the delegated token of the request (`IBAC_DISCOVERY`,
+`IBAC_USAGE` and `RESOLVED_EVALUATIONS` records):
+
+- **An A2A message**: the intent of the prompt is compared with the skills
+  of the agent the caller may use. An evaluation that fits no skill is left
+  out of the token; an intent that fits none is refused with `403`.
+- **The extended agent card**: of the skills the caller may use, the ones
+  that fit the intent stay.
+- **The lists of an MCP server**: a tool, resource or prompt stays when it
+  fits the intent, so a list can come back empty.
+- **A call at an MCP server**: a call the intent does not match is refused
+  with `403`, and for a mapping that names ids (`$request.arguments.<name>`,
+  `$token.sub`) the gateway asks the platform one AuthZEN `evaluations`
+  question before it lets the call through.
+
+A skill or tool without a mapping is not checked (`ibac.capabilities.unmapped`,
+`allow` by default; `deny` turns it into "fits nothing").
+
+In this demo `IBAC_ENABLED=true` switches IBAC on at two gateways. The
+entry gateway asks the Intent Agent, compares the intent with the
+orchestrator's skills and writes it into the token. Four of the
+orchestrator's skills publish mappings; `web-search` has none and every
+workflow permits it, so with `IBAC_UNMAPPED=allow` (the default) no intent
+is refused or trimmed there, and the `intent check` card shows which skills
+each evaluation fits. `IBAC_UNMAPPED=deny` makes only the mapped skills
+count: a prompt whose intent fits none of the caller's skills stops at the
+entry gateway. `erp-mcp-iag` checks the ERP tools: both publish mappings
+(`erp_mcp/server.py`), so under an intent about invoices the analyst sees
+and may call them, with the platform asked about the invoice a
+`get_invoice` call names; under an intent about something else the tools
+list is empty and a call is refused before the server sees it. The ERP
+server then searches with the action of the intent, so the rows are the
+ones the prompt asked for: an intent about unpaid invoices
+(`VIEW_UNPAID_INVOICE`) returns the open ones only, where `CAN_VIEW` returns
+every invoice the person may see. The other gateways have IBAC off. Beside
+the gateway's own cards, the console previews the discovery decision on every INTENT card from the
 orchestrator's raw card (`IBAC_CARD_URL`): "matches query-erp" for an invoice
 prompt, "no skill matches" for an intent outside the agent's declared skills. Note what
 `IBAC_ENABLED=true` means: a prompt the Intent Agent finds no intent for

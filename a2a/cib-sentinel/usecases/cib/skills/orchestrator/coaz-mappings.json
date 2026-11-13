@@ -1,0 +1,115 @@
+{
+  "_comment": "Mappings (x-coaz-mappings) published on the orchestrator's agent card, one list per skill id. With the intent option on, the orchestrator's gateway matches the intent of each task (subject type, action, resource type) against them: a task goes on only with the evaluations a skill covers, and is refused when no skill covers any. Subjects are Agent (the Sentinel acts for itself); actions and resource types are those of the dataset's policies. The orchestrator skill forwards nothing, so it has no entry and covers no intent.",
+  "query-retriever": [
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Agent"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Mandate"
+        }
+      ],
+      "action": [
+        {
+          "name": "CAN_READ"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Agent"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Company"
+        }
+      ],
+      "action": [
+        {
+          "name": "CAN_RESTRICT"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Agent"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Restriction"
+        }
+      ],
+      "action": [
+        {
+          "name": "CAN_READ"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Agent"
+        }
+      ],
+      "resource": [
+        {
+          "type": "TradeOrder"
+        }
+      ],
+      "action": [
+        {
+          "name": "CAN_READ"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Agent"
+        }
+      ],
+      "resource": [
+        {
+          "type": "TradeOrder"
+        }
+      ],
+      "action": [
+        {
+          "name": "CAN_HOLD"
+        }
+      ]
+    }
+  ],
+  "deal-room": [
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Agent"
+        }
+      ],
+      "resource": [
+        {
+          "type": "DealDocument"
+        }
+      ],
+      "action": [
+        {
+          "name": "CAN_READ"
+        }
+      ]
+    }
+  ]
+}

@@ -196,9 +196,12 @@ docker compose up -d
 ```
 
 The gateways and the Token Service run the images named in
-`AGENT_GATEWAY_IMAGE` and `TOKEN_SERVICE_IMAGE`; both must be of the same
-release. After changing either, recreate `token-service` and the four
-gateways.
+`AGENT_GATEWAY_IMAGE` and `TOKEN_SERVICE_IMAGE`. `.example.env` names the
+images published on Docker Hub
+([agent-gateway](https://hub.docker.com/r/indykite/agent-gateway/tags),
+[token-service](https://hub.docker.com/r/indykite/token-service/tags)); when
+you load a release locally instead, name the same release in both. After
+changing either, recreate `token-service` and the four gateways.
 
 ### 6. Try it
 
@@ -286,24 +289,47 @@ of each task.
    CAN_RESTRICT, Company*. A task it cannot put in those words is answered
    with a refusal and is not passed on; the mission card is stamped
    `no intent`.
-3. The gateway exchanges the token a second time so the evaluations travel in
-   the delegation (`act.intent`), and writes an `INTENT` audit record.
+3. The gateway compares the evaluations with the skills of the orchestrator
+   the Sentinel's workflow permits. A skill states the intents it serves in
+   the `x-coaz-mappings` of its entry on the agent card (subject type,
+   resource type, action). The evaluations no skill covers are dropped; when
+   none is covered the task is refused with a 403 and the mission card is
+   stamped `refused`. A skill without a mapping covers nothing, or every
+   intent with `IBAC_UNMAPPED_SKILLS=allow`.
+4. The gateway exchanges the token a second time so the covered evaluations
+   travel in the delegation (`act.intent`), and writes an `INTENT` audit
+   record and one `IBAC_DISCOVERY` record with the skills that fit.
 
-**At the MCP gateway**, three hops later, every tool call is checked against
-that intent:
+The mappings of the orchestrator's skills are in
+`usecases/cib/skills/orchestrator/coaz-mappings.json`, one list per skill id:
+
+| Skill | Serves |
+| --- | --- |
+| `query-retriever` | Agent `CAN_READ` Mandate, Restriction, TradeOrder; `CAN_RESTRICT` Company; `CAN_HOLD` TradeOrder |
+| `deal-room` | Agent `CAN_READ` DealDocument |
+| `orchestrator` | no mapping: it forwards nothing |
+
+**At the MCP gateway**, three hops later, the tool list and every tool call
+are checked against that intent:
 
 1. The MCP server publishes, for a tool, what a call to it stands for: the
    `x-coaz-mappings` of its knowledge query (subject type, resource type,
    action, and where in the call the resource id is).
-2. A mapped tool passes only when the intent carries an evaluation with the
+2. The list of tools the retriever gets is narrowed twice: to the tools the
+   workflow permits, then to those that fit the intent. A mapped tool the
+   intent does not name is left out of the list, so the retriever's model
+   never sees it for that task (`DISCOVERY`, `IBAC_DISCOVERY`). The list
+   depends on the task, which is why the agents ask for it per task
+   (`MCP_SESSION_TTL=0`).
+3. A call to a mapped tool passes only when the intent carries an evaluation with the
    same subject type, resource type and action. Otherwise the call is refused
    (`IBAC_USAGE`, `intent_mismatch`).
-3. When the mapping names a resource id, the gateway asks the platform for a
+4. When the mapping names a resource id, the gateway asks the platform for a
    decision on it, with the Sentinel as the subject, before the call reaches
    the MCP server (`RESOLVED_EVALUATIONS`). A denied decision refuses the
    call.
-4. A tool without a mapping passes or is refused according to
-   `IBAC_UNMAPPED` (`allow` by default).
+5. A tool without a mapping is listed and passes, or is left out and refused,
+   according to `IBAC_UNMAPPED` (`allow` by default).
 
 The retriever's gateway has no Intent Agent, so the intent the MCP gateway
 checks is the one read from the Sentinel's task.
@@ -313,21 +339,22 @@ after `x-coaz-mappings:`:
 
 | Tool | Stands for | Checked |
 | --- | --- | --- |
-| `raise-restriction` | Agent `CAN_RESTRICT` Company | Against the intent. |
-| `hold-order` | Agent `CAN_HOLD` TradeOrder, the order id of the call | Against the intent, then by the platform for that order. |
-| `get-deal-documents` | Agent `CAN_READ` DealDocument | Against the intent. |
-| the lookups (`get-mandate`, `get-restricted-list`, `get-orders-in-company`) | no mapping | Not against the intent: the capability check and the query's own policy govern them. |
+| `raise-restriction` | Agent `CAN_RESTRICT` Company | Listed and callable only for an intent that names it. |
+| `hold-order` | Agent `CAN_HOLD` TradeOrder, the order id of the call | Listed and callable only for an intent that names it, then decided by the platform for that order. |
+| `get-deal-documents` | Agent `CAN_READ` DealDocument | Listed and callable only for an intent that names it. |
+| the lookups (`get-mandate`, `get-restricted-list`, `get-orders-in-company`) | no mapping | Always listed: the capability check and the query's own policy govern them. |
 
 So a write happens only when the task said so, and a hold only on an order
 the platform allows the Sentinel to hold: an order in a restricted company,
 in a region it covers.
 
 On the page, the fourth tile under the wall, **Intent**, turns green or red
-for the task shown, and a mission card shows two blocks: the intent carried
+for the task shown, and a mission card shows three blocks: the intent carried
 in the delegation, with a decision per evaluation asked by the console
 itself (`/access/v1/evaluation`, or `/access/v1/search/resource` when the
-evaluation names no resource), and *Checked at the MCP gateway*, the
-decisions the gateway obtained from the platform.
+evaluation names no resource); *Narrowed to the intent*, the skills of the
+orchestrator and the mapped tools the gateways kept for it; and *Checked at
+the MCP gateway*, the decisions the gateway obtained from the platform.
 
 The vocabulary is six KBAC policies with subject `Agent` in the dataset:
 `CAN_READ` on `Mandate`, `Restriction`, `TradeOrder` and `DealDocument`,
@@ -337,10 +364,10 @@ rules as the knowledge-query policies.
 To run it:
 
 - Images: a gateway and a Token Service that carry the intent in the token
-  and check tool calls against it, named in `AGENT_GATEWAY_IMAGE` and
-  `TOKEN_SERVICE_IMAGE`. With the two published images of `.example.env` the
-  gateway asks the Intent Agent and refuses a task without an intent, but the
-  delegation carries no intent and nothing is checked at the MCP gateway.
+  and check skills, tool lists and tool calls against it, named in
+  `AGENT_GATEWAY_IMAGE` and `TOKEN_SERVICE_IMAGE`. The Token Service has to
+  carry the intent too: with one that does not, the delegation carries no
+  intent and nothing is checked at the MCP gateway.
 - Auth0: an API `intent_agent`, with the orchestrator gateway's application
   authorized for it.
 - `.env`: `COMPOSE_PROFILES=intent` and `IBAC_ENABLED=true`.
@@ -387,6 +414,8 @@ refusal.
 | Feed, reset or wake answers `403` | The request did not come from the console page itself: reload the page after a console rebuild. |
 | `No access token` on a task | `SENTINEL_IDP_CLIENT_ID` / `SENTINEL_IDP_CLIENT_SECRET`, and the bridge's log line for the token request. |
 | Every task is `502` with intent on | The Intent Agent is not running (`COMPOSE_PROFILES=intent`), or the orchestrator gateway's application is not authorized for the `intent_agent` API. |
+| With intent on, every task is refused at `orchestrator-iag`: "none fits the skills of the agent" | The orchestrator's card publishes no mapping: `coaz-mappings.json` is not in the mounted skills folder. Recreate the orchestrator. `IBAC_UNMAPPED_SKILLS=allow` switches the check off. |
+| With intent on, a write task ends without the write and the retriever says it has no such tool | The retriever reused a tool list it got for another task. Set `MCP_SESSION_TTL=0` and recreate the retriever. |
 | With intent on, no tool call is checked at the MCP gateway | The tools publish no mapping: the three query descriptions lack the `x-coaz-mappings:` line, or the MCP server does not publish it. The `mcp-iag` records then carry the reason code `missing_coaz_mapping`. |
 | A hold is refused with "may not access the data the named tool uses" | The platform denied `CAN_HOLD` for that order: the intended refusal for an order in an unrestricted company or outside the Sentinel's coverage. |
 | A write is refused with "does not match the intent" | The task's wording did not yield the evaluation the tool's mapping names (`CAN_RESTRICT` on `Company`, `CAN_HOLD` on `TradeOrder`): read the intent on the mission card. |

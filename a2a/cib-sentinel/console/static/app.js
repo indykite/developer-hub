@@ -53,6 +53,8 @@
   function tone(record) {
     const d = record.decision || '';
     if (d === 'token_exchanged') return 'token';
+    // A gateway comparing the intent with a list reports what fits; what does not fit is left out, not refused.
+    if (record.action === 'IBAC_DISCOVERY') return d === 'authorized' ? 'ok' : 'info';
     if (DENIED.has(d) || /refus|fail|invalid/.test(d)) return 'deny';
     if (/authorized|allow|ok|success|exchanged|introspected|found/.test(d)) return 'ok';
     return 'info';
@@ -204,9 +206,15 @@
       if (verdict !== 'ok' && verdict !== 'deny') continue;
       const agent = `Agent:${r.service.replace(/-iag$/, '')}`;
       const action = (r.action || '').toUpperCase();
-      // Reading the intent is not an authorization decision: it never stops a hop on the route.
-      if (action === 'INTENT') continue;
-      if (action === 'IBAC_USAGE' || action === 'RESOLVED_EVALUATIONS') {
+      // Comparing the intent with a list of skills or tools is no decision on the hop.
+      if (action === 'IBAC_DISCOVERY') {
+        if (String(r.reason_code).startsWith('intent_match')) mark('intent', 'ok');
+        continue;
+      }
+      // Reading the intent stops a hop only when no skill of the agent covers it.
+      if (action === 'INTENT' && r.decision !== 'not_authorized') continue;
+      if (action === 'INTENT') mark('intent', 'deny');
+      else if (action === 'IBAC_USAGE' || action === 'RESOLVED_EVALUATIONS') {
         // A tool the intent check skipped (it publishes no mapping) says nothing about the intent boundary.
         if (verdict === 'deny' || action === 'RESOLVED_EVALUATIONS' || String(r.reason_code).startsWith('intent_match')) mark('intent', verdict);
       } else mark(action === 'ADMISSION' || !action ? 'admission' : 'capability', verdict);
@@ -361,7 +369,7 @@
 
   // ------------------------------------------------------------ missions
   // How a gateway record's action reads on a hop chip.
-  const HOP_WORDS = { ADMISSION: 'admission', DISCOVERY: 'discovery', INVOCATION: 'tool allowed', INTENT: 'intent read', IBAC_USAGE: 'fits the intent', RESOLVED_EVALUATIONS: 'platform decision' };
+  const HOP_WORDS = { ADMISSION: 'admission', DISCOVERY: 'discovery', INVOCATION: 'tool allowed', INTENT: 'intent read', IBAC_DISCOVERY: 'narrowed to the intent', IBAC_USAGE: 'fits the intent', RESOLVED_EVALUATIONS: 'platform decision' };
   function hopChips(step) {
     const chips = [h('span', { class: 'hop subject' }, 'sentinel')];
     const seen = new Set();
@@ -391,6 +399,16 @@
     }
     if (!(step.intent || []).length && !(step.checked || []).length) return null;
     const checked = step.checked || [];
+    // What the gateways kept for this intent: the skills of the first agent that cover it, then the mapped
+    // tools the MCP gateway still lists for it.
+    const fits = step.fits || [];
+    const narrowed = fits.length ? h('div', { class: 'intent checked' },
+      h('b', null, 'Narrowed to the intent', h('i', null, 'skills and tools the gateways kept for it')),
+      fits.map((f) => h('div', { class: 'intent-row' },
+        h('span', { class: 'who' }, f.service),
+        h('span', { class: 'act' }, f.action || 'any action'),
+        h('span', { class: 'what' }, `${f.resource} · ${f.matched.length ? f.matched.join(', ') : `no mapped ${f.service === 'mcp-iag' ? f.among || 'tool' : 'skill'}`}`),
+        h('span', { class: `verdict ${f.matched.length ? 'permitted' : 'unknown'}` }, f.matched.length ? 'kept' : 'left out')))) : null;
     // What the MCP gateway asked the platform about the tool calls of this task: the product's own decisions.
     const byGateway = checked.length ? h('div', { class: `intent checked${checked.some((c) => c.allowed === false) ? ' denied' : ''}` },
       h('b', null, 'Checked at the MCP gateway', h('i', null, 'what the tool call named · decided by the platform')),
@@ -399,7 +417,7 @@
         h('span', { class: 'act' }, c.action || ''),
         h('span', { class: 'what' }, `${c.resourceType || ''} ${c.resourceID || ''}`),
         h('span', { class: `verdict ${c.allowed ? 'permitted' : 'denied'}` }, c.allowed ? 'allowed' : 'denied')))) : null;
-    if (!(step.intent || []).length) return byGateway;
+    if (!(step.intent || []).length) return h('div', null, narrowed, byGateway);
     return h('div', null, h('div', { class: 'intent' },
       h('b', null, 'Intent', h('i', null, 'carried in the delegation token · decisions asked by this console')),
       step.intent.map((entry) => {
@@ -411,7 +429,7 @@
           h('span', { class: 'what' }, `${res.type || ''} ${res.id || '(which ones?)'}`,
             !res.id && entry.detail && entry.verdict === 'permitted' ? h('small', null, entry.detail) : null),
           h('span', { class: `verdict ${entry.verdict}` }, entry.verdict));
-      })), byGateway);
+      })), narrowed, byGateway);
   }
   function renderMissions() {
     const runs = state.runs;
@@ -461,13 +479,13 @@
     openDrawer(`${r.service} · ${r.decision || 'record'}`, [
       ['Decision', r.decision], ['Action', r.action], ['Subject', r.subject], ['Delegation chain', (r.chain || []).join('  ›  ')],
       ['Reason', r.reason], ['Permitted set', r.permitted_set], ['Discovery', r.discovery], ['Capabilities', r.capabilities],
-      ['Reason code', r.reason_code], ['Resolved evaluations', r.resolved], ['Intent checked', r.current_intent], ['Intent of the first hop', r.original_intent], ['Token claims', r.claims], ['Token', r.token], ['Trace', r.trace_id],
+      ['Reason code', r.reason_code], ['Resolved evaluations', r.resolved], ['Compared with', r.capability], ['Skills or tools compared', r.skills || r.skill], ['What fits each evaluation', r.evaluations], ['Intent checked', r.current_intent], ['Intent of the first hop', r.original_intent], ['Token claims', r.claims], ['Token', r.token], ['Trace', r.trace_id],
     ]);
   }
   function recordSections(r) {
     return [
       ['Reason', r.reason], ['Prompt', r.prompt], ['Duration (ms)', r.duration_ms], ['Delegation chain', (r.chain || []).join('  ›  ')], ['Permitted set', r.permitted_set],
-      ['Discovery', r.discovery], ['Capabilities', r.capabilities], ['Reason code', r.reason_code], ['Resolved evaluations', r.resolved], ['Intent checked', r.current_intent], ['Intent of the first hop', r.original_intent], ['Token claims', r.claims], ['Token', r.token],
+      ['Discovery', r.discovery], ['Capabilities', r.capabilities], ['Reason code', r.reason_code], ['Resolved evaluations', r.resolved], ['Compared with', r.capability], ['Skills or tools compared', r.skills || r.skill], ['What fits each evaluation', r.evaluations], ['Intent checked', r.current_intent], ['Intent of the first hop', r.original_intent], ['Token claims', r.claims], ['Token', r.token],
       ['Trace', r.trace_id],
     ].filter(([, v]) => v != null && v !== '' && !(Array.isArray(v) && !v.length));
   }

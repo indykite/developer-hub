@@ -215,3 +215,40 @@ def test_comparison_reads_only_the_records_of_the_direct_request():
     }
     before_any_chain = {"service": "iag-billing", "decision": "ERROR", "reason": "whoami failed"}
     assert _direct_records([second_hop, direct, before_any_chain]) == [direct, before_any_chain]
+
+
+def test_fleet_summary_reads_the_gateways_own_skill_check():
+    """A forwarded message: the gateway's records say which evaluations fit which skills."""
+    engine = {
+        "action": "IBAC_DISCOVERY",
+        "decision": "AUTHORIZED",
+        "skillIDs": ["customer-360", "policy-library"],
+        "evaluations": [
+            {
+                "subjectType": "Person",
+                "action": "CAN_VIEW",
+                "resourceType": "Invoice",
+                "matchedSkills": ["customer-360"],
+            },
+            {"subjectType": "Person", "action": "GET_PRICE", "resourceType": "Quote", "matchedSkills": []},
+        ],
+    }
+    passed = {"action": "IBAC_DISCOVERY", "decision": "AUTHORIZED", "skillID": "forecast"}
+
+    summary = summarize_gateway_answer(answer(), [ADMITTED, engine, passed, FOUND])
+
+    assert summary["verdict"] == "forwarded"
+    assert summary["skill_check"] == {"evaluations": 2, "fit": 1, "skills": ["customer-360"], "unmapped": ["forecast"]}
+    assert summarize_gateway_answer(answer(), [ADMITTED, FOUND])["skill_check"] is None
+
+
+def test_fleet_summary_tells_an_intent_no_skill_covers_from_a_refused_admission():
+    """A 403 after admission: the gateway's INTENT record refuses, because the intent fits no skill here."""
+    refused = {"action": "INTENT", "decision": "NOT_AUTHORIZED", "reason": "the intent fits no skill"}
+
+    summary = summarize_gateway_answer(answer(kind="refused", http_status=403, received=None), [ADMITTED, refused])
+
+    assert summary["verdict"] == "intent not covered"
+    assert summary["admission"]["decision"] == "AUTHORIZED"
+    plain = summarize_gateway_answer(answer(kind="refused", http_status=403, received=None), [])
+    assert plain["verdict"] == "admission refused"
