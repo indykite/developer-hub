@@ -469,6 +469,10 @@ RECORD_FIELDS = {
     "resolved": "resolvedEvaluations",
     "current_intent": "currentIntent",
     "original_intent": "originalIntent",
+    "capability": "capabilityName",
+    "skill": "skillID",
+    "skills": "skillIDs",
+    "evaluations": "evaluations",
 }
 TEXT_FIELDS = ("reason", "trace_id", "reason_code", "prompt")
 CLAIMS_SHOWN = ("iss", "sub", "aud", "exp", "iat", "act")
@@ -518,6 +522,28 @@ def keep_checked(task: dict, record: dict) -> None:
             task["checked"].append(checked)
 
 
+# The record of a gateway comparing the task's intent with what an agent or a server offers. It reports what
+# fits, never a refusal of its own: a shorter list is not a denial, and a task no skill covers is refused by
+# the record of the intent itself.
+FIT_RECORD = "IBAC_DISCOVERY"
+
+
+def keep_fit(task: dict, record: dict) -> None:
+    """Keep on the task which skills or tools a gateway found to fit each evaluation of the intent."""
+    for match in record.get("evaluations") or []:
+        if not isinstance(match, dict):
+            continue
+        fit = {
+            "service": record["service"],
+            "among": record.get("capability") or "",
+            "action": match.get("action") or "",
+            "resource": match.get("resourceType") or "",
+            "matched": [str(name) for name in match.get("matchedSkills") or []],
+        }
+        if fit not in task["fits"]:
+            task["fits"].append(fit)
+
+
 def attach_to_task(record: dict, intent: list[dict]) -> None:
     """Tie a record to the task in progress, with the intent it carries and any refusal it reports."""
     if not board.current:
@@ -533,7 +559,9 @@ def attach_to_task(record: dict, intent: list[dict]) -> None:
         # The first agent of the task reports the delegation it received: the task's intent is in it.
         task["intent"] = [{"evaluation": e, "verdict": "checking", "detail": ""} for e in intent]
         asyncio.get_running_loop().create_task(board.check_intent(run_id, index))
-    if record["decision"] in DENIED and record["layer"] != "agent":
+    if record["action"].upper() == FIT_RECORD:
+        keep_fit(task, record)
+    elif record["decision"] in DENIED and record["layer"] != "agent":
         refusal = {"service": record["service"], "action": record["action"], "reason": str(record["reason"])[:300]}
         task["denials"].append(refusal)
     keep_checked(task, record)
@@ -574,6 +602,7 @@ REFUSED_WHAT = {
     "ADMISSION": "admission",
     "INVOCATION": "a capability",
     "DISCOVERY": "discovery",
+    "INTENT": "the task's intent",
     "IBAC_USAGE": "a tool call that does not fit the task's intent",
     "RESOLVED_EVALUATIONS": "a tool call the platform does not allow",
 }
@@ -664,6 +693,7 @@ def on_step_start(data: dict) -> None:
         "intent": [],
         "intent_error": None,
         "checked": [],
+        "fits": [],
         "denials": [],
     }
     run["steps"].append(task)

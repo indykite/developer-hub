@@ -13,7 +13,8 @@ front of a fleet of six agents:
   fleet. With `ibac.enabled` it sends every prompt to the Intent Agent first
   and answers the caller itself when no intent comes back; then it resolves
   the caller (whoami), grows the delegation chain at the Token Service, asks
-  the platform one admission decision over that chain, and forwards the
+  the platform one admission decision over that chain, compares the intent
+  with the skills the caller may use on the agent's card, and forwards the
   message to the agent with the delegated token.
 
 The demo is a copy of [intent-agent-demo](../intent-agent-demo) with the
@@ -138,7 +139,10 @@ then does, in order, and audits each step:
    token as Bearer. No intent, and the gateway answers the caller itself with
    the agent's reason (the `metadata.intent_error` of the answer); the agent
    behind it is never called. The audit record is `INTENT_FOUND` or
-   `INTENT_FAILED`, with the prompt. With an intent, a gateway that passes
+   `INTENT_FAILED`, with the prompt. With an intent, the gateway compares
+   it with the mappings of the skills the caller may use on the agent's
+   card: an intent no skill covers is a 403, and only the evaluations that
+   fit go on. Then a gateway that passes
    it on exchanges a second time, same subject and actor plus the
    evaluations, which the Token Service writes into `act.intent` of the
    hop. An intent with more evaluations than the Token Service takes (10)
@@ -212,15 +216,16 @@ as a page (**How IBAC works**, item 07 in the rail), with the examples drawn.
    no decision: the generated requests go to the platform's AuthZEN API,
    which answers ALLOW or DENY.
 
-A gateway that reads the mappings does this discovery itself, on the
-authenticated extended card: it keeps only the permitted skills that fit the
-intent carried by the delegated token, and audits it as `IBAC_DISCOVERY`. A
-message is still forwarded on admission and intent alone. In this demo the
-console asks for the cards with the person's token, which carries no intent,
-so that filter has nothing to compare and
-the check runs in the console, as a preview, first against the card of the
-gateway the prompt went through, then against the other cards. The gateway on
-the path does the rest for real. In the product there is no central engine and
+The gateway on the path runs this discovery itself. With the intent in hand
+it compares it with the `x-coaz-mappings` of the skills the caller may use on
+its card (`IBAC_DISCOVERY` records): an intent no skill covers refuses the
+message with 403, and the delegated token carries only the evaluations that
+fit. A skill without a mapping covers every intent with
+`ibac.capabilities.unmapped: allow` (`IAG_IBAC_UNMAPPED` in `.env`) and none
+with `deny`. It filters an extended card the same way for a caller whose
+token carries an intent. The console shows what the gateway found ("2 of 3
+evaluations fit") and, as a preview, the same comparison against every card
+of the fleet, and the usage step. In the product there is no central engine and
 nothing routes: each gateway checks its own card and answers for its own
 agent. The board keeps that shape: "compare across the fleet" sends the same
 prompt through the other gateways and shows what each one actually did next to
@@ -289,12 +294,18 @@ the same time.
 
 ### 1. The Agent Gateway image
 
-The gateways run the published release
-[`indykite/agent-gateway:2.0.3`](https://hub.docker.com/r/indykite/agent-gateway),
+The gateways run the latest release published on Docker Hub,
+[`indykite/agent-gateway:2.114.0`](https://hub.docker.com/r/indykite/agent-gateway/tags),
 which compose pulls when it is missing; another tag can be named in `.env`
-as `AGENT_GATEWAY_IMAGE`. What the demo relies on, all in that release: Token
+as `AGENT_GATEWAY_IMAGE`. From this release on the gateway sends the intent
+to the Token Service, so the Token Service has to be a release that writes
+it into the token (`TOKEN_SERVICE_IMAGE`, see
+[`indykite/token-service`](https://hub.docker.com/r/indykite/token-service/tags)):
+with one that ignores the intent, every prompt with an intent is a 502.
+What the demo relies on, all in that release: Token
 Service mode, `ibac.enabled`, admission over `$ik_token.act_chain`, the
-capability checks behind the extended card, the `INTENT` and `DISCOVERY`
+capability checks behind the extended card, the comparison of the intent
+with the agent's skills, the `INTENT`, `DISCOVERY` and `IBAC_DISCOVERY`
 audit records, the delegated token extension on the card. The release also
 answers CORS itself (`cors.allowed_origins`); the demo leaves the list
 empty, since only the console calls the gateways, server side.
@@ -544,9 +555,8 @@ Two issuers take part, and every token is a JWT:
    introspect, which is how `$ik_token.act_chain` reaches the admission
    policy. The exchange also accepts an `intent` parameter, a JSON list of
    evaluations (at most 10), which the Token Service writes as
-   `act.intent.evaluations` of that hop. Release 2.0.3 does not send it, and
-   the token card says so. A newer gateway does: after the Intent Agent
-   answered, it exchanges a second time, same subject and actor plus the
+   `act.intent.evaluations` of that hop. After the Intent Agent
+   answered, the gateway exchanges a second time, same subject and actor plus the
    evaluations, admits on the first token and hands the agent the second.
    An intent over the limit is not cut down: the gateway forwards nothing
    and answers the caller with the obligation to split the request

@@ -125,6 +125,11 @@ services:
       JARVIS_INTENT_AGENT_BASE_URL: ${INTENT_AGENT_BASE_URL:-http://intent-agent:6003}
       JARVIS_INTENT_AGENT_AUDIENCE: ${INTENT_AGENT_AUDIENCE:-intent_agent}
       JARVIS_INTENT_AGENT_TIMEOUT: ${INTENT_AGENT_TIMEOUT:-45s}
+      # The task's intent is then matched against the mappings the
+      # orchestrator's skills publish: only the evaluations a skill covers go
+      # on, and a task no skill covers is refused here. A skill without a
+      # mapping covers nothing (deny) or every intent (allow).
+      JARVIS_IBAC_CAPABILITIES_UNMAPPED: ${IBAC_UNMAPPED_SKILLS:-deny}
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]
@@ -180,7 +185,7 @@ services:
       RETRIEVER_AGENT_NAME: retriever_agent
       CHATBOT_UPDATES_URL: http://console:3500/api/push-update
       MCP_SERVER_URL: http://mcp-iag:${IAG_MCP_PORT:-9986}${MCP_SERVER_PATH}
-      MCP_SESSION_TTL: ${MCP_SESSION_TTL:-300}
+      MCP_SESSION_TTL: ${MCP_SESSION_TTL:-0}
       INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -218,7 +223,7 @@ services:
       ANALYST_AGENT_NAME: analyst_agent
       CHATBOT_UPDATES_URL: http://console:3500/api/push-update
       MCP_SERVER_URL: http://mcp-iag:${IAG_MCP_PORT:-9986}${MCP_SERVER_PATH}
-      MCP_SESSION_TTL: ${MCP_SESSION_TTL:-300}
+      MCP_SESSION_TTL: ${MCP_SESSION_TTL:-0}
       INDYKITE_BASE_URL: ${INDYKITE_BASE_URL}
     extra_hosts:
       - "host.docker.internal:host-gateway"

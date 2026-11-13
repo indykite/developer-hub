@@ -371,3 +371,66 @@ def test_a_tool_call_outside_the_intent_refuses_the_task(client):
         json={"type": "step_end", "run_id": "r7", "step": 0, "outcome": "done", "answer": "x", "http_status": 200},
     ).json()
     assert answer["observed"].startswith("mcp-iag refused a tool call the platform does not allow")
+
+
+def test_a_list_narrowed_to_the_intent_is_not_a_refusal(client):
+    """A gateway reporting that no mapped tool fits the intent shortens a list; the task goes on."""
+    start_step(client, "r8")
+    record = {
+        "service": "mcp-iag",
+        "decision": "NOT_AUTHORIZED",
+        "action": "IBAC_DISCOVERY",
+        "reasonCode": "intent_mismatch",
+        "capabilityName": "tool",
+        "skillIDs": ["raise-restriction", "hold-order"],
+        "evaluations": [{"subjectType": "Agent", "resourceType": "Mandate", "action": "CAN_READ", "matchedSkills": []}],
+    }
+    client.post("/api/push-update", json=record)
+    answer = client.post(
+        "/api/sentinel",
+        json={"type": "step_end", "run_id": "r8", "step": 0, "outcome": "done", "answer": "x", "http_status": 200},
+    ).json()
+    assert answer["outcome"] == "done"
+    step = client.get("/api/state").json()["runs"][-1]["steps"][0]
+    assert step["denials"] == []
+    assert step["fits"] == [
+        {"service": "mcp-iag", "among": "tool", "action": "CAN_READ", "resource": "Mandate", "matched": []},
+    ]
+
+
+def test_a_task_no_skill_covers_is_refused_by_the_first_gateway(client):
+    """The skills that fit are kept on the task; an intent none covers is refused in the gateway's words."""
+    start_step(client, "r9")
+    fit = {
+        "subjectType": "Agent",
+        "resourceType": "Company",
+        "action": "CAN_RESTRICT",
+        "matchedSkills": ["query-retriever"],
+    }
+    client.post(
+        "/api/push-update",
+        json={
+            "service": "orchestrator-iag",
+            "decision": "AUTHORIZED",
+            "action": "IBAC_DISCOVERY",
+            "capabilityName": "orchestrator_agent",
+            "evaluations": [fit],
+        },
+    )
+    step = client.get("/api/state").json()["runs"][-1]["steps"][0]
+    assert step["fits"][0]["matched"] == ["query-retriever"]
+    assert step["fits"][0]["among"] == "orchestrator_agent"
+    client.post(
+        "/api/push-update",
+        json={
+            "service": "orchestrator-iag",
+            "decision": "NOT_AUTHORIZED",
+            "action": "INTENT",
+            "reason": "intent with 1 evaluation(s), none fits the skills of the agent",
+        },
+    )
+    answer = client.post(
+        "/api/sentinel",
+        json={"type": "step_end", "run_id": "r9", "step": 0, "outcome": "refused", "answer": "", "http_status": 403},
+    ).json()
+    assert answer["observed"].startswith("orchestrator-iag refused the task's intent: intent with 1 evaluation")

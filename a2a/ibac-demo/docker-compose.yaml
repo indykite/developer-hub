@@ -156,9 +156,8 @@ services:
     # Official image. The default is the published release pinned by digest
     # (https://hub.docker.com/r/indykite/token-service/tags); .env may name
     # another image as TOKEN_SERVICE_IMAGE. Keep it in step with the gateways'
-    # AGENT_GATEWAY_IMAGE: a gateway that passes the intent on (2.105 and
-    # later, with IBAC on) needs a Token Service that writes it into the
-    # token, which 1.0.0 does not.
+    # AGENT_GATEWAY_IMAGE: a gateway with IBAC on passes the intent on and
+    # needs a Token Service that writes it into the token.
     image: ${TOKEN_SERVICE_IMAGE:-indykite/token-service:1.0.0@sha256:a1248b73ab22fb939e533455a89468b7112b2b938486d8feca818e17776a97e2}
     # The image is linux/amd64 only - request it explicitly so arm64 hosts
     # (Apple Silicon) pull it under emulation instead of failing with
@@ -217,14 +216,23 @@ services:
       # answered to the caller in place of the agent (error + obligation,
       # `intent_error` in the message metadata), an unreachable agent is 502
       # and a timeout 504. Every call is an INTENT audit record. A message
-      # with an intent gets a second exchange at the Token Service, which
-      # writes the evaluations into act.intent of the token the agent
-      # receives in X-IK-Token (gateway and Token Service 2.105 or later);
-      # an intent with more evaluations than the Token Service accepts
+      # with an intent is first compared with the skills of the orchestrator
+      # the caller may use (the x-coaz-mappings on its agent card): an intent
+      # that fits no skill is refused with 403, and only the evaluations that
+      # fit go on. The gateway then exchanges the token a second time at the
+      # Token Service, which writes those evaluations into act.intent of the
+      # token the agent receives in X-IK-Token; an intent with more
+      # evaluations than the Token Service accepts
       # (idp.max_intent_evaluations, 10 by default) is answered by the
-      # gateway, asking the caller to split the request. Off = the agent is
-      # never asked. Only the entry gateway asks, once per prompt.
+      # gateway, asking the caller to split the request. Each comparison is
+      # an IBAC_DISCOVERY record. Off = the agent is never asked. Only the
+      # entry gateway asks, once per prompt.
       JARVIS_IBAC_ENABLED: ${IBAC_ENABLED:-false}
+      # A skill without a mapping: allow = it fits every intent, deny = it
+      # fits none. The orchestrator's web-search skill has no mapping and
+      # every workflow permits it, so with allow no intent is refused or
+      # trimmed here; with deny only the mapped skills count.
+      JARVIS_IBAC_CAPABILITIES_UNMAPPED: ${IBAC_UNMAPPED:-allow}
       JARVIS_INTENT_AGENT_BASE_URL: ${INTENT_AGENT_BASE_URL:-http://intent-agent:6003}
       JARVIS_INTENT_AGENT_AUDIENCE: ${INTENT_AGENT_AUDIENCE:-intent_agent}
       # Above the Intent Agent's own per-request limit, so a slow prompt is
@@ -651,6 +659,8 @@ services:
       # get_invoice the gateway asks the platform whether the caller may view
       # that invoice before the server sees the call. Every check is an
       # IBAC_USAGE record, the platform question a RESOLVED_EVALUATIONS one.
+      # The tools list is filtered the same way: under an intent about
+      # something else the caller sees no ERP tool (IBAC_DISCOVERY records).
       # A token without an intent, or a tool without a mapping, passes as
       # with IBAC off. No Intent Agent is asked here.
       JARVIS_IBAC_ENABLED: ${IBAC_ENABLED:-false}

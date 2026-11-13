@@ -3,8 +3,8 @@
 # docker-compose.yaml extends this service and adds its own name, port, the
 # agent it protects and the Auth0 Machine-to-Machine client it is known by.
 #
-# The image is the published release indykite/agent-gateway:2.0.3 (Docker Hub),
-# pulled when missing; another tag can be named in .env as AGENT_GATEWAY_IMAGE.
+# The image is the latest release published on Docker Hub
+# (https://hub.docker.com/r/indykite/agent-gateway/tags), pulled when missing; another tag can be named in .env as AGENT_GATEWAY_IMAGE.
 # What this demo relies on: Token Service mode (the delegated token in
 # X-IK-Token, nothing in Authorization: the agent never holds the person's
 # token); admission as one
@@ -20,7 +20,7 @@
 
 services:
   iag-base:
-    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.0.3}
+    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.114.0}
     environment:
       JARVIS_SERVICE_LOG_LEVEL: ${IAG_LOG_LEVEL:-info}
       JARVIS_SERVICE_ENVIRONMENT: demo
@@ -80,6 +80,13 @@ services:
       # sends its prompt to the Intent Agent, with the whoami subject in the
       # message metadata and its own client token for the intent_agent audience.
       JARVIS_IBAC_ENABLED: "true"
+      # With the intent in hand the gateway compares it with the x-coaz-mappings of the skills the
+      # caller may use on its card: an intent no skill covers refuses the message (403), and the
+      # delegated token carries only the evaluations that fit. A skill without a mapping covers every
+      # intent with allow (the default) and nothing with deny. The skills and their mappings are kept
+      # for the same short time as the card.
+      JARVIS_IBAC_CAPABILITIES_UNMAPPED: ${IAG_IBAC_UNMAPPED:-allow}
+      JARVIS_IBAC_CAPABILITIES_CACHE_TTL: ${IAG_A2A_CACHE_TTL:-5s}
       JARVIS_INTENT_AGENT_BASE_URL: http://${INTENT_AGENT_ENTRY:-intent-agent}:${INTENT_AGENT_PORT:-6003}
       JARVIS_INTENT_AGENT_AUDIENCE: intent_agent
       JARVIS_INTENT_AGENT_TIMEOUT: ${INTENT_AGENT_TIMEOUT:-45s}

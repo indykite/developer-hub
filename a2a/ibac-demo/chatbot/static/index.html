@@ -1358,8 +1358,8 @@
         card.appendChild(details);
         // IBAC discovery preview: the skills of the entry agent whose
         // x-coaz-mappings the gateway's discovery rule would accept for these
-        // evaluations (types + action). The gateway's own decision arrives as
-        // an IBAC_DISCOVERY card once the enforcing release is deployed.
+        // evaluations (types + action). The gateway's own comparison arrives
+        // as an "intent check" card of orchestrator-iag.
         const d = event.discovery;
         if (d) {
             const line = document.createElement('div');
@@ -1383,6 +1383,17 @@
                 `${e.subject?.type || '?'} ${e.action?.name || 'any action'} ${e.resource?.type || '?'}`
                 + (e.resource?.id ? ` ${e.resource.id}` : ''));
             attachDetails(card, 'intent in the token', lines.join('\n'));
+        }
+        // An IBAC_DISCOVERY record: each evaluation of the intent with the
+        // skills (or tools) it fits. One that fits nothing was left out of
+        // the token, or removed the entry from the list.
+        const matches = Array.isArray(event.evaluations)
+            ? event.evaluations.filter(e => e && Array.isArray(e.matchedSkills)) : [];
+        if (matches.length) {
+            const lines = matches.map(e =>
+                `${e.subjectType || '?'} ${e.action || 'any action'} ${e.resourceType || '?'}: `
+                + (e.matchedSkills.length ? e.matchedSkills.join(', ') : 'fits nothing'));
+            attachDetails(card, 'what the intent fits', lines.join('\n'));
         }
         const resolved = event.resolved_evaluations;
         if (Array.isArray(resolved) && resolved.length) {
@@ -1410,6 +1421,7 @@
         const QUESTION_TAGS = {
             ADMISSION: 'admission', DISCOVERY: 'discovery', INVOCATION: 'invocation', NOOP: 'refused early',
             IBAC_USAGE: 'intent check', IBAC_DISCOVERY: 'intent check', RESOLVED_EVALUATIONS: 'data check',
+            INTENT: 'intent',
         };
         if (QUESTION_TAGS[question]) {
             const tag = document.createElement('span');

@@ -292,7 +292,8 @@ ol { list-style: none; }
 .step.done { border-left-color: var(--green); }
 .step.refused, .step.failed { border-left-color: var(--red); }
 .step.empty, .step.unmapped { border-left-color: var(--amber); }
-.step .num { font-family: var(--serif); font-size: 30px; line-height: .9; color: var(--faint); grid-row: 1 / span 6; }
+.step .num { font-family: var(--serif); font-size: 30px; line-height: .9; color: var(--faint); grid-column: 1; grid-row: 1 / span 12; }
+.step > :not(.num) { grid-column: 2; min-width: 0; }
 .step .top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
 .step h4 { font-weight: 500; font-size: 13.5px; }
 .step .why { font-family: var(--serif); font-style: italic; font-size: 15.5px; color: var(--paper); margin: 3px 0 5px; }

@@ -103,11 +103,12 @@ redis:
     requests: {cpu: 50m, memory: 64Mi}
     limits: {cpu: 250m, memory: 128Mi}
 
-# The Agent Gateway in front of every fleet agent: the published release on Docker Hub.
+# The Agent Gateway in front of every fleet agent: the latest release on Docker Hub,
+# https://hub.docker.com/r/indykite/agent-gateway/tags
 gateway:
   image:
     repository: indykite/agent-gateway
-    tag: 2.0.3
+    tag: 2.114.0
     pullPolicy: IfNotPresent
   logLevel: info
   authzenCacheTtl: 30s
@@ -115,6 +116,8 @@ gateway:
   authorizationForward: none
   # How long a gateway keeps an agent's card before reading it again.
   a2aCacheTtl: 5s
+  # A skill without x-coaz-mappings: allow (covers every intent) or deny (covers none).
+  ibacUnmapped: allow
   intentAgentTimeout: 45s
   tokenServiceAudience: intent-ibac-agents
   resources:

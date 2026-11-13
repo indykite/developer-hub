@@ -17,14 +17,12 @@ Published on Docker Hub as
 docker pull indykite/token-service:1.0.0
 ```
 
-The demo runs release `2.112.0`, the same release as the gateways, loaded
-locally and named in `.env` as `TOKEN_SERVICE_IMAGE=token-service:2.112.0`.
-It accepts the same `token-service.yaml`, and on an exchange with an
-`intent` parameter it writes the evaluations into `act.intent` of the issued
-token (at most `idp.max_intent_evaluations`, 10 by default; the token at
-most `idp.max_token_bytes`, 8000 by default). The published `1.0.0` ignores
-the parameter, which a gateway from 2.105 on answers with `502` when IBAC is
-on.
+The demo runs the image named in `.env` as `TOKEN_SERVICE_IMAGE`; keep it on
+the same release as the gateways' `AGENT_GATEWAY_IMAGE`. On an exchange with
+an `intent` parameter the service writes the evaluations into `act.intent`
+of the issued token (at most `idp.max_intent_evaluations`, 10 by default;
+the token at most `idp.max_token_bytes`, 8000 by default). A gateway with
+IBAC on needs a Token Service that does so, or it answers `502`.
 
 On arm64 hosts (Apple Silicon) add `--platform linux/amd64` to the pull and
 run commands - the image then runs under emulation (Rosetta/QEMU).
