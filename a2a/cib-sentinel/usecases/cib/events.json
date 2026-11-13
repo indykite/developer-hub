@@ -29,6 +29,10 @@
             {
               "type": "summary",
               "value": "Advising a strategic buyer on the acquisition of Brightwater Pharma."
+            },
+            {
+              "type": "company",
+              "value": "brightwater-pharma"
             }
           ]
         },
@@ -48,6 +52,10 @@
             {
               "type": "summary",
               "value": "Indicative terms of Project Aurora."
+            },
+            {
+              "type": "mandate",
+              "value": "mnd-1002"
             }
           ]
         }
@@ -130,6 +138,10 @@
             {
               "type": "summary",
               "value": "Lead-managing a follow-on offering for Orchid Semiconductors."
+            },
+            {
+              "type": "company",
+              "value": "orchid-semiconductors"
             }
           ]
         },
@@ -149,6 +161,10 @@
             {
               "type": "summary",
               "value": "Indicative terms of Project Monsoon."
+            },
+            {
+              "type": "mandate",
+              "value": "mnd-1003"
             }
           ]
         }
@@ -231,6 +247,10 @@
             {
               "type": "quantity",
               "value": "40000"
+            },
+            {
+              "type": "company",
+              "value": "halcyon-energy"
             }
           ]
         }
@@ -301,6 +321,10 @@
             {
               "type": "quantity",
               "value": "2000000"
+            },
+            {
+              "type": "company",
+              "value": "kestrel-logistics"
             }
           ]
         }

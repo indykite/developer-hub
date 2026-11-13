@@ -3,9 +3,13 @@ version: '3.9'
 
 services:
   iag-base:
-    # The published Agent Gateway release 2.0.3, pinned by digest; .env may
-    # name another image as AGENT_GATEWAY_IMAGE. Never use `latest`: on Docker
-    # Hub it points at an older build. What the demo relies on: MCP proxying
+    # Agent Gateway release 2.112.0, as the image `agent-gateway:2.112.0` in
+    # the local Docker daemon (load or tag the release build under that name);
+    # .env may name another image as AGENT_GATEWAY_IMAGE. The newest release
+    # on Docker Hub is
+    # indykite/agent-gateway:2.0.3@sha256:8368f151cfec343f679dce6f320f43ab8c14cebb5465f683213de66c857aed33,
+    # which runs with the same settings. Never use `latest`: on Docker Hub it
+    # points at an older build. What the demo relies on: MCP proxying
     # (JARVIS_PROTECTED_AGENT_PROTOCOL: mcp, used by mcp-iag, drive-mcp-iag
     # and erp-mcp-iag) with one MCP endpoint per gateway and OAuth discovery;
     # admission decided by ONE AuthZEN evaluation over the delegation chain
@@ -14,7 +18,7 @@ services:
     # nodes the dataset attaches to each agent per workflow); and the agent
     # cards the A2A gateways serve. All gateways share this image.
     # See https://hub.docker.com/r/indykite/agent-gateway/tags.
-    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.0.3@sha256:8368f151cfec343f679dce6f320f43ab8c14cebb5465f683213de66c857aed33}
+    image: ${AGENT_GATEWAY_IMAGE:-agent-gateway:2.112.0}
     environment:
       JARVIS_SERVICE_LOG_LEVEL: debug
       JARVIS_SERVICE_ENVIRONMENT: demo

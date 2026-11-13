@@ -239,6 +239,14 @@ services:
       JARVIS_PROTECTED_AGENT_BASE_URL: ${MCP_SERVER_ORIGIN}${MCP_SERVER_PATH}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${MCP_IDP_CLIENT_ID}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${MCP_IDP_CLIENT_SECRET}
+      # Intent: with IBAC_ENABLED=true this gateway checks every tool call
+      # against the intent the delegation carries (the one the orchestrator's
+      # gateway read from the task), using the mappings the MCP server
+      # publishes for its tools, and asks the platform for a decision on what
+      # the call names. A tool without a mapping passes (allow) or is refused
+      # (deny).
+      JARVIS_IBAC_ENABLED: ${IBAC_ENABLED:-false}
+      JARVIS_IBAC_CAPABILITIES_UNMAPPED: ${IBAC_UNMAPPED:-allow}
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]
@@ -262,9 +270,11 @@ services:
       INTROSPECT_CLIENT_ID: ${INTENT_INTROSPECT_CLIENT_ID:-${ORCHESTRATOR_IDP_CLIENT_ID}}
       INTROSPECT_CLIENT_SECRET: ${INTENT_INTROSPECT_CLIENT_SECRET:-${ORCHESTRATOR_IDP_CLIENT_SECRET}}
       EXPECTED_TOKEN_AUDIENCE: ${INTENT_AGENT_AUDIENCE:-intent_agent}
-      REQUEST_TIMEOUT_SECONDS: ${INTENT_REQUEST_TIMEOUT_SECONDS:-10.0}
-      LLM_TIMEOUT_SECONDS: ${INTENT_LLM_TIMEOUT_SECONDS:-3.0}
-      VALIDATION_MAX_RETRIES: ${INTENT_VALIDATION_MAX_RETRIES:-1}
+      # Time for one task to be read: the whole request, each model call, and how
+      # often an answer that fails the agent's own validation is tried again.
+      REQUEST_TIMEOUT_SECONDS: ${INTENT_REQUEST_TIMEOUT_SECONDS:-25.0}
+      LLM_TIMEOUT_SECONDS: ${INTENT_LLM_TIMEOUT_SECONDS:-8.0}
+      VALIDATION_MAX_RETRIES: ${INTENT_VALIDATION_MAX_RETRIES:-2}
       POLICY_REFRESH_TTL_MINUTES: ${INTENT_REFRESH_TTL_MINUTES:-0.5}
       SCHEMA_REFRESH_TTL_MINUTES: ${INTENT_REFRESH_TTL_MINUTES:-0.5}
       CACHE_BACKEND: redis

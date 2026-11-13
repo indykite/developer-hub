@@ -105,7 +105,8 @@ def test_classify():
 def test_scripted_procedure_runs_in_order_and_escalates():
     """The written procedure runs step by step and escalates where a step says so."""
     agent = mod.Sentinel()
-    node = {"external_id": "mnd-1003", "type": "Mandate", "properties": {"name": "Project Monsoon"}}
+    properties = {"name": "Project Monsoon", "company": "orchid-semiconductors"}
+    node = {"external_id": "mnd-1003", "type": "Mandate", "properties": properties}
     first = agent.scripted_decision(node, [])
     assert first["action"] == "task"
     assert "mnd-1003" in first["instruction"]
@@ -116,8 +117,10 @@ def test_scripted_procedure_runs_in_order_and_escalates():
     done = [{**blocked[0], "outcome": "done"}]
     second = agent.scripted_decision(node, done)
     assert second["action"] == "task"
-    assert "rst-mnd-1003" in second["instruction"]
-    assert "Project Monsoon" in second["instruction"]
+    # The task names the records it acts on; the id and the reason of the restriction are left to the fleet.
+    assert second["instruction"] == (
+        "Put company orchid-semiconductors on the restricted list. It is the company of mandate mnd-1003."
+    )
     steps = agent.mission["procedures"]["Mandate"]["steps"]
     everything = [
         {"script": i, "title": s["title"], "instruction": "", "outcome": "done", "answer": ""}
@@ -219,15 +222,18 @@ def test_a_busy_sentinel_keeps_what_waits():
     assert left == 0
 
 
-def test_the_scripted_order_procedure_holds_only_a_restricted_company():
-    """The written step for an order asks for the hold only if its company is on the restricted list."""
+def test_the_scripted_order_procedure_is_one_conditional_hold():
+    """The written procedure for an order is a single task: the hold, on condition that its company is restricted."""
     agent = mod.Sentinel()
-    node = {"external_id": "ord-7005", "type": "TradeOrder", "properties": {"name": "BUY 2,000,000 KSTL 2031 notes"}}
-    done = [{"script": 0, "title": "Read the restricted list", "instruction": "", "outcome": "done", "answer": ""}]
-    instruction = agent.scripted_decision(node, done)["instruction"]
-    assert "only if its company is listed" in instruction
-    assert "otherwise leave the order unchanged" in instruction
-    assert "hold-ord-7005" in instruction
+    properties = {"name": "BUY 2,000,000 KSTL 2031 notes", "company": "kestrel-logistics"}
+    node = {"external_id": "ord-7005", "type": "TradeOrder", "properties": properties}
+    first = agent.scripted_decision(node, [])
+    assert first["instruction"] == (
+        "Place a hold on trade order ord-7005, which is in company kestrel-logistics, "
+        "if that company is on the restricted list."
+    )
+    done = [{"script": 0, "title": first["title"], "instruction": "", "outcome": "done", "answer": ""}]
+    assert agent.scripted_decision(node, done)["action"] == "finish"
 
 
 def recording(agent):
@@ -318,3 +324,20 @@ def test_a_batch_is_acknowledged_only_after_it_was_taken_in(monkeypatch):
     mod.asyncio.run(agent.poll_once())
     assert order == [("intake", "e1"), ("ack", ("a1",))]
     assert "deadline exceeded" in agent.last_error
+
+
+def test_no_written_task_states_what_the_fleet_names_itself():
+    """No step of a procedure carries the id or the reason of a record to create, or a placeholder left unfilled."""
+    agent = mod.Sentinel()
+    nodes = {
+        "Mandate": {"external_id": "mnd-1002", "type": "Mandate", "properties": {"name": "Aurora", "company": "c-1"}},
+        "TradeOrder": {"external_id": "ord-1", "type": "TradeOrder", "properties": {"name": "BUY", "company": "c-1"}},
+    }
+    for kind, node in nodes.items():
+        history = []
+        for position in range(len(agent.mission["procedures"][kind]["steps"])):
+            decision = agent.scripted_decision(node, history)
+            text = decision["instruction"]
+            assert "<" not in text, text
+            assert not any(word in text for word in ("rst-", "hold-", "reason")), text
+            history.append({"script": position, "title": decision["title"], "outcome": "done"})

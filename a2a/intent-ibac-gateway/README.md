@@ -192,9 +192,12 @@ as a page (**How IBAC works**, item 07 in the rail), with the examples drawn.
    skips the check and KBAC alone decides; *deny* hands it to the engine,
    which answers `missing_coaz_mapping`. An intent carries at most 10
    evaluations; a larger one is refused and the caller asked to split it.
-4. **Usage: what exactly must be checked?** The step of a tool call (an A2A
-   message has none; the console runs it as a preview of what a tool call on
-   the matched skill would be checked against). For that skill the ids are
+4. **Usage: what exactly must be checked?** The step of a tool call. In
+   front of an MCP server the gateway runs it on every call (`IBAC_USAGE`
+   records) and then asks the platform about the evaluations it resolved
+   (`RESOLVED_EVALUATIONS`). An A2A message has no such step, so here the
+   console runs it as a preview of what a tool call on the matched skill
+   would be checked against. For that skill the ids are
    resolved from the call, never from the intent: `$token.sub` from the
    delegated token, `$request.arguments.tier` from the call's arguments,
    which the preview stands in with the parameter the Intent Agent
@@ -202,8 +205,8 @@ as a page (**How IBAC works**, item 07 in the rail), with the examples drawn.
    pair: "Person auth0|69c4129b… → HAS → AccountTier tier_1"
    (`intent_match_authzen_required`). An id left empty is a *search match*
    (`intent_match_search`): nothing is generated, the intent's own evaluation
-   decides. A reference that does not resolve drops the entity and the
-   mapping does not match.
+   decides. A mapping with a reference that has no value does not
+   match.
 5. **Where the check stops.** It answers whether the agent declares the
    skill the intent needs and which permission that comes down to. It makes
    no decision: the generated requests go to the platform's AuthZEN API,

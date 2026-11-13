@@ -148,7 +148,9 @@ def intent_request(evaluation: dict) -> tuple[bool, dict] | None:
     if not (subject.get("id") and action.get("name") and resource.get("type")):
         return None
     body: dict[str, Any] = {"subject": subject, "action": action, "resource": resource}
-    parameters = (evaluation.get("context") or {}).get("parameters")
+    given = (evaluation.get("context") or {}).get("parameters") or {}
+    # target_<type> names a second record of the task; it is not a parameter a policy reads.
+    parameters = {k: v for k, v in given.items() if not k.startswith("target_")}
     if parameters:
         body["context"] = {"input_params": parameters}
     return not resource.get("id"), body
@@ -464,6 +466,9 @@ RECORD_FIELDS = {
     "discovery": "discovery",
     "capabilities": "capabilities",
     "duration_ms": "durationMs",
+    "resolved": "resolvedEvaluations",
+    "current_intent": "currentIntent",
+    "original_intent": "originalIntent",
 }
 TEXT_FIELDS = ("reason", "trace_id", "reason_code", "prompt")
 CLAIMS_SHOWN = ("iss", "sub", "aud", "exp", "iat", "act")
@@ -506,6 +511,13 @@ def read_delegation(record: dict) -> list[dict]:
     return [e for e in carried if isinstance(e, dict)]
 
 
+def keep_checked(task: dict, record: dict) -> None:
+    """Keep on the task what the MCP gateway asked the platform about a tool call, with each decision."""
+    for checked in record.get("resolved") or []:
+        if isinstance(checked, dict) and checked not in task["checked"]:
+            task["checked"].append(checked)
+
+
 def attach_to_task(record: dict, intent: list[dict]) -> None:
     """Tie a record to the task in progress, with the intent it carries and any refusal it reports."""
     if not board.current:
@@ -524,6 +536,7 @@ def attach_to_task(record: dict, intent: list[dict]) -> None:
     if record["decision"] in DENIED and record["layer"] != "agent":
         refusal = {"service": record["service"], "action": record["action"], "reason": str(record["reason"])[:300]}
         task["denials"].append(refusal)
+    keep_checked(task, record)
 
 
 @app.post("/api/push-update")
@@ -556,15 +569,22 @@ def summarize_message(data: dict) -> dict:
     }
 
 
+# What a gateway refused, by the action of its record.
+REFUSED_WHAT = {
+    "ADMISSION": "admission",
+    "INVOCATION": "a capability",
+    "DISCOVERY": "discovery",
+    "IBAC_USAGE": "a tool call that does not fit the task's intent",
+    "RESOLVED_EVALUATIONS": "a tool call the platform does not allow",
+}
+
+
 def observed_of(step: dict) -> tuple[str, str]:
     """Return what the control plane said about a task: (outcome override, sentence)."""
     if not step["denials"]:
         return "", ""
     first = step["denials"][0]
-    what = {"ADMISSION": "admission", "INVOCATION": "a capability", "DISCOVERY": "discovery"}.get(
-        str(first["action"]).upper(),
-        "the request",
-    )
+    what = REFUSED_WHAT.get(str(first["action"]).upper(), "the request")
     return "refused", f"{first['service']} refused {what}" + (f": {first['reason']}" if first["reason"] else "")
 
 
@@ -643,6 +663,7 @@ def on_step_start(data: dict) -> None:
         "records": [],
         "intent": [],
         "intent_error": None,
+        "checked": [],
         "denials": [],
     }
     run["steps"].append(task)

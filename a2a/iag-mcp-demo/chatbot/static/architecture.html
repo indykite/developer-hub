@@ -103,7 +103,7 @@
     </div>
     <div class="subtitle">
         Every hop between containers goes through an IndyKite Agent Gateway (orange): the caller's token is introspected,
-        the call is authorized against the knowledge graph, a fresh delegation token is minted for the next hop, and an
+        the call is admitted against the knowledge graph and limited to the tools the caller may use, a fresh delegation token is minted for the next hop, and an
         audit event is emitted. Greyed-out groups are optional compose profiles that are currently off.
     </div>
 
@@ -313,7 +313,7 @@
         <path class="edge" d="M410 385 L482 385" marker-end="url(#arr)"/>
         <!-- gateways -> control plane (drawn once, applies to all IAGs) -->
         <path class="edge-ctrl" d="M335 350 L335 260 L500 260 L500 188" marker-end="url(#arrAcc)"/>
-        <text class="t-edge" x="345" y="252">every IAG: introspect &#183; AuthZEN &#183; workflow match &#183; audit</text>
+        <text class="t-edge" x="345" y="252">every IAG: introspect &#183; AuthZEN admission &#183; capabilities &#183; audit</text>
         <path class="edge-ctrl" d="M305 350 L305 188" marker-end="url(#arrAcc)"/>
         <text class="t-edge" x="248" y="300">token</text>
         <text class="t-edge" x="243" y="313">exchange</text>
@@ -360,7 +360,7 @@
                 <li><b>Login &amp; prompt</b>: the user logs in at the console through the IdP's OAuth2 Authorization Code flow, comes back with a user access token, and sends a prompt.</li>
                 <li><b>IdP token services</b>: the same IdP that authenticated the user also runs the <b>token-exchange service</b> (RFC 8693) that every gateway calls to mint a fresh delegation token &#8212; user as subject, agent chain in <code>act</code> - for the next hop.</li>
                 <li><b>Console &#8594; orchestrator</b>: each prompt is forwarded with the <i>user's</i> token to <b>orchestrator-iag</b>.</li>
-                <li><b>Gateway checks (every hop)</b>: the gateway introspects the token, matches the call's actor chain against a Workflow in the knowledge graph, runs the AuthZEN <code>CAN_TRIGGER</code> check, emits an audit event, and exchanges the token (step 2) before forwarding.</li>
+                <li><b>Gateway checks (every hop)</b>: the gateway introspects the token, exchanges it (step 2), asks the platform who the caller is (<code>whoami</code>) and sends one AuthZEN <code>CAN_TRIGGER</code> evaluation: a policy admits the call when a Workflow the caller can trigger has exactly the token's delegation chain as its path of agents. In front of an MCP server it also limits the tools, resources and prompts to those the caller may use (<code>CAN_USE</code>). Every decision emits an audit event.</li>
                 <li><b>Orchestrator routes</b>: the LLM picks a tool; the A2A call goes to the chosen agent's gateway, where the same checks run again on the new chain.</li>
                 <li><b>Agents fetch data</b>: retriever/analyst/weather use MCP through <b>mcp-iag</b> to the hosted IndyKite MCP server; the analyst additionally reaches Google Drive via <b>drive-mcp-iag</b> and the ERP via <b>erp-mcp-iag</b>.</li>
                 <li><b>External parties</b>: Google Drive (server-side OAuth identity), Salesforce (the crm agent swaps its IndyKite delegation token for a Salesforce access token via RFC 7523 JWT Bearer — a second, independent trust domain), Open-Meteo, and the configured LLM.</li>

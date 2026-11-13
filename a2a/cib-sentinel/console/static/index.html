@@ -78,7 +78,8 @@
         <div class="boundaries">
           <div class="boundary" data-b="admission"><b>1</b><div><strong>Admission</strong><span>Is this chain of agents a workflow the Sentinel may trigger?</span></div></div>
           <div class="boundary" data-b="capability"><b>2</b><div><strong>Capability</strong><span>Which tools does that workflow give the last agent?</span></div></div>
-          <div class="boundary" data-b="graph"><b>3</b><div><strong>Graph</strong><span>Does the data sit inside the Sentinel's coverage?</span></div></div>
+          <div class="boundary" data-b="intent"><b>3</b><div><strong>Intent</strong><span>Does the call fit what the task set out to do, and does the platform allow it?</span></div></div>
+          <div class="boundary" data-b="graph"><b>4</b><div><strong>Graph</strong><span>Does the data sit inside the Sentinel's coverage?</span></div></div>
         </div>
       </div>
 
@@ -155,18 +156,19 @@
           <li><b>Something feeds the graph.</b> An upstream system writes a mandate or an order to the IndyKite knowledge graph. On this page the four cards of the upstream feed play that system.</li>
           <li><b>The platform publishes the change.</b> The project's event sink sends every audit event, including that write, to a Google Cloud Pub/Sub topic.</li>
           <li><b>The Sentinel wakes and reads the wire.</b> On its schedule it pulls its subscription. A new mandate or order starts a mission; everything else is shown and ignored.</li>
-          <li><b>It decides its next task.</b> Either a language model chooses each move from the goal, the event and what happened so far, or it follows a written procedure.</li>
-          <li><b>It acts as itself.</b> Each task goes to a fleet of agents, every one behind an Agent Gateway. The Sentinel presents its own access token from Auth0; the Token Service turns it into a delegation that records each agent it passes through.</li>
-          <li><b>The graph decides.</b> At every hop the platform is asked whether this subject, through this chain of agents, may go on. What is allowed is written in the graph, not in the agents.</li>
+          <li><b>It decides its next move.</b> A language model is given a goal and rules, the event, and what happened so far, including what was refused, and chooses one move: a task, a hand-over to a person, or the end. The Sentinel can also follow a written procedure instead.</li>
+          <li><b>It acts as itself.</b> Each task is one plain sentence naming the records it acts on, such as "put company brightwater-pharma on the restricted list". It goes to a fleet of agents, every one behind an Agent Gateway. The Sentinel presents its own access token from Auth0; the Token Service turns it into a delegation that records each agent it passes through.</li>
+          <li><b>The graph decides.</b> At every hop the platform is asked whether this subject, through this chain of agents, may go on. What is allowed is written in the graph, not in the agents. A refusal is final for that task: the Sentinel moves on or hands over, it does not try another way round.</li>
         </ol>
       </section>
 
       <section>
-        <h3>The three boundaries</h3>
+        <h3>The boundaries</h3>
         <dl class="about-bounds">
           <div><dt><b>1</b> Admission</dt><dd>Is this chain of agents a workflow the Sentinel may trigger? The deal room's gateway turns it away: only the advisory desk's workflow passes there.</dd></div>
           <div><dt><b>2</b> Capability</dt><dd>Which tools does that workflow give the last agent? The Sentinel may place a hold but is never offered the tool that releases one.</dd></div>
-          <div><dt><b>3</b> Graph</dt><dd>Does the data sit inside the Sentinel's coverage? A mandate booked in a region it does not cover is invisible to it, and a hold on an order in an unrestricted company writes nothing.</dd></div>
+          <div><dt><b>3</b> Intent <small>when switched on</small></dt><dd>Does the tool call fit what the task set out to do, and may the Sentinel do it to the resource the call names? A write passes only if the task's intent says so, and the platform decides on the order to hold before the query runs.</dd></div>
+          <div><dt><b>4</b> Graph</dt><dd>Does the data sit inside the Sentinel's coverage? A mandate booked in a region it does not cover is invisible to it, and a hold on an order in an unrestricted company writes nothing.</dd></div>
         </dl>
       </section>
 
@@ -177,8 +179,8 @@
           <tbody>
             <tr><td>New mandate: Project Aurora</td><td>Reads the mandate, restricts the company, holds its open order, and is refused the term sheet.</td><td>A full mission, with one refusal at admission.</td></tr>
             <tr><td>New mandate: Project Monsoon</td><td>Cannot read the mandate and hands over to a person.</td><td>The graph boundary, then an escalation.</td></tr>
-            <tr><td>New order in a restricted name</td><td>Finds the company on the restricted list and holds the order.</td><td>A write the graph accepts.</td></tr>
-            <tr><td>New order in an unrestricted name</td><td>Finds no restriction and leaves the order alone.</td><td>A write the graph would not accept.</td></tr>
+            <tr><td>New order in a restricted name</td><td>One task: hold the order if its company is restricted. It is, so the order is held.</td><td>A write the graph accepts.</td></tr>
+            <tr><td>New order in an unrestricted name</td><td>The same task. The company is not restricted, so the order is left alone.</td><td>An agent that does nothing when nothing is due.</td></tr>
           </tbody>
         </table>
       </section>
@@ -186,18 +188,32 @@
       <section>
         <h3>Reading the page</h3>
         <dl class="about-panels">
-          <div><dt>Upstream feed</dt><dd>Writes an event to the graph.</dd></div>
-          <div><dt>The wire</dt><dd>Every message the Sentinel pulled. The one that starts a mission is marked.</dd></div>
-          <div><dt>The wall</dt><dd>The fleet on top, the graph below, the barrier between the two sides. It draws the route of one task: numbered hops, then the nodes it touched. Amber was fed, green was written by the Sentinel.</dd></div>
-          <div><dt>Missions</dt><dd>Each task with the Sentinel's reason, its hops, what was refused and the answer. Click a task to show it on the wall.</dd></div>
-          <div><dt>Audit</dt><dd>The records of the gateways, the Token Service and the agents. Open the full view for every record, untruncated.</dd></div>
-          <div><dt>Header</dt><dd>The Sentinel's identity, its schedule, and how many tokens Auth0 issued against how many were reused.</dd></div>
+          <div><dt>Header</dt><dd>The Sentinel's identity, what decides its moves, where its events come from, its schedule, and how many tokens Auth0 issued against how many were reused. A click opens its own token.</dd></div>
+          <div><dt>Upstream feed</dt><dd>A click writes an event to the graph.</dd></div>
+          <div><dt>The wire</dt><dd>Every message the Sentinel pulled. The one that starts a mission is marked; a click opens it.</dd></div>
+          <div><dt>Missions</dt><dd>Each task with the Sentinel's reason, its hops, what was refused and the answer; with intent on, also the intent it was read as and what the gateway had the platform decide. A click on a task shows it on the wall.</dd></div>
+          <div><dt>The wall</dt><dd>The fleet on top, the graph below, the barrier between the two sides. It draws one task: its hops through the fleet, numbered, then the nodes it touched. Beside the last gateway, the tools the Sentinel is granted and those withheld from it. The four tiles below say which boundary the task passed or hit. Amber was fed, green was written by the Sentinel.</dd></div>
+          <div><dt>Audit</dt><dd>The records of the gateways, the Token Service and the agents. The full view shows every record, untruncated, with a search.</dd></div>
+          <div><dt>Reset</dt><dd>Removes what the feed and the Sentinel wrote, never the provisioned graph. Refused while a mission runs.</dd></div>
+        </dl>
+      </section>
+
+      <section>
+        <h3>How a task and a mission end</h3>
+        <dl class="about-panels">
+          <div><dt>executed</dt><dd>The fleet carried the task out.</dd></div>
+          <div><dt>refused</dt><dd>A gateway said no: the request never reached the agent or the tool behind it.</dd></div>
+          <div><dt>graph said no</dt><dd>The request was allowed to travel, and the graph returned or wrote nothing for this agent.</dd></div>
+          <div><dt>failed</dt><dd>A technical error on the way.</dd></div>
+          <div><dt>finished</dt><dd>The mission: nothing is left to do.</dd></div>
+          <div><dt>escalated</dt><dd>The mission: a person has to take over, because a necessary step was blocked, the task budget ran out, or no next move could be decided.</dd></div>
         </dl>
       </section>
 
       <section>
         <h3>With intent on</h3>
-        <p>The stack can also run with the Intent Agent. The first gateway then reads each task as an <strong>intent</strong>: a list of questions in the vocabulary of the graph's policies, such as "may this agent restrict this company?". A task that cannot be put in those words is not passed on. The intent travels inside the delegation token to the agents that carry out the task. The gateway carries the intent; it does not decide on it. The verdict shown beside each question on a mission card is asked by this console.</p>
+        <p>The stack can also run with the Intent Agent. The first gateway then reads each task as an <strong>intent</strong>: a list of questions in the vocabulary of the graph's policies, such as "may this agent restrict this company?". A task that cannot be put in those words is not passed on, and its card says <em>no intent</em>: this happens when a task tells the fleet which id or reason to give a new record, or describes a record through another one instead of naming it. The intent travels inside the delegation token to the agents that carry out the task.</p>
+        <p>Three hops later, the gateway in front of the tools checks every call against it. A tool that writes passes only if the task's intent says so, and when the call names a resource, such as the order to hold, the gateway asks the platform for a decision before the call goes through. This is the fourth tile under the wall, <strong>Intent</strong>. A mission card shows both the intent carried in the token, with a decision per question asked by this console, and what the gateway itself had the platform decide.</p>
       </section>
 
       <section>

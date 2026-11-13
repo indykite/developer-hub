@@ -199,7 +199,7 @@ def test_an_empty_resource_id_is_a_search_match_with_no_request():
     [None, {"token": {}}, {"token": {"sub": ""}}, {"token": {"sub": 42}}, {"token": "flat"}],  # nosec B105
     ids=["no params", "no sub", "empty sub", "not a string", "not a map"],
 )
-def test_an_unresolved_reference_drops_the_entity_and_the_mapping_does_not_match(params):
+def test_a_reference_without_a_value_means_the_mapping_does_not_match(params):
     """Without a resolvable $token.sub there is no subject to build a request for."""
     resp = evaluate_usage(intent(ROY_QUOTE), TRADING.with_skill("quote-lookup"), params)
     assert resp.decision is False
@@ -382,3 +382,10 @@ def test_intent_from_dict_reads_the_agent_artifact():
         "subject": {"type": "User", "id": "roy"},
         "resource": {"type": "Quote", "id": "stock_quote"},
     }
+
+
+def test_a_dotted_key_of_params_is_never_read_a_dot_always_separates_two_fields():
+    """`a.b` is the field b of the map a: a flat key spelled "a.b" has no reading."""
+    assert ibac.lookup_value("token.sub", {"token.sub": "flat", "token": {"sub": "nested"}}) == ("nested", True)
+    assert ibac.lookup_value("token.sub", {"token.sub": "flat"}) == ("", False)
+    assert ibac.lookup_value("sub", {"sub": ""}) == ("", False)

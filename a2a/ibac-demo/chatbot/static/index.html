@@ -1372,6 +1372,27 @@
         }
     }
 
+    // What a gateway with IBAC on compared a call with. The intent is the one
+    // the delegated token carries (written by the entry gateway); the resolved
+    // evaluations are the questions the gateway asked the platform about the
+    // data the call names, each with its answer.
+    function attachIntentCheck(card, event) {
+        const intent = event.current_intent;
+        if (Array.isArray(intent) && intent.length) {
+            const lines = intent.map(e =>
+                `${e.subject?.type || '?'} ${e.action?.name || 'any action'} ${e.resource?.type || '?'}`
+                + (e.resource?.id ? ` ${e.resource.id}` : ''));
+            attachDetails(card, 'intent in the token', lines.join('\n'));
+        }
+        const resolved = event.resolved_evaluations;
+        if (Array.isArray(resolved) && resolved.length) {
+            const lines = resolved.map(r =>
+                `${r.allowed === true ? 'allowed' : r.allowed === false ? 'denied' : 'no answer'}: `
+                + `${r.subjectType} ${r.subjectID} ${r.action} ${r.resourceType} ${r.resourceID}`);
+            attachDetails(card, 'asked the platform', lines.join('\n'));
+        }
+    }
+
     function renderAuditCard(event, decision) {
         const card = document.createElement('div');
         card.className = `audit-card ${decision.startsWith('intent_') ? 'intent ' : ''}${decision}`;
@@ -1386,10 +1407,14 @@
         // capabilities the caller may see), INVOCATION (may the caller use
         // the named ones), INTENT, or noop (refused before any question).
         const question = (event.action || '').toUpperCase();
-        if (['ADMISSION', 'DISCOVERY', 'INVOCATION', 'NOOP'].includes(question)) {
+        const QUESTION_TAGS = {
+            ADMISSION: 'admission', DISCOVERY: 'discovery', INVOCATION: 'invocation', NOOP: 'refused early',
+            IBAC_USAGE: 'intent check', IBAC_DISCOVERY: 'intent check', RESOLVED_EVALUATIONS: 'data check',
+        };
+        if (QUESTION_TAGS[question]) {
             const tag = document.createElement('span');
-            tag.className = `audit-action audit-action-${question.toLowerCase()}`;
-            tag.textContent = question === 'NOOP' ? 'refused early' : question.toLowerCase();
+            tag.className = `audit-action audit-action-${question.toLowerCase().replace(/_/g, '-')}`;
+            tag.textContent = QUESTION_TAGS[question];
             service.appendChild(tag);
         }
         const time = document.createElement('span');
@@ -1445,6 +1470,7 @@
                 `${event.capability_name || ''}${skills ? ' · skills: ' + skills : ''}${event.reason_code ? ' · ' + event.reason_code : ''}`.trim());
             attachDetails(card, 'prompt', event.prompt);
         }
+        attachIntentCheck(card, event);
         attachDetails(card, decision === 'token_exchanged' ? 'token' : 'reason', event.reason);
         attachCapabilities(card, event);
 
@@ -1455,7 +1481,8 @@
         // For gateways with deliberately-unpinned workflow ids the grant map's
         // -console workflow is the last-resort guess for DENY cards.
         const grantBundle = (GRANT_MAP[event.service] || []);
-        const isAdmission = !['DISCOVERY', 'INVOCATION', 'INTENT', 'NOOP'].includes(question);
+        const isAdmission = !['DISCOVERY', 'INVOCATION', 'INTENT', 'NOOP', 'IBAC_USAGE', 'IBAC_DISCOVERY',
+            'RESOLVED_EVALUATIONS'].includes(question);
         if (EXPLAIN_ENABLED && isAdmission && (decision === 'authorized' || decision === 'not_authorized')) {
             const wf = parseWorkflow(event.reason) || EXPLAIN_WF_MAP[event.service]
                 || grantBundle[grantBundle.length - 1] || '';

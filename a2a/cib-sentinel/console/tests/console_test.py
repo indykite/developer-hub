@@ -248,6 +248,9 @@ def test_an_evaluation_becomes_a_decision_or_a_search():
     assert search is True
     assert body["context"] == {"input_params": {"tier": "gold"}}
     assert main.intent_request({**full, "subject": {"type": "Agent"}}) is None
+    # A second record the task names is not a parameter of a policy.
+    with_target = {**full, "context": {"parameters": {"target_company": "c-1"}}}
+    assert "context" not in main.intent_request(with_target)[1]
     assert main.intent_verdict({"decision": True}, search=False)["verdict"] == "permitted"
     assert main.intent_verdict({}, search=False)["verdict"] == "denied"
     assert main.intent_verdict({"results": [{"type": "T", "id": "x"}]}, search=True) == {
@@ -304,3 +307,67 @@ def test_reset_deletes_nothing_unless_the_sentinel_says_it_is_idle(client, monke
     main.board.http = main.httpx.AsyncClient(transport=main.httpx.MockTransport(lambda _request: idle))
     assert client.post("/api/reset", headers=ACTION).status_code == 200
     assert [path for path, _ in deleted] == ["nodes/delete"]
+
+
+def test_the_gateways_platform_decisions_are_kept_on_the_task(client):
+    """What the MCP gateway asked the platform about a tool call, and each decision, are shown on the task."""
+    start_step(client, "r5")
+    allowed = {
+        "subjectType": "Agent",
+        "subjectID": "s1@clients",
+        "action": "CAN_HOLD",
+        "resourceType": "TradeOrder",
+        "resourceID": "ord-7001",
+        "allowed": True,
+    }
+    record = {
+        "service": "mcp-iag",
+        "decision": "AUTHORIZED",
+        "action": "RESOLVED_EVALUATIONS",
+        "resolvedEvaluations": [allowed],
+        "currentIntent": {"evaluations": []},
+    }
+    client.post("/api/push-update", json=record)
+    client.post("/api/push-update", json=record)
+    state = client.get("/api/state").json()
+    assert state["runs"][-1]["steps"][0]["checked"] == [allowed]
+    assert state["audit"][-1]["resolved"] == [allowed]
+    assert state["audit"][-1]["current_intent"] == {"evaluations": []}
+
+
+def test_a_tool_call_outside_the_intent_refuses_the_task(client):
+    """A refusal of the MCP gateway for the intent or by the platform makes the task refused, in its own words."""
+    start_step(client, "r6")
+    client.post(
+        "/api/push-update",
+        json={
+            "service": "mcp-iag",
+            "decision": "NOT_AUTHORIZED",
+            "action": "IBAC_USAGE",
+            "reasonCode": "intent_mismatch",
+            "reason": "No evaluation of the intent matches a mapping of the skill",
+        },
+    )
+    answer = client.post(
+        "/api/sentinel",
+        json={"type": "step_end", "run_id": "r6", "step": 0, "outcome": "done", "answer": "x", "http_status": 200},
+    ).json()
+    assert answer["outcome"] == "refused"
+    assert answer["observed"].startswith("mcp-iag refused a tool call that does not fit the task's intent")
+    start_step(client, "r7")
+    denied = {"action": "CAN_HOLD", "resourceType": "TradeOrder", "resourceID": "ord-7005", "allowed": False}
+    client.post(
+        "/api/push-update",
+        json={
+            "service": "mcp-iag",
+            "decision": "NOT_AUTHORIZED",
+            "action": "RESOLVED_EVALUATIONS",
+            "resolvedEvaluations": [denied],
+            "reason": "the platform denied a resolved evaluation",
+        },
+    )
+    answer = client.post(
+        "/api/sentinel",
+        json={"type": "step_end", "run_id": "r7", "step": 0, "outcome": "done", "answer": "x", "http_status": 200},
+    ).json()
+    assert answer["observed"].startswith("mcp-iag refused a tool call the platform does not allow")

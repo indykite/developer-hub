@@ -18,6 +18,7 @@ Demonstrates the Indykite Agent Gateway, a smart, context-enabled gateway that s
     - [How a request is authorized](#how-a-request-is-authorized)
     - [Protecting MCP traffic (mcp-iag)](#protecting-mcp-traffic-mcp-iag)
     - [Capability checks](#capability-checks)
+    - [Intent-based access control (IBAC)](#intent-based-access-control-ibac)
     - [Google Drive behind the gateway (profile drive)](#proxying-a-non-indykite-mcp-server-google-drive-profile-drive)
     - [Deny → remediate → allow (grant button)](#deny--remediate--allow-grant-button)
     - [Salesforce cases (profile crm)](#salesforce-cases-profile-crm)
@@ -291,7 +292,7 @@ Fill in, at a minimum:
 | `AUTHZEN_SUBJECT_TYPES` | Subject node type the console (grant self-check, `CAN_TRIGGER` edges) and the ERP server (AuthZEN search) use: `User` for canbank, `Person` for insurance. The gateways do not read it; they take the type from whoami. |
 | `IAG_CAPABILITY_CHECKS` | Optional, default `true`. Capability checks of the gateways (`JARVIS_AUTHZEN_CAPABILITIES_ENABLED`); `false` = admission decision only, lists unfiltered. See [Capability checks](#capability-checks). |
 | `IAG_AUTHZEN_CACHE_TTL` | Optional, default `30s`. How long a gateway keeps an admission decision and a permitted set per subject and chain, i.e. how fast a grant or revoke reaches the gateways. |
-| `AGENT_GATEWAY_IMAGE` | Optional. Agent Gateway image for all gateways; the default is the published `2.0.3` release pinned by digest in [`iag-base-docker.yaml`](iag-base-docker.yaml). Never use the `latest` tag. |
+| `AGENT_GATEWAY_IMAGE` | Optional. Agent Gateway image for all gateways; the default in [`iag-base-docker.yaml`](iag-base-docker.yaml) is release `2.112.0` as the local image `agent-gateway:2.112.0`. Never use the `latest` tag. |
 | `ANALYST_MCP_SERVER_URLS` | *(Drive profile)* Multi-backend analyst: `indykite=http://mcp-iag:8886/mcp/v1/<PROJECT_GID>,drive=http://drive-mcp-iag:8887/mcp` (same unencoded gid as `MCP_SERVER_PATH`). Required for Drive prompts; see the Drive section. |
 | `CIQ_QUERY_HQ_WEATHER` | Optional. Name (not gid) of the `get-hq-weather` knowledge query; the weather agent calls the MCP tool of that name for HQ prompts (default: `get-hq-weather`). Needs slot 9 + the `weather` / `weather-units` EDRs. Without it, weather prompts go to Open-Meteo. |
 | `FLASK_SECRET_KEY` | Generate a fresh one: `python -c "import secrets; print(secrets.token_hex(32))"` |
@@ -328,22 +329,30 @@ make new-erp-mcp     # optional, profile "erp"   - outside the default build
 
 ### 4. Pin the Agent Gateway image tag
 
-[`iag-base-docker.yaml`](iag-base-docker.yaml) pins the published release
-`2.0.3` by digest:
+[`iag-base-docker.yaml`](iag-base-docker.yaml) names release `2.112.0`:
 
 ```yaml
 services:
   iag-base:
-    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.0.3@sha256:8368f151cfec343f679dce6f320f43ab8c14cebb5465f683213de66c857aed33}
+    image: ${AGENT_GATEWAY_IMAGE:-agent-gateway:2.112.0}
 ```
 
-All gateways inherit this image. The demo relies on what it implements: MCP
+`agent-gateway:2.112.0` is an image of the local Docker daemon: load the
+release build, or tag it, under that name before `docker compose up`. All
+gateways inherit this image. The demo relies on what it implements: MCP
 proxying (`JARVIS_PROTECTED_AGENT_PROTOCOL: mcp`, used by `mcp-iag`,
 `drive-mcp-iag` and `erp-mcp-iag`) with one MCP endpoint per gateway and
 OAuth discovery, admission by one AuthZEN evaluation over the delegation
-chain, the capability checks, and the agent cards of the A2A gateways. To
-run another image, set `AGENT_GATEWAY_IMAGE` in `.env`. Never use the
-`latest` tag: on Docker Hub it points at an older build.
+chain, the capability checks, and the agent cards of the A2A gateways.
+
+To run another image, set `AGENT_GATEWAY_IMAGE` in `.env`. The newest
+release on Docker Hub runs with the same settings:
+
+```text
+AGENT_GATEWAY_IMAGE=indykite/agent-gateway:2.0.3@sha256:8368f151cfec343f679dce6f320f43ab8c14cebb5465f683213de66c857aed33
+```
+
+Never use the `latest` tag: on Docker Hub it points at an older build.
 
 If you are on Apple Silicon, add a `platform` attribute:
 
@@ -568,6 +577,15 @@ refusal.
 Capability audit records add `capabilities` (what an invocation named),
 `permittedSet` and `discovery` (`serverCalled` / `listed` / `kept`) to the
 fields of an admission record.
+
+### Intent-based access control (IBAC)
+
+IBAC is **off** in this demo (`ibac.enabled`, the gateway default) and no
+service of it is deployed. The gateways' intent checks need the intent of a
+prompt in the delegation token (`act.intent`), which only the IndyKite Token
+Service writes. This demo exchanges tokens at the identity provider, so its
+delegation tokens carry no intent; admission and the capability checks are
+what the gateways decide here.
 
 ### Proxying a non-IndyKite MCP server: Google Drive (profile `drive`)
 
@@ -970,9 +988,12 @@ delegation chain growing by one client on each card's **chain** line.
 
 - **`manifest unknown` / `manifest for indykite/agent-gateway:<tag> not found`**:
   the image named in `AGENT_GATEWAY_IMAGE` doesn't exist for your platform.
-  Remove the override to run the default `2.0.3` digest from
-  [`iag-base-docker.yaml`](iag-base-docker.yaml) (never `latest`) and, on
-  Apple Silicon, add `platform: linux/amd64`.
+  Name a tag that Docker Hub lists (never `latest`) and, on Apple Silicon,
+  add `platform: linux/amd64`.
+- **`pull access denied for agent-gateway`**: the default image
+  `agent-gateway:2.112.0` is not in the local Docker daemon. Load or tag the
+  release build under that name, or set `AGENT_GATEWAY_IMAGE` to a published
+  tag (see [Pin the Agent Gateway image tag](#4-pin-the-agent-gateway-image-tag)).
 - **A gateway exits at start**: a setting is missing or invalid, and the
   gateway's log names it. Typical: a percent-encoded `MCP_SERVER_PATH`
   (write the gid as `gid:...`), or a leftover

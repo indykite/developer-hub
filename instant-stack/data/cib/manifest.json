@@ -65,7 +65,7 @@
       "slot": "4",
       "name": "raise-restriction",
       "display_name": "Raise Restriction",
-      "description": "raise-restriction puts the company a mandate concerns on the restricted list: it creates a Restriction and links it to the company (RESTRICTS), the mandate (ARISES_FROM) and the calling agent (RAISED) in one operation. Use it when a new mandate is confirmed. Arguments: input_params restriction_id (use rst-<mandate id>), reason, mandate_external_id. Example: { \"input_params\": { \"restriction_id\": \"rst-mnd-1001\", \"reason\": \"Project Lighthouse: advisory mandate\", \"mandate_external_id\": \"mnd-1001\" } }.",
+      "description": "raise-restriction puts the company a mandate concerns on the restricted list: it creates a Restriction and links it to the company (RESTRICTS), the mandate (ARISES_FROM) and the calling agent (RAISED) in one operation. Use it when a new mandate is confirmed. Arguments: input_params restriction_id (use rst-<mandate id>), reason, mandate_external_id. Example: { \"input_params\": { \"restriction_id\": \"rst-mnd-1001\", \"reason\": \"Project Lighthouse: advisory mandate\", \"mandate_external_id\": \"mnd-1001\" } }.\nx-coaz-mappings: [{\"subject\":[{\"type\":\"Agent\",\"id\":\"$token.sub\"}],\"resource\":[{\"type\":\"Company\"}],\"action\":[{\"name\":\"CAN_RESTRICT\"}]}]",
       "query": {
         "upsert_nodes": [
           {
@@ -115,7 +115,7 @@
       "slot": "5",
       "name": "hold-order",
       "display_name": "Hold Order",
-      "description": "hold-order places a hold on one trade order: it creates a Hold and links it to the order (HOLDS) and to the calling agent (RAISED). It works only for orders in a company that is on the restricted list; for any other order the answer is empty and nothing is written. Arguments: input_params hold_external_id (use hold-<order id>), reason, order_external_id. Example: { \"input_params\": { \"hold_external_id\": \"hold-ord-7001\", \"reason\": \"Company restricted under mnd-1002\", \"order_external_id\": \"ord-7001\" } }.",
+      "description": "hold-order places a hold on one trade order: it creates a Hold and links it to the order (HOLDS) and to the calling agent (RAISED). It works only for orders in a company that is on the restricted list; for any other order the answer is empty and nothing is written. Arguments: input_params hold_external_id (use hold-<order id>), reason, order_external_id. Example: { \"input_params\": { \"hold_external_id\": \"hold-ord-7001\", \"reason\": \"Company restricted under mnd-1002\", \"order_external_id\": \"ord-7001\" } }.\nx-coaz-mappings: [{\"subject\":[{\"type\":\"Agent\",\"id\":\"$token.sub\"}],\"resource\":[{\"type\":\"TradeOrder\",\"id\":\"$request.arguments.input_params.order_external_id\"}],\"action\":[{\"name\":\"CAN_HOLD\"}]}]",
       "query": {
         "upsert_nodes": [
           {
@@ -195,7 +195,7 @@
       "slot": "7",
       "name": "get-deal-documents",
       "display_name": "Get Deal Documents",
-      "description": "get-deal-documents reads the deal room documents of a mandate (term sheet, valuation). Deal team only. Arguments: input_params mandate_external_id. Example: { \"input_params\": { \"mandate_external_id\": \"mnd-1001\" } }.",
+      "description": "get-deal-documents reads the deal room documents of a mandate (term sheet, valuation). Deal team only. Arguments: input_params mandate_external_id. Example: { \"input_params\": { \"mandate_external_id\": \"mnd-1001\" } }.\nx-coaz-mappings: [{\"subject\":[{\"type\":\"Agent\",\"id\":\"$token.sub\"}],\"resource\":[{\"type\":\"DealDocument\"}],\"action\":[{\"name\":\"CAN_READ\"}]}]",
       "query": {
         "nodes": [
           "document.external_id",

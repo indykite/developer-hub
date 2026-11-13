@@ -310,6 +310,10 @@
         {
           "type": "summary",
           "value": "Advising Halcyon Energy on the sale of its offshore wind unit."
+        },
+        {
+          "type": "company",
+          "value": "halcyon-energy"
         }
       ]
     },
@@ -329,6 +333,10 @@
         {
           "type": "summary",
           "value": "Indicative terms of the offshore wind unit sale."
+        },
+        {
+          "type": "mandate",
+          "value": "mnd-1001"
         }
       ]
     },
@@ -363,6 +371,10 @@
         {
           "type": "quantity",
           "value": "25000"
+        },
+        {
+          "type": "company",
+          "value": "brightwater-pharma"
         }
       ]
     },
@@ -382,6 +394,10 @@
         {
           "type": "quantity",
           "value": "4000000"
+        },
+        {
+          "type": "company",
+          "value": "kestrel-logistics"
         }
       ]
     },
@@ -401,6 +417,10 @@
         {
           "type": "quantity",
           "value": "60000"
+        },
+        {
+          "type": "company",
+          "value": "orchid-semiconductors"
         }
       ]
     },

@@ -644,6 +644,16 @@ services:
       JARVIS_PROTECTED_AGENT_BASE_URL: http://${ERP_MCP_HOST:-erp-mcp}:${ERP_MCP_PORT:-8010}/mcp
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${ERP_MCP_IDP_CLIENT_ID:-}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${ERP_MCP_IDP_CLIENT_SECRET:-}
+      # Intent-Based Access Control on the ERP tools. With IBAC on, a call of
+      # a tool that publishes mappings (erp-mcp does, for both tools) is
+      # compared with the intent the entry gateway wrote into the delegated
+      # token: a call the intent does not match is refused with 403, and for
+      # get_invoice the gateway asks the platform whether the caller may view
+      # that invoice before the server sees the call. Every check is an
+      # IBAC_USAGE record, the platform question a RESOLVED_EVALUATIONS one.
+      # A token without an intent, or a tool without a mapping, passes as
+      # with IBAC off. No Intent Agent is asked here.
+      JARVIS_IBAC_ENABLED: ${IBAC_ENABLED:-false}
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]
@@ -676,7 +686,7 @@ services:
       - erp-db
 
   erp-db:
-    image: postgres:18-alpine@sha256:123b17998ccaf47e53b502e8c6a1e79afd8f579c6f3eec83c563da026f957395
+    image: postgres:18-alpine@sha256:1018733457011bf88d81db98cf43aac6d5150afc18787dbe204771fedf80ff95
     profiles: ["erp"]
     # Private backend net only - reached exclusively by erp-mcp.
     networks:
@@ -753,7 +763,7 @@ services:
         condition: service_healthy
 
   intent-redis:
-    image: redis:8-alpine@sha256:21090af93f8324db2f0f0f4f38a7c60369d47d917e000c3423d89d2ae2883537
+    image: redis:8-alpine@sha256:7958cfbb9d152f87dadfbc89f1b0b15938f0b81ff8982feb327476f4911935c3
     profiles: ["intent"]
     expose:
       - "6379"

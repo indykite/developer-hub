@@ -324,7 +324,9 @@ def push_update():
     # caller kept. Records of the Intent Agent call (action INTENT) and of the
     # IBAC engine (IBAC_DISCOVERY / IBAC_USAGE) carry the prompt (with
     # audit.include_prompt), the call duration, the capability and skill the
-    # intent was matched against.
+    # intent was matched against, and the intent itself. A
+    # RESOLVED_EVALUATIONS record lists what the gateway asked the platform
+    # about the data a call names, with each answer.
     for key, out in (
         ("actorsChain", "actors_chain"),
         ("traceID", "trace_id"),
@@ -340,6 +342,8 @@ def push_update():
         ("skillIDs", "skill_ids"),
         ("reasonCode", "reason_code"),
         ("evaluations", "evaluations"),
+        ("currentIntent", "current_intent"),
+        ("resolvedEvaluations", "resolved_evaluations"),
     ):
         if data.get(key) not in (None, "", [], {}):
             event[out] = data[key]
