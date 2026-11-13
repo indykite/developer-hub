@@ -66,7 +66,8 @@
     toast.timer = setTimeout(() => { el.hidden = true; }, 4200);
   }
   async function post(url) {
-    const resp = await fetch(url, { method: 'POST' });
+    // The header marks the request as the page's own action; another site cannot send it without a preflight.
+    const resp = await fetch(url, { method: 'POST', headers: { 'X-Console-Action': '1' } });
     const body = await resp.json().catch(() => ({}));
     if (!resp.ok) throw new Error(body.detail || `${resp.status}`);
     return body;
@@ -544,8 +545,16 @@
     state.booting = false;
   }
 
+  // Read the whole state again: after a reset, and whenever the live stream comes back after a break.
+  async function resync() {
+    const snapshot = await (await fetch('/api/state', { cache: 'no-store' })).json();
+    load(snapshot);
+    tick();
+  }
   function connect() {
     const es = new EventSource('/api/stream');
+    let broken = false;
+    es.onopen = () => { if (broken) { broken = false; resync().catch(() => {}); } };
     const on = (name, fn) => es.addEventListener(name, (e) => fn(JSON.parse(e.data)));
     on('heartbeat', (d) => { state.heartbeat = d; renderHeader(); });
     on('identity', (d) => { state.identity = d; renderHeader(); });
@@ -557,7 +566,7 @@
     on('graph', (d) => { state.graph = d; renderWall(); });
     on('fed', (d) => { if (!state.fed.includes(d.id)) state.fed.push(d.id); state.focus = `${d.kind}:${d.focus}`; state.once.delete(`focus:${state.focus}`); renderFeed(); renderWall(); });
     on('reset', load);
-    es.onerror = () => { $('agentLine').textContent = 'stream interrupted · reconnecting'; };
+    es.onerror = () => { broken = true; $('agentLine').textContent = 'stream interrupted · reconnecting'; };
   }
 
   $('wakeBtn').addEventListener('click', async () => {
@@ -567,7 +576,12 @@
     if (!window.confirm('Delete from the graph what the feed and the Sentinel wrote, and clear this page?')) return;
     const button = $('resetBtn');
     button.disabled = true;
-    try { const r = await post('/api/reset'); toast(`Board reset: ${r.deleted} nodes removed from the graph.`); } catch (err) { toast(`Reset failed: ${err.message}`, true); }
+    try {
+      const r = await post('/api/reset');
+      // Take the cleared state straight from the console; the live stream may lag or have dropped.
+      await resync();
+      toast(`Board reset: ${r.deleted} nodes removed from the graph.`);
+    } catch (err) { toast(`Reset failed: ${err.message}`, true); }
     button.disabled = false;
   });
   $('filters').addEventListener('click', (e) => {
@@ -602,5 +616,5 @@
     if (id.sub) openDrawer('The Sentinel\'s own token', [['Subject', id.sub], ['Audience', id.aud], ['Issuer', id.issuer || id.iss], ['Grant', id.grant], ['Access token', id.token]]);
   });
 
-  fetch('/api/state').then((r) => r.json()).then((snapshot) => { load(snapshot); tick(); connect(); setInterval(tick, 500); if (window.location.hash === '#audit') openLayer(true); });
+  resync().then(() => { connect(); setInterval(tick, 500); if (window.location.hash === '#audit') openLayer(true); });
 })();

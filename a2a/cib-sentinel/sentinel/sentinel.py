@@ -36,6 +36,7 @@ log = logging.getLogger("sentinel")
 
 
 def _flag(name: str, default: str = "") -> bool:
+    """Read a boolean environment variable."""
     return (os.getenv(name) or default).strip().lower() in ("true", "1", "yes")
 
 
@@ -91,6 +92,31 @@ def load_mission() -> dict:
 
 
 # --------------------------------------------------------------------- events
+def _json_body(data: bytes) -> dict:
+    """Read a message's data as a JSON object; anything else is kept, wrapped."""
+    if not data:
+        return {}
+    try:
+        body = json.loads(data.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return {"raw": base64.b64encode(data).decode("ascii")[:2000]}
+    return body if isinstance(body, dict) else {"data": body}
+
+
+def _structured_event(event: dict) -> dict:
+    """Unwrap a structured-mode CloudEvent: the event's own fields, and its data as the body."""
+    inner = event.get("data")
+    if isinstance(inner, str):
+        with suppress(json.JSONDecodeError):
+            inner = json.loads(inner)
+    return {
+        "id": str(event.get("id") or ""),
+        "type": str(event.get("type") or ""),
+        "time": str(event.get("time") or ""),
+        "body": inner if isinstance(inner, dict) else {"data": inner},
+    }
+
+
 def decode_message(data: bytes, attributes: dict[str, str]) -> dict:
     """Turn one Pub/Sub message into {id, type, time, body}.
 
@@ -98,23 +124,10 @@ def decode_message(data: bytes, attributes: dict[str, str]) -> dict:
     are message attributes prefixed ``ce-`` and the data is the JSON body; in
     structured mode the whole event is the JSON data.
     """
-    try:
-        body = json.loads(data.decode("utf-8")) if data else {}
-    except (UnicodeDecodeError, json.JSONDecodeError):
-        body = {"raw": base64.b64encode(data).decode("ascii")[:2000]}
+    body = _json_body(data)
+    if "specversion" in body and "type" in body:
+        return _structured_event(body)
     attrs = {k.lower(): v for k, v in (attributes or {}).items()}
-    if isinstance(body, dict) and "specversion" in body and "type" in body:
-        inner = body.get("data")
-        if isinstance(inner, str):
-            with suppress(json.JSONDecodeError):
-                inner = json.loads(inner)
-        return {
-            "id": str(body.get("id") or ""),
-            "type": str(body.get("type") or ""),
-            "time": str(body.get("time") or ""),
-            "body": inner if isinstance(inner, dict) else {"data": inner},
-        }
-    body = body if isinstance(body, dict) else {"data": body}
     return {
         "id": attrs.get("ce-id", ""),
         "type": attrs.get("ce-type") or str(body.get("eventType") or ""),
@@ -454,7 +467,17 @@ class Sentinel:
         return decision
 
     # ---- acting
-    async def send_task(self, text: str) -> tuple[int, str, dict | None]:  # noqa: C901, PLR0911
+    async def _rpc(self, payload: dict, headers: dict) -> tuple[int, Any]:
+        """One JSON-RPC call to the gateway: (200, result) or (status, what went wrong)."""
+        try:
+            resp = await self.http.post(GATEWAY_URL, json=payload, headers=headers)
+        except httpx.HTTPError as exc:
+            return 0, f"Gateway unreachable: {exc}"
+        if resp.status_code >= httpx.codes.BAD_REQUEST:
+            return resp.status_code, resp.text[:600]
+        return 200, _result(resp)
+
+    async def send_task(self, text: str) -> tuple[int, str, dict | None]:
         """Send one task to the orchestrator's gateway as the Sentinel.
 
         Returns (HTTP status, answer text, intent refusal). The refusal is set when the gateway asked the
@@ -466,41 +489,48 @@ class Sentinel:
         except Exception as exc:
             return 0, f"No access token: {exc}", None
         headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-        payload = {
-            "jsonrpc": "2.0",
-            "id": uuid.uuid4().hex,
-            "method": "message/send",
-            "params": {"message": {"role": "ROLE_USER", "parts": [{"text": text}], "messageId": uuid.uuid4().hex}},
-        }
-        try:
-            resp = await self.http.post(GATEWAY_URL, json=payload, headers=headers)
-        except httpx.HTTPError as exc:
-            return 0, f"Gateway unreachable: {exc}", None
-        if resp.status_code >= httpx.codes.BAD_REQUEST:
-            return resp.status_code, resp.text[:600], None
-        result = _result(resp)
-        refusal = (result.get("metadata") or {}).get("intent_error")
-        if isinstance(refusal, dict):
-            return 200, _text(result), refusal
+        message = {"role": "ROLE_USER", "parts": [{"text": text}], "messageId": uuid.uuid4().hex}
+        payload = {"jsonrpc": "2.0", "id": uuid.uuid4().hex, "method": "message/send", "params": {"message": message}}
         deadline = time.time() + TASK_TIMEOUT
         while True:
-            state = (result.get("status") or {}).get("state") or ""
-            if state.endswith("COMPLETED") or state == "completed" or result.get("parts"):
-                return 200, _text(result), None
-            if state and state.split("_")[-1].lower() in ("failed", "rejected", "canceled", "cancelled"):
-                return 502, _text(result) or f"task ended {state}", None
+            status, result = await self._rpc(payload, headers)
+            if status != httpx.codes.OK:
+                return status, result, None
+            settled = _settled(result)
+            if settled:
+                return settled
             task_id = result.get("id")
             if not task_id or time.time() > deadline:
                 return 504, "No answer from the fleet in time", None
             await asyncio.sleep(0.6)
-            poll = {"jsonrpc": "2.0", "id": uuid.uuid4().hex, "method": "tasks/get", "params": {"id": task_id}}
-            try:
-                resp = await self.http.post(GATEWAY_URL, json=poll, headers=headers)
-            except httpx.HTTPError as exc:
-                return 0, f"Gateway unreachable: {exc}", None
-            if resp.status_code >= httpx.codes.BAD_REQUEST:
-                return resp.status_code, resp.text[:600], None
-            result = _result(resp)
+            payload = {"jsonrpc": "2.0", "id": uuid.uuid4().hex, "method": "tasks/get", "params": {"id": task_id}}
+
+    async def perform(self, run_id: str, index: int, decision: dict) -> dict:
+        """Carry out one task and return what happened, as the next entry of the mission's history."""
+        title = str(decision.get("title") or f"Task {index + 1}")[:80]
+        instruction = str(decision["instruction"]).strip()
+        reason = str(decision.get("reason") or "")
+        await self.tell("step_start", run_id=run_id, step=index, title=title, instruction=instruction, reason=reason)
+        http_status, answer, refusal = await self.send_task(instruction)
+        outcome = classify(answer, http_status, refusal)
+        await asyncio.sleep(1)  # let the gateways' audit records of this task reach the console
+        seen = await self.tell(
+            "step_end",
+            run_id=run_id,
+            step=index,
+            outcome=outcome,
+            answer=answer,
+            http_status=http_status,
+            intent_error=refusal,
+        )
+        return {
+            "index": index,
+            "title": title,
+            "instruction": instruction,
+            "answer": answer,
+            "outcome": seen.get("outcome") or outcome,
+            "observed": str(seen.get("observed") or ""),
+        }
 
     async def run_mission(self, node: dict) -> None:
         """One mission: decide, act, observe, until finished or escalated."""
@@ -508,11 +538,8 @@ class Sentinel:
         label = node["properties"].get("name") or node["external_id"]
         await self.tell("run_start", run_id=run_id, trigger=node, label=label, planner=self.planner_name())
         history: list[dict] = []
-        status, summary = "finished", ""
-        while True:
-            if len(history) >= MAX_STEPS:
-                status, summary = "finished", "Task budget used."
-                break
+        status, summary = "finished", "Task budget used."
+        while len(history) < MAX_STEPS:
             decision = await self.decide(node, history)
             reason = str(decision.get("reason") or "")
             if decision["action"] == "finish":
@@ -522,57 +549,41 @@ class Sentinel:
                 status, summary = "escalated", reason or "A person has to take over."
                 await self.tell("escalation", run_id=run_id, text=summary, trigger=node)
                 break
-            index = len(history)
-            title = str(decision.get("title") or f"Task {index + 1}")[:80]
-            instruction = str(decision["instruction"]).strip()
-            await self.tell(
-                "step_start",
-                run_id=run_id,
-                step=index,
-                title=title,
-                instruction=instruction,
-                reason=reason,
-            )
-            http_status, answer, refusal = await self.send_task(instruction)
-            outcome = classify(answer, http_status, refusal)
-            await asyncio.sleep(1)  # let the gateways' audit records of this task reach the console
-            seen = await self.tell(
-                "step_end",
-                run_id=run_id,
-                step=index,
-                outcome=outcome,
-                answer=answer,
-                http_status=http_status,
-                intent_error=refusal,
-            )
-            observed = str(seen.get("observed") or "")
-            if seen.get("outcome"):
-                outcome = seen["outcome"]
-            history.append(
-                {
-                    "index": index,
-                    "title": title,
-                    "instruction": instruction,
-                    "answer": answer,
-                    "outcome": outcome,
-                    "observed": observed,
-                },
-            )
+            history.append(await self.perform(run_id, len(history), decision))
             await asyncio.sleep(STEP_PAUSE)
-        counts = {
-            k: sum(1 for h in history if h["outcome"] == k) for k in ("done", "refused", "empty", "failed", "unmapped")
-        }
+        counts = dict.fromkeys(OUTCOMES, 0)
+        for past in history:
+            counts[past["outcome"]] = counts.get(past["outcome"], 0) + 1
         await self.tell("run_end", run_id=run_id, status=status, summary=summary, counts=counts)
+
+
+OUTCOMES = ("done", "refused", "empty", "failed", "unmapped")
+ENDED_BADLY = ("failed", "rejected", "canceled", "cancelled")
+
+
+def _settled(result: dict) -> tuple[int, str, dict | None] | None:
+    """Return the final answer in a gateway result, or None while the task is still running."""
+    refusal = (result.get("metadata") or {}).get("intent_error")
+    if isinstance(refusal, dict):
+        return 200, _text(result), refusal
+    state = (result.get("status") or {}).get("state") or ""
+    if state.lower().endswith("completed") or result.get("parts"):
+        return 200, _text(result), None
+    if state.split("_")[-1].lower() in ENDED_BADLY:
+        return 502, _text(result) or f"task ended {state}", None
+    return None
 
 
 class _Lenient(dict):
     """format_map source that leaves unknown placeholders readable."""
 
     def __missing__(self, key: str) -> str:
+        """Render an unknown placeholder as <name>."""
         return f"<{key}>"
 
 
 def _result(resp: httpx.Response) -> dict:
+    """Extract the JSON-RPC result of a gateway answer; an error becomes a failed task."""
     try:
         body = resp.json()
     except ValueError:
@@ -584,6 +595,7 @@ def _result(resp: httpx.Response) -> dict:
 
 
 def _text(result: dict) -> str:
+    """Join the text parts of a task or message."""
     chunks = [
         part.get("text", "") for artifact in result.get("artifacts") or [] for part in artifact.get("parts") or []
     ]
@@ -596,6 +608,7 @@ sentinel: Sentinel | None = None
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    """Start the schedule and mission loops with the service, and stop them with it."""
     global sentinel  # noqa: PLW0603
     sentinel = Sentinel()
     tasks = [asyncio.create_task(sentinel.schedule_loop()), asyncio.create_task(sentinel.mission_loop())]
@@ -617,11 +630,13 @@ app = FastAPI(title="cib-sentinel", lifespan=lifespan)
 
 @app.get("/healthz")
 async def healthz() -> dict:
+    """Liveness."""
     return {"ok": True}
 
 
 @app.get("/state")
 async def state() -> dict:
+    """Report the schedule, the queue and the planner in use."""
     return {
         "subscription": PUBSUB_SUBSCRIPTION,
         "interval": POLL_SECONDS,
@@ -643,12 +658,17 @@ async def wake() -> dict:
 
 @app.post("/clear")
 async def clear() -> dict:
-    """Forget the triggers that have not started a mission yet (the board is being reset)."""
+    """Forget the triggers that have not started a mission yet (the board is being reset).
+
+    While a mission runs nothing is dropped: the reset is refused, and what waits stays queued.
+    """
+    if sentinel.busy:
+        return {"ok": True, "dropped": 0, "busy": True}
     dropped = len(sentinel.pending) + sentinel.queue.qsize()
     sentinel.pending.clear()
     while not sentinel.queue.empty():
         sentinel.queue.get_nowait()
-    return {"ok": True, "dropped": dropped, "busy": sentinel.busy}
+    return {"ok": True, "dropped": dropped, "busy": False}
 
 
 @app.post("/events")

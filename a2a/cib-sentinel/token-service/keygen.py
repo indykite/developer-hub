@@ -8,6 +8,7 @@ app's .env) and TOKEN_SERVICE_PUBLIC_JWK (instant-stack's .env).
 import base64
 import json
 import os
+import re
 import secrets
 import sys
 import uuid
@@ -19,11 +20,13 @@ HERE = Path(__file__).resolve().parent
 
 
 def b64(number: int) -> str:
+    """Encode an integer as unpadded base64url, as a JWK field."""
     raw = number.to_bytes((number.bit_length() + 7) // 8, "big")
     return base64.urlsafe_b64encode(raw).rstrip(b"=").decode("ascii")
 
 
 def main() -> None:
+    """Render token-service.yaml and print the two values that go elsewhere."""
     domain = (os.getenv("AUTH0_DOMAIN") or "").strip().removeprefix("https://").strip("/")
     if not domain or "<" in domain:
         sys.exit("AUTH0_DOMAIN is not set (your tenant domain, e.g. your-tenant.eu.auth0.com)")
@@ -50,13 +53,17 @@ def main() -> None:
     }
     secret = secrets.token_urlsafe(32)
     text = (HERE / "token-service.example.yaml").read_text(encoding="utf-8")
+    # The example leaves the client secret empty, with a note; the rendered file gets the secret and no note.
     text = (
-        text.replace("<CLIENT_SECRET>", secret)
+        re.sub(r'client_secret: ""[^\n]*', f'client_secret: "{secret}"', text, count=1)
         .replace("<SIGNING_JWK>", json.dumps(private, separators=(",", ":")))
         .replace("<AUTH0_DOMAIN>", domain)
     )
-    target.write_text(text, encoding="utf-8")
-    target.chmod(0o644)  # read by the Token Service container, which runs as another user
+    # The file holds the private signing key and the client secret: owner-only from the moment it exists.
+    # The Token Service container runs as that owner (TOKEN_SERVICE_RUN_AS in .env).
+    target.unlink(missing_ok=True)
+    with os.fdopen(os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), "w", encoding="utf-8") as fh:
+        fh.write(text)
     print(f"wrote {target.name}\n")
     print("this app's .env:")
     print(f"TOKEN_SERVICE_CLIENT_SECRET={secret}\n")

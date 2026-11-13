@@ -27,6 +27,7 @@ from collections import deque
 from contextlib import asynccontextmanager, suppress
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 import httpx
 import uvicorn
@@ -91,6 +92,76 @@ def act_chain(claims: dict) -> list[str]:
     return list(reversed(chain))
 
 
+def put_node(  # noqa: PLR0913, PLR0917
+    nodes: dict,
+    typ: str,
+    ext: str,
+    label: str,
+    origin: str,
+    props: dict | None = None,
+) -> str:
+    """Add a node once and return its id."""
+    nid = f"{typ}:{ext}"
+    nodes.setdefault(nid, {"id": nid, "type": typ, "label": label or ext, "props": props or {}, "origin": origin})
+    return nid
+
+
+def put_edge(nodes: dict, edges: list, src: str, typ: str, dst: str, origin: str) -> None:  # noqa: PLR0913, PLR0917
+    """Add an edge between two known nodes, once."""
+    if src not in nodes or dst not in nodes:
+        return
+    if any(e["source"] == src and e["target"] == dst and e["type"] == typ for e in edges):
+        return
+    edges.append({"source": src, "target": dst, "type": typ, "workflow": "", "origin": origin})
+
+
+def add_event(nodes: dict, edges: list, event: dict) -> None:
+    """Add the nodes and relationships of one fed event."""
+    for n in event["nodes"]:
+        props = {p["type"]: p["value"] for p in n["properties"]}
+        put_node(nodes, n["type"], n["external_id"], props.get("name", ""), "feed", props)
+    for r in event["relationships"]:
+        source = f"{r['source']['type']}:{r['source']['external_id']}"
+        target = f"{r['target']['type']}:{r['target']['external_id']}"
+        put_edge(nodes, edges, source, r["type"], target, "feed")
+
+
+def written_nodes(written: dict) -> list[tuple[str, str]]:
+    """(type, id) of the holds and restrictions read back from the graph."""
+    holds = [("Hold", row["hold"]) for row in written["holds"]]
+    return holds + [("Restriction", row["restriction"]) for row in written["restrictions"]]
+
+
+def conventional_nodes(fed: list[tuple[str, str]], seed_nodes: list[dict]) -> list[tuple[str, str]]:
+    """(type, id) of the restrictions and holds the Sentinel names after a mandate or an order."""
+    orders = [ext for typ, ext in fed if typ == "TradeOrder"]
+    orders += [n["id"].split(":", 1)[1] for n in seed_nodes if n["type"] == "TradeOrder"]
+    restrictions = [("Restriction", f"rst-{ext}") for typ, ext in fed if typ == "Mandate"]
+    return restrictions + [("Hold", f"hold-{ext}") for ext in orders]
+
+
+def intent_request(evaluation: dict) -> tuple[bool, dict] | None:
+    """(is a search, request body) for an evaluation, or None when its shape is not checked here."""
+    subject = evaluation.get("subject") or {}
+    action = evaluation.get("action") or {}
+    resource = evaluation.get("resource") or {}
+    if not (subject.get("id") and action.get("name") and resource.get("type")):
+        return None
+    body: dict[str, Any] = {"subject": subject, "action": action, "resource": resource}
+    parameters = (evaluation.get("context") or {}).get("parameters")
+    if parameters:
+        body["context"] = {"input_params": parameters}
+    return not resource.get("id"), body
+
+
+def intent_verdict(answer: dict, *, search: bool) -> dict:
+    """Read the platform's answer: a decision, or for a search the resources it permits."""
+    if not search:
+        return {"verdict": "permitted" if answer.get("decision") else "denied", "detail": ""}
+    found = [r["id"] for r in answer.get("results") or [] if r.get("id")]
+    return {"verdict": "permitted" if found else "denied", "detail": ", ".join(found[:8]) or "nothing of this type"}
+
+
 class Board:
     """Everything the page shows, kept in memory."""
 
@@ -102,19 +173,27 @@ class Board:
         self.http = httpx.AsyncClient(timeout=30)
         self.clients: set[asyncio.Queue] = set()
         self.bridge: dict = {}
-        self.reset_state()
-
-    def reset_state(self) -> None:
-        """Forget every record; the Sentinel's identity is kept."""
+        self.identity: dict = {}
         self.messages: deque[dict] = deque(maxlen=300)
         self.audit: deque[dict] = deque(maxlen=800)
         self.runs: dict[str, dict] = {}
         self.escalations: list[dict] = []
         self.heartbeat: dict = {}
-        self.identity: dict = getattr(self, "identity", {})
         self.fed: list[str] = []
         self.current: tuple[str, int] | None = None
         self.written: dict[str, list[dict]] = {"restrictions": [], "holds": []}
+        self.board_live = False
+
+    def reset_state(self) -> None:
+        """Forget every record; the Sentinel's identity is kept."""
+        self.messages.clear()
+        self.audit.clear()
+        self.runs = {}
+        self.escalations = []
+        self.heartbeat = {}
+        self.fed = []
+        self.current = None
+        self.written = {"restrictions": [], "holds": []}
         self.board_live = False
 
     # ---- stream
@@ -129,51 +208,32 @@ class Board:
         """Merge the provisioned graph with what the feed and the Sentinel wrote."""
         nodes = {n["id"]: {**n, "origin": "seed"} for n in self.seed["nodes"]}
         edges = [{**e, "origin": "seed"} for e in self.seed["edges"]]
-
-        def add_node(typ: str, ext: str, label: str, origin: str, props: dict | None = None) -> str:
-            nid = f"{typ}:{ext}"
-            nodes.setdefault(
-                nid,
-                {"id": nid, "type": typ, "label": label or ext, "props": props or {}, "origin": origin},
-            )
-            return nid
-
-        def add_edge(src: str, typ: str, dst: str, origin: str) -> None:
-            if (
-                src in nodes
-                and dst in nodes
-                and not any(e["source"] == src and e["target"] == dst and e["type"] == typ for e in edges)
-            ):
-                edges.append({"source": src, "target": dst, "type": typ, "workflow": "", "origin": origin})
-
         for event_id in self.fed:
-            event = self.catalog[event_id]
-            for n in event["nodes"]:
-                props = {p["type"]: p["value"] for p in n["properties"]}
-                add_node(n["type"], n["external_id"], props.get("name", ""), "feed", props)
-            for r in event["relationships"]:
-                add_edge(
-                    f"{r['source']['type']}:{r['source']['external_id']}",
-                    r["type"],
-                    f"{r['target']['type']}:{r['target']['external_id']}",
-                    "feed",
-                )
+            add_event(nodes, edges, self.catalog[event_id])
         for row in self.written["restrictions"]:
             reason = {"reason": row.get("reason", "")}
-            rid = add_node("Restriction", row["restriction"], "Restriction", "sentinel", reason)
-            add_edge(rid, "RESTRICTS", f"Company:{row['company']}", "sentinel")
-            add_edge(rid, "ARISES_FROM", f"Mandate:{row['mandate']}", "sentinel")
-            add_edge(f"Agent:{alias(row['agent'])}", "RAISED", rid, "sentinel")
+            rid = put_node(nodes, "Restriction", row["restriction"], "Restriction", "sentinel", reason)
+            put_edge(nodes, edges, rid, "RESTRICTS", f"Company:{row['company']}", "sentinel")
+            put_edge(nodes, edges, rid, "ARISES_FROM", f"Mandate:{row['mandate']}", "sentinel")
+            put_edge(nodes, edges, f"Agent:{alias(row['agent'])}", "RAISED", rid, "sentinel")
         for row in self.written["holds"]:
-            hid = add_node("Hold", row["hold"], "Hold", "sentinel", {"reason": row.get("reason", "")})
-            add_edge(hid, "HOLDS", f"TradeOrder:{row['order']}", "sentinel")
-            add_edge(f"Agent:{alias(row['agent'])}", "RAISED", hid, "sentinel")
+            hid = put_node(nodes, "Hold", row["hold"], "Hold", "sentinel", {"reason": row.get("reason", "")})
+            put_edge(nodes, edges, hid, "HOLDS", f"TradeOrder:{row['order']}", "sentinel")
+            put_edge(nodes, edges, f"Agent:{alias(row['agent'])}", "RAISED", hid, "sentinel")
         return {
             "nodes": list(nodes.values()),
             "edges": edges,
             "capabilities": self.seed.get("capabilities", {}),
             "live": self.board_live,
         }
+
+    def runtime_nodes(self) -> list[dict]:
+        """Nodes a reset deletes: what the feed and the Sentinel wrote, never the provisioned graph."""
+        seed = {n["id"] for n in self.seed["nodes"]}
+        fed = [(n["type"], n["external_id"]) for event in self.catalog.values() for n in event["nodes"]]
+        found = written_nodes(self.written) + fed + conventional_nodes(fed, self.seed["nodes"])
+        unique = {f"{typ}:{ext}": {"external_id": ext, "type": typ} for typ, ext in found if ext}
+        return [node for key, node in unique.items() if key not in seed]
 
     async def ciq(self, query_id: str) -> list[dict]:
         """Run one of the board's knowledge queries with the application's credentials."""
@@ -237,20 +297,16 @@ class Board:
 
     async def decide(self, evaluation: dict) -> dict:
         """One evaluation -> {"verdict", "detail"}: a decision when it names a resource, a search when it does not."""
-        subject, action = evaluation.get("subject") or {}, evaluation.get("action") or {}
-        resource = evaluation.get("resource") or {}
         if not (BASE_URL and APP_TOKEN):
             return {"verdict": "unchecked", "detail": "the console has no platform credentials"}
-        if not (subject.get("id") and action.get("name") and resource.get("type")):
+        request = intent_request(evaluation)
+        if request is None:
             return {"verdict": "unchecked", "detail": "this shape of evaluation is not checked here"}
-        body: dict[str, Any] = {"subject": subject, "action": action, "resource": resource}
-        parameters = (evaluation.get("context") or {}).get("parameters")
-        if parameters:
-            body["context"] = {"input_params": parameters}
-        search = not resource.get("id")
+        search, body = request
+        endpoint = "search/resource" if search else "evaluation"
         try:
             resp = await self.http.post(
-                f"{BASE_URL}/access/v1/{'search/resource' if search else 'evaluation'}",
+                f"{BASE_URL}/access/v1/{endpoint}",
                 headers={"Content-Type": "application/json", "X-IK-ClientKey": APP_TOKEN},
                 json=body,
             )
@@ -258,14 +314,7 @@ class Board:
             return {"verdict": "unchecked", "detail": f"the check could not be sent: {exc}"}
         if resp.status_code != httpx.codes.OK:
             return {"verdict": "unchecked", "detail": f"the platform answered {resp.status_code}: {resp.text[:200]}"}
-        answer = resp.json() or {}
-        if search:
-            found = [r.get("id") for r in answer.get("results") or [] if r.get("id")]
-            return {
-                "verdict": "permitted" if found else "denied",
-                "detail": ", ".join(found[:8]) or "nothing of this type",
-            }
-        return {"verdict": "permitted" if answer.get("decision") else "denied", "detail": ""}
+        return intent_verdict(resp.json() or {}, search=search)
 
     async def capture(self, path: str, body: dict) -> int:
         """Send one Capture API request; a refusal becomes a 502 for the page."""
@@ -321,6 +370,7 @@ board: Board | None = None
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    """Create the board and follow the graph and the bridge while the service runs."""
     global board  # noqa: PLW0603
     board = Board()
     tasks = [asyncio.create_task(board.refresh_written()), asyncio.create_task(board.watch_bridge())]
@@ -332,14 +382,41 @@ async def lifespan(_app: FastAPI):
 
 app = FastAPI(title="cib-sentinel console", lifespan=lifespan)
 
+# The console has no login, so a page of another site open in the same browser must not be able to
+# write through it. Browsers name the origin of a cross-site request; the services that post records
+# from inside the compose network send no such header.
+ACTION_HEADER = "x-console-action"
+BROWSER_ACTIONS = ("/api/feed/", "/api/reset", "/api/wake")
+
+
+def cross_site(request: Request) -> bool:
+    """Tell whether a browser sent this request from another origin than the console's own."""
+    if request.headers.get("sec-fetch-site", "same-origin") not in ("same-origin", "none"):
+        return True
+    origin = request.headers.get("origin")
+    return bool(origin) and urlsplit(origin).netloc != request.headers.get("host")
+
+
+@app.middleware("http")
+async def same_origin_only(request: Request, call_next):
+    """Refuse writes from another origin; the page's own actions must also carry the action header."""
+    if request.method not in ("GET", "HEAD", "OPTIONS"):
+        if cross_site(request):
+            return JSONResponse({"detail": "cross-site request refused"}, status_code=403)
+        if request.url.path.startswith(BROWSER_ACTIONS) and ACTION_HEADER not in request.headers:
+            return JSONResponse({"detail": "this action is only available from the console page"}, status_code=403)
+    return await call_next(request)
+
 
 @app.get("/api/health")
 async def health() -> dict:
+    """Liveness."""
     return {"ok": True}
 
 
 @app.get("/api/state")
 async def state() -> dict:
+    """Everything a page needs when it opens."""
     return board.snapshot()
 
 
@@ -350,6 +427,7 @@ async def stream(request: Request) -> StreamingResponse:
     board.clients.add(queue)
 
     async def events():
+        """Yield the records as server-sent events until the page disconnects."""
         try:
             yield ": open\n\n"
             while not await request.is_disconnected():
@@ -367,6 +445,7 @@ async def stream(request: Request) -> StreamingResponse:
 
 # ------------------------------------------------------------ audit records
 def layer_of(service: str) -> str:
+    """Name the kind of service a record comes from: gateway, token-service or agent."""
     if service.endswith("-iag"):
         return "gateway"
     if "token" in service:
@@ -374,60 +453,85 @@ def layer_of(service: str) -> str:
     return "agent"
 
 
-@app.post("/api/push-update")
-async def push_update(request: Request) -> dict:
-    """Receive an audit record of a gateway, the Token Service or a fleet agent."""
-    data = await request.json()
+# record key -> key of the audit record as the services send it
+RECORD_FIELDS = {
+    "reason": "reason",
+    "trace_id": "traceID",
+    "reason_code": "reasonCode",
+    "prompt": "prompt",
+    "cached": "cached",
+    "permitted_set": "permittedSet",
+    "discovery": "discovery",
+    "capabilities": "capabilities",
+    "duration_ms": "durationMs",
+}
+TEXT_FIELDS = ("reason", "trace_id", "reason_code", "prompt")
+CLAIMS_SHOWN = ("iss", "sub", "aud", "exp", "iat", "act")
+
+
+def audit_record(data: dict) -> dict:
+    """Normalise one audit record of a gateway, the Token Service or an agent."""
     service = str(data.get("service") or "unknown")
-    decision = str(data.get("decision") or "").lower()
     record: dict[str, Any] = {
         "id": uuid.uuid4().hex[:12],
         "at": time.time(),
         "service": service,
         "layer": layer_of(service),
-        "decision": decision,
+        "decision": str(data.get("decision") or "").lower(),
         "action": str(data.get("action") or ""),
         "subject": alias(data.get("subject")),
         "actor": alias(data.get("actor")),
-        "reason": data.get("reason") or "",
         "chain": [alias(a) for a in data.get("actorsChain") or []],
-        "trace_id": data.get("traceID") or "",
-        "cached": data.get("cached"),
-        "permitted_set": data.get("permittedSet"),
-        "discovery": data.get("discovery"),
-        "capabilities": data.get("capabilities"),
-        "reason_code": data.get("reasonCode") or "",
-        "prompt": data.get("prompt") or "",
-        "duration_ms": data.get("durationMs"),
     }
-    intent: list = []
-    if decision == "token_exchanged":
-        token = str(record["reason"])
-        claims = jwt_claims(token)
-        carried = ((claims.get("act") or {}).get("intent") or {}).get("evaluations")
-        intent = [e for e in carried if isinstance(e, dict)] if isinstance(carried, list) else []
-        record.update(
-            reason="",
-            token=token,
-            chain=[alias(a) for a in act_chain(claims)],
-            subject=alias(claims.get("sub")),
-            claims={k: claims.get(k) for k in ("iss", "sub", "aud", "exp", "iat", "act") if k in claims},
-        )
-    if board.current:
-        run_id, step = board.current
-        record["run_id"], record["step"] = run_id, step
-        run = board.runs.get(run_id)
-        if run and step < len(run["steps"]):
-            target = run["steps"][step]
-            target["records"].append(record["id"])
-            if intent and not target["intent"]:
-                # The first agent of the task reports the delegation it received: the task's intent is in it.
-                target["intent"] = [{"evaluation": e, "verdict": "checking", "detail": ""} for e in intent]
-                asyncio.get_running_loop().create_task(board.check_intent(run_id, step))
-            if decision in DENIED and record["layer"] != "agent":
-                target["denials"].append(
-                    {"service": service, "action": record["action"], "reason": str(record["reason"])[:300]},
-                )
+    record.update({key: data.get(source) for key, source in RECORD_FIELDS.items()})
+    for key in TEXT_FIELDS:
+        record[key] = record[key] or ""
+    return record
+
+
+def read_delegation(record: dict) -> list[dict]:
+    """Decode a reported delegation into the record and return the intent it carries, if any."""
+    token = str(record["reason"])
+    claims = jwt_claims(token)
+    record.update(
+        reason="",
+        token=token,
+        chain=[alias(a) for a in act_chain(claims)],
+        subject=alias(claims.get("sub")),
+        claims={k: claims[k] for k in CLAIMS_SHOWN if k in claims},
+    )
+    carried = ((claims.get("act") or {}).get("intent") or {}).get("evaluations")
+    if not isinstance(carried, list):
+        return []
+    return [e for e in carried if isinstance(e, dict)]
+
+
+def attach_to_task(record: dict, intent: list[dict]) -> None:
+    """Tie a record to the task in progress, with the intent it carries and any refusal it reports."""
+    if not board.current:
+        return
+    run_id, index = board.current
+    record["run_id"], record["step"] = run_id, index
+    run = board.runs.get(run_id)
+    if not run or index >= len(run["steps"]):
+        return
+    task = run["steps"][index]
+    task["records"].append(record["id"])
+    if intent and not task["intent"]:
+        # The first agent of the task reports the delegation it received: the task's intent is in it.
+        task["intent"] = [{"evaluation": e, "verdict": "checking", "detail": ""} for e in intent]
+        asyncio.get_running_loop().create_task(board.check_intent(run_id, index))
+    if record["decision"] in DENIED and record["layer"] != "agent":
+        refusal = {"service": record["service"], "action": record["action"], "reason": str(record["reason"])[:300]}
+        task["denials"].append(refusal)
+
+
+@app.post("/api/push-update")
+async def push_update(request: Request) -> dict:
+    """Receive an audit record of a gateway, the Token Service or a fleet agent."""
+    record = audit_record(await request.json())
+    intent = read_delegation(record) if record["decision"] == "token_exchanged" else []
+    attach_to_task(record, intent)
     board.audit.append(record)
     board.publish("audit", record)
     return {"ok": True}
@@ -435,6 +539,7 @@ async def push_update(request: Request) -> dict:
 
 # ------------------------------------------------------- the Sentinel's feed
 def summarize_message(data: dict) -> dict:
+    """Reduce a relayed wire message to what the page shows."""
     event_type = str(data.get("event_type") or "")
     body = data.get("body") if isinstance(data.get("body"), dict) else {}
     return {
@@ -463,115 +568,163 @@ def observed_of(step: dict) -> tuple[str, str]:
     return "refused", f"{first['service']} refused {what}" + (f": {first['reason']}" if first["reason"] else "")
 
 
-@app.post("/api/sentinel")
-async def sentinel_record(request: Request) -> JSONResponse:  # noqa: C901
-    """One lifecycle record of the autonomous agent."""
-    data = await request.json()
-    kind = data.get("type")
-    answer: dict[str, Any] = {"ok": True}
-    if kind == "heartbeat":
-        board.heartbeat = {k: v for k, v in data.items() if k != "type"}
-        board.publish("heartbeat", board.heartbeat)
-    elif kind == "identity":
-        claims = jwt_claims(str(data.get("token") or ""))
-        board.identity = {
-            "sub": claims.get("sub"),
-            "aud": claims.get("aud"),
-            "iss": claims.get("iss"),
-            "exp": claims.get("exp"),
-            "grant": claims.get("gty") or "client-credentials",
-            "token": data.get("token"),
-        }
-        board.publish("identity", board.identity)
-    elif kind == "message":
-        message = summarize_message(data)
-        board.messages.append(message)
-        board.publish("message", message)
-    elif kind == "run_start":
-        run = {
-            "id": data["run_id"],
-            "at": data.get("at"),
-            "trigger": data.get("trigger"),
-            "label": data.get("label"),
-            "planner": data.get("planner"),
-            "status": "running",
-            "summary": "",
-            "steps": [],
-            "thoughts": [],
-        }
-        board.runs[run["id"]] = run
-        while len(board.runs) > 30:  # noqa: PLR2004
-            board.runs.pop(next(iter(board.runs)))
+def on_heartbeat(data: dict) -> None:
+    """Record the Sentinel's schedule and state."""
+    board.heartbeat = {k: v for k, v in data.items() if k != "type"}
+    board.publish("heartbeat", board.heartbeat)
+
+
+def on_identity(data: dict) -> None:
+    """Record the Sentinel's own access token, decoded for the header."""
+    claims = jwt_claims(str(data.get("token") or ""))
+    board.identity = {
+        "sub": claims.get("sub"),
+        "aud": claims.get("aud"),
+        "iss": claims.get("iss"),
+        "exp": claims.get("exp"),
+        "grant": claims.get("gty") or "client-credentials",
+        "token": data.get("token"),
+    }
+    board.publish("identity", board.identity)
+
+
+def on_message(data: dict) -> None:
+    """Record a message the Sentinel pulled from the wire."""
+    message = summarize_message(data)
+    board.messages.append(message)
+    board.publish("message", message)
+
+
+def on_run_start(data: dict) -> None:
+    """Open a mission; the oldest are dropped beyond thirty."""
+    run = {
+        "id": data["run_id"],
+        "at": data.get("at"),
+        "trigger": data.get("trigger"),
+        "label": data.get("label"),
+        "planner": data.get("planner"),
+        "status": "running",
+        "summary": "",
+        "steps": [],
+        "thoughts": [],
+    }
+    board.runs[run["id"]] = run
+    while len(board.runs) > MAX_RUNS:
+        board.runs.pop(next(iter(board.runs)))
+    board.publish("run", run)
+
+
+def on_thought(data: dict) -> None:
+    """Add a note of the Sentinel to its current mission."""
+    run = board.runs.get(data.get("run_id") or "")
+    if run is None and board.runs:
+        run = list(board.runs.values())[-1]
+    if run:
+        run["thoughts"].append(data.get("text") or "")
         board.publish("run", run)
-    elif kind == "thought":
-        run = board.runs.get(data.get("run_id") or "") or (list(board.runs.values()) or [None])[-1]
-        if run:
-            run["thoughts"].append(data.get("text") or "")
-            board.publish("run", run)
-    elif kind == "step_start" and data.get("run_id") in board.runs:
-        run = board.runs[data["run_id"]]
-        run["steps"].append(
-            {
-                "index": data["step"],
-                "title": data.get("title"),
-                "instruction": data.get("instruction"),
-                "reason": data.get("reason"),
-                "started": data.get("at"),
-                "ended": None,
-                "outcome": "running",
-                "answer": "",
-                "http_status": None,
-                "observed": "",
-                "records": [],
-                "intent": [],
-                "intent_error": None,
-                "denials": [],
-            },
-        )
-        board.current = (run["id"], data["step"])
-        board.publish("run", run)
-    elif kind == "step_end" and data.get("run_id") in board.runs:
-        run = board.runs[data["run_id"]]
-        step = run["steps"][data["step"]]
-        override, observed = observed_of(step)
-        step.update(
+
+
+def on_step_start(data: dict) -> None:
+    """Open a task: records arriving from now on belong to it."""
+    run = board.runs.get(data.get("run_id") or "")
+    if not run:
+        return
+    task = {
+        "index": data["step"],
+        "title": data.get("title"),
+        "instruction": data.get("instruction"),
+        "reason": data.get("reason"),
+        "started": data.get("at"),
+        "ended": None,
+        "outcome": "running",
+        "answer": "",
+        "http_status": None,
+        "observed": "",
+        "records": [],
+        "intent": [],
+        "intent_error": None,
+        "denials": [],
+    }
+    run["steps"].append(task)
+    board.current = (run["id"], data["step"])
+    board.publish("run", run)
+
+
+def on_step_end(data: dict) -> dict | None:
+    """Close a task: a gateway refusal seen during it overrides the outcome the Sentinel read from the answer."""
+    run = board.runs.get(data.get("run_id") or "")
+    if not run:
+        return None
+    task = run["steps"][data["step"]]
+    override, observed = observed_of(task)
+    refusal = data.get("intent_error")
+    task.update(
+        ended=data.get("at"),
+        outcome=override or data.get("outcome"),
+        answer=data.get("answer") or "",
+        http_status=data.get("http_status"),
+        intent_error=refusal if isinstance(refusal, dict) else None,
+        observed=observed,
+    )
+    board.current = None
+    board.publish("run", run)
+    asyncio.get_running_loop().create_task(board.refresh_written())
+    return {"outcome": task["outcome"], "observed": observed}
+
+
+def on_escalation(data: dict) -> None:
+    """Record that the Sentinel hands a mission over to a person."""
+    item = {
+        "id": uuid.uuid4().hex[:8],
+        "at": data.get("at"),
+        "run_id": data.get("run_id"),
+        "text": data.get("text"),
+        "trigger": data.get("trigger"),
+    }
+    board.escalations.append(item)
+    board.publish("escalation", item)
+
+
+def on_run_end(data: dict) -> None:
+    """Close a mission."""
+    run = board.runs.get(data.get("run_id") or "")
+    if run:
+        run.update(
+            status=data.get("status"),
+            summary=data.get("summary"),
+            counts=data.get("counts"),
             ended=data.get("at"),
-            outcome=override or data.get("outcome"),
-            answer=data.get("answer") or "",
-            http_status=data.get("http_status"),
-            intent_error=data.get("intent_error") if isinstance(data.get("intent_error"), dict) else None,
-            observed=observed,
         )
-        board.current = None
-        answer.update(outcome=step["outcome"], observed=observed)
         board.publish("run", run)
-        asyncio.get_running_loop().create_task(board.refresh_written())
-    elif kind == "escalation":
-        item = {
-            "id": uuid.uuid4().hex[:8],
-            "at": data.get("at"),
-            "run_id": data.get("run_id"),
-            "text": data.get("text"),
-            "trigger": data.get("trigger"),
-        }
-        board.escalations.append(item)
-        board.publish("escalation", item)
-    elif kind == "run_end":
-        run = board.runs.get(data.get("run_id") or "")
-        if run:
-            run.update(
-                status=data.get("status"),
-                summary=data.get("summary"),
-                counts=data.get("counts"),
-                ended=data.get("at"),
-            )
-            board.publish("run", run)
-        board.current = None
-    return JSONResponse(answer)
+    board.current = None
+
+
+MAX_RUNS = 30
+SENTINEL_RECORDS = {
+    "heartbeat": on_heartbeat,
+    "identity": on_identity,
+    "message": on_message,
+    "run_start": on_run_start,
+    "thought": on_thought,
+    "step_start": on_step_start,
+    "step_end": on_step_end,
+    "escalation": on_escalation,
+    "run_end": on_run_end,
+}
+
+
+@app.post("/api/sentinel")
+async def sentinel_record(request: Request) -> JSONResponse:
+    """One lifecycle record of the autonomous agent; the answer to a task's end carries what was observed."""
+    data = await request.json()
+    handler = SENTINEL_RECORDS.get(data.get("type"))
+    extra = handler(data) if handler else None
+    return JSONResponse({"ok": True, **(extra or {})})
 
 
 # ------------------------------------------------------------------ actions
 async def sentinel_state() -> dict:
+    """Read the Sentinel's state; empty when it cannot be reached."""
     try:
         return (await board.http.get(f"{SENTINEL_URL}/state", timeout=5)).json()
     except (httpx.HTTPError, ValueError):
@@ -623,39 +776,25 @@ async def wake() -> dict:
 
 
 @app.post("/api/reset")
-async def reset() -> dict:  # noqa: C901
+async def reset() -> dict:
     """Remove what the feed and the Sentinel wrote, back to the provisioned graph."""
-    # A mission in progress would keep writing to a graph that is being emptied under it.
+    # A mission in progress would keep writing to a graph that is being emptied under it, so nothing is
+    # deleted unless the Sentinel itself answers that it is idle.
     try:
-        cleared = (await board.http.post(f"{SENTINEL_URL}/clear", timeout=5)).json()
-    except (httpx.HTTPError, ValueError):
-        cleared = {}
-    if cleared.get("busy"):
+        response = await board.http.post(f"{SENTINEL_URL}/clear", timeout=5)
+        response.raise_for_status()
+        cleared = response.json()
+    except (httpx.HTTPError, ValueError) as exc:
+        detail = "cannot confirm that the Sentinel is idle; nothing was reset"
+        raise HTTPException(status_code=502, detail=detail) from exc
+    if not isinstance(cleared, dict) or not isinstance(cleared.get("busy"), bool):
+        raise HTTPException(status_code=502, detail="unreadable answer from the Sentinel; nothing was reset")
+    if cleared["busy"]:
         raise HTTPException(status_code=409, detail="a mission is running; reset when it has finished")
-    seed_ids = {n["id"] for n in board.seed["nodes"]}
-    doomed: dict[str, dict] = {}
-
-    def doom(typ: str, ext: str | None) -> None:
-        if ext and f"{typ}:{ext}" not in seed_ids:
-            doomed[f"{typ}:{ext}"] = {"external_id": ext, "type": typ}
-
     await board.refresh_written()
-    for row in board.written["holds"]:
-        doom("Hold", row["hold"])
-    for row in board.written["restrictions"]:
-        doom("Restriction", row["restriction"])
-    for event in board.catalog.values():
-        for node in event["nodes"]:
-            doom(node["type"], node["external_id"])
-            if node["type"] == "Mandate":
-                doom("Restriction", f"rst-{node['external_id']}")
-            if node["type"] == "TradeOrder":
-                doom("Hold", f"hold-{node['external_id']}")
-    for node in board.seed["nodes"]:
-        if node["type"] == "TradeOrder":
-            doom("Hold", f"hold-{node['id'].split(':', 1)[1]}")
+    doomed = board.runtime_nodes()
     if doomed:
-        await board.capture("nodes/delete", {"nodes": list(doomed.values())})
+        await board.capture("nodes/delete", {"nodes": doomed})
     board.reset_state()
     await board.refresh_written()
     board.publish("reset", board.snapshot())
@@ -664,6 +803,7 @@ async def reset() -> dict:  # noqa: C901
 
 @app.get("/")
 async def index() -> FileResponse:
+    """Serve the page."""
     return FileResponse(STATIC / "index.html", headers={"Cache-Control": "no-store"})
 
 

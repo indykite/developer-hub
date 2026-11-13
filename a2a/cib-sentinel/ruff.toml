@@ -17,6 +17,7 @@ known-third-party = ["app", "sentinel"]
     "D",       # test names are the documentation
     "E501",    # event fixtures read better on one line
     "INP001",
+    "SLF001",  # the task sending is tested through the module's private pieces
 ]
 "console/tests/*" = [
     "S101",

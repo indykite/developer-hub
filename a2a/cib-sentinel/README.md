@@ -133,6 +133,10 @@ make keys                   # writes token-service/token-service.yaml, prints tw
 `make keys` prints `TOKEN_SERVICE_CLIENT_SECRET` (for this `.env`) and
 `TOKEN_SERVICE_PUBLIC_JWK` (for instant-stack's `.env`).
 
+`token-service.yaml` holds the private signing key and is readable by its
+owner only; the Token Service container runs as that user
+(`TOKEN_SERVICE_RUN_AS`, the output of `id -u`).
+
 ### 4. Provision the project
 
 In `instant-stack/.env`: `DATASET=cib`, `AUTH0_ISSUER`, `AUTH0_SUB_SENTINEL`,
@@ -214,6 +218,11 @@ rules as the knowledge-query policies.
 
 To run it:
 
+- Images: a gateway and a Token Service that carry the intent in the token,
+  named in `AGENT_GATEWAY_IMAGE` and `TOKEN_SERVICE_IMAGE`. With the two
+  published images of `.example.env` the gateway asks the Intent Agent and
+  refuses a task without an intent, but the delegation carries no intent and
+  the mission cards show no Intent block.
 - Auth0: an API `intent_agent`, with the orchestrator gateway's application
   authorized for it.
 - `.env`: `COMPOSE_PROFILES=intent` and `IBAC_ENABLED=true`.
@@ -232,6 +241,8 @@ refusal.
 | Nothing on the wire after a feed | The project's event sink (provisioned only when instant-stack's `PUBSUB_*` values are set), and that the subscription belongs to its topic. |
 | Every task is `401` at `orchestrator-iag` | whoami did not resolve the Sentinel: `AUTH0_ISSUER` or `AUTH0_SUB_SENTINEL` in instant-stack's `.env` differ from the tenant, or the Sentinel application is not authorized for `cib-autonomous`. |
 | Every task is `403` at `orchestrator-iag` | The Agent nodes carry other subjects than the gateways' `<client_id>@clients`: check the `AUTH0_SUB_*` values and re-provision. |
+| `token-service` exits with `permission denied` on its configuration | `TOKEN_SERVICE_RUN_AS` is not the user that owns `token-service/token-service.yaml`. |
+| Feed, reset or wake answers `403` | The request did not come from the console page itself: reload the page after a console rebuild. |
 | `No access token` on a task | `SENTINEL_IDP_CLIENT_ID` / `SENTINEL_IDP_CLIENT_SECRET`, and the bridge's log line for the token request. |
 | Every task is `502` with intent on | The Intent Agent is not running (`COMPOSE_PROFILES=intent`), or the orchestrator gateway's application is not authorized for the `intent_agent` API. |
 | Every task is stamped `no intent` | The six vocabulary policies are not provisioned, or the task's wording does not match their actions and resource types. |
