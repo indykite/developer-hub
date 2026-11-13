@@ -66,6 +66,8 @@ OLLAMA_HOST = (os.getenv("OLLAMA_HOST") or "http://host.docker.internal:11434").
 LLM_MODEL = os.getenv("LLM_MODEL") or "mistral-nemo:latest"
 
 UPSERT_NODE = "capture.upsert.node"
+PULL_SIZE = 50  # messages per pull
+PULL_BATCHES = 5  # pulls per wake-up
 REFUSED_RE = re.compile(
     r"not authori[sz]ed|access (is )?denied|\bdenied\b|not allowed|not permitted|no permission|unauthori[sz]ed"
     r"|\bforbidden\b|\b40[13]\b",
@@ -266,28 +268,26 @@ class Sentinel:
         return self._token
 
     # ---- event intake
-    def pull(self) -> list[tuple[bytes, dict[str, str]]]:
-        """One synchronous pull of the subscription; received messages are acknowledged."""
-        if not (PUBSUB_PROJECT and PUBSUB_SUBSCRIPTION):
-            return []
+    def _subscription(self) -> str:
+        """Return the subscription's path, creating the client on first use."""
         if self.subscriber is None:
             from google.cloud import pubsub_v1  # noqa: PLC0415
 
             self.subscriber = pubsub_v1.SubscriberClient()
-        path = self.subscriber.subscription_path(PUBSUB_PROJECT, PUBSUB_SUBSCRIPTION)
-        out: list[tuple[bytes, dict[str, str]]] = []
-        for _ in range(5):
-            response = self.subscriber.pull(
-                request={"subscription": path, "max_messages": 50, "return_immediately": True},
-                timeout=15,
-            )
-            if not response.received_messages:
-                break
-            self.subscriber.acknowledge(
-                request={"subscription": path, "ack_ids": [m.ack_id for m in response.received_messages]},
-            )
-            out.extend((m.message.data, dict(m.message.attributes)) for m in response.received_messages)
-        return out
+        return self.subscriber.subscription_path(PUBSUB_PROJECT, PUBSUB_SUBSCRIPTION)
+
+    def pull(self) -> tuple[list[tuple[bytes, dict[str, str]]], list[str]]:
+        """One synchronous pull of the subscription: the messages and the ids to acknowledge them with."""
+        response = self.subscriber.pull(
+            request={"subscription": self._subscription(), "max_messages": PULL_SIZE, "return_immediately": True},
+            timeout=15,
+        )
+        received = response.received_messages
+        return [(m.message.data, dict(m.message.attributes)) for m in received], [m.ack_id for m in received]
+
+    def acknowledge(self, ack_ids: list[str]) -> None:
+        """Tell the subscription these messages were taken in, so it does not deliver them again."""
+        self.subscriber.acknowledge(request={"subscription": self._subscription(), "ack_ids": ack_ids})
 
     async def intake(self, event: dict, source: str) -> None:
         """Relay one event to the console and remember the mission it triggers, if any."""
@@ -322,16 +322,26 @@ class Sentinel:
             await self.queue.put(node)
 
     async def poll_once(self) -> None:
-        """Pull the subscription once and take in what arrived."""
+        """Pull the subscription and take in what arrived, batch by batch.
+
+        A batch is acknowledged only after every message of it was taken in, so a failure on a later
+        batch loses nothing: what was not acknowledged is delivered again.
+        """
+        if not (PUBSUB_PROJECT and PUBSUB_SUBSCRIPTION):
+            return
         try:
-            messages = await asyncio.to_thread(self.pull)
+            await asyncio.to_thread(self._subscription)
+            for _ in range(PULL_BATCHES):
+                messages, ack_ids = await asyncio.to_thread(self.pull)
+                if not messages:
+                    break
+                for data, attributes in messages:
+                    await self.intake(decode_message(data, attributes), "pubsub")
+                await asyncio.to_thread(self.acknowledge, ack_ids)
             self.last_error = ""
         except Exception as exc:
             self.last_error = str(exc)[:300]
             log.warning("pull failed: %s", self.last_error)
-            messages = []
-        for data, attributes in messages:
-            await self.intake(decode_message(data, attributes), "pubsub")
 
     async def schedule_loop(self) -> None:
         """Wake on the schedule (or when asked), pull, then sleep again."""
@@ -362,9 +372,6 @@ class Sentinel:
             self.busy = True
             try:
                 await self.run_mission(node)
-            except Exception as exc:
-                log.exception("mission failed")
-                await self.tell("run_end", run_id="", status="failed", summary=f"Mission failed: {exc}")
             finally:
                 self.busy = False
 
@@ -411,16 +418,27 @@ class Sentinel:
         return parsed
 
     def scripted_decision(self, node: dict, history: list[dict]) -> dict:
-        """Return the procedure's next step, stopping early when an earlier step says to."""
+        """Return the procedure's next step, stopping early when an earlier step says to.
+
+        The procedure continues only a mission it ran so far: each past task names the step it was. A
+        mission whose tasks were chosen by the model cannot be resumed by position, so it is handed over.
+        """
         steps = self.mission["procedures"][node["type"]]["steps"]
+        done = [past.get("script") for past in history]
+        if done != list(range(len(history))) or len(done) > len(steps):
+            return {
+                "action": "escalate",
+                "reason": "No valid next move could be decided for a mission already under way; "
+                "a person has to take over.",
+            }
         for past in history:
-            rule = steps[past["index"]].get("on_blocked")
-            if past["outcome"] in ("refused", "empty", "failed", "unmapped") and rule == "escalate":
+            rule = steps[past["script"]].get("on_blocked")
+            if past["outcome"] in BLOCKED and rule == "escalate":
                 return {
                     "action": "escalate",
                     "reason": f"'{past['title']}' came back {past['outcome']}; a person has to take over.",
                 }
-        if len(history) >= len(steps):
+        if len(history) == len(steps):
             return {"action": "finish", "reason": "The procedure is complete."}
         step = steps[len(history)]
         fields = {"id": node["external_id"], **{k: str(v) for k, v in node["properties"].items()}}
@@ -429,6 +447,7 @@ class Sentinel:
             "title": step["title"],
             "instruction": step["instruction"].format_map(_Lenient(fields)),
             "reason": step.get("why", ""),
+            "script": len(history),
         }
 
     async def decide(self, node: dict, history: list[dict]) -> dict:
@@ -530,34 +549,46 @@ class Sentinel:
             "answer": answer,
             "outcome": seen.get("outcome") or outcome,
             "observed": str(seen.get("observed") or ""),
+            "script": decision.get("script"),
         }
 
     async def run_mission(self, node: dict) -> None:
-        """One mission: decide, act, observe, until finished or escalated."""
+        """One mission: decide, act, observe, until finished or escalated; a failure closes it as failed."""
         run_id = uuid.uuid4().hex[:10]
         label = node["properties"].get("name") or node["external_id"]
         await self.tell("run_start", run_id=run_id, trigger=node, label=label, planner=self.planner_name())
         history: list[dict] = []
-        status, summary = "finished", "Task budget used."
-        while len(history) < MAX_STEPS:
-            decision = await self.decide(node, history)
-            reason = str(decision.get("reason") or "")
-            if decision["action"] == "finish":
-                summary = reason or "Nothing left to do."
-                break
-            if decision["action"] == "escalate":
-                status, summary = "escalated", reason or "A person has to take over."
-                await self.tell("escalation", run_id=run_id, text=summary, trigger=node)
-                break
-            history.append(await self.perform(run_id, len(history), decision))
-            await asyncio.sleep(STEP_PAUSE)
+        try:
+            status, summary = await self.work(run_id, node, history)
+        except Exception as exc:
+            log.exception("mission failed")
+            status, summary = "failed", f"Mission failed: {exc}"
         counts = dict.fromkeys(OUTCOMES, 0)
         for past in history:
             counts[past["outcome"]] = counts.get(past["outcome"], 0) + 1
         await self.tell("run_end", run_id=run_id, status=status, summary=summary, counts=counts)
 
+    async def work(self, run_id: str, node: dict, history: list[dict]) -> tuple[str, str]:
+        """Carry a mission to its end and return (status, summary); the tasks done are added to history."""
+        while len(history) < MAX_STEPS:
+            decision = await self.decide(node, history)
+            reason = str(decision.get("reason") or "")
+            if decision["action"] == "finish":
+                return "finished", reason or "Nothing left to do."
+            if decision["action"] == "escalate":
+                summary = reason or "A person has to take over."
+                await self.tell("escalation", run_id=run_id, text=summary, trigger=node)
+                return "escalated", summary
+            history.append(await self.perform(run_id, len(history), decision))
+            await asyncio.sleep(STEP_PAUSE)
+        # The budget ran out before the mission was confirmed complete: that is not a finished mission.
+        summary = "Task budget used before the mission was confirmed complete; a person has to take over."
+        await self.tell("escalation", run_id=run_id, text=summary, trigger=node)
+        return "escalated", summary
+
 
 OUTCOMES = ("done", "refused", "empty", "failed", "unmapped")
+BLOCKED = ("refused", "empty", "failed", "unmapped")
 ENDED_BADLY = ("failed", "rejected", "canceled", "cancelled")
 
 

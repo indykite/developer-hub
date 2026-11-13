@@ -110,7 +110,7 @@ def test_scripted_procedure_runs_in_order_and_escalates():
     assert first["action"] == "task"
     assert "mnd-1003" in first["instruction"]
     blocked = [
-        {"index": 0, "title": first["title"], "instruction": first["instruction"], "outcome": "empty", "answer": ""},
+        {"script": 0, "title": first["title"], "instruction": first["instruction"], "outcome": "empty", "answer": ""},
     ]
     assert agent.scripted_decision(node, blocked)["action"] == "escalate"
     done = [{**blocked[0], "outcome": "done"}]
@@ -120,7 +120,7 @@ def test_scripted_procedure_runs_in_order_and_escalates():
     assert "Project Monsoon" in second["instruction"]
     steps = agent.mission["procedures"]["Mandate"]["steps"]
     everything = [
-        {"index": i, "title": s["title"], "instruction": "", "outcome": "done", "answer": ""}
+        {"script": i, "title": s["title"], "instruction": "", "outcome": "done", "answer": ""}
         for i, s in enumerate(steps)
     ]
     assert agent.scripted_decision(node, everything)["action"] == "finish"
@@ -132,7 +132,7 @@ def test_a_refused_optional_step_does_not_escalate():
     node = {"external_id": "mnd-1002", "type": "Mandate", "properties": {"name": "Project Aurora"}}
     steps = agent.mission["procedures"]["Mandate"]["steps"]
     history = [
-        {"index": i, "title": s["title"], "instruction": "", "outcome": "done", "answer": ""}
+        {"script": i, "title": s["title"], "instruction": "", "outcome": "done", "answer": ""}
         for i, s in enumerate(steps)
     ]
     history[-1]["outcome"] = "refused"
@@ -143,7 +143,7 @@ def test_a_task_without_an_intent_escalates_where_the_procedure_says_so():
     """A task with no readable intent counts as blocked for the escalation rule."""
     agent = mod.Sentinel()
     node = {"external_id": "mnd-1002", "type": "Mandate", "properties": {"name": "Project Aurora"}}
-    history = [{"index": 0, "title": "Read the mandate", "instruction": "", "outcome": "unmapped", "answer": ""}]
+    history = [{"script": 0, "title": "Read the mandate", "instruction": "", "outcome": "unmapped", "answer": ""}]
     assert agent.scripted_decision(node, history)["action"] == "escalate"
 
 
@@ -223,8 +223,98 @@ def test_the_scripted_order_procedure_holds_only_a_restricted_company():
     """The written step for an order asks for the hold only if its company is on the restricted list."""
     agent = mod.Sentinel()
     node = {"external_id": "ord-7005", "type": "TradeOrder", "properties": {"name": "BUY 2,000,000 KSTL 2031 notes"}}
-    done = [{"index": 0, "title": "Read the restricted list", "instruction": "", "outcome": "done", "answer": ""}]
+    done = [{"script": 0, "title": "Read the restricted list", "instruction": "", "outcome": "done", "answer": ""}]
     instruction = agent.scripted_decision(node, done)["instruction"]
     assert "only if its company is listed" in instruction
     assert "otherwise leave the order unchanged" in instruction
     assert "hold-ord-7005" in instruction
+
+
+def recording(agent):
+    """Replace the reports to the console by a list of (kind, fields)."""
+    told = []
+
+    async def tell(kind, **fields):
+        """Record one report."""
+        told.append((kind, fields))
+        return {}
+
+    agent.tell = tell
+    return told
+
+
+def test_a_mission_the_model_started_is_not_resumed_by_the_procedure():
+    """Past tasks chosen by the model are not procedure steps: the fallback hands the mission over."""
+    agent = mod.Sentinel()
+    node = {"external_id": "mnd-1002", "type": "Mandate", "properties": {"name": "Project Aurora"}}
+    by_model = [{"script": None, "title": "Check the list", "instruction": "", "outcome": "done", "answer": ""}]
+    assert agent.scripted_decision(node, by_model)["action"] == "escalate"
+    too_many = [{"script": i, "title": "t", "instruction": "", "outcome": "done", "answer": ""} for i in range(9)]
+    assert agent.scripted_decision(node, too_many)["action"] == "escalate"
+    assert agent.scripted_decision(node, [])["script"] == 0
+
+
+def test_an_exhausted_task_budget_is_an_escalation_not_a_finished_mission(monkeypatch):
+    """When the budget runs out before a finish decision, the mission is escalated."""
+    monkeypatch.setattr(mod, "MAX_STEPS", 1)
+    monkeypatch.setattr(mod, "STEP_PAUSE", 0)
+    agent = mod.Sentinel()
+    told = recording(agent)
+
+    async def perform(_run_id, _position, decision):
+        """Pretend the task was carried out."""
+        return {"title": decision["title"], "outcome": "done", "script": decision.get("script")}
+
+    agent.perform = perform
+    node = {"external_id": "mnd-1002", "type": "Mandate", "properties": {"name": "Project Aurora"}}
+    mod.asyncio.run(agent.run_mission(node))
+    assert [kind for kind, _ in told] == ["run_start", "escalation", "run_end"]
+    end = told[-1][1]
+    assert end["status"] == "escalated"
+    assert end["counts"]["done"] == 1
+
+
+def test_a_failing_mission_is_closed_under_its_own_id():
+    """An error inside a mission ends that mission as failed, with the id it was started with."""
+    agent = mod.Sentinel()
+    told = recording(agent)
+
+    async def decide(_node, _history):
+        """Fail as a broken decision would."""
+        msg = "boom"
+        raise RuntimeError(msg)
+
+    agent.decide = decide
+    mod.asyncio.run(agent.run_mission({"external_id": "ord-1", "type": "TradeOrder", "properties": {}}))
+    start, end = told[0][1], told[-1][1]
+    assert told[-1][0] == "run_end"
+    assert end["run_id"] == start["run_id"] != ""
+    assert end["status"] == "failed"
+    assert "boom" in end["summary"]
+
+
+def test_a_batch_is_acknowledged_only_after_it_was_taken_in(monkeypatch):
+    """A failure on a later pull leaves the earlier batch taken in and acknowledged, and nothing else acknowledged."""
+    monkeypatch.setattr(mod, "PUBSUB_PROJECT", "p")
+    monkeypatch.setattr(mod, "PUBSUB_SUBSCRIPTION", "s")
+    agent = mod.Sentinel()
+    order, pulls = [], iter([([(b"{}", {"ce-id": "e1", "ce-type": "t"})], ["a1"]), RuntimeError("deadline exceeded")])
+
+    def pull():
+        """Return the next prepared batch, or fail as a timed-out pull would."""
+        batch = next(pulls)
+        if isinstance(batch, Exception):
+            raise batch
+        return batch
+
+    async def intake(event, _source):
+        """Record that an event was taken in."""
+        order.append(("intake", event["id"]))
+
+    monkeypatch.setattr(agent, "_subscription", lambda: "path")
+    monkeypatch.setattr(agent, "pull", pull)
+    monkeypatch.setattr(agent, "acknowledge", lambda ids: order.append(("ack", tuple(ids))))
+    monkeypatch.setattr(agent, "intake", intake)
+    mod.asyncio.run(agent.poll_once())
+    assert order == [("intake", "e1"), ("ack", ("a1",))]
+    assert "deadline exceeded" in agent.last_error
