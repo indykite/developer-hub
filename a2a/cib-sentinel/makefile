@@ -24,7 +24,7 @@ new-sentinel:
 # for .env and TOKEN_SERVICE_PUBLIC_JWK for instant-stack's .env.
 keys:
 	@docker run --rm --user $$(id -u):$$(id -g) --env-file .env -e HOME=/tmp \
-		-v "$(CURDIR)/token-service:/work" python:3.13-slim \
+		-v "$(CURDIR)/token-service:/work" python:3.14-slim \
 		sh -c "pip install -q --user cryptography && python /work/keygen.py"
 
 test:

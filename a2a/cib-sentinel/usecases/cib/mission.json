@@ -39,8 +39,8 @@
         },
         {
           "title": "Hold the order",
-          "instruction": "Place a hold on trade order {id} ({name}) with hold id hold-{id} and reason 'Order in a restricted company'.",
-          "why": "The graph accepts the hold only when the order's company is on the restricted list."
+          "instruction": "Read the restricted list and place a hold on trade order {id} ({name}) only if its company is listed, with hold id hold-{id} and reason 'Order in a restricted company'; otherwise leave the order unchanged and say so.",
+          "why": "Only an order in a restricted company is held; any other order is left alone."
         }
       ]
     }

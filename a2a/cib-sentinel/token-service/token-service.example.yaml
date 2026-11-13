@@ -1,7 +1,8 @@
 ---
 # Token Service configuration of the cib-sentinel app.
 # EXAMPLE - `make keys` renders token-service.yaml from this file with a fresh
-# signing key and client secret; or copy it and fill the three <...> values.
+# signing key and client secret; or copy it, set client_secret, and fill the
+# <SIGNING_JWK> and <AUTH0_DOMAIN> values.
 # Reference for every field: https://developer.indykite.com/guides/guide-token-service
 
 service:
@@ -33,7 +34,7 @@ idp:
   client_auth:
     type: client_secret_basic
     client_id: agent-gateway
-    client_secret: "<CLIENT_SECRET>"
+    client_secret: "" # left empty here: `make keys` generates one
   # First key signs. Its PUBLIC half (kty/n/e/alg/kid/use) goes into
   # instant-stack's TOKEN_SERVICE_PUBLIC_JWK.
   signing_keys:

@@ -301,6 +301,15 @@ def _person(ctx: State, session: Session) -> Persona:
     )
 
 
+def _direct_records(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Keep the records of a request sent straight to a gateway: its delegation chain holds one agent.
+
+    While several gateways are asked at once, a gateway also answers the card requests of the other
+    agents. Those arrive as a later hop, with a longer chain, and say nothing about the direct request.
+    """
+    return [record for record in records if len(record.get("actorsChain") or []) <= 1]
+
+
 def _gateway_records(ctx: State, seq_before: int, agent: str) -> list[dict[str, Any]]:
     """Return the records the chosen gateway wrote after the bookmark, oldest first."""
     return [
@@ -583,7 +592,7 @@ async def compare(request: Request, body: CompareRequest) -> dict[str, Any]:
         "prompt": body.prompt,
         "auth_mode": body.auth_mode,
         "answers": [
-            summarize_gateway_answer(answer, _gateway_records(ctx, seq_before, agent))
+            summarize_gateway_answer(answer, _direct_records(_gateway_records(ctx, seq_before, agent)))
             for agent, answer in zip(agents, answers, strict=True)
         ],
     }

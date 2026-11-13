@@ -1693,12 +1693,15 @@ function fleetCard(d, trace, evaluations, answer) {
 // delegated token it held: a later hop of the same workflow. The product's own discovery: the skills the person may
 // use there that fit the intent in the token, and the records the gateway wrote about it.
 function hopBlock(hop, trace) {
-  const ok = hop.http_status === 200;
+  // A JSON-RPC error arrives with HTTP 200: it is a failed card request, not an empty card.
+  const ok = hop.http_status === 200 && !hop.error;
   const kept = hop.skills || [];
   const block = el("div", `fa-hop ${ok ? (kept.length ? "ok" : "warn") : "fail"}`);
   const line = ok
     ? kept.length ? `kept ${kept.length}: ${kept.join(", ")}` : "kept no skill for this intent"
-    : hop.http_status ? `refused · HTTP ${hop.http_status}${hop.error ? ` · ${String(hop.error).slice(0, 70)}` : ""}` : `unreachable${hop.error ? ` · ${String(hop.error).slice(0, 70)}` : ""}`;
+    : hop.http_status === 200
+      ? `card request failed${hop.error ? ` · ${String(hop.error).slice(0, 70)}` : ""}`
+      : hop.http_status ? `refused · HTTP ${hop.http_status}${hop.error ? ` · ${String(hop.error).slice(0, 70)}` : ""}` : `unreachable${hop.error ? ` · ${String(hop.error).slice(0, 70)}` : ""}`;
   block.append(el("b", "", `asked by ${agentName(trace.agent)}, second hop`), el("span", "", line));
   const records = hop.records || [];
   const card = records.find((r) => r.action === "DISCOVERY");

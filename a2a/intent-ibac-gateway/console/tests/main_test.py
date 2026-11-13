@@ -4,7 +4,13 @@
 from types import SimpleNamespace
 
 import pytest
-from app.main import _act_chain, _decide_generated, summarize_card_answer, summarize_gateway_answer
+from app.main import (
+    _act_chain,
+    _decide_generated,
+    _direct_records,
+    summarize_card_answer,
+    summarize_gateway_answer,
+)
 
 
 class RecordingPlatform:
@@ -196,3 +202,16 @@ def test_fleet_summary_tells_an_unknown_caller_from_a_refused_token():
     assert "could not resolve" in summary["error_text"]
     refused = summarize_gateway_answer(answer(kind="refused", http_status=401, received=None), [])
     assert refused["verdict"] == "token refused"
+
+
+def test_comparison_reads_only_the_records_of_the_direct_request():
+    """A second-hop record of the same gateway, with a longer chain, does not stand for the direct request."""
+    direct = {"service": "iag-billing", "action": "ADMISSION", "decision": "AUTHORIZED", "actorsChain": ["billing"]}
+    second_hop = {
+        "service": "iag-billing",
+        "action": "ADMISSION",
+        "decision": "NOT_AUTHORIZED",
+        "actorsChain": ["support-desk", "billing"],
+    }
+    before_any_chain = {"service": "iag-billing", "decision": "ERROR", "reason": "whoami failed"}
+    assert _direct_records([second_hop, direct, before_any_chain]) == [direct, before_any_chain]

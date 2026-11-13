@@ -91,6 +91,8 @@ services:
   token-service:
     image: ${TOKEN_SERVICE_IMAGE:-indykite/token-service:1.0.0@sha256:a1248b73ab22fb939e533455a89468b7112b2b938486d8feca818e17776a97e2}
     platform: linux/amd64
+    # Runs as the host user that owns token-service.yaml, which only its owner can read (id -u).
+    user: "${TOKEN_SERVICE_RUN_AS:-1000}"
     healthcheck:
       test: ["CMD", "/bin/http_health_probe", "http://localhost:8102/.well-known/openid-configuration"]
       interval: 10s
