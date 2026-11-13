@@ -569,6 +569,10 @@
     es.onerror = () => { broken = true; $('agentLine').textContent = 'stream interrupted · reconnecting'; };
   }
 
+  // A script error would otherwise leave the page silently unresponsive: say it on the page.
+  window.addEventListener('error', (e) => toast(`Page error: ${e.message} (${(e.filename || '').split('/').pop()}:${e.lineno})`, true));
+  window.addEventListener('unhandledrejection', (e) => toast(`Page error: ${(e.reason && e.reason.message) || e.reason}`, true));
+
   $('wakeBtn').addEventListener('click', async () => {
     try { await post('/api/wake'); toast('The Sentinel is pulling the wire now.'); } catch (err) { toast(`Wake failed: ${err.message}`, true); }
   });
