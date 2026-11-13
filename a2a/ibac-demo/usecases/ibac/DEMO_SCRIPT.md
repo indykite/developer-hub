@@ -386,7 +386,9 @@ never enters.
   `list_invoices` is for); ask for one invoice by its id and a `data check`
   card follows, with the platform's answer for that person and that invoice.
   An ERP call made under an intent about something else is refused at
-  `erp-mcp-iag`, and the ERP server never sees it.
+  `erp-mcp-iag`, and the ERP server never sees it. The intent also narrows
+  the rows: a customer who asks for the *unpaid* invoices gets the open ones
+  only, because the ERP searches with the action of the intent.
 - **The card beat**: the gateway serves the protected
   agent's card itself -
 

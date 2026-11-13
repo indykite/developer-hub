@@ -234,6 +234,11 @@ def test_the_scripted_order_procedure_is_one_conditional_hold():
     )
     done = [{"script": 0, "title": first["title"], "instruction": "", "outcome": "done", "answer": ""}]
     assert agent.scripted_decision(node, done)["action"] == "finish"
+    # Left alone because the company is not restricted: an intended no-op, the mission finishes.
+    assert agent.scripted_decision(node, [{**done[0], "outcome": "empty"}])["action"] == "finish"
+    # Blocked on the way: the order may still need a hold, a person takes over.
+    for blocked in ("refused", "failed", "unmapped"):
+        assert agent.scripted_decision(node, [{**done[0], "outcome": blocked}])["action"] == "escalate", blocked
 
 
 def recording(agent):
@@ -341,3 +346,10 @@ def test_no_written_task_states_what_the_fleet_names_itself():
             assert "<" not in text, text
             assert not any(word in text for word in ("rst-", "hold-", "reason")), text
             history.append({"script": position, "title": decision["title"], "outcome": "done"})
+
+
+def test_which_outcomes_of_a_step_escalate():
+    """A step escalates on the outcomes it lists, on every blocked one with on_blocked, and on none otherwise."""
+    assert mod.escalating_outcomes({"on_blocked": "escalate"}) == mod.BLOCKED
+    assert mod.escalating_outcomes({"escalate_on": ["refused", "done", "failed"]}) == ("refused", "failed")
+    assert mod.escalating_outcomes({}) == ()

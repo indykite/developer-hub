@@ -246,6 +246,11 @@ sheet), one for an order (hold it if its company is restricted).
 A task names the records it acts on by type and id and nothing about the
 records to create; the retriever names restrictions and holds itself.
 
+A written step says when its outcome hands the mission to a person:
+`on_blocked: escalate` for every blocked outcome, or `escalate_on` with the
+outcomes that count. The order's task escalates when it is refused, fails or
+has no intent, and finishes when the order was rightly left alone.
+
 When a model call fails or answers something unusable, the written procedure
 takes that move, but only for a mission it ran from the start. A mission whose
 tasks the model chose is handed over to a person instead of being continued by

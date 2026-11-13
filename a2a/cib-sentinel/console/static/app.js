@@ -597,6 +597,8 @@
     on('identity', (d) => { state.identity = d; invalidate('header'); });
     on('message', (d) => { keep(state.messages, d, 300); invalidate('wire'); });
     on('audit', (d) => {
+      // The id index follows the list: a record that falls out of the list leaves the index too.
+      for (const old of state.audit.slice(0, Math.max(0, state.audit.length + 1 - 800))) state.auditById.delete(old.id);
       keep(state.audit, d, 800);
       state.auditById.set(d.id, d);
       // Only a record of the task in progress changes the missions and the wall.
