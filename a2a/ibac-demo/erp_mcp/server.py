@@ -9,6 +9,10 @@ nothing about the graph; the graph (Department-SERVES->customer,
 customer-HAS_INVOICE->Invoice, KBAC policies) decides which rows exist for
 whom. Same prompt, different rows.
 
+With IBAC on, the delegation token also carries the intent of the prompt, and
+the search runs with the action of that intent: an intent about unpaid
+invoices returns the unpaid ones only, not everything the caller may view.
+
 Trust boundary - enforced by topology, not assumed: in compose this server
 (and its database) lives ONLY on the private ``erp-backend-network``; the
 sole other member is the erp-mcp-iag gateway, which bridges to the
@@ -60,7 +64,10 @@ mcp = MCPServer("erp-invoices")
 # call reaches this server, whether the caller may do that to that resource:
 # `$token.sub` is the subject of the delegated token, `$request.arguments.<name>`
 # an argument of the call.
-_INVOICE_ACTIONS = [{"name": name} for name in (ERP_ACTION, "VIEW_INVOICE", "VIEW_UNPAID_INVOICE")]
+# The search behind both tools runs with the action of the intent, so the
+# rows returned are the ones for the action that matched.
+INVOICE_ACTION_NAMES = (ERP_ACTION, "VIEW_INVOICE", "VIEW_UNPAID_INVOICE")
+_INVOICE_ACTIONS = [{"name": name} for name in INVOICE_ACTION_NAMES]
 LIST_INVOICES_MAPPINGS = [
     {
         "context": {},
@@ -102,8 +109,8 @@ def _decode_claims(token: str) -> dict:
         return {}
 
 
-def _subject_from_context(ctx: Context) -> str:
-    """Extract the calling subject's external_id from the request's delegation token.
+def _claims_from_context(ctx: Context) -> dict:
+    """Return the claims of the request's delegation token.
 
     The gateway minted and verified this delegation token; its ``sub`` is the
     authenticated person the whole chain acts on behalf of. In token-service
@@ -113,28 +120,77 @@ def _subject_from_context(ctx: Context) -> str:
     try:
         headers = ctx.request_context.request.headers
     except Exception:
-        return ""
+        return {}
     token = headers.get("x-ik-token") or headers.get("X-IK-Token") or ""
     if not token:
         token = headers.get("authorization") or headers.get("Authorization") or ""
         if token.lower().startswith("bearer "):
             token = token[7:]
-    return str(_decode_claims(token.strip()).get("sub") or "")
+    return _decode_claims(token.strip())
 
 
-def _allowed_invoice_ids(subject_id: str) -> list[str]:
-    """Ask AuthZEN search/resource which invoices the subject may CAN_VIEW.
+def _current_intent(claims: dict) -> list[dict]:
+    """Return the evaluations of the newest intent in the token's ``act`` chain, or [].
 
-    Returns the allowed external_ids; an empty list is a normal answer (the
-    KBAC policies matched nothing for this subject).
+    Each hop of the chain is an ``act`` element nesting the previous one; a hop
+    whose gateway asked the Intent Agent carries ``intent.evaluations``. The
+    newest hop with an intent is the one a gateway checks a call against.
     """
+    act = claims.get("act")
+    while isinstance(act, dict):
+        intent = act.get("intent")
+        evaluations = intent.get("evaluations") if isinstance(intent, dict) else None
+        if isinstance(evaluations, list) and evaluations:
+            return [e for e in evaluations if isinstance(e, dict)]
+        act = act.get("act")
+    return []
+
+
+def _invoice_actions(claims: dict) -> list[str]:
+    """Return the actions the invoice search runs with for this request.
+
+    The actions of the intent's evaluations about a caller of the ERP's subject
+    type and an invoice, when the token carries such an intent: the answer
+    then holds what the prompt asked for and nothing wider. Without one (IBAC
+    off, or an intent about something else) the search runs with ERP_ACTION.
+    """
+    actions: list[str] = []
+    for evaluation in _current_intent(claims):
+        subject, resource, action = (evaluation.get(k) or {} for k in ("subject", "resource", "action"))
+        if not all(isinstance(part, dict) for part in (subject, resource, action)):
+            continue
+        name = action.get("name")
+        if (
+            subject.get("type") == ERP_SUBJECT_TYPE
+            and resource.get("type") == ERP_RESOURCE_TYPE
+            and name in INVOICE_ACTION_NAMES
+            and name not in actions
+        ):
+            actions.append(name)
+    return actions or [ERP_ACTION]
+
+
+def _allowed_invoice_ids(subject_id: str, actions: list[str]) -> list[str]:
+    """Ask AuthZEN search/resource which invoices the subject may see under any of the actions.
+
+    Returns the allowed external_ids, each once; an empty list is a normal
+    answer (the KBAC policies matched nothing for this subject).
+    """
+    allowed: list[str] = []
+    for action in actions:
+        allowed.extend(i for i in _search_invoice_ids(subject_id, action) if i not in allowed)
+    return allowed
+
+
+def _search_invoice_ids(subject_id: str, action: str) -> list[str]:
+    """Run one AuthZEN search/resource: the invoices the subject may `action`."""
     response = httpx.post(
         f"{INDYKITE_BASE_URL}/access/v1/search/resource",
         headers={"Content-Type": "application/json", "X-IK-ClientKey": APP_AGENT_CREDENTIALS_TOKEN},
         json={
             "subject": {"type": ERP_SUBJECT_TYPE, "id": subject_id},
             "resource": {"type": ERP_RESOURCE_TYPE},
-            "action": {"name": ERP_ACTION},
+            "action": {"name": action},
         },
         timeout=SEARCH_TIMEOUT,
     )
@@ -173,13 +229,16 @@ def list_invoices(ctx: Context) -> str:
 
     The rows are pre-filtered by IndyKite authorization (AuthZEN
     search/resource over the knowledge graph) before the SQL query runs -
-    the answer already IS the caller's complete visible set.
+    the answer already IS the caller's complete visible set. When the
+    request carries an intent, the set is the one for the intent's action.
     """
-    subject_id = _subject_from_context(ctx)
+    claims = _claims_from_context(ctx)
+    subject_id = str(claims.get("sub") or "")
     if not subject_id:
         return json.dumps({"error": "no authenticated subject on the request"})
+    actions = _invoice_actions(claims)
     try:
-        allowed = _allowed_invoice_ids(subject_id)
+        allowed = _allowed_invoice_ids(subject_id, actions)
     except httpx.HTTPError as exc:
         _logger.warning("search/resource failed for %s: %s", subject_id, exc)
         return json.dumps({"error": f"authorization search failed: {exc}"})
@@ -188,16 +247,23 @@ def list_invoices(ctx: Context) -> str:
     except psycopg.Error as exc:
         _logger.warning("ERP database query failed for %s: %s", subject_id, exc)
         return json.dumps({"error": f"ERP database unavailable: {exc}"})
-    _logger.info("list_invoices: subject=%s allowed=%d rows=%d", subject_id, len(allowed), len(rows))
+    _logger.info(
+        "list_invoices: subject=%s actions=%s allowed=%d rows=%d",
+        subject_id,
+        ",".join(actions),
+        len(allowed),
+        len(rows),
+    )
     return json.dumps(
         {
             "subject": subject_id,
+            "actions": actions,
             "authorized_invoice_count": len(allowed),
             "invoices": _rows_as_json(rows),
             "note": (
-                f"These are ALL invoices visible to {subject_id}; the set was "
-                "determined by the knowledge graph (AuthZEN search/resource), "
-                "not by this database."
+                f"These are ALL invoices visible to {subject_id} for {' or '.join(actions)}; "
+                "the set was determined by the knowledge graph (AuthZEN "
+                "search/resource), not by this database."
             ),
         },
     )
@@ -210,11 +276,13 @@ def get_invoice(invoice_id: str, ctx: Context) -> str:
     Membership is checked against the same AuthZEN search result that filters
     list_invoices, so there is no bypass path for guessing ids.
     """
-    subject_id = _subject_from_context(ctx)
+    claims = _claims_from_context(ctx)
+    subject_id = str(claims.get("sub") or "")
     if not subject_id:
         return json.dumps({"error": "no authenticated subject on the request"})
+    actions = _invoice_actions(claims)
     try:
-        allowed = _allowed_invoice_ids(subject_id)
+        allowed = _allowed_invoice_ids(subject_id, actions)
     except httpx.HTTPError as exc:
         _logger.warning("search/resource failed for %s: %s", subject_id, exc)
         return json.dumps({"error": f"authorization search failed: {exc}"})
@@ -223,7 +291,7 @@ def get_invoice(invoice_id: str, ctx: Context) -> str:
         return json.dumps(
             {
                 "error": f"{subject_id} is not authorized to view invoice {invoice_id}",
-                "reason": "no CAN_VIEW path in the knowledge graph connects them",
+                "reason": f"no {' or '.join(actions)} path in the knowledge graph connects them",
             },
         )
     try:

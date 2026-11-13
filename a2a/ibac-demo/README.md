@@ -603,7 +603,11 @@ needs an intent about a `Person` viewing an `Invoice`, and `get_invoice`
 also has the gateway ask the platform whether that person may view the
 invoice the call names. So "show me the invoices" passes with an
 `intent check` card at `erp-mcp-iag`, and an ERP call under an intent about
-something else is refused there before the server sees it. The other MCP
+something else is refused there before the server sees it. The ERP server
+then searches with the action of the intent, so the rows are the ones the
+prompt asked for: an intent about unpaid invoices (`VIEW_UNPAID_INVOICE`)
+returns the open ones only, where `CAN_VIEW` returns every invoice the
+person may see. The other MCP
 gateways have IBAC off. The card filter stays idle (the console asks the
 entry gateway for the card with the person's token alone); the console
 previews the discovery decision on every INTENT card from the

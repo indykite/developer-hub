@@ -34,7 +34,12 @@
         {
           "title": "Hold the order if restricted",
           "instruction": "Place a hold on trade order {id}, which is in company {company}, if that company is on the restricted list.",
-          "why": "Only an order in a restricted company is held; any other order is left alone."
+          "why": "Only an order in a restricted company is held; any other order is left alone.",
+          "escalate_on": [
+            "refused",
+            "failed",
+            "unmapped"
+          ]
         }
       ]
     }

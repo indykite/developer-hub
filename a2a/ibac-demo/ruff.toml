@@ -19,6 +19,12 @@ known-third-party = ["app", "server"]
     "D",       # test names are the documentation
     "SLF001",  # tests reset the module's private caches
 ]
+"erp_mcp/tests/*" = [
+    "S101",    # pytest asserts
+    "ANN",     # fixtures and test functions stay unannotated
+    "D",       # test names are the documentation
+    "SLF001",  # tests call the module's private helpers
+]
 "chatbot/tests/*" = [
     "S101",
     "S105",

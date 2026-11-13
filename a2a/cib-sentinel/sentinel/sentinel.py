@@ -432,8 +432,7 @@ class Sentinel:
                 "a person has to take over.",
             }
         for past in history:
-            rule = steps[past["script"]].get("on_blocked")
-            if past["outcome"] in BLOCKED and rule == "escalate":
+            if past["outcome"] in escalating_outcomes(steps[past["script"]]):
                 return {
                     "action": "escalate",
                     "reason": f"'{past['title']}' came back {past['outcome']}; a person has to take over.",
@@ -589,6 +588,20 @@ class Sentinel:
 
 OUTCOMES = ("done", "refused", "empty", "failed", "unmapped")
 BLOCKED = ("refused", "empty", "failed", "unmapped")
+
+
+def escalating_outcomes(step: dict) -> tuple[str, ...]:
+    """Return the outcomes of a written step that hand the mission over to a person.
+
+    ``escalate_on`` lists them; ``on_blocked: escalate`` means every blocked outcome. A step that may
+    rightly do nothing, such as a hold on condition, lists what blocked it and leaves out the empty answer.
+    """
+    listed = step.get("escalate_on")
+    if isinstance(listed, list):
+        return tuple(outcome for outcome in listed if outcome in BLOCKED)
+    return BLOCKED if step.get("on_blocked") == "escalate" else ()
+
+
 ENDED_BADLY = ("failed", "rejected", "canceled", "cancelled")
 
 
