@@ -10,11 +10,11 @@ its tokens through the project's Token Introspect configurations (see
 ## Get the image
 
 Published on Docker Hub as
-[`indykite/token-service`](https://hub.docker.com/r/indykite/token-service)
-(since `1.0.0`, 2026-09-03; `linux/amd64` only):
+[`indykite/token-service`](https://hub.docker.com/r/indykite/token-service/tags)
+(`linux/amd64` only):
 
 ```shell
-docker pull indykite/token-service:1.0.0
+docker pull indykite/token-service:2.115.1
 ```
 
 The demo runs the image named in `.env` as `TOKEN_SERVICE_IMAGE`; keep it on
@@ -46,7 +46,7 @@ client secret) is created from `token-service.example.yaml`:
 ```shell
 docker run --rm -d --name tx-token-service -p 8102:8102 \
   -v $(pwd)/token-service/token-service.yaml:/app/.configs/token-service.yaml:ro \
-  indykite/token-service:1.0.0 --config=/app/.configs/token-service.yaml
+  indykite/token-service:2.115.1 --config=/app/.configs/token-service.yaml
 ```
 
 Endpoints: `/.well-known/openid-configuration`, `/.well-known/jwks.json`,

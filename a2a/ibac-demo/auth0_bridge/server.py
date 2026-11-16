@@ -15,8 +15,7 @@ introspects its bearer the same way. This service is that base URL:
   introspect and nothing is listed here.
 - ``POST /oauth/token`` forwards the request to Auth0 unchanged, adding
   ``audience=AUTH0_DEFAULT_AUDIENCE`` when the caller sent none: Auth0 refuses
-  a client-credentials grant without an audience and the gateway sends none
-  for its actor token.
+  a client-credentials grant without an audience.
 
 A client-credentials token is kept in memory, per application and audience,
 and handed back until shortly before it expires: a caller that restarts, and

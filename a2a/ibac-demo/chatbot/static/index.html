@@ -1269,7 +1269,7 @@
         }
     }
 
-    // A capability record (gateway 2.0.3): what a DISCOVERY let the caller
+    // A capability record: what a DISCOVERY let the caller
     // see of the server's lists, or what an INVOCATION named. The permitted
     // set is the answer of the platform's CAN_USE search for this subject and
     // chain, by kind (tool, resource, prompt, skill).
@@ -1413,7 +1413,7 @@
         const service = document.createElement('span');
         service.className = 'audit-service';
         service.textContent = event.service || 'unknown';
-        // Gateway 2.0.3 names the question a record answers: ADMISSION (may
+        // The gateway names the question a record answers: ADMISSION (may
         // the subject reach the agent over this chain), DISCOVERY (which
         // capabilities the caller may see), INVOCATION (may the caller use
         // the named ones), INTENT, or noop (refused before any question).
@@ -1448,7 +1448,7 @@
         setPrincipal(actor, event.actor);
         const badge = document.createElement('span');
         badge.className = 'audit-badge';
-        // Gateway >= 2.5x emits more decisions than the classic three:
+        // The gateway emits more decisions than the classic three:
         // ERROR (any >=500 failure - used to arrive as NOT_AUTHORIZED) and
         // the token-service ones (INTROSPECTED*, *_REFUSED, EXCHANGE_*).
         badge.textContent = decision === 'authorized' ? 'AUTHORIZED'
@@ -1466,7 +1466,7 @@
                 // The Intent Agent's own record: prompt + evaluations (+ preview).
                 attachIntent(card, event);
             } else {
-                // The gateway's INTENT record (2.90+): INTENT_FOUND / INTENT_FAILED
+                // The gateway's INTENT record: INTENT_FOUND / INTENT_FAILED
                 // with the duration, the prompt when audit.include_prompt is on,
                 // and the reason ("intent with N evaluation(s)" or the agent's error).
                 attachDetails(card, 'prompt', event.prompt);

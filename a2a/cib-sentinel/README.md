@@ -199,9 +199,9 @@ The gateways and the Token Service run the images named in
 `AGENT_GATEWAY_IMAGE` and `TOKEN_SERVICE_IMAGE`. `.example.env` names the
 images published on Docker Hub
 ([agent-gateway](https://hub.docker.com/r/indykite/agent-gateway/tags),
-[token-service](https://hub.docker.com/r/indykite/token-service/tags)); when
-you load a release locally instead, name the same release in both. After
-changing either, recreate `token-service` and the four gateways.
+[token-service](https://hub.docker.com/r/indykite/token-service/tags)); name
+the same version in both. After changing either, recreate `token-service`
+and the four gateways.
 
 ### 6. Try it
 
@@ -363,11 +363,10 @@ rules as the knowledge-query policies.
 
 To run it:
 
-- Images: a gateway and a Token Service that carry the intent in the token
-  and check skills, tool lists and tool calls against it, named in
-  `AGENT_GATEWAY_IMAGE` and `TOKEN_SERVICE_IMAGE`. The Token Service has to
-  carry the intent too: with one that does not, the delegation carries no
-  intent and nothing is checked at the MCP gateway.
+- Images: the gateway and the Token Service of `.example.env`, the same
+  version of both. The gateway reads the intent and checks skills, tool
+  lists and tool calls against it; the Token Service carries it in the
+  token.
 - Auth0: an API `intent_agent`, with the orchestrator gateway's application
   authorized for it.
 - `.env`: `COMPOSE_PROFILES=intent` and `IBAC_ENABLED=true`.

@@ -295,13 +295,13 @@ the same time.
 ### 1. The Agent Gateway image
 
 The gateways run the latest release published on Docker Hub,
-[`indykite/agent-gateway:2.114.0`](https://hub.docker.com/r/indykite/agent-gateway/tags),
-which compose pulls when it is missing; another tag can be named in `.env`
-as `AGENT_GATEWAY_IMAGE`. From this release on the gateway sends the intent
-to the Token Service, so the Token Service has to be a release that writes
-it into the token (`TOKEN_SERVICE_IMAGE`, see
-[`indykite/token-service`](https://hub.docker.com/r/indykite/token-service/tags)):
-with one that ignores the intent, every prompt with an intent is a 502.
+[`indykite/agent-gateway:2.115.1`](https://hub.docker.com/r/indykite/agent-gateway/tags),
+with the Token Service of the same release,
+[`indykite/token-service:2.115.1`](https://hub.docker.com/r/indykite/token-service/tags).
+Compose pulls both when they are missing; other tags can be named in `.env`
+as `AGENT_GATEWAY_IMAGE` and `TOKEN_SERVICE_IMAGE`. Keep the two on the same
+release: the gateway sends the intent to the Token Service, and with one
+that ignores it (1.0.0), every prompt with an intent is a 502.
 What the demo relies on, all in that release: Token
 Service mode, `ibac.enabled`, admission over `$ik_token.act_chain`, the
 capability checks behind the extended card, the comparison of the intent
@@ -318,7 +318,7 @@ APIs (Applications → APIs; the identifier is the audience):
 | API identifier | Audience of | Why |
 | --- | --- | --- |
 | `ibac-people` | the people's access tokens | the gateways accept only tokens issued for it; the dataset's `auth0-people` introspect matches on it |
-| `ibac-agents` | the gateways' own client-credentials tokens (the bridge adds the audience) | the Token Service matches actor tokens on it |
+| `ibac-agents` | the gateways' own client-credentials tokens (`identity_provider.client_credential_audience`) | the Token Service matches actor tokens on it |
 | `intent_agent` | the token a gateway presents to the Intent Agent | the agent's `EXPECTED_TOKEN_AUDIENCE` |
 
 Applications:
@@ -539,11 +539,15 @@ Two issuers take part, and every token is a JWT:
    or `intent_agent` for the call to the Intent Agent). Two facts shape the
    wiring: the gateway validates the caller's token only by RFC 7662
    introspection, under the same base URL as the client-credentials endpoint
-   it gets its own token from, and Auth0 publishes no introspection endpoint
-   and needs an `audience` the gateway does not send. So the gateways'
+   it gets its own token from, and Auth0 publishes no introspection
+   endpoint. So the gateways'
    identity provider is the `auth0-bridge` service: `POST /oauth/introspect`
    verifies the JWT against the tenant JWKS and answers the RFC 7662 shape,
-   `POST /oauth/token` forwards to Auth0 adding `audience=ibac-agents`.
+   `POST /oauth/token` forwards the grant to Auth0. The gateway names the
+   audience of its own token itself
+   (`identity_provider.client_credential_audience: ibac-agents`), since Auth0
+   refuses a grant without one; the bridge is there for introspection, and
+   the grant passes through it because one base URL serves both.
    Callers of the bridge authenticate with their own M2M credentials, which
    the bridge verifies at Auth0; no client list lives in it.
 2. **The IndyKite Token Service** (`iss https://token-service.intent-ibac.local`).

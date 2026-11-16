@@ -6,7 +6,7 @@ version: '3.9'
 services:
   iag-base:
     # Pin the tag: never `latest`.
-    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.114.0@sha256:88fa2732d2db24b42fd188c0df968e29d561a7b2ae13a20f6f658ba1fc7b428a}
+    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.115.1@sha256:c37338d1663c57a8a4db6be65236e297d22905043bb6e59bcbae868743d9a6ee}
     environment:
       JARVIS_SERVICE_LOG_LEVEL: debug
       JARVIS_SERVICE_ENVIRONMENT: demo
@@ -25,6 +25,10 @@ services:
       JARVIS_IDENTITY_PROVIDER_INTROSPECT_ENDPOINT: oauth/introspect
       JARVIS_IDENTITY_PROVIDER_CLIENT_CREDENTIAL_ENDPOINT: oauth/token
       JARVIS_IDENTITY_PROVIDER_EXCHANGE_ENDPOINT: oauth/token
+      # The API the gateway's own token is asked for: Auth0 refuses a client
+      # credentials grant without an audience. The Token Service accepts
+      # actor tokens of this audience only.
+      JARVIS_IDENTITY_PROVIDER_CLIENT_CREDENTIAL_AUDIENCE: ${AUTH0_AGENTS_AUDIENCE:-ibac-agents}
       JARVIS_IDENTITY_PROVIDER_OPENID_CONFIGURATION_URL: https://${AUTH0_DOMAIN}/.well-known/openid-configuration
       JARVIS_IDENTITY_PROVIDER_ISSUER: https://${AUTH0_DOMAIN}/
       # The only tokens admitted at the first hop are those issued for the

@@ -156,6 +156,8 @@ spec:
               value: oauth/token
             - name: JARVIS_IDENTITY_PROVIDER_EXCHANGE_ENDPOINT
               value: oauth/token
+            - name: JARVIS_IDENTITY_PROVIDER_CLIENT_CREDENTIAL_AUDIENCE
+              value: {{ $root.Values.auth0.agentsAudience | quote }}
             - name: JARVIS_IDENTITY_PROVIDER_OPENID_CONFIGURATION_URL
               value: {{ printf "https://%s/.well-known/openid-configuration" (required "auth0.domain is required" $root.Values.auth0.domain) | quote }}
             - name: JARVIS_IDENTITY_PROVIDER_ISSUER

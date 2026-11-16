@@ -30,7 +30,7 @@ spec:
           env:
             - name: AUTH0_DOMAIN
               value: {{ required "auth0.domain is required (the tenant, e.g. 1st.eu.auth0.com)" .Values.auth0.domain | quote }}
-            # Audience added to a client-credentials grant that names none: the gateways' actor tokens.
+            # Audience of the grant the bridge checks an introspection caller with, and of any grant that names none.
             - name: AUTH0_DEFAULT_AUDIENCE
               value: {{ .Values.auth0.agentsAudience | quote }}
             - name: BRIDGE_PORT

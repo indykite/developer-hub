@@ -319,3 +319,17 @@ def test_kept_tokens_are_bounded(client, auth0, monkeypatch):
     kept_scopes = sorted(dict(key[2])["scope"] for key in server._tokens)
     assert kept_scopes == ["b", "c"]
     assert not server._token_locks
+
+
+def test_a_grant_that_names_the_default_audience_shares_the_token_of_the_caller_check(client, auth0):
+    """A gateway that names the agents' audience itself gets the token its introspection check already holds."""
+    client.post("/oauth/introspect", data={"token": _token()}, headers=_basic(*GOOD_CLIENT))
+    named = client.post(
+        "/oauth/token",
+        data={"grant_type": "client_credentials", "audience": "ibac-agents"},
+        headers=_basic(*GOOD_CLIENT),
+    )
+    again = client.post("/oauth/token", data={"grant_type": "client_credentials"}, headers=_basic(*GOOD_CLIENT))
+    assert named.status_code == 200
+    assert named.json()["access_token"] == again.json()["access_token"]
+    assert len(_grants(auth0)) == 1
