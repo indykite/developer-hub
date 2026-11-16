@@ -59,7 +59,7 @@ token_introspection:
         offline:
           jwks_uri: https://<AUTH0_DOMAIN>/.well-known/jwks.json
     # The actors: each gateway's client-credentials token, issued for the
-    # fleet's API (the bridge adds that audience). Its `sub` becomes act.sub.
+    # fleet's API (the gateway asks for that audience). Its `sub` becomes act.sub.
     auth0-actor:
       token_types:
         - actor_token

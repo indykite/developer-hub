@@ -20,21 +20,25 @@
 
 services:
   iag-base:
-    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.114.0}
+    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.115.1}
     environment:
       JARVIS_SERVICE_LOG_LEVEL: ${IAG_LOG_LEVEL:-info}
       JARVIS_SERVICE_ENVIRONMENT: demo
       JARVIS_SERVICE_TRACING_DETECTOR: local
       # The identity provider is Auth0, through the auth0-bridge service: Auth0
-      # publishes no RFC 7662 introspection endpoint and its client-credentials
-      # grant needs an audience the gateway does not send, so the bridge answers
-      # introspection by verifying the tenant's JWTs offline and forwards the
-      # token grant with the agents' audience added. Each gateway authenticates
-      # with its own Machine-to-Machine application of the tenant.
+      # publishes no RFC 7662 introspection endpoint, so the bridge answers
+      # introspection by verifying the tenant's JWTs offline. The token grant
+      # goes through it too (one base URL serves both) and is forwarded to
+      # Auth0 as sent. Each gateway authenticates with its own
+      # Machine-to-Machine application of the tenant.
       JARVIS_IDENTITY_PROVIDER_BASE_URL: http://auth0-bridge:8090
       JARVIS_IDENTITY_PROVIDER_INTROSPECT_ENDPOINT: oauth/introspect
       JARVIS_IDENTITY_PROVIDER_CLIENT_CREDENTIAL_ENDPOINT: oauth/token
       JARVIS_IDENTITY_PROVIDER_EXCHANGE_ENDPOINT: oauth/token
+      # Auth0 refuses a client-credentials grant without an audience: the gateway
+      # names the agents' API for its own token, which the Token Service matches
+      # actor tokens on.
+      JARVIS_IDENTITY_PROVIDER_CLIENT_CREDENTIAL_AUDIENCE: ${AUTH0_AGENTS_AUDIENCE:-ibac-agents}
       JARVIS_IDENTITY_PROVIDER_OPENID_CONFIGURATION_URL: https://${AUTH0_DOMAIN}/.well-known/openid-configuration
       JARVIS_IDENTITY_PROVIDER_ISSUER: https://${AUTH0_DOMAIN}/
       # Token Service mode: the delegated token is minted at the self-hosted

@@ -68,7 +68,7 @@ services:
   # the delegated token each gateway forwards to its agent in X-IK-Token, with
   # the intent in it when the gateway sends one. Official image; linux/amd64 only.
   token-service:
-    image: ${TOKEN_SERVICE_IMAGE:-indykite/token-service:1.0.0@sha256:a1248b73ab22fb939e533455a89468b7112b2b938486d8feca818e17776a97e2}
+    image: ${TOKEN_SERVICE_IMAGE:-indykite/token-service:2.115.1@sha256:8c3dcc59cb08bd4ce61c70aa57da896df9cc9cc2a9542eca1106c6107d7cf601}
     platform: linux/amd64
     # Published for curl-level inspection only, on loopback (see CONSOLE_BIND).
     # The container listens on 8102; the host port is TOKEN_SERVICE_HOST_PORT.

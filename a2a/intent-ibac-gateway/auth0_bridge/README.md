@@ -37,7 +37,7 @@ What is not enforced here: the audience. The gateway checks it against
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `AUTH0_DOMAIN` | required | Tenant domain, e.g. `your-tenant.eu.auth0.com`; issuer, token endpoint and JWKS URI derive from it. |
-| `AUTH0_DEFAULT_AUDIENCE` | empty | Audience added to a grant that names none (the gateways' actor tokens). |
+| `AUTH0_DEFAULT_AUDIENCE` | empty | Audience of the grant an introspection caller is checked with, and added to a grant that names none. A gateway names its own (`identity_provider.client_credential_audience`). |
 | `TOKEN_CACHE_MIN_REMAINING` | `300` | A kept token is handed back until this many seconds before it expires. |
 | `TOKEN_CACHE_MAX_ENTRIES` | `256` | The most tokens kept at once; beyond it a new token replaces the one closest to its expiry. Expired tokens are dropped. |
 | `BRIDGE_PORT` | `8090` | Listening port. |

@@ -158,7 +158,7 @@ services:
     # another image as TOKEN_SERVICE_IMAGE. Keep it in step with the gateways'
     # AGENT_GATEWAY_IMAGE: a gateway with IBAC on passes the intent on and
     # needs a Token Service that writes it into the token.
-    image: ${TOKEN_SERVICE_IMAGE:-indykite/token-service:1.0.0@sha256:a1248b73ab22fb939e533455a89468b7112b2b938486d8feca818e17776a97e2}
+    image: ${TOKEN_SERVICE_IMAGE:-indykite/token-service:2.115.1@sha256:8c3dcc59cb08bd4ce61c70aa57da896df9cc9cc2a9542eca1106c6107d7cf601}
     # The image is linux/amd64 only - request it explicitly so arm64 hosts
     # (Apple Silicon) pull it under emulation instead of failing with
     # "no matching manifest".

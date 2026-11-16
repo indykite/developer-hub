@@ -23,7 +23,7 @@ services:
     # nodes the dataset attaches to each agent per workflow), which filter
     # the MCP lists and the A2A extended card and refuse a tool, resource or
     # prompt outside the permitted set. All gateways share this image.
-    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.0.3@sha256:8368f151cfec343f679dce6f320f43ab8c14cebb5465f683213de66c857aed33}
+    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.115.1@sha256:c37338d1663c57a8a4db6be65236e297d22905043bb6e59bcbae868743d9a6ee}
     environment:
       JARVIS_SERVICE_LOG_LEVEL: debug
       JARVIS_SERVICE_ENVIRONMENT: demo
@@ -51,15 +51,19 @@ services:
       # Identity provider = the Auth0 bridge (auth0_bridge/). A gateway
       # validates the user's access token only by RFC 7662 introspection,
       # under the same base URL as the client-credentials endpoint it gets
-      # its actor token from; Auth0 offers no introspection endpoint and
-      # refuses a client-credentials grant without an audience, which the
-      # gateway does not send. The bridge answers both: introspection by
-      # verifying Auth0's JWTs against the tenant JWKS, the token endpoint
-      # by forwarding to Auth0 with the agents' audience added. The exchange
-      # endpoint is unused in Token Service mode.
+      # its actor token from; Auth0 offers no introspection endpoint. The
+      # bridge answers both: introspection by verifying Auth0's JWTs against
+      # the tenant JWKS, the token endpoint by forwarding to Auth0, keeping
+      # the issued tokens across gateway restarts. The exchange endpoint is
+      # unused in Token Service mode.
       JARVIS_IDENTITY_PROVIDER_BASE_URL: http://auth0-bridge:8090
       JARVIS_IDENTITY_PROVIDER_INTROSPECT_ENDPOINT: oauth/introspect
       JARVIS_IDENTITY_PROVIDER_CLIENT_CREDENTIAL_ENDPOINT: oauth/token
+      # Audience of the gateway's own actor token: Auth0 refuses a
+      # client-credentials grant without one. It is the agents' API, the
+      # audience the Token Service matches actor tokens on
+      # (token-service.yaml, auth0-actor).
+      JARVIS_IDENTITY_PROVIDER_CLIENT_CREDENTIAL_AUDIENCE: ${AUTH0_AGENTS_AUDIENCE:-ibac-agents}
       JARVIS_IDENTITY_PROVIDER_EXCHANGE_ENDPOINT: oauth/token
       # Advertised in the public agent card as the security scheme callers
       # get their token from (A2A gateways), and named as the authorization
