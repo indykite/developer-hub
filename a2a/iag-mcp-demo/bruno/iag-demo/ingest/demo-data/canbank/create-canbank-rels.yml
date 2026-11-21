@@ -38,10 +38,6 @@ http:
           { "source": { "type": "Department", "external_id": "shared" }, "target": { "type": "Department", "external_id": "strategy" }, "type": "CONTAINS" },
           { "source": { "type": "Department", "external_id": "shared" }, "target": { "type": "Department", "external_id": "procurement" }, "type": "CONTAINS" },
 
-          /* Allow Customer Support and Trading to invoke wf1 (department CAN_TRIGGER edges live in agent-workflow/create-relationships) */
-          { "source": { "type": "Department", "external_id": "support" }, "target": { "type": "Workflow", "external_id": "wf1" }, "type": "INVOKES" },
-          { "source": { "type": "Department", "external_id": "trading" }, "target": { "type": "Workflow", "external_id": "wf1" }, "type": "INVOKES" },
-
           /* Add users to departments */
           { "source": { "type": "User", "external_id": "leslie" }, "target": { "type": "Department", "external_id": "support" }, "type": "WORKS_IN" },
           { "source": { "type": "User", "external_id": "flo" }, "target": { "type": "Department", "external_id": "support" }, "type": "WORKS_IN" },

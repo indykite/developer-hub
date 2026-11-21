@@ -1077,28 +1077,6 @@ http:
           {
             "source": {
               "type": "Department",
-              "external_id": "support"
-            },
-            "target": {
-              "type": "Workflow",
-              "external_id": "wf1"
-            },
-            "type": "INVOKES"
-          },
-          {
-            "source": {
-              "type": "Department",
-              "external_id": "trading"
-            },
-            "target": {
-              "type": "Workflow",
-              "external_id": "wf1"
-            },
-            "type": "INVOKES"
-          },
-          {
-            "source": {
-              "type": "Department",
               "external_id": "trading"
             },
             "target": {
