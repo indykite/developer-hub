@@ -2129,29 +2129,7 @@
         "type": "Workflow",
         "external_id": "wf1"
       },
-      "type": "INVOKES"
-    },
-    {
-      "source": {
-        "type": "Person",
-        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
-      },
-      "target": {
-        "type": "Workflow",
-        "external_id": "wf1"
-      },
       "type": "CAN_TRIGGER"
-    },
-    {
-      "source": {
-        "type": "Person",
-        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
-      },
-      "target": {
-        "type": "Workflow",
-        "external_id": "wf3"
-      },
-      "type": "INVOKES"
     },
     {
       "source": {
@@ -2173,29 +2151,7 @@
         "type": "Workflow",
         "external_id": "wf-drive"
       },
-      "type": "INVOKES"
-    },
-    {
-      "source": {
-        "type": "Person",
-        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
-      },
-      "target": {
-        "type": "Workflow",
-        "external_id": "wf-drive"
-      },
       "type": "CAN_TRIGGER"
-    },
-    {
-      "source": {
-        "type": "Person",
-        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
-      },
-      "target": {
-        "type": "Workflow",
-        "external_id": "wf-drive-analyst"
-      },
-      "type": "INVOKES"
     },
     {
       "source": {
@@ -2217,17 +2173,6 @@
         "type": "Workflow",
         "external_id": "wf-drive-console"
       },
-      "type": "INVOKES"
-    },
-    {
-      "source": {
-        "type": "Person",
-        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
-      },
-      "target": {
-        "type": "Workflow",
-        "external_id": "wf-drive-console"
-      },
       "type": "CAN_TRIGGER"
     },
     {
@@ -2239,29 +2184,7 @@
         "type": "Workflow",
         "external_id": "wf3-console"
       },
-      "type": "INVOKES"
-    },
-    {
-      "source": {
-        "type": "Person",
-        "external_id": "auth0|69c410bfb501d3a02bd01ea2"
-      },
-      "target": {
-        "type": "Workflow",
-        "external_id": "wf3-console"
-      },
       "type": "CAN_TRIGGER"
-    },
-    {
-      "source": {
-        "type": "Person",
-        "external_id": "auth0|69c4129b0ba356c7db9f91ab"
-      },
-      "target": {
-        "type": "Workflow",
-        "external_id": "wf1"
-      },
-      "type": "INVOKES"
     },
     {
       "source": {
