@@ -1,0 +1,21 @@
+---
+misconfigurations:
+  - id: KSV-0125
+    statement: 'The demo Helm chart pulls public Docker Hub images; this repo keeps no private-registry allow-list.'
+vulnerabilities:
+  - id: CVE-2025-8869
+    statement: 'Ignore pip CVE with no fix available.'
+  - id: CVE-2026-3219
+    statement: 'Ignore pip polyglot vulnerability until patch is released.'
+  - id: CVE-2026-42561
+    statement: 'See workflow run: https://github.com/indykite/developer-hub/actions/runs/42630329542; generated 2026-11-09T14:00:06Z by trivy-notify'
+  - id: CVE-2026-53539
+    statement: 'See workflow run: https://github.com/indykite/developer-hub/actions/runs/42630329542; generated 2026-11-09T14:00:06Z by trivy-notify'
+  - id: CVE-2026-40347
+    statement: 'See workflow run: https://github.com/indykite/developer-hub/actions/runs/42630329542; generated 2026-11-09T14:00:06Z by trivy-notify'
+  - id: CVE-2026-53537
+    statement: 'See workflow run: https://github.com/indykite/developer-hub/actions/runs/42630329542; generated 2026-11-09T14:00:06Z by trivy-notify'
+  - id: CVE-2026-53538
+    statement: 'See workflow run: https://github.com/indykite/developer-hub/actions/runs/42630329542; generated 2026-11-09T14:00:06Z by trivy-notify'
+  - id: CVE-2026-53540
+    statement: 'See workflow run: https://github.com/indykite/developer-hub/actions/runs/42630329542; generated 2026-11-09T14:00:06Z by trivy-notify'
