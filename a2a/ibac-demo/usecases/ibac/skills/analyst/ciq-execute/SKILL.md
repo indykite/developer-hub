@@ -39,7 +39,7 @@ permits for this workflow; a query you do not see is not available here, do not 
 
 ### examples
 
-- "Who am I?" -> tool `indykite_get-self`, `{"input_params": {}}`
+- "Who am I?" / "Show my profile" -> tool `indykite_get-self`, `{"input_params": {}}`
 - "What is the stock price for NTR?" -> tool `indykite_get-stock-quote`,
   `{"input_params": {"ticker": "NTR"}}`
 - "What is the purchase limit for customer cust-cashmere?" -> tool

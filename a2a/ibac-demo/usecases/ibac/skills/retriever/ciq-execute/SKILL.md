@@ -38,11 +38,12 @@ through `ciq_execute`. The tool's description is the query's own description wit
 
 ### examples
 
-- "Who am I?" -> tool `get-self`, `{"input_params": {}}`
+- "Who am I?" / "Show my profile" -> tool `get-self`, `{"input_params": {}}`
 - "What is the stock price for NTR?" -> tool `get-stock-quote`, `{"input_params": {"ticker": "NTR"}}`
 - "What is the purchase limit for customer cust-cashmere?" -> tool `get-stock-trade-threshold`,
   `{"input_params": {"customer_external_id": "cust-cashmere"}}`
-- "What policy documents pertain to refunds?" -> tool `get-internal-documents`,
+- "What policy documents pertain to refunds?" / "Which documents about refunds can I disclose?" -> tool
+  `get-internal-documents`,
   `{"input_params": {"taxonomy_external_id": "policy"}}`
 - "Show my family" / "my children's accounts" -> tool `get-my-family`, `{"input_params": {}}`
 - Customer ids are the `cust-<firstname>` external_ids of the Customer records (e.g.

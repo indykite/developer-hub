@@ -3488,6 +3488,22 @@ http:
                 "value": "Create a Salesforce case on behalf of the person."
               }
             ]
+          },
+          {
+            "external_id": "google-drive",
+            "type": "Drive",
+            "is_identity": false,
+            "labels": [],
+            "properties": [
+              {
+                "type": "name",
+                "value": "Google Drive"
+              },
+              {
+                "type": "description",
+                "value": "The organization's Google Drive: its files can be listed and searched."
+              }
+            ]
           }
         ]
       }

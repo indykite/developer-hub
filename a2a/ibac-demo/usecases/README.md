@@ -6,10 +6,33 @@ console, bridge and compose topology stay usecase-agnostic. This app ships
 one bundle, `ibac`: CanBank with the music demo's people as Auth0 logins
 (instant-stack dataset `data/ibac`).
 
+## Selecting a usecase
+
+Each usecase owns a **complete** env file, `.env.<usecase>` (`.env.ibac`;
+gitignored: it holds the usecase's platform bindings and secrets: `USECASE`,
+`APP_AGENT_CREDENTIALS_TOKEN`, `MCP_SERVER_PATH`, `MCP_SERVER_URL`, the
+explain query ids, the console's `*_WORKFLOW_ID` values, the Auth0 clients,
+`COMPOSE_PROFILES`, ports, ...). The committed template is the single
+`.example.env`: copy it to `.env.<usecase>` and fill it, taking the
+usecase's values from that usecase's provisioning output. `.env` is a
+symlink to the active one, so every plain `docker compose` command works
+unchanged. Switch with:
+
+```sh
+./switch-usecase.sh ibac   # relinks .env and runs docker compose up -d
+```
+
+Everything switches at once: skills, vocabulary, console app layer and the
+platform project bindings, so a half-switched stack (one usecase's skills
+against another's project) cannot happen. The script refuses an env file
+whose `USECASE` is not its own name, and a `.env` that is still a regular
+file (move it to `.env.<usecase>` first). The console header shows the
+active usecase.
+
 ## How a bundle is wired
 
-`USECASE=<name>` in `.env` (default `ibac`) selects `usecases/<name>/`; the
-compose file wires it in two ways per agent:
+`USECASE=<name>` in the env file selects `usecases/<name>/`; the compose
+file wires it in two ways per agent:
 
 - `env_file: ./usecases/${USECASE}/usecase.env` - domain vocabulary: org
   name and tagline, CIQ knowledge-query names, weather HQ keywords, feature
@@ -63,8 +86,8 @@ the last workflow written would survive for each tool.
    departments, workflows, documents, the KBAC policies, and the CIQ
    queries referenced by `usecase.env`. Logins must be Auth0 users whose
    subject is the Person's `external_id`.
-3. Set `USECASE=<name>` in `.env` and recreate the agents and the console
-   (`docker compose up -d`).
+3. `cp .example.env .env.<name>`, set `USECASE=<name>` and the usecase's
+   project bindings and secrets in it, then `./switch-usecase.sh <name>`.
 
 The graph dataset is the other half of a usecase: prompts only return data
 once the matching dataset is provisioned in the IndyKite project.

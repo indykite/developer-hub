@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Person can list and search the Drive
+  type: http
+  seq: 45
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "person-can-use-drive",
+        "display_name": "Person can list and search the Drive",
+        "description": "Any person may ask to list or search the files of the organization's Google Drive (the Drive node). Gives the Drive prompts a vocabulary the Intent Agent can map (actions LIST_DRIVE_FILES and SEARCH_DRIVE on Drive); who reaches the Drive server is the gateway's admission decision.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"LIST_DRIVE_FILES\",\"SEARCH_DRIVE\"],\"resource\":{\"type\":\"Drive\"},\"condition\":{\"cypher\":\"MATCH (subject:Person) MATCH (resource:Drive)\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_person_can_use_drive", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

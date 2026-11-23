@@ -55,9 +55,10 @@ pip install -r requirements.txt
 
 ## App and Console layers
 
-The page has two faces of the same conversation, switched with the
-**App | Console** toggle in the header. The audit terminal on the right is
-outside both and always visible.
+The page has three faces of the same conversation, switched with the
+**App | Console | Graph** toggle in the header (the third face, the request
+drawn as a graph, is described [below](#the-graph-view)). The audit terminal
+on the right is outside all of them and always visible.
 
 - **App** (default): what a customer or employee of the demo organization
   would see - the org's own web app. **Home** has a free-text assistant box
@@ -118,3 +119,106 @@ at `/app/usecase-app.json` by docker-compose (`USECASE_APP_FILE` to override
 when running locally). Branding stays in `usecase.env` (`ORG_NAME`,
 `ORG_TAGLINE`). Rebuild the image after changing the static files
 (`make new-chatbot`, then `docker compose up -d chatbot`).
+
+## The audit terminal
+
+The right pane lists what the gateways, the Token Service, the agents and
+the Intent Agent recorded (`POST /api/push-update`, streamed to the browser
+over `/api/updates`). `static/js/ledger.js` owns everything around a card:
+
+- **Runs.** The records of one request fold under one header: time, person,
+  outcome (`allowed`, `denied`, `attention`), record count and the prompt.
+  A new run folds the earlier ones away; a click on a header opens or
+  closes it. A run starts when a prompt is sent from this console, when a
+  person is admitted at a first gateway (a delegation chain of one agent),
+  or with a new Intent Agent record. The agents start a new trace on every
+  hop, so runs are not built on the trace id. Records that name no person
+  (the Token Service describing an agent's token) are listed as `service
+  records`.
+- **Intent on the header.** When the Intent Agent was asked, the run's
+  header says `intent · 2` (evaluations found) or `no intent`.
+- **Repeats.** A record identical to one already in its run is counted on
+  that card (`×3`) instead of shown again.
+- **Filters.** Free text over everything a card shows, a service list, one
+  chip per kind of record (`admission`, `capabilities`, `intent`, `data`,
+  `tokens`) and `denials` for refusals and failures. While a filter is on,
+  every run with a match shows its matching cards.
+- **Pane controls.** `following` keeps the newest record in view and pauses
+  when you scroll up; `collapse` / `expand` folds every run; `export`
+  downloads every record as JSON; `clear` empties the pane. Drag the pane's
+  left edge to resize it (double-click to reset).
+- **Card tools.**
+    - `raw record` shows the record exactly as the service sent it; `copy`
+      puts it on the clipboard.
+    - Intent and intent-check cards show each evaluation as chips (subject →
+      action → resource) with what it fits, and a data-check card each
+      question with the platform's `allowed` / `denied`.
+    - `token claims` reads out the token of a hop: subject, audience, the
+      delegation chain (oldest actor first), the intent it carries, expiry.
+    - `ask the platform now` repeats a recorded AuthZEN question (a `data
+      check` card's resolved evaluations, or the Intent Agent's evaluations
+      that name both ids) through `POST /api/recheck`. The route sends one
+      evaluation with the app agent credential and needs a logged-in
+      session; it writes nothing. The question goes without the delegation
+      token of the original call, so a policy that reads the chain can answer
+      differently, and a policy with parameters the question lacks is
+      reported as `the platform answered 422`.
+
+## The Graph view
+
+**Graph** in the header draws one request from its audit records
+(`static/js/graphs.js`). It asks the platform nothing: the picture is rebuilt
+from the run's records each time one arrives, so it fills in while the
+agents work. `Latest` keeps it on the newest request; the list next to it
+picks an earlier one.
+
+- **Request.** Top to bottom: the person, then for every hop the gateway
+  that decided and the agent or MCP server behind it, following the
+  delegation chain each record names (`actorsChain`). A gateway lists the
+  kinds of records it wrote (admission, discovery, invocation, intent check,
+  data check, token). The capabilities a call named hang off the party that
+  offers them (`used` / `refused`), and the Intent Agent off the gateway
+  that asked it. Green solid edges are allowed, red dashed ones refused;
+  a hop that only appears in a later hop's chain is drawn dashed (`no
+  record`), and the party behind a refusing gateway as `not reached`.
+- **Selecting a node** marks its path back to the person - the delegation
+  chain of that hop, its direction shown by the moving dashes - opens its
+  records in a panel on the stage, and points the audit terminal at their
+  cards. A click on a listed record does the same for that one card, a
+  click on the background clears the selection.
+- **The stage.** Nodes are cards: what the node is (person, Agent Gateway,
+  agent, MCP server, ...), its name, and for a gateway the kinds of records
+  it wrote; a mark says how it ended (✓ allowed, ✕ refused). The wheel
+  zooms, dragging the background pans, `Fit` brings the whole graph back.
+- **Capabilities.** For one gateway (the list next to the mode switch): the
+  party behind it, the kinds it offers, and per kind what the caller was
+  permitted to see, what it used, what was refused, and how many entries of
+  the server's list stayed hidden (`+17 hidden`), from the gateway's
+  `permittedSet`, `discovery` counts and invocation records.
+- **Intent.** What the Intent Agent read from the prompt and what the
+  gateways' IBAC engine did with it.
+    - A status line says whether IBAC is on (`IBAC_ENABLED`), what a skill
+      without a mapping means (`IBAC_UNMAPPED`) and whether the Intent Agent
+      answers its health endpoint (`GET /api/ibac/status`; the agent is asked
+      only when the `intent` profile is on).
+    - Six steps follow the prompt: **Prompt**, **Intent Agent** (evaluations
+      and duration, or why there is no intent), **Entry gateway** (how many
+      evaluations fit a skill of the entry agent; without the gateway's own
+      record, the console's preview from the agent card), **Token** (the
+      evaluations in `act.intent`), **MCP gateway** (calls checked against
+      the intent, lists narrowed) and **Platform** (answers about the data a
+      call named). A step without a record is drawn dashed; a click on a
+      step points the audit terminal at its records.
+    - The graph reads left to right: the prompt, one node per evaluation
+      (subject → action → resource), the skills each fits at the entry
+      gateway, the tools listed and the calls checked at an MCP gateway, and
+      the platform's answer for the data a call named. An evaluation that
+      fits nothing ends in a red `fits nothing`. Selecting a node keeps
+      everything it came from and led to and dims the rest.
+- **From a card.** `graph` in a card's footer opens the view on that
+  record: an admission card selects its hop in the request graph, a
+  discovery or invocation card opens the capabilities of its gateway, an
+  intent or data-check card opens the intent graph on its node.
+
+The why? modal (the live path behind an admission, from the explain
+queries) has a legend, zooms with the wheel and has a `Fit` button.

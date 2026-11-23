@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Staff can view a customer's share purchase limit
+  type: http
+  seq: 42
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "staff-can-view-purchase-limit",
+        "display_name": "Staff can view a customer's share purchase limit",
+        "description": "Staff whose department can access the banking system may view how many shares a customer of that system can purchase: the customer's account tier sets the limit. Gives the share purchase prompts a vocabulary the Intent Agent can map (action VIEW_SHARE_PURCHASE_LIMIT on Customer); the numbers come from the get-stock-trade-threshold and get-stock-quote knowledge queries.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"VIEW_SHARE_PURCHASE_LIMIT\"],\"resource\":{\"type\":\"Customer\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WORKS_IN]->(:Department)-[:CAN_ACCESS]->(:System)-[:CONTAINS]->(resource:Customer)-[:OWNS]->(:Account)-[:IS_TIER]->(:AccountTier)\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_staff_can_view_purchase_limit", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

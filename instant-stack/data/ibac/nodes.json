@@ -2210,6 +2210,22 @@
       ]
     },
     {
+      "external_id": "google-drive",
+      "type": "Drive",
+      "is_identity": false,
+      "labels": [],
+      "properties": [
+        {
+          "type": "name",
+          "value": "Google Drive"
+        },
+        {
+          "type": "description",
+          "value": "The organization's Google Drive: its files can be listed and searched."
+        }
+      ]
+    },
+    {
       "external_id": "wf-erp",
       "type": "Workflow",
       "is_identity": false,

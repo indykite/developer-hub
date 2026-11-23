@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Staff can view regulatory agreements
+  type: http
+  seq: 41
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "person-can-view-regulatory-agreement",
+        "display_name": "Staff can view regulatory agreements",
+        "description": "A person who works in a department may view the regulatory agreements. Gives prompts about regulatory agreements a vocabulary the Intent Agent can map (action VIEW_REGULATORY_AGREEMENT on RegulatoryAgreement); the data itself comes from the get-regulatory-agreements knowledge query.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"VIEW_REGULATORY_AGREEMENT\"],\"resource\":{\"type\":\"RegulatoryAgreement\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WORKS_IN]->(:Department) MATCH (resource:RegulatoryAgreement)\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_person_can_view_regulatory_agreement", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -56,7 +56,7 @@ audience sees it in this script:
 | Capability checks | Stagecraft, *the tools beat*: the `discovery` cards of `mcp-iag` with their permitted set; Act 3 (two tools) against Act 2 (sixteen). Off on `drive-mcp-iag`: Drive files are dynamic resources, admission alone decides there |
 | Audit records name their question | The small tag on every card: `admission`, `discovery`, `invocation`, `refused early` |
 | The intent in the delegated token | With `IBAC_ENABLED=true` only: a second TOKEN card after the INTENT card of `orchestrator-iag`; the token the orchestrator receives carries `act.intent` |
-| The subject comes from the graph | "who am I" in every act; the subject on the cards is the Auth0 `sub` |
+| The subject comes from the graph | "Who am I? Show my profile." in every act; the subject on the cards is the Auth0 `sub` |
 | Tokens reused | Stagecraft, *the token-reuse beat* |
 | The agent card at the gateway | Stagecraft, *the card beat* |
 | The delegated token extension | Stagecraft, *the card beat* and *the discovery beat*: `capabilities.extensions` and `mcp_extensions` |
@@ -143,7 +143,7 @@ terminal that is the gateway's work in that act.
    provisioning. It holds the people, departments, customers, accounts,
    invoices, documents, decisions, agent workflows, the capabilities of the
    agents (`Tool`, `McpResource` and `Skill` nodes on `HAS {workflow_name}`
-   edges), the 40 Person policies (incl. `person-can-reach-agent`, the
+   edges), the 45 Person policies (incl. `person-can-reach-agent`, the
    gateways' admission check over the delegation chain, the four
    `person-can-use-*` capability policies, and `person-can-view-profile` /
    `person-can-read-weather`, which give "who am I" and the weather prompts
@@ -201,9 +201,9 @@ with that id in the tenant and they can log in.
 
 ## Act 1 - Support: documents and decisions (log in as Vivienne)
 
-1. **"who am I"**
+1. **"Who am I? Show my profile."**
    → `get-self`: Vivienne, Customer Service Supervisor, `support`.
-2. **"What policy documents pertain to refunds?"**
+2. **"Which documents about refunds can I disclose?"**
    → `get-internal-documents` (`taxonomy_external_id=policy`): the internal
    policy library, refund policy included.
 3. **"Retrieve past decisions that incorporated the 'refund_policy' document."**
@@ -258,7 +258,7 @@ one hop longer - the same person, three decisions.
 
 1. **"What's the weather in London?"** → the weather agent, direct
    Open-Meteo path - no graph.
-2. **"What's the weather at CanBank HQ?"** → the HQ keyword routes to
+2. **"Show the weather record for CanBank HQ."** → the HQ keyword routes to
    `get-hq-weather` through the IndyKite MCP server: the `hq_weather` node's
    `current` and `units` are populated live by the external data resolvers.
 
@@ -313,7 +313,7 @@ Millicent's allow never leaks to Marmaduke.
 
 ## Act 6 - Customers and guardians
 
-1. Log in as **Cashmere** (20): **"who am I"** → her customer record
+1. Log in as **Cashmere** (20): **"Who am I? Show my profile."** → her customer record
    `cust-cashmere`, no department. **"Show me the invoices"** → **1 row**
    (`inv-cb-009`). **"Show me invoice inv-cb-001"** → an authorization
    error: naming an id is not enough. **"Show my family"** → her parents;

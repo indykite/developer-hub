@@ -25,8 +25,8 @@ times - it is the co-star.
 > assistant takes is introspected through Auth0, delegated by the Token
 > Service, authorized against the graph, and audited."
 
-1. **Type**: "who am I" → the assistant resolves who is asking.
-2. **Type**: "What policy documents pertain to refunds?"
+1. **Type**: "Who am I? Show my profile." → the assistant resolves who is asking.
+2. **Type**: "Which documents about refunds can I disclose?"
 3. **Type**: "Retrieve past decisions that incorporated the 'refund_policy'
    document." → `decision_001`: Vivienne herself waived Cashmere's fee last
    time. *Say*: "Precedent, linked in the graph."

@@ -19,7 +19,7 @@ forwarded). It is the `iag-token-exchange` demo with three changes:
   [`SCENARIO.md`](usecases/ibac/SCENARIO.md). Dataset: instant-stack
   `data/ibac`.
 
-One prompt, end to end (`who am I` as Millicent):
+One prompt, end to end (`Who am I? Show my profile.` as Millicent):
 
 ```text
 browser ──Auth0 login (code + PKCE, audience ibac-console)──▶ console
@@ -90,7 +90,18 @@ container, the IndyKite platform services, Auth0 and the Token Service, the
 external parties and the numbered request flow. The audit terminal renders
 the gateways' decisions, the Token Service exchanges, the agents' TOKEN
 cards and the Intent Agent's INTENT cards; agents appear by name
-(`AGENT_DISPLAY_NAMES`), their raw subject is the tooltip.
+(`AGENT_DISPLAY_NAMES`), their raw subject is the tooltip. The cards of one
+request fold into a **run** under the person, the prompt and the outcome;
+the pane filters by text, service, kind of record and denials, and each
+card opens its raw record, reads out the claims of its token, and can ask
+the platform a recorded question again (`ask the platform now`). See
+[`chatbot/README.md`](chatbot/README.md#the-audit-terminal). The header's
+**Graph** view draws one request from those records: person, gateways,
+agents and MCP servers along the delegation chain, the capabilities used
+and refused, per gateway what the caller was permitted to see, and - mode
+**Intent** - the six steps a prompt's intent goes through with IBAC on,
+from the Intent Agent's evaluations to the platform's answers
+([`chatbot/README.md`](chatbot/README.md#the-graph-view)).
 
 ### `auth0_bridge`
 
@@ -157,7 +168,9 @@ delegation tokens); see [Token Service setup](#4-token-service-setup).
 The demo's domain as configuration: `usecases/ibac/` holds the vocabulary
 (`usecase.env`), the console's app layer (`app.json`), the per-agent skills
 (incl. `ibac-authz`, the policy vocabulary and the cast), the demo script and
-the scenario. See [`usecases/README.md`](usecases/README.md).
+the scenario. Each usecase has its own env file (`.env.ibac`), `.env` is a
+symlink to the active one and `./switch-usecase.sh <usecase>` switches. See
+[`usecases/README.md`](usecases/README.md).
 
 ### `bruno`
 
@@ -208,9 +221,9 @@ In short:
 2. Provision the IndyKite project with instant-stack `data/ibac`
    ([Provision](#3-provision-the-indykite-project)), after the Token Service
    key exists ([Token Service setup](#4-token-service-setup)).
-3. `cp .example.env .env`, fill it ([Configure `.env`](#5-configure-env)).
+3. `cp .example.env .env.ibac`, fill it ([Configure `.env`](#5-configure-env)).
 4. `make`.
-5. `docker compose up -d`.
+5. `./switch-usecase.sh ibac`.
 6. Log in at `http://localhost:3300` and prompt.
 
 ### 1. Prerequisites
@@ -337,8 +350,15 @@ beside the gateway decisions (`service: token-service`).
 ### 5. Configure `.env`
 
 ```bash
-cp .example.env .env
+cp .example.env .env.ibac
+ln -s .env.ibac .env
 ```
+
+The env file belongs to the usecase: `.env.ibac` holds every binding and
+secret of the `ibac` usecase, and `.env` is a symlink to the active
+usecase's file, so plain `docker compose` commands read it. An existing
+plain `.env` becomes the usecase's file with `mv .env .env.ibac` followed by
+the `ln -s` above.
 
 | Variable | Where to get it |
 | --- | --- |
@@ -440,10 +460,12 @@ On Apple Silicon add `platform: linux/amd64` to `iag-base`.
 ### 8. Start the stack
 
 ```bash
-docker compose up -d
+./switch-usecase.sh ibac
 ```
 
-Open `http://localhost:3300`, log in as one of the people (the cast is in
+The script points `.env` at `.env.ibac` and runs `docker compose up -d
+--remove-orphans`; with the symlink in place, `docker compose up -d` does
+the same start. Open `http://localhost:3300`, log in as one of the people (the cast is in
 the demo script), and prompt. Use the same hostname as `CHATBOT_HOST` in
 `.env` (`localhost`, not `127.0.0.1`): the callback URL must match the
 Auth0 application.
@@ -456,7 +478,7 @@ MCP, customers and guardians, Salesforce), and
 [`SCENARIO.md`](usecases/ibac/SCENARIO.md) tells it as one story. Quick
 prompts:
 
-- as **Vivienne** (support): *"What policy documents pertain to refunds?"*,
+- as **Vivienne** (support): *"Which documents about refunds can I disclose?"*,
   *"Show me the invoices"* (6 rows), *"why can't I get a stock quote?"*
   (`false` - support has no `CAN_RETRIEVE` edge);
 - as **Millicent** (support + trading): *"What is the price of META?"*,
@@ -467,7 +489,7 @@ prompts:
   (his own and his minor son's - the guardian policy);
 - as **Cashmere** (a customer): *"Show me the invoices"* (hers), *"Show me
   invoice inv-cb-001"* (denied);
-- any login: *"What's the weather at CanBank HQ?"* (the graph-resolved
+- any login: *"Show the weather record for CanBank HQ."* (the graph-resolved
   path) vs *"What's the weather in London?"* (direct Open-Meteo).
 
 Evaluations through the console carry the logged-in person's token and the
@@ -541,7 +563,7 @@ intent-agent ──audit record──▶ console (INTENT card: prompt, evaluatio
 
 The answer is a list of AuthZEN-shaped evaluations - subject, action,
 resource, context - constrained to this project's data schema and the
-caller's active KBAC policies (the 40 `Person` policies are the agent's whole
+caller's active KBAC policies (the 45 `Person` policies are the agent's whole
 vocabulary). What the gateway does with it:
 
 - an intent: the message is forwarded to the agent;

@@ -85,7 +85,7 @@
       "name": "concert-performer",
       "display_name": "Performer Access",
       "description": "Person can PERFORM at venue if their karaoke_confidence >= venue's min_confidence",
-      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"PERFORM\"],\"resource\":{\"type\":\"Venue\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WILL_ATTEND]->(resource:Venue) WHERE subject.property.karaoke_confidence >= resource.property.min_confidence\"}}",
+      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"PERFORM\"],\"resource\":{\"type\":\"Venue\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WILL_ATTEND]->(resource:Venue) MATCH (subject)-[:HAS]->(confidence:Property {type:'karaoke_confidence'}) MATCH (resource)-[:HAS]->(min_confidence:Property {type:'min_confidence'}) WHERE confidence.value >= min_confidence.value\"}}",
       "status": "ACTIVE",
       "tags": []
     },
@@ -103,7 +103,7 @@
       "name": "flash-mob-recruitment",
       "display_name": "Flash Mob Recruitment Eligibility",
       "description": "Person can JOIN Flash-Mob-Recruitment only if dance_skill >= 0.85",
-      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"JOIN\"],\"resource\":{\"type\":\"Venue\"},\"condition\":{\"cypher\":\"MATCH (subject:Person), (resource:Venue) WHERE resource.property.name = 'Flash-Mob-Recruitment' AND subject.property.dance_skill >= resource.property.min_danceability\"}}",
+      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"JOIN\"],\"resource\":{\"type\":\"Venue\"},\"condition\":{\"cypher\":\"MATCH (subject:Person), (resource:Venue) MATCH (resource)-[:HAS]->(venue_name:Property {type:'name'}) MATCH (subject)-[:HAS]->(dance_skill:Property {type:'dance_skill'}) MATCH (resource)-[:HAS]->(min_danceability:Property {type:'min_danceability'}) WHERE venue_name.value = 'Flash-Mob-Recruitment' AND dance_skill.value >= min_danceability.value\"}}",
       "status": "ACTIVE",
       "tags": []
     },
@@ -112,7 +112,7 @@
       "name": "track-loudness-check",
       "display_name": "Track Loudness Venue Compatibility",
       "description": "Track can be PLAYED at Venue if loudness respects venue's max_loudness",
-      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Track\"},\"actions\":[\"PLAY\"],\"resource\":{\"type\":\"Venue\"},\"condition\":{\"cypher\":\"MATCH (subject:Track)-[:PLAYED_AT]->(resource:Venue) WHERE subject.property.loudness >= resource.property.max_loudness\"}}",
+      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Track\"},\"actions\":[\"PLAY\"],\"resource\":{\"type\":\"Venue\"},\"condition\":{\"cypher\":\"MATCH (subject:Track)-[:PLAYED_AT]->(resource:Venue) MATCH (subject)-[:HAS]->(loudness:Property {type:'loudness'}) MATCH (resource)-[:HAS]->(max_loudness:Property {type:'max_loudness'}) WHERE loudness.value >= max_loudness.value\"}}",
       "status": "ACTIVE",
       "tags": []
     },
@@ -121,7 +121,7 @@
       "name": "dmv-endless-suffering",
       "display_name": "DMV Endless Track Requirement",
       "description": "Track can PLAY at DMV-Waiting-Area only if duration >= 6:00 and energy <= 0.2",
-      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Track\"},\"actions\":[\"PLAY\"],\"resource\":{\"type\":\"Venue\"},\"condition\":{\"cypher\":\"MATCH (subject:Track), (resource:Venue) WHERE resource.property.name = 'DMV-Waiting-Area' AND subject.property.energy <= resource.property.max_energy\"}}",
+      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Track\"},\"actions\":[\"PLAY\"],\"resource\":{\"type\":\"Venue\"},\"condition\":{\"cypher\":\"MATCH (subject:Track), (resource:Venue) MATCH (resource)-[:HAS]->(venue_name:Property {type:'name'}) MATCH (subject)-[:HAS]->(energy:Property {type:'energy'}) MATCH (resource)-[:HAS]->(max_energy:Property {type:'max_energy'}) WHERE venue_name.value = 'DMV-Waiting-Area' AND energy.value <= max_energy.value\"}}",
       "status": "ACTIVE",
       "tags": []
     },
@@ -157,7 +157,7 @@
       "name": "corporate-no-enthusiasm",
       "display_name": "Corporate Meeting Room Energy Limit",
       "description": "Track can PLAY at Corporate-Meeting-Room only if energy <= 0.2 (no enthusiasm allowed)",
-      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Track\"},\"actions\":[\"PLAY\"],\"resource\":{\"type\":\"Venue\"},\"condition\":{\"cypher\":\"MATCH (subject:Track), (resource:Venue) WHERE resource.property.name = 'Corporate-Meeting-Room' AND subject.property.energy <= resource.property.max_energy\"}}",
+      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Track\"},\"actions\":[\"PLAY\"],\"resource\":{\"type\":\"Venue\"},\"condition\":{\"cypher\":\"MATCH (subject:Track), (resource:Venue) MATCH (resource)-[:HAS]->(venue_name:Property {type:'name'}) MATCH (subject)-[:HAS]->(energy:Property {type:'energy'}) MATCH (resource)-[:HAS]->(max_energy:Property {type:'max_energy'}) WHERE venue_name.value = 'Corporate-Meeting-Room' AND energy.value <= max_energy.value\"}}",
       "status": "ACTIVE",
       "tags": []
     },
@@ -166,7 +166,7 @@
       "name": "dj-at-venue",
       "display_name": "DJ Rights at Venue",
       "description": "Person can DJ at Venue if they WILL_ATTEND and have karaoke_confidence >= 0.8",
-      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"DJ\"],\"resource\":{\"type\":\"Venue\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WILL_ATTEND]->(resource:Venue) WHERE subject.property.karaoke_confidence >= 0.8\"}}",
+      "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"DJ\"],\"resource\":{\"type\":\"Venue\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:WILL_ATTEND]->(resource:Venue) MATCH (subject)-[:HAS]->(confidence:Property {type:'karaoke_confidence'}) WHERE confidence.value >= 0.8\"}}",
       "status": "ACTIVE",
       "tags": []
     }
@@ -367,6 +367,54 @@
         },
         "action": {
           "name": "ENTER"
+        }
+      }
+    },
+    {
+      "name": "Evaluation11",
+      "body": {
+        "subject": {
+          "type": "Person",
+          "id": "person-52"
+        },
+        "resource": {
+          "type": "Venue",
+          "id": "venue-1"
+        },
+        "action": {
+          "name": "PERFORM"
+        }
+      }
+    },
+    {
+      "name": "Evaluation12",
+      "body": {
+        "subject": {
+          "type": "Person",
+          "id": "person-47"
+        },
+        "resource": {
+          "type": "Venue",
+          "id": "venue-16"
+        },
+        "action": {
+          "name": "JOIN"
+        }
+      }
+    },
+    {
+      "name": "Evaluation13",
+      "body": {
+        "subject": {
+          "type": "Person",
+          "id": "person-40"
+        },
+        "resource": {
+          "type": "Venue",
+          "id": "venue-3"
+        },
+        "action": {
+          "name": "DJ"
         }
       }
     }

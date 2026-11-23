@@ -1,0 +1,37 @@
+---
+info:
+  name: Create Customer can open a case about themselves
+  type: http
+  seq: 44
+
+http:
+  method: POST
+  url: "{{ik_api_url_prefix}}/configs/v1/authorization-policies"
+  headers:
+    - name: Content-Type
+      value: application/json
+  body:
+    type: json
+    data: |-
+      {
+        "name": "customer-can-open-own-case",
+        "display_name": "Customer can open a case about themselves",
+        "description": "A customer may open a support case (a Salesforce case) about their own customer record. Gives a customer's case prompt a vocabulary the Intent Agent can map (action OPEN_CASE on Customer); whether the customer reaches the CRM agent is the gateway's admission decision.",
+        "project_id": "{{project_id}}",
+        "policy": "{\"meta\":{\"policy_version\":\"2.0-kbac\"},\"subject\":{\"type\":\"Person\"},\"actions\":[\"OPEN_CASE\"],\"resource\":{\"type\":\"Customer\"},\"condition\":{\"cypher\":\"MATCH (subject:Person)-[:IS_CUSTOMER]->(resource:Customer)\"}}",
+        "status": "ACTIVE"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |
+        test("Status code is 200", function () { expect(res.status).to.equal(200); });
+        if (res.body && res.body.id) bru.setEnvVar("kbac_customer_can_open_own_case", res.body.id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

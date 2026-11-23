@@ -51,9 +51,11 @@ MCP_SERVER_DEFAULTS = _MANIFEST["mcp_server"]
 KBACS: list[dict] = [_parse_policy(k) for k in _MANIFEST["kbacs"]]
 
 
-# Eleven AuthZen evaluation bodies. The first entry is the single 'Evaluation';
+# Fourteen AuthZen evaluation bodies. The first entry is the single 'Evaluation';
 # the second is 'Evaluations' (which wraps an array under 'evaluations'); the rest
-# are Evaluation2..Evaluation10.
+# are Evaluation2..Evaluation13. Evaluation11..Evaluation13 ask the Person rules
+# that test a property (PERFORM, JOIN, DJ). The Track and Playlist rules are not
+# evaluated: a 2.0-kbac subject must be an identity node, and only people are.
 EVALUATIONS: list[dict] = _MANIFEST["evaluations"]
 
 

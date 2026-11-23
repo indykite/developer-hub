@@ -153,7 +153,7 @@ services:
         condition: service_healthy
 
   intent-balancer:
-    image: nginx:1.29-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
+    image: nginx:1.31-alpine@sha256:0563c36f94a6d3ec3584161b77859f740f7e20b4853f52c796a864ce6908e8ea
     profiles: ["cluster"]
     expose:
       - "6003"
@@ -164,7 +164,7 @@ services:
       - intent-agent-2
 
   redis:
-    image: redis:8-alpine@sha256:21090af93f8324db2f0f0f4f38a7c60369d47d917e000c3423d89d2ae2883537
+    image: redis:8-alpine@sha256:7958cfbb9d152f87dadfbc89f1b0b15938f0b81ff8982feb327476f4911935c3
     expose:
       - "6379"
     healthcheck:
