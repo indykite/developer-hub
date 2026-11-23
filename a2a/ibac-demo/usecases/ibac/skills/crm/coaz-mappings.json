@@ -19,6 +19,9 @@
         },
         {
           "name": "CAN_QUERY_CUSTOMER"
+        },
+        {
+          "name": "OPEN_CASE"
         }
       ]
     }

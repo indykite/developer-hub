@@ -47,6 +47,10 @@ answers `false` by design.
 | `CAN_RETRIEVE`, `GET_PRICE` | `Quote` | `stock_quote` | staff of `trading` |
 | `CAN_VIEW_PROFILE` | `Person` | the caller's own subject | everyone, on themselves only (the "who am I" vocabulary) |
 | `CAN_READ` | `Weather` | `hq_weather` | everyone (the weather vocabulary) |
+| `VIEW_REGULATORY_AGREEMENT` | `RegulatoryAgreement` | e.g. `reg-csa-ni81` | staff (anyone who works in a department) |
+| `VIEW_SHARE_PURCHASE_LIMIT` | `Customer` | `cust-<firstname>` | staff whose department can access the banking system, for a customer with a tiered account |
+| `OPEN_CASE` | `Customer` | `cust-<firstname>` | staff of the serving department; the customer, on their own record (the Salesforce case vocabulary) |
+| `LIST_DRIVE_FILES`, `SEARCH_DRIVE` | `Drive` | `google-drive` | everyone (the Drive vocabulary; admission decides who reaches Drive) |
 | `CAN_VIEW` | `Invoice` | `inv-cb-001` ... `inv-cb-009` | staff of the serving department; the customer; a parent of a minor customer |
 | `CAN_DISCLOSE` | `Document` | e.g. `refund_policy` | staff, only over the full console→orchestrator→retriever→mcp delegation chain |
 | `CAN_DISCLOSE_UNCHAINED`, `CAN_ACCESS_FOLDER_DOCUMENT` | `Document` | documents under the department's folders | staff |

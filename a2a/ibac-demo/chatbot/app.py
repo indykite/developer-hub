@@ -127,6 +127,14 @@ AGENT_DISPLAY_NAMES = {
 # would accept for the prompt's evaluations. Empty = preview off.
 IBAC_CARD_URL = (os.getenv("IBAC_CARD_URL") or "").strip()
 IBAC_CARD_TTL = int(os.getenv("IBAC_CARD_TTL", "60"))
+# What the Graph view's intent mode says about the stack: whether the gateways
+# ask the Intent Agent (the same switch the gateways read), what a skill
+# without a mapping means to them, and where the Intent Agent reports its
+# health (empty = not checked).
+IBAC_ENABLED = (os.getenv("IBAC_ENABLED") or "").strip().lower() in ("true", "1", "yes")
+IBAC_UNMAPPED = (os.getenv("IBAC_UNMAPPED") or "allow").strip().lower()
+INTENT_AGENT_HEALTH_URL = (os.getenv("INTENT_AGENT_HEALTH_URL") or "").strip()
+INTENT_AGENT_HEALTH_TTL = 15
 # Deny -> remediate -> allow: which gateways' DENY cards offer a one-click
 # CAN_TRIGGER grant, and the workflow bundle one click writes
 # ("service=wf-a:wf-b,service2=..."). The write spends the app-agent key;
@@ -138,6 +146,9 @@ GRANT_WORKFLOW_MAP = {
     if svc.strip() and wfs.strip()
 }
 GRANT_ENABLED = bool(INDYKITE_BASE_URL and APP_AGENT_CREDENTIALS_TOKEN and GRANT_WORKFLOW_MAP)
+# "Ask the platform now" on the audit cards: the console repeats a recorded
+# AuthZEN question with the app agent credential (read-only).
+RECHECK_ENABLED = bool(INDYKITE_BASE_URL and APP_AGENT_CREDENTIALS_TOKEN)
 # Cached grant rights (/api/auth/status) are invalid once the map changes.
 GRANT_MAP_FINGERPRINT = os.getenv("GRANT_WORKFLOW_MAP") or ""
 CAN_GRANT_TTL_S = 60
@@ -223,6 +234,33 @@ def _ibac_capability() -> dict | None:
     return capability
 
 
+_intent_health_cache: dict = {"fetched": 0.0, "state": "unknown"}
+
+
+def _intent_agent_state() -> str:
+    """Return off (profile not enabled), unknown (no health URL), up or down; the probe is kept for a few seconds."""
+    if "intent" not in COMPOSE_PROFILES:
+        return "off"
+    if not INTENT_AGENT_HEALTH_URL:
+        return "unknown"
+    now = time.monotonic()
+    if _intent_health_cache["fetched"] and now - _intent_health_cache["fetched"] < INTENT_AGENT_HEALTH_TTL:
+        return _intent_health_cache["state"]
+    try:
+        httpx.get(INTENT_AGENT_HEALTH_URL, timeout=2.0).raise_for_status()
+        state = "up"
+    except httpx.HTTPError:
+        state = "down"
+    _intent_health_cache.update(fetched=now, state=state)
+    return state
+
+
+@app.route("/api/ibac/status", methods=["GET"])
+def ibac_status():
+    """Whether IBAC is switched on for the gateways, the unmapped policy, and whether the Intent Agent answers."""
+    return jsonify({"enabled": IBAC_ENABLED, "unmapped": IBAC_UNMAPPED, "agent": _intent_agent_state()})
+
+
 def _mapping_matches(evaluation: dict, mapping: dict) -> bool:
     """Apply the gateway's discovery rule to one mapping: subject type, resource type, action; ids are not compared."""
     subject_type = ((evaluation.get("subject") or {}).get("type")) or ""
@@ -276,6 +314,7 @@ def _intent_event(data: dict) -> dict:
     outcome = str(data.get("outcome") or "").lower()
     evaluations = data.get("evaluations") or []
     return {
+        "raw": data,
         "discovery": _discovery_preview(evaluations),
         "decision": _INTENT_DECISIONS.get(outcome, f"INTENT_{outcome.upper() or 'UNKNOWN'}"),
         "reason": data.get("message") or "",
@@ -315,6 +354,8 @@ def push_update():
         "action": action,
         "timestamp": timestamp,
         "service": service,
+        # The record as the service sent it, for the card's "raw record".
+        "raw": data,
     }
     # Every gateway record names the delegation chain of the hop (oldest actor
     # first), the trace and the token it is about, and whether the answer came
@@ -948,6 +989,59 @@ def grant_access():
     )
 
 
+def _recheck_entity(value) -> dict | None:
+    """Return {"type", "id"} of an AuthZEN subject or resource when both are non-empty strings, else None."""
+    if not isinstance(value, dict):
+        return None
+    entity_type, entity_id = value.get("type"), value.get("id")
+    if not (isinstance(entity_type, str) and entity_type.strip() and isinstance(entity_id, str) and entity_id.strip()):
+        return None
+    return {"type": entity_type.strip(), "id": entity_id.strip()}
+
+
+@app.route("/api/recheck", methods=["POST"])
+def recheck():
+    """Ask the platform one recorded AuthZEN question again and return its answer now.
+
+    Read-only: one evaluation of the subject, action and resource an audit
+    card names, authenticated with the app agent credential. The call's
+    delegation token is not part of the question, so a policy that reads it
+    answers as it would without one.
+    """
+    if not RECHECK_ENABLED:
+        return jsonify({"error": "re-check is not configured"}), 404
+    # The route spends the app-agent credentials: when the console has a login
+    # flow, require a session so anonymous callers can't probe the graph.
+    if ID_SERVER_BASE_URL and not session.get("access_token"):
+        return jsonify({"error": "authentication required"}), 401
+    body = request.get_json(silent=True) or {}
+    subject = _recheck_entity(body.get("subject"))
+    resource = _recheck_entity(body.get("resource"))
+    action = body.get("action") if isinstance(body.get("action"), dict) else {}
+    action_name = action.get("name")
+    if not subject or not resource or not isinstance(action_name, str) or not action_name.strip():
+        return jsonify({"error": "subject, action and resource with type, id and name are required"}), 400
+    question = {"subject": subject, "action": {"name": action_name.strip()}, "resource": resource}
+    context = body.get("context")
+    if isinstance(context, dict) and context:
+        question["context"] = context
+    try:
+        resp = httpx.post(
+            f"{INDYKITE_BASE_URL}/access/v1/evaluation",
+            headers={"Content-Type": "application/json", "X-IK-ClientKey": APP_AGENT_CREDENTIALS_TOKEN},
+            json=question,
+            timeout=20.0,
+        )
+        resp.raise_for_status()
+    except httpx.HTTPStatusError as e:
+        logger.warning("re-check refused by the platform: %s", e)
+        return jsonify({"error": f"the platform answered {e.response.status_code}"}), 502
+    except httpx.HTTPError as e:
+        logger.warning("re-check unreachable: %s", e)
+        return jsonify({"error": "platform unreachable"}), 502
+    return jsonify({"decision": bool((resp.json() or {}).get("decision"))})
+
+
 def _now_iso() -> str:
     return datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -1005,6 +1099,8 @@ def get_config():
             # grant buttons on DENY cards (deny -> remediate -> allow)
             "grant_enabled": GRANT_ENABLED,
             "grant_map": GRANT_WORKFLOW_MAP,
+            # "ask the platform now" on cards that name a subject and a resource
+            "recheck_enabled": RECHECK_ENABLED,
             # agent subjects (<client_id>@clients) -> display names on the cards
             "agent_names": AGENT_DISPLAY_NAMES,
             # architecture page: badge + dimming of profile-gated groups

@@ -2,7 +2,7 @@
 
 This repository serves as a collection of independent code examples and small applications. It is designed to be a place where different projects can be hosted without being part of a single, unified codebase.
 
-Generated at: 2026-11-13T07:58:02Z
+Generated at: 2026-11-23T19:01:18Z
 
 DO NOT EDIT!!
 
@@ -14,8 +14,8 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 
 | License | Classification | Severity | Count |
 | --- | --- | --- | ---: |
-| MIT | notice | LOW | 40 |
-| Apache-2.0 | notice | LOW | 17 |
+| MIT | notice | LOW | 36 |
+| Apache-2.0 | notice | LOW | 15 |
 | BSD-3-Clause | notice | LOW | 12 |
 | BSD-2-Clause | notice | LOW | 2 |
 | BeOpen | unknown | UNKNOWN | 2 |
@@ -25,21 +25,20 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 | Python-2.0 | notice | LOW | 2 |
 | BSD-0-Clause | unknown | UNKNOWN | 1 |
 
-**Total packages scanned:** 82
+**Total packages scanned:** 76
 
 ## Report Summary (by target)
 
 | Target | Type | Licenses |
 | --- | --- | ---: |
-| Loose File License(s) | - | 75 |
-| a2a/intent-agent-demo/console/requirements.txt | pip | 2 |
-| a2a/intent-ibac-demo/console/requirements.txt | pip | 2 |
+| Loose File License(s) | - | 73 |
+| a2a/intent-agent-demo/console/requirements.txt | pip | 1 |
 | a2a/intent-ibac-gateway/agents/requirements.txt | pip | 1 |
-| a2a/intent-ibac-gateway/console/requirements.txt | pip | 2 |
+| a2a/intent-ibac-gateway/console/requirements.txt | pip | 1 |
 
 ## Details
 
-### `Loose File License(s)` (-) -- 75 licenses
+### `Loose File License(s)` (-) -- 73 licenses
 
 | Package | License | Classification | Severity |
 | --- | --- | --- | --- |
@@ -48,8 +47,6 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 | a2a/iag-mcp-demo/LICENSE | Apache-2.0 | notice | LOW |
 | a2a/iag-token-exchange/LICENSE | Apache-2.0 | notice | LOW |
 | a2a/ibac-demo/LICENSE | Apache-2.0 | notice | LOW |
-| banking/LICENSE | Apache-2.0 | notice | LOW |
-| canbank/LICENSE | Apache-2.0 | notice | LOW |
 | capture/LICENSE | Apache-2.0 | notice | LOW |
 | get-started/LICENSE | Apache-2.0 | notice | LOW |
 | instant-stack/LICENSE | Apache-2.0 | notice | LOW |
@@ -119,19 +116,11 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 | pip | Python-2.0 | notice | LOW |
 | typing\_extensions | Python-2.0 | notice | LOW |
 
-### `a2a/intent-agent-demo/console/requirements.txt` (pip) -- 2 licenses
+### `a2a/intent-agent-demo/console/requirements.txt` (pip) -- 1 license
 
 | Package | License | Classification | Severity |
 | --- | --- | --- | --- |
 | PyJWT | MIT | notice | LOW |
-| pydantic | MIT | notice | LOW |
-
-### `a2a/intent-ibac-demo/console/requirements.txt` (pip) -- 2 licenses
-
-| Package | License | Classification | Severity |
-| --- | --- | --- | --- |
-| PyJWT | MIT | notice | LOW |
-| pydantic | MIT | notice | LOW |
 
 ### `a2a/intent-ibac-gateway/agents/requirements.txt` (pip) -- 1 license
 
@@ -139,9 +128,8 @@ Regenerate with `ops-common/.github/actions/trivy-license/script.sh (clone 'ops-
 | --- | --- | --- | --- |
 | PyJWT | MIT | notice | LOW |
 
-### `a2a/intent-ibac-gateway/console/requirements.txt` (pip) -- 2 licenses
+### `a2a/intent-ibac-gateway/console/requirements.txt` (pip) -- 1 license
 
 | Package | License | Classification | Severity |
 | --- | --- | --- | --- |
 | PyJWT | MIT | notice | LOW |
-| pydantic | MIT | notice | LOW |

@@ -300,6 +300,42 @@
           "name": "CAN_VIEW_PROFILE"
         }
       ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "RegulatoryAgreement"
+        }
+      ],
+      "action": [
+        {
+          "name": "VIEW_REGULATORY_AGREEMENT"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Customer"
+        }
+      ],
+      "action": [
+        {
+          "name": "VIEW_SHARE_PURCHASE_LIMIT"
+        }
+      ]
     }
   ],
   "query-crm": [
@@ -321,6 +357,9 @@
         },
         {
           "name": "CAN_QUERY_CUSTOMER"
+        },
+        {
+          "name": "OPEN_CASE"
         }
       ]
     }
@@ -341,6 +380,27 @@
       "action": [
         {
           "name": "CAN_READ"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "Drive"
+        }
+      ],
+      "action": [
+        {
+          "name": "LIST_DRIVE_FILES"
+        },
+        {
+          "name": "SEARCH_DRIVE"
         }
       ]
     }

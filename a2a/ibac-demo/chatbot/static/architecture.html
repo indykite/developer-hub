@@ -92,6 +92,14 @@
         .features li:nth-child(5n+3) { border-left-color: var(--data); }
         .features li:nth-child(5n+4) { border-left-color: var(--console); }
         .features li:nth-child(5n+5) { border-left-color: #E0A82E; }
+        .panel ol.pipeline { list-style: none; counter-reset: step; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+        @media (max-width: 1100px) { .panel ol.pipeline { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        @media (max-width: 640px) { .panel ol.pipeline { grid-template-columns: 1fr; } }
+        .panel .pipeline li { counter-increment: step; display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 10px 12px; border: 1px solid var(--line); border-top: 3px solid #6D28D9; border-radius: 8px; }
+        .pipeline li::before { content: counter(step); font-size: 10px; font-weight: 700; letter-spacing: .08em; color: var(--text-faint); }
+        .pipeline code { font-size: 12px; overflow-wrap: anywhere; }
+        .pipeline-note { margin-top: 10px; font-size: 13px; color: var(--text-sub); }
+        .pipeline-note b { color: var(--text-ink); }
         .swatch { width: 22px; height: 14px; border-radius: 4px; background: var(--ink-800); border: 2px solid; flex: none; }
         .sw-gateway { border-color: var(--accent); }
         .sw-agent { border-color: var(--agent); }
@@ -393,6 +401,18 @@
                 <li id="lg-crm"><span class="swatch sw-gateway"></span><span><b>crm</b>: Salesforce Cases on behalf of the user</span></li>
                 <li id="lg-erp"><span class="swatch sw-gateway"></span><span><b>erp</b>: Postgres invoices, graph-filtered rows</span></li>
             </ul>
+        </div>
+        <div class="panel wide">
+            <h2>How the intent of a prompt travels (IBAC on)</h2>
+            <ol class="pipeline">
+                <li><b>Prompt</b><span>The console sends the prompt as an A2A message to the entry gateway, <code>orchestrator-iag</code>, which first admits the person.</span></li>
+                <li><b>Intent Agent</b><span>The gateway asks the Intent Agent what the prompt means: evaluations of subject, action and resource in the words of the project's schema and policies. No intent, and the gateway answers the prompt itself.</span></li>
+                <li><b>Entry gateway</b><span>It compares each evaluation with the skills of the orchestrator the caller may use (<code>x-coaz-mappings</code>). Evaluations that fit pass on; when none fits the prompt is refused.</span></li>
+                <li><b>Token</b><span>The Token Service writes the evaluations that fit into <code>act.intent</code> of the delegated token the agents carry in <code>X-IK-Token</code>.</span></li>
+                <li><b>MCP gateway</b><span>A gateway with IBAC on in front of an MCP server (<code>erp-mcp-iag</code>) lists and allows only the tools whose mappings fit the intent in the token.</span></li>
+                <li><b>Platform</b><span>For a call that names data, the gateway asks the platform whether the person may, and records every answer.</span></li>
+            </ol>
+            <p class="pipeline-note">The console's <b>Graph</b> view, mode <b>Intent</b>, shows these six steps for each request, with the evaluations, the skills and calls they fit, and the platform's answers.</p>
         </div>
         <div class="panel wide">
             <h2>What the gateways run</h2>

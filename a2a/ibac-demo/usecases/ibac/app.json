@@ -169,7 +169,7 @@
               "id": "refund-docs",
               "title": "Policy documents about refunds",
               "description": "Internal policies that mention refunds.",
-              "prompt": "What policy documents pertain to refunds?",
+              "prompt": "Which documents about refunds can I disclose?",
               "render": "docs",
               "services": [
                 "retriever-iag",
@@ -237,7 +237,7 @@
               "id": "who-am-i",
               "title": "My profile",
               "description": "How the platform sees you: department and manager for staff, your customer record as a customer.",
-              "prompt": "who am I",
+              "prompt": "Who am I? Show my profile.",
               "render": "details",
               "services": [
                 "retriever-iag",
@@ -248,7 +248,7 @@
               "id": "hq-weather",
               "title": "Weather at CanBank HQ",
               "description": "Live from the graph's weather node and its resolvers.",
-              "prompt": "What's the weather at CanBank HQ?",
+              "prompt": "Show the weather record for CanBank HQ.",
               "render": "weather",
               "services": [
                 "weather-iag",

@@ -100,6 +100,12 @@ services:
       # public card (with the skills' x-coaz-mappings), read from the agent
       # itself - the gateway serves a typed copy without the extension.
       IBAC_CARD_URL: http://${ORCHESTRATOR_HOST}:${ORCHESTRATOR_PORT}/.well-known/agent-card.json
+      # Intent mode of the Graph view: the IBAC switch and unmapped policy the
+      # gateways run with, and the Intent Agent's health endpoint (asked only
+      # when the intent profile is on).
+      IBAC_ENABLED: ${IBAC_ENABLED:-false}
+      IBAC_UNMAPPED: ${IBAC_UNMAPPED:-allow}
+      INTENT_AGENT_HEALTH_URL: ${INTENT_AGENT_HEALTH_URL:-http://intent-agent:8001/health}
       AGENT_DISPLAY_NAMES: >-
         ${ORCHESTRATOR_IDP_CLIENT_ID}@clients=orchestrator-agent,
         ${RETRIEVER_IDP_CLIENT_ID}@clients=retriever-agent,
@@ -696,7 +702,7 @@ services:
       - erp-db
 
   erp-db:
-    image: postgres:18-alpine@sha256:1018733457011bf88d81db98cf43aac6d5150afc18787dbe204771fedf80ff95
+    image: postgres:18-alpine@sha256:ff64c9e3bdf8e2120107d3559de8db314e8305f7e38c5105903c6295876738ff
     profiles: ["erp"]
     # Private backend net only - reached exclusively by erp-mcp.
     networks:
@@ -753,6 +759,10 @@ services:
       REQUEST_TIMEOUT_SECONDS: ${INTENT_REQUEST_TIMEOUT_SECONDS:-10.0}
       LLM_TIMEOUT_SECONDS: ${INTENT_LLM_TIMEOUT_SECONDS:-3.0}
       VALIDATION_MAX_RETRIES: ${INTENT_VALIDATION_MAX_RETRIES:-1}
+      # How much of the policy list the model is shown (characters, whole
+      # policies only). Policies beyond it are left out of the vocabulary, so
+      # it has to exceed the size of the project's Person policies.
+      POLICY_PREVIEW_CHARS: ${INTENT_POLICY_PREVIEW_CHARS:-20000}
       # How long the agent keeps the project's policy list and data schema
       # (minutes, fractions allowed) before reading them again: how soon a
       # policy or node type added to the dataset reaches the intents.

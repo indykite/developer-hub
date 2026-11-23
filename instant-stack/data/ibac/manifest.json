@@ -1795,6 +1795,122 @@
           "cypher": "MATCH (subject:Person)-[:WORKS_IN|CAN_TRIGGER*..3]->(wf:Workflow) MATCH (wf)-[rels:INVOKES*]->(agent:Agent)-[h:HAS]->(resource:Skill) WHERE ALL(r IN rels WHERE r.workflow_name = wf.external_id AND endNode(r):Agent) AND [r IN rels | endNode(r).external_id] = $ik_token.act_chain AND h.workflow_name = wf.external_id"
         }
       }
+    },
+    {
+      "name": "person-can-use-drive",
+      "display_name": "Person can list and search the Drive",
+      "description": "Any person may ask to list or search the files of the organization's Google Drive (the Drive node). Gives the Drive prompts a vocabulary the Intent Agent can map (actions LIST_DRIVE_FILES and SEARCH_DRIVE on Drive); who reaches the Drive server is the gateway's admission decision.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "LIST_DRIVE_FILES",
+          "SEARCH_DRIVE"
+        ],
+        "resource": {
+          "type": "Drive"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person) MATCH (resource:Drive)"
+        }
+      }
+    },
+    {
+      "name": "person-can-view-regulatory-agreement",
+      "display_name": "Staff can view regulatory agreements",
+      "description": "A person who works in a department may view the regulatory agreements. Gives prompts about regulatory agreements a vocabulary the Intent Agent can map (action VIEW_REGULATORY_AGREEMENT on RegulatoryAgreement); the data itself comes from the get-regulatory-agreements knowledge query.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "VIEW_REGULATORY_AGREEMENT"
+        ],
+        "resource": {
+          "type": "RegulatoryAgreement"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN]->(:Department) MATCH (resource:RegulatoryAgreement)"
+        }
+      }
+    },
+    {
+      "name": "staff-can-view-purchase-limit",
+      "display_name": "Staff can view a customer's share purchase limit",
+      "description": "Staff whose department can access the banking system may view how many shares a customer of that system can purchase: the customer's account tier sets the limit. Gives the share purchase prompts a vocabulary the Intent Agent can map (action VIEW_SHARE_PURCHASE_LIMIT on Customer); the numbers come from the get-stock-trade-threshold and get-stock-quote knowledge queries.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "VIEW_SHARE_PURCHASE_LIMIT"
+        ],
+        "resource": {
+          "type": "Customer"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN]->(:Department)-[:CAN_ACCESS]->(:System)-[:CONTAINS]->(resource:Customer)-[:OWNS]->(:Account)-[:IS_TIER]->(:AccountTier)"
+        }
+      }
+    },
+    {
+      "name": "staff-can-open-case",
+      "display_name": "Staff can open a case for a customer",
+      "description": "Staff whose department serves a customer may open a support case (a Salesforce case) about that customer. Gives the case prompts a vocabulary the Intent Agent can map (action OPEN_CASE on Customer); the case itself is created by the CRM agent.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "OPEN_CASE"
+        ],
+        "resource": {
+          "type": "Customer"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:WORKS_IN]->(:Department)-[:SERVES]->(resource:Customer)"
+        }
+      }
+    },
+    {
+      "name": "customer-can-open-own-case",
+      "display_name": "Customer can open a case about themselves",
+      "description": "A customer may open a support case (a Salesforce case) about their own customer record. Gives a customer's case prompt a vocabulary the Intent Agent can map (action OPEN_CASE on Customer); whether the customer reaches the CRM agent is the gateway's admission decision.",
+      "status": "ACTIVE",
+      "policy": {
+        "meta": {
+          "policy_version": "2.0-kbac"
+        },
+        "subject": {
+          "type": "Person"
+        },
+        "actions": [
+          "OPEN_CASE"
+        ],
+        "resource": {
+          "type": "Customer"
+        },
+        "condition": {
+          "cypher": "MATCH (subject:Person)-[:IS_CUSTOMER]->(resource:Customer)"
+        }
+      }
     }
   ],
   "application": {

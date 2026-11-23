@@ -282,6 +282,24 @@
           "name": "VIEW_TICKET_DECISION"
         }
       ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "RegulatoryAgreement"
+        }
+      ],
+      "action": [
+        {
+          "name": "VIEW_REGULATORY_AGREEMENT"
+        }
+      ]
     }
   ],
   "ciq-execute": [
@@ -538,6 +556,24 @@
       "action": [
         {
           "name": "VIEW_TICKET_DECISION"
+        }
+      ]
+    },
+    {
+      "context": {},
+      "subject": [
+        {
+          "type": "Person"
+        }
+      ],
+      "resource": [
+        {
+          "type": "RegulatoryAgreement"
+        }
+      ],
+      "action": [
+        {
+          "name": "VIEW_REGULATORY_AGREEMENT"
         }
       ]
     }
