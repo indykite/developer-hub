@@ -300,8 +300,8 @@ with the Token Service of the same release,
 [`indykite/token-service:2.115.1`](https://hub.docker.com/r/indykite/token-service/tags).
 Compose pulls both when they are missing; other tags can be named in `.env`
 as `AGENT_GATEWAY_IMAGE` and `TOKEN_SERVICE_IMAGE`. Keep the two on the same
-release: the gateway sends the intent to the Token Service, and with one
-that ignores it (1.0.0), every prompt with an intent is a 502.
+release: the gateway sends the intent to the Token Service, and with an
+older one that ignores it, every prompt with an intent is a 502.
 What the demo relies on, all in that release: Token
 Service mode, `ibac.enabled`, admission over `$ik_token.act_chain`, the
 capability checks behind the extended card, the comparison of the intent
