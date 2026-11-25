@@ -3,7 +3,7 @@
 # docker-compose.yaml extends this service and adds its own name, port, the
 # agent it protects and the Auth0 Machine-to-Machine client it is known by.
 #
-# The image is the latest release published on Docker Hub
+# The image is a release published on Docker Hub, pinned by digest
 # (https://hub.docker.com/r/indykite/agent-gateway/tags), pulled when missing; another tag can be named in .env as AGENT_GATEWAY_IMAGE.
 # What this demo relies on: Token Service mode (the delegated token in
 # X-IK-Token, nothing in Authorization: the agent never holds the person's
@@ -20,7 +20,7 @@
 
 services:
   iag-base:
-    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.115.1}
+    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.115.1@sha256:c37338d1663c57a8a4db6be65236e297d22905043bb6e59bcbae868743d9a6ee}
     environment:
       JARVIS_SERVICE_LOG_LEVEL: ${IAG_LOG_LEVEL:-info}
       JARVIS_SERVICE_ENVIRONMENT: demo
