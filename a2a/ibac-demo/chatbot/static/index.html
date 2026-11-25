@@ -1580,7 +1580,11 @@
                 intent_match_search: ['match', 'The intent in the token covers this.'],
                 intent_match_authzen_required: ['match', 'The intent covers this call; the platform was asked about the data it names.'],
             };
-            const note = IBAC_NOTES[event.reason_code];
+            let note = IBAC_NOTES[event.reason_code];
+            // The same reason with a refusal is a refusal, not a skipped check.
+            if (event.reason_code === 'missing_coaz_mapping' && decision !== 'authorized') {
+                note = ['mismatch', `Refused: ${named} ${named.includes(',') ? 'have' : 'has'} no mapping, and entries without one are not allowed here.`];
+            }
             if (note) {
                 const line = document.createElement('div');
                 line.className = `audit-intent-discovery ${note[0]}`;
