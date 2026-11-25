@@ -48,6 +48,7 @@ client secret) is created from `token-service.example.yaml`:
 ## Run (standalone)
 
 ```shell
+IMAGE=$(docker compose config --images token-service)
 docker run --rm -d --name tx-token-service -p 8102:8102 \
   -v $(pwd)/token-service/token-service.yaml:/app/.configs/token-service.yaml:ro \
   "$IMAGE" --config=/app/.configs/token-service.yaml
