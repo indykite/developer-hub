@@ -14,11 +14,14 @@ Published on Docker Hub as
 (`linux/amd64` only):
 
 ```shell
-docker pull indykite/token-service:2.115.1
+docker pull indykite/token-service:<release>
 ```
 
-The demo runs the image named in `.env` as `TOKEN_SERVICE_IMAGE`; keep it on
-the same release as the gateways' `AGENT_GATEWAY_IMAGE`. On an exchange with
+The demo runs the release pinned by digest in
+[`../docker-compose.yaml`](../docker-compose.yaml), the same as the gateways'
+in [`../iag-base-docker.yaml`](../iag-base-docker.yaml).
+`TOKEN_SERVICE_IMAGE` in `.env` overrides it; keep it on the gateways'
+release. On an exchange with
 an `intent` parameter the service writes the evaluations into `act.intent`
 of the issued token (at most `idp.max_intent_evaluations`, 10 by default;
 the token at most `idp.max_token_bytes`, 8000 by default). A gateway with
@@ -46,7 +49,7 @@ client secret) is created from `token-service.example.yaml`:
 ```shell
 docker run --rm -d --name tx-token-service -p 8102:8102 \
   -v $(pwd)/token-service/token-service.yaml:/app/.configs/token-service.yaml:ro \
-  indykite/token-service:2.115.1 --config=/app/.configs/token-service.yaml
+  indykite/token-service:<release> --config=/app/.configs/token-service.yaml
 ```
 
 Endpoints: `/.well-known/openid-configuration`, `/.well-known/jwks.json`,

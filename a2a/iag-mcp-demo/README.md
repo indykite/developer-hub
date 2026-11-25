@@ -292,7 +292,7 @@ Fill in, at a minimum:
 | `AUTHZEN_SUBJECT_TYPES` | Subject node type the console (grant self-check, `CAN_TRIGGER` edges) and the ERP server (AuthZEN search) use: `User` for canbank, `Person` for insurance. The gateways do not read it; they take the type from whoami. |
 | `IAG_CAPABILITY_CHECKS` | Optional, default `true`. Capability checks of the gateways (`JARVIS_AUTHZEN_CAPABILITIES_ENABLED`); `false` = admission decision only, lists unfiltered. See [Capability checks](#capability-checks). |
 | `IAG_AUTHZEN_CACHE_TTL` | Optional, default `30s`. How long a gateway keeps an admission decision and a permitted set per subject and chain, i.e. how fast a grant or revoke reaches the gateways. |
-| `AGENT_GATEWAY_IMAGE` | Optional. Agent Gateway image for all gateways; the default in [`iag-base-docker.yaml`](iag-base-docker.yaml) is release `2.115.1` from Docker Hub. Never use the `latest` tag. |
+| `AGENT_GATEWAY_IMAGE` | Optional. Overrides the Agent Gateway image for all gateways; leave it unset to run the release pinned by digest in [`iag-base-docker.yaml`](iag-base-docker.yaml). Never use the `latest` tag. |
 | `ANALYST_MCP_SERVER_URLS` | *(Drive profile)* Multi-backend analyst: `indykite=http://mcp-iag:8886/mcp/v1/<PROJECT_GID>,drive=http://drive-mcp-iag:8887/mcp` (same unencoded gid as `MCP_SERVER_PATH`). Required for Drive prompts; see the Drive section. |
 | `CIQ_QUERY_HQ_WEATHER` | Optional. Name (not gid) of the `get-hq-weather` knowledge query; the weather agent calls the MCP tool of that name for HQ prompts (default: `get-hq-weather`). Needs slot 9 + the `weather` / `weather-units` EDRs. Without it, weather prompts go to Open-Meteo. |
 | `FLASK_SECRET_KEY` | Generate a fresh one: `python -c "import secrets; print(secrets.token_hex(32))"` |
@@ -329,13 +329,13 @@ make new-erp-mcp     # optional, profile "erp"   - outside the default build
 
 ### 4. Pin the Agent Gateway image tag
 
-[`iag-base-docker.yaml`](iag-base-docker.yaml) names release `2.115.1`,
-pinned by digest:
+[`iag-base-docker.yaml`](iag-base-docker.yaml) names the release, pinned by
+digest:
 
 ```yaml
 services:
   iag-base:
-    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.115.1@sha256:c37338d1663c57a8a4db6be65236e297d22905043bb6e59bcbae868743d9a6ee}
+    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:<release>@sha256:<digest>}
 ```
 
 All gateways inherit this image. The demo relies on what it implements: MCP

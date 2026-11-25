@@ -294,10 +294,12 @@ the same time.
 
 ### 1. The Agent Gateway image
 
-The gateways run the latest release published on Docker Hub,
-[`indykite/agent-gateway:2.115.1`](https://hub.docker.com/r/indykite/agent-gateway/tags),
+The gateways run
+[`indykite/agent-gateway`](https://hub.docker.com/r/indykite/agent-gateway/tags)
+at the release pinned in [`iag-base-docker.yaml`](iag-base-docker.yaml),
 with the Token Service of the same release,
-[`indykite/token-service:2.115.1`](https://hub.docker.com/r/indykite/token-service/tags).
+[`indykite/token-service`](https://hub.docker.com/r/indykite/token-service/tags),
+pinned in [`docker-compose.yaml`](docker-compose.yaml).
 Compose pulls both when they are missing; other tags can be named in `.env`
 as `AGENT_GATEWAY_IMAGE` and `TOKEN_SERVICE_IMAGE`. Keep the two on the same
 release: the gateway sends the intent to the Token Service, and with an
