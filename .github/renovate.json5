@@ -2,23 +2,5 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "github>indykite/.github//.github/renovate.json"
-  ],
-  "docker-compose": {
-    "managerFilePatterns": [
-      "**/iag-base-docker.yaml"
-    ]
-  },
-  "packageRules": [
-    {
-      // the demo stays on the pre-2.115 admission model until its migration
-      "matchFileNames": [
-        "a2a/iag-token-exchange/**"
-      ],
-      "matchPackageNames": [
-        "indykite/agent-gateway",
-        "indykite/token-service"
-      ],
-      "enabled": false
-    }
   ]
 }
