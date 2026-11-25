@@ -363,8 +363,9 @@ rules as the knowledge-query policies.
 
 To run it:
 
-- Images: the gateway and the Token Service of `.example.env`, the same
-  version of both. The gateway reads the intent and checks skills, tool
+- Images: the gateway and the Token Service pinned in `iag-base-docker.yaml`
+  and `docker-compose.yaml`, the same release of both (leave their `.env`
+  overrides unset). The gateway reads the intent and checks skills, tool
   lists and tool calls against it; the Token Service carries it in the
   token.
 - Auth0: an API `intent_agent`, with the orchestrator gateway's application
