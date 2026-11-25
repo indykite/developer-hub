@@ -89,7 +89,7 @@ services:
       retries: 5
 
   token-service:
-    image: ${TOKEN_SERVICE_IMAGE:-indykite/token-service:2.115.1@sha256:8c3dcc59cb08bd4ce61c70aa57da896df9cc9cc2a9542eca1106c6107d7cf601}
+    image: ${TOKEN_SERVICE_IMAGE:-indykite/token-service:2.117.6@sha256:5de92899b0ff9a38ff7edaedf3df22e05051ffd9aaac48fbb58ef3ef5a801dac}
     platform: linux/amd64
     # Runs as the host user that owns token-service.yaml, which only its owner can read (id -u).
     user: "${TOKEN_SERVICE_RUN_AS:-1000}"

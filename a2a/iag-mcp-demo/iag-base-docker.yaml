@@ -15,7 +15,7 @@ services:
     # nodes the dataset attaches to each agent per workflow); and the agent
     # cards the A2A gateways serve. All gateways share this image.
     # See https://hub.docker.com/r/indykite/agent-gateway/tags.
-    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.115.1@sha256:c37338d1663c57a8a4db6be65236e297d22905043bb6e59bcbae868743d9a6ee}
+    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.117.6@sha256:3c1e46a031c7294cb1282b5bdfcbf27088d2421fb4ae8d8fc47267c4ac91bed1}
     environment:
       JARVIS_SERVICE_LOG_LEVEL: debug
       JARVIS_SERVICE_ENVIRONMENT: demo

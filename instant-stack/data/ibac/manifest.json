@@ -7,7 +7,7 @@
       "slot": "1",
       "name": "get-self",
       "display_name": "Get Self",
-      "description": "Retrieve the authenticated person's profile: department and manager for staff, customer record for customers. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-self\", \"input_params\": { } }.",
+      "description": "Retrieve the authenticated person's profile: department and manager for staff, customer record for customers. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-self\", \"input_params\": { } }. x-coaz-mappings: [{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"Person\"}],\"action\":[{\"name\":\"CAN_VIEW_PROFILE\"},{\"name\":\"REPORTS_TO\"},{\"name\":\"REPORTS_TO_INDIRECTLY\"}]},{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"Department\"}],\"action\":[{\"name\":\"WORKS_IN\"},{\"name\":\"WORKS_UNDER\"},{\"name\":\"WORKS_UNDER_DEPARTMENT\"}]},{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"Customer\"}],\"action\":[{\"name\":\"IS_CUSTOMER\"}]}]",
       "query": {
         "nodes": [
           "subject.external_id",
@@ -30,7 +30,7 @@
       "slot": "2",
       "name": "get-stock-quote",
       "display_name": "Get Stock Quote",
-      "description": "Get Stock Quote retrieves the person, their department and a stock quote for the requested ticker symbol.The only information required is the currently authenticated person's bearer token and a ticker symbol for the stock. Use this function when the person asks questions about stock quotes, such as: 'What is the current price of <ticker>?' Returns: An object containing the person's details, including full_name, department, and the stock price. Call tool 'ciq_execute' with the person's bearer token as the authorization header. Use the following arguments: \"id\": \"get-stock-quote\" and \"ticker\". Example: { \"id\": \"get-stock-quote\", \"input_params\": { \"ticker\": \"NVDA\"} }.\"",
+      "description": "Get Stock Quote retrieves the person, their department and a stock quote for the requested ticker symbol.The only information required is the currently authenticated person's bearer token and a ticker symbol for the stock. Use this function when the person asks questions about stock quotes, such as: 'What is the current price of <ticker>?' Returns: An object containing the person's details, including full_name, department, and the stock price. Call tool 'ciq_execute' with the person's bearer token as the authorization header. Use the following arguments: \"id\": \"get-stock-quote\" and \"ticker\". Example: { \"id\": \"get-stock-quote\", \"input_params\": { \"ticker\": \"NVDA\"} }.\" x-coaz-mappings: [{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"Quote\"}],\"action\":[{\"name\":\"GET_PRICE\"},{\"name\":\"CAN_RETRIEVE\"}]},{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"Customer\"}],\"action\":[{\"name\":\"VIEW_SHARE_PURCHASE_LIMIT\"}]}]",
       "query": {
         "nodes": [
           "subject.external_id",
@@ -47,7 +47,7 @@
       "slot": "3",
       "name": "get-stock-trade-threshold",
       "display_name": "Get Stock Trade Threshold",
-      "description": "Retrieve a customer's stock account tier and threshold. Caller must be in the trading department. Example: { \"id\": \"get-stock-trade-threshold\", \"input_params\": { \"customer_external_id\": \"cust-cashmere\" } }.",
+      "description": "Retrieve a customer's stock account tier and threshold. Caller must be in the trading department. Example: { \"id\": \"get-stock-trade-threshold\", \"input_params\": { \"customer_external_id\": \"cust-cashmere\" } }. x-coaz-mappings: [{\"context\":{},\"subject\":[{\"type\":\"Person\",\"id\":\"$token.sub\"}],\"resource\":[{\"type\":\"Customer\",\"id\":\"$request.arguments.input_params.customer_external_id\"}],\"action\":[{\"name\":\"VIEW_SHARE_PURCHASE_LIMIT\"}]},{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"Customer\"}],\"action\":[{\"name\":\"CAN_ACCESS_CUSTOMER\"},{\"name\":\"CAN_LIST_CUSTOMER\"}]},{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"AccountTier\"}],\"action\":[{\"name\":\"HAS\"},{\"name\":\"HAS_TIER\"}]}]",
       "query": {
         "nodes": [
           "subject.external_id",
@@ -65,7 +65,7 @@
       "slot": "4",
       "name": "get-internal-documents",
       "display_name": "Get Internal Documents",
-      "description": "Retrieve internal documents visible to the caller filtered by taxonomy. Example: { \"id\": \"get-internal-documents\", \"input_params\": { \"taxonomy_external_id\": \"policy\" } }.",
+      "description": "Retrieve internal documents visible to the caller filtered by taxonomy. Example: { \"id\": \"get-internal-documents\", \"input_params\": { \"taxonomy_external_id\": \"policy\" } }. x-coaz-mappings: [{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"Document\"}],\"action\":[{\"name\":\"CAN_DISCLOSE\"},{\"name\":\"CAN_DISCLOSE_UNCHAINED\"},{\"name\":\"CAN_ACCESS_FOLDER_DOCUMENT\"}]}]",
       "query": {
         "nodes": [
           "subject.external_id",
@@ -85,7 +85,7 @@
       "slot": "5",
       "name": "get-customer-facing-documents",
       "display_name": "Get Customer Facing Documents",
-      "description": "Retrieve customer facing documents with their regulatory agreements and investment categories. Example: { \"id\": \"get-customer-facing-documents\", \"input_params\": { } }.",
+      "description": "Retrieve customer facing documents with their regulatory agreements and investment categories. Example: { \"id\": \"get-customer-facing-documents\", \"input_params\": { } }. x-coaz-mappings: [{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"Document\"}],\"action\":[{\"name\":\"VIEW_PRODUCT_DOCUMENT\"},{\"name\":\"CAN_ACCESS_FOLDER_DOCUMENT\"}]}]",
       "query": {
         "nodes": [
           "doc.external_id",
@@ -101,7 +101,7 @@
       "slot": "6",
       "name": "get-regulatory-agreements",
       "display_name": "Get Regulatory Agreements",
-      "description": "Retrieve the full list of regulatory agreements. Example: { \"id\": \"get-regulatory-agreements\", \"input_params\": { } }.",
+      "description": "Retrieve the full list of regulatory agreements. Example: { \"id\": \"get-regulatory-agreements\", \"input_params\": { } }. x-coaz-mappings: [{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"RegulatoryAgreement\"}],\"action\":[{\"name\":\"VIEW_REGULATORY_AGREEMENT\"}]}]",
       "query": {
         "nodes": [
           "ra.external_id",
@@ -141,7 +141,7 @@
       "slot": "9",
       "name": "get-hq-weather",
       "display_name": "Get HQ Weather",
-      "description": "Get HQ Weather returns the current weather reading for CanBank's London headquarters: temperature, apparent temperature, wind speed and weather code, together with the unit labels. The hq_weather Weather node carries `latitude` and `longitude` properties that are substituted into the `weather` external data resolver URL. The `current` and `units` properties are populated live from open-meteo at query time. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-hq-weather\", \"input_params\": { } }.",
+      "description": "Get HQ Weather returns the current weather reading for CanBank's London headquarters: temperature, apparent temperature, wind speed and weather code, together with the unit labels. The hq_weather Weather node carries `latitude` and `longitude` properties that are substituted into the `weather` external data resolver URL. The `current` and `units` properties are populated live from open-meteo at query time. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-hq-weather\", \"input_params\": { } }. x-coaz-mappings: [{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"Weather\"}],\"action\":[{\"name\":\"CAN_READ\"}]}]",
       "query": {
         "nodes": [
           "weather.external_id",
@@ -243,7 +243,7 @@
       "slot": "13",
       "name": "get-internal-documents-chained",
       "display_name": "Get Internal Documents (chain-guarded)",
-      "description": "Retrieve internal documents by taxonomy over the fully delegated agent chain. Call tool 'ciq_execute' with input_params. Example: { \"id\": \"get-internal-documents-chained\", \"input_params\": { \"taxonomy_external_id\": \"policy\" } }. Refused unless the request traveled console->orchestrator->retriever->mcp with the ITS delegation intact.",
+      "description": "Retrieve internal documents by taxonomy over the fully delegated agent chain. Call tool 'ciq_execute' with input_params. Example: { \"id\": \"get-internal-documents-chained\", \"input_params\": { \"taxonomy_external_id\": \"policy\" } }. Refused unless the request traveled console->orchestrator->retriever->mcp with the ITS delegation intact. x-coaz-mappings: [{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"Document\"}],\"action\":[{\"name\":\"CAN_DISCLOSE\"},{\"name\":\"CAN_DISCLOSE_UNCHAINED\"},{\"name\":\"CAN_ACCESS_FOLDER_DOCUMENT\"}]}]",
       "query": {
         "nodes": [
           "subject.external_id",
@@ -263,7 +263,7 @@
       "slot": "14",
       "name": "get-my-family",
       "display_name": "Get My Family",
-      "description": "Retrieve the authenticated person's household: spouse or partner, children with their age group, and the accounts of children who are minors (adult children's accounts are not returned). Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-my-family\", \"input_params\": { } }.",
+      "description": "Retrieve the authenticated person's household: spouse or partner, children with their age group, and the accounts of children who are minors (adult children's accounts are not returned). Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-my-family\", \"input_params\": { } }. x-coaz-mappings: [{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"Person\"}],\"action\":[{\"name\":\"HOUSEHOLD_WITH\"},{\"name\":\"PARENT_OF\"},{\"name\":\"GUARDIAN_OF\"}]},{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"Account\"}],\"action\":[{\"name\":\"VIEW_DEPENDENT_ACCOUNT\"}]}]",
       "query": {
         "nodes": [
           "subject.external_id",

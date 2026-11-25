@@ -109,7 +109,7 @@ created or modified on the platform.
 
 ## Dataset source
 
-The default data comes from `music-dataset.postman_collection.json`:
+The default data ships in `data/`:
 
 - `data/nodes/nodes_music.json`: 15,889 nodes (artists, tracks, albums, people, venues,
   playlists, streaming services…)

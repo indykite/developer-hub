@@ -642,7 +642,20 @@ list is empty and a call is refused before the server sees it. The ERP
 server then searches with the action of the intent, so the rows are the
 ones the prompt asked for: an intent about unpaid invoices
 (`VIEW_UNPAID_INVOICE`) returns the open ones only, where `CAN_VIEW` returns
-every invoice the person may see. The other gateways have IBAC off. Beside
+every invoice the person may see.
+
+`mcp-iag` runs the same check in front of the IndyKite MCP server. Nine
+knowledge queries of the dataset publish what they are for: the text after
+`x-coaz-mappings:` in a query's description becomes the mapping of its tool.
+Under an intent about a stock price the retriever is offered the quote tool
+and not the document tools; under an intent about documents, the reverse.
+For the share purchase limit the mapping names the customer of the call, so
+the gateway asks the platform whether the person may view that customer's
+limit (`data check` card). The tools without a mapping (`authzen_*`,
+`ciq_execute`, `store-decision`, `get-decisions`) are not checked.
+`IBAC_MCP_ENABLED=false` switches this gateway's check off and keeps the
+others. The agent gateways behind the orchestrator, and the Drive gateway,
+have IBAC off. Beside
 the gateway's own cards, the console previews the discovery decision on every INTENT card from the
 orchestrator's raw card (`IBAC_CARD_URL`): "matches query-erp" for an invoice
 prompt, "no skill matches" for an intent outside the agent's declared skills. Note what

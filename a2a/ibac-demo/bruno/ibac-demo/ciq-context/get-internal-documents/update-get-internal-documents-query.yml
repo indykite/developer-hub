@@ -16,7 +16,7 @@ http:
       {
         "name": "get-internal-documents",
         "display_name": "Get Internal Documents",
-        "description": "Retrieve internal documents visible to the caller filtered by taxonomy. Example: { \"id\": \"get-internal-documents\", \"input_params\": { \"taxonomy_external_id\": \"policy\" } }.",
+        "description": "Retrieve internal documents visible to the caller filtered by taxonomy. Example: { \"id\": \"get-internal-documents\", \"input_params\": { \"taxonomy_external_id\": \"policy\" } }. x-coaz-mappings: [{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"Document\"}],\"action\":[{\"name\":\"CAN_DISCLOSE\"},{\"name\":\"CAN_DISCLOSE_UNCHAINED\"},{\"name\":\"CAN_ACCESS_FOLDER_DOCUMENT\"}]}]",
         "project_id": "{{project_id}}",
         "policy_id": "{{get_internal_documents_policy}}",
         "query": "{\"nodes\":[\"subject.external_id\",\"subject.property.name\",\"subject.property.title\",\"document.external_id\",\"document.property.name\",\"document.property.description\",\"document.property.url\",\"taxonomy.property.name\"],\"relationships\":[],\"aggregate_values\":[]}",

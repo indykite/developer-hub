@@ -16,7 +16,7 @@ http:
       {
         "name": "get-regulatory-agreements",
         "display_name": "Get Regulatory Agreements",
-        "description": "Retrieve the full list of regulatory agreements. Example: { \"id\": \"get-regulatory-agreements\", \"input_params\": { } }.",
+        "description": "Retrieve the full list of regulatory agreements. Example: { \"id\": \"get-regulatory-agreements\", \"input_params\": { } }. x-coaz-mappings: [{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"RegulatoryAgreement\"}],\"action\":[{\"name\":\"VIEW_REGULATORY_AGREEMENT\"}]}]",
         "project_id": "{{project_id}}",
         "policy_id": "{{get_regulatory_agreements_policy}}",
         "query": "{\"nodes\":[\"ra.external_id\",\"ra.property.name\",\"ra.property.description\"],\"relationships\":[],\"aggregate_values\":[]}",

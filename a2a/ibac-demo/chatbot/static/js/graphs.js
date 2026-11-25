@@ -330,6 +330,11 @@
         const answers = of('RESOLVED_EVALUATIONS');
         const carried = run.entries.filter((e) => e.token && window.Ledger.tokenIntent(e.token));
         const isEntryHop = (entry) => chainOf(entry.event).length <= 1;
+        // A record saying the engine was not asked: the skills or tools it names carry no mapping
+        // (or one that cannot be read), so the intent was not compared with them.
+        const notCompared = (entry) => ['missing_coaz_mapping', 'invalid_coaz_mapping'].includes(entry.event.reason_code);
+        const namedIn = (event) => (Array.isArray(event.skill_ids) && event.skill_ids.length
+            ? event.skill_ids : [event.skill_id || event.capability_name].filter(Boolean));
         const hasAny = own.length || asked.length || fits.length || usages.length || answers.length || carried.length;
 
         // The evaluations: the Intent Agent's own (with ids), else what a
@@ -389,6 +394,21 @@
         fits.forEach((entry) => {
             const event = entry.event;
             const entryHop = isEntryHop(entry);
+            if (notCompared(entry)) {
+                // Drawn apart from what the intent fits: nothing was decided about these.
+                const names = namedIn(event);
+                if (!names.length) return;
+                const label = names.length <= 2 ? names.join(', ')
+                    : `${names.length} ${entryHop ? 'skills' : 'entries'} without a mapping`;
+                const id = `skip:${event.service}`;
+                const node = nodes.get(id) || add({
+                    id, layer: entryHop ? 2 : 3, kind: entryHop ? 'skill' : 'ghost', label, faint: true,
+                    sub: `no mapping · not compared${entryHop ? '' : ` at ${event.service}`}`, title: names.join(', '),
+                });
+                node.entries.push(entry);
+                [...nodes.values()].filter((n) => n.kind === 'evaluation').forEach((source) => link(source.id, id, 'none', 'not compared'));
+                return;
+            }
             (Array.isArray(event.evaluations) ? event.evaluations : []).forEach((item) => {
                 if (!item || !Array.isArray(item.matchedSkills)) return;
                 const key = evalKey(item.subjectType, item.action, item.resourceType);
@@ -434,6 +454,13 @@
             const name = event.capability_name || event.skill_id || 'call';
             const node = capability(event.service, name, 3, 'call', `at ${event.service}`);
             node.entries.push(entry);
+            if (notCompared(entry)) {
+                // A call of a tool without a mapping: it went on, unchecked.
+                node.tags.push('call not checked');
+                node.faint = node.tone === 'none';
+                return;
+            }
+            node.faint = false;
             node.tags.push(entry.tone === 'deny' ? 'call refused' : 'call checked');
             node.tone = worst([node.tone === 'none' ? 'ok' : node.tone, entry.tone]);
             const intent = Array.isArray(event.current_intent) ? event.current_intent : [];
@@ -497,13 +524,22 @@
             steps.push({ title: 'Intent Agent', state: 'idle', text: 'not asked', cards: [] });
         }
         const entryFits = fits.filter(isEntryHop);
-        if (entryFits.length) {
-            const items = entryFits.flatMap((e) => (Array.isArray(e.event.evaluations) ? e.event.evaluations : []).filter((i) => i && Array.isArray(i.matchedSkills)));
+        const compared = entryFits.filter((e) => !notCompared(e));
+        const uncompared = [...new Set(entryFits.filter(notCompared).flatMap((e) => namedIn(e.event)))];
+        if (compared.length) {
+            const items = compared.flatMap((e) => (Array.isArray(e.event.evaluations) ? e.event.evaluations : []).filter((i) => i && Array.isArray(i.matchedSkills)));
             const fitting = items.filter((i) => i.matchedSkills.length).length;
             steps.push({
                 title: 'Entry gateway', cards: cards(entryFits),
-                state: worst(entryFits.map((e) => e.tone)) === 'deny' || !fitting ? 'deny' : 'ok',
-                text: `${fitting} of ${plural(items.length, 'evaluation')} fit a skill`,
+                state: worst(compared.map((e) => e.tone)) === 'deny' || !fitting ? 'deny' : 'ok',
+                text: `${fitting} of ${plural(items.length, 'evaluation')} fit a skill`
+                    + (uncompared.length ? ` · not compared with ${uncompared.join(', ')}` : ''),
+            });
+        } else if (uncompared.length) {
+            // Only the "not compared" record arrived: the intent was let through, not checked.
+            steps.push({
+                title: 'Entry gateway', state: 'info', cards: cards(entryFits),
+                text: `not compared: ${uncompared.join(', ')} ${uncompared.length === 1 ? 'has' : 'have'} no mapping`,
             });
         } else if (preview) {
             steps.push({
@@ -521,11 +557,19 @@
         }
         const downstream = usages.concat(fits.filter((e) => !isEntryHop(e)));
         if (downstream.length) {
-            const refused = usages.filter((e) => e.tone === 'deny').length;
+            const checked = usages.filter((e) => !notCompared(e));
+            const unchecked = usages.length - checked.length;
+            const refused = checked.filter((e) => e.tone === 'deny').length;
+            const narrowed = fits.some((e) => !isEntryHop(e) && !notCompared(e));
             const parts = [];
-            if (usages.length) parts.push(`${plural(usages.length, 'call')} checked${refused ? `, ${refused} refused` : ''}`);
-            if (downstream.length > usages.length) parts.push('lists narrowed');
-            steps.push({ title: 'MCP gateway', state: refused ? 'deny' : 'ok', text: parts.join(' · '), cards: cards(downstream) });
+            if (checked.length) parts.push(`${plural(checked.length, 'call')} checked${refused ? `, ${refused} refused` : ''}`);
+            if (unchecked) parts.push(`${unchecked} not checked (no mapping)`);
+            if (narrowed) parts.push('lists narrowed');
+            if (!parts.length) parts.push('lists not compared (no mapping)');
+            steps.push({
+                title: 'MCP gateway', state: refused ? 'deny' : checked.length || narrowed ? 'ok' : 'info',
+                text: parts.join(' · '), cards: cards(downstream),
+            });
         } else {
             steps.push({ title: 'MCP gateway', state: 'idle', text: 'no call checked', cards: [] });
         }
@@ -591,7 +635,7 @@
 
     // One node as a card: what it is, its name, and what is known about it.
     function cardOf(node) {
-        const faint = node.kind === 'ghost' || node.placeholder
+        const faint = node.faint || node.kind === 'ghost' || node.placeholder
             || ((node.kind === 'agent' || node.kind === 'server') && node.tone === 'none');
         const card = el('button', `gnode k-${node.kind} t-${node.tone}${faint ? ' faint' : ''}`);
         card.type = 'button';
@@ -1074,7 +1118,7 @@
         }
         showEmpty(run.entries.length ? '' : 'Waiting for the first record of this request…');
         const signature = `${mode}|${runId}|${gatewayId}|${JSON.stringify([
-            [...model.nodes.values()].map((n) => [n.id, n.kind, n.label, n.sub, n.tone, n.parent, n.placeholder, n.edge]),
+            [...model.nodes.values()].map((n) => [n.id, n.kind, n.label, n.sub, n.tone, n.parent, n.placeholder, n.faint, n.edge]),
             model.dag ? [model.edges, model.pos] : null,
         ])}`;
         if (signature !== lastSignature) {
@@ -1096,7 +1140,7 @@
             const item = el('button', `graph-step ${step.state}`);
             item.type = 'button';
             item.disabled = !step.cards.length;
-            item.title = step.cards.length ? 'Show the records of this step in the audit terminal' : step.text;
+            item.title = step.cards.length ? `${step.text}\nClick to show the records of this step in the audit terminal` : step.text;
             item.append(el('span', 'graph-step-n', String(i + 1)), el('span', 'graph-step-title', step.title), el('span', 'graph-step-text', step.text));
             item.addEventListener('click', () => window.Ledger.focus(step.cards));
             strip.appendChild(item);
