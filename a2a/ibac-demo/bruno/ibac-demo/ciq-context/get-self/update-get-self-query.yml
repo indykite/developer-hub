@@ -16,7 +16,7 @@ http:
       {
         "name": "get-self",
         "display_name": "Get Self",
-        "description": "Retrieve the authenticated person's profile: department and manager for staff, customer record for customers. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-self\", \"input_params\": { } }.",
+        "description": "Retrieve the authenticated person's profile: department and manager for staff, customer record for customers. Call tool 'ciq_execute' with no input_params. Example: { \"id\": \"get-self\", \"input_params\": { } }. x-coaz-mappings: [{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"Person\"}],\"action\":[{\"name\":\"CAN_VIEW_PROFILE\"},{\"name\":\"REPORTS_TO\"},{\"name\":\"REPORTS_TO_INDIRECTLY\"}]},{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"Department\"}],\"action\":[{\"name\":\"WORKS_IN\"},{\"name\":\"WORKS_UNDER\"},{\"name\":\"WORKS_UNDER_DEPARTMENT\"}]},{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"Customer\"}],\"action\":[{\"name\":\"IS_CUSTOMER\"}]}]",
         "project_id": "{{project_id}}",
         "policy_id": "{{get_self_policy}}",
         "query": "{\"nodes\":[\"subject.external_id\",\"subject.property.name\",\"subject.property.email\",\"subject.property.title\",\"subject.property.profession\",\"department.property.name\",\"manager.property.name\",\"customer.external_id\",\"customer.property.name\"],\"relationships\":[],\"aggregate_values\":[\"agent\"]}",

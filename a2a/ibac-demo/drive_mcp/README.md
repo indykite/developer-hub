@@ -2,8 +2,8 @@
 
 Puts the IndyKite Agent Gateway in front of a **Google Drive MCP server**, to
 show that the gateway's MCP proxy mode is downstream-agnostic: the same token
-introspection, AuthZEN `CAN_TRIGGER` check, workflow resolution and audit run
-for any Streamable HTTP MCP server, not just IndyKite's.
+introspection, AuthZEN admission (`CAN_TRIGGER`) and capability (`CAN_USE`)
+checks and audit run for any Streamable HTTP MCP server, not just IndyKite's.
 
 The container wraps a stdio Google Drive MCP server with
 [supergateway](https://github.com/supercorp-ai/supergateway) in stateful
@@ -30,9 +30,17 @@ what this server does (a single server-side OAuth identity). Google's own
 hosted MCP endpoints (which require a Google OAuth access token from the
 caller) will **not** work behind the gateway.
 
-Also note the gateway does not inspect MCP payloads: authorization is
-per-request/session ("may millicent reach the Drive server via `wf-drive`?"),
-not per-tool.
+Authorization at the gateway has two levels. Admission is per request ("may
+Millicent reach the Drive server through this delegation chain?"). The
+capability checks are per tool and per resource: with them on, the gateway
+filters `tools/list` and `resources/list` to what the caller may use
+(`CAN_USE`) and refuses a call outside that set with `403` and JSON-RPC
+error `-31403` before the server is called. The ibac dataset permits the
+`search` tool on the `drive-mcp-gateway` Agent for the three `wf-drive*`
+workflows, but no file resource: each Drive file is its own
+`gdrive:///<file id>` URI. The Drive gateway therefore runs with the checks
+off (`IAG_DRIVE_CAPABILITY_CHECKS`, default `false` in `.env`), so file reads
+pass on the admission decision; `true` limits callers to `search`.
 
 ## Setup
 
@@ -80,8 +88,10 @@ alternative to editing `.env`.
 
 Then run the Bruno folder `bruno/ibac-demo/drive-mcp` in order (initialize →
 initialized → list tools → search) with `user_token_millicent` set. Requests go
-to `http://localhost:8887/mcp` (the `drive-mcp-iag` gateway), which forwards
-the path to `http://drive-mcp:8000/mcp` after the IAG checks pass.
+to `http://localhost:9887/mcp` (the `drive-mcp-iag` gateway). `/mcp` is the
+one endpoint the gateway serves; it forwards to exactly
+`http://drive-mcp:8000/mcp` after the IAG checks pass, and any other path
+answers `404`.
 
 Without a valid token mounted, `initialize` still returns a session but the
 child server errors on auth in `docker compose logs drive-mcp` — a useful

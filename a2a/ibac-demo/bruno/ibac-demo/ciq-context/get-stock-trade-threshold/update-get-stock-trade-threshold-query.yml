@@ -16,7 +16,7 @@ http:
       {
         "name": "get-stock-trade-threshold",
         "display_name": "Get Stock Trade Threshold",
-        "description": "Retrieve a customer's stock account tier and threshold. Caller must be in the trading department. Example: { \"id\": \"get-stock-trade-threshold\", \"input_params\": { \"customer_external_id\": \"cust-cashmere\" } }.",
+        "description": "Retrieve a customer's stock account tier and threshold. Caller must be in the trading department. Example: { \"id\": \"get-stock-trade-threshold\", \"input_params\": { \"customer_external_id\": \"cust-cashmere\" } }. x-coaz-mappings: [{\"context\":{},\"subject\":[{\"type\":\"Person\",\"id\":\"$token.sub\"}],\"resource\":[{\"type\":\"Customer\",\"id\":\"$request.arguments.input_params.customer_external_id\"}],\"action\":[{\"name\":\"VIEW_SHARE_PURCHASE_LIMIT\"}]},{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"Customer\"}],\"action\":[{\"name\":\"CAN_ACCESS_CUSTOMER\"},{\"name\":\"CAN_LIST_CUSTOMER\"}]},{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"AccountTier\"}],\"action\":[{\"name\":\"HAS\"},{\"name\":\"HAS_TIER\"}]}]",
         "project_id": "{{project_id}}",
         "policy_id": "{{get_stock_trade_threshold_policy}}",
         "query": "{\"nodes\":[\"subject.external_id\",\"subject.property.name\",\"subject.property.title\",\"customer.property.name\",\"tier.property.name\",\"tier.property.threshold_amount\"],\"relationships\":[],\"aggregate_values\":[]}",

@@ -301,6 +301,7 @@ body {
     color: #a78bfa;
 }
 .audit-intent-discovery.mismatch { color: var(--warn); }
+.audit-intent-discovery.skipped { color: var(--ink-sub); }
 
 .audit-reason { margin-top: 6px; }
 .audit-reason summary {
@@ -1874,6 +1875,7 @@ body {
 .graph-step.ok { border-top-color: #15803D; }
 .graph-step.deny { border-top-color: #B42318; }
 .graph-step.warn { border-top-color: #B45309; }
+.graph-step.info { border-top-color: var(--text-sub); }
 .graph-step.idle { color: var(--text-faint); background: transparent; border-style: dashed; border-top-style: solid; }
 .graph-step-n {
     font-size: 10px;

@@ -4,7 +4,7 @@ An A2A-compliant retriever agent that receives incoming messages, sends them to 
 
 ## Requirements
 
-- Python 3.10+
+- Python 3.11+
 - `a2a-sdk` and `uvicorn`
 
 ## Installation

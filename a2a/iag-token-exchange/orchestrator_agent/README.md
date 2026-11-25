@@ -8,7 +8,7 @@ runs as an HTTP server on a configurable port.
 
 ## Requirements
 
-- Python 3.10+
+- Python 3.11+
 - `a2a-sdk` and `uvicorn`
 
 ## Installation

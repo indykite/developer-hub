@@ -164,7 +164,7 @@ services:
     # another image as TOKEN_SERVICE_IMAGE. Keep it in step with the gateways'
     # AGENT_GATEWAY_IMAGE: a gateway with IBAC on passes the intent on and
     # needs a Token Service that writes it into the token.
-    image: ${TOKEN_SERVICE_IMAGE:-indykite/token-service:2.115.1@sha256:8c3dcc59cb08bd4ce61c70aa57da896df9cc9cc2a9542eca1106c6107d7cf601}
+    image: ${TOKEN_SERVICE_IMAGE:-indykite/token-service:2.117.6@sha256:5de92899b0ff9a38ff7edaedf3df22e05051ffd9aaac48fbb58ef3ef5a801dac}
     # The image is linux/amd64 only - request it explicitly so arm64 hosts
     # (Apple Silicon) pull it under emulation instead of failing with
     # "no matching manifest".
@@ -540,6 +540,18 @@ services:
       JARVIS_PROTECTED_AGENT_BASE_URL: ${MCP_SERVER_ORIGIN}${MCP_SERVER_PATH}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_ID: ${MCP_IDP_CLIENT_ID}
       JARVIS_PROTECTED_AGENT_AUTHENTICATION_CLIENT_SECRET: ${MCP_IDP_CLIENT_SECRET}
+      # IBAC in front of the IndyKite MCP server: the knowledge queries of the
+      # dataset publish what they are for (the `x-coaz-mappings:` suffix of
+      # their description becomes the mapping of their tool), and the gateway
+      # compares each call, and each tools list, with the intent in the
+      # delegated token. A call the intent does not match is refused with
+      # 403; for the share purchase limit the gateway also asks the platform
+      # about the customer the call names. A tool without a mapping
+      # (authzen_*, ciq_execute, store-decision, get-decisions) and a token
+      # without an intent pass as with IBAC off. No Intent Agent is asked
+      # here. IBAC_MCP_ENABLED switches this gateway alone; unset, it follows
+      # IBAC_ENABLED.
+      JARVIS_IBAC_ENABLED: ${IBAC_MCP_ENABLED:-${IBAC_ENABLED:-false}}
     volumes:
       - ./audit-config.yaml:/app/.configs/audit-config.yaml
     command: ["--config=/app/.configs/audit-config.yaml"]

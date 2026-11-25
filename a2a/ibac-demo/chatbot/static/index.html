@@ -1570,6 +1570,23 @@
             attachDetails(card, event.action.replace('IBAC_', 'ibac ').toLowerCase(),
                 `${event.capability_name || ''}${skills ? ' · skills: ' + skills : ''}${event.reason_code ? ' · ' + event.reason_code : ''}`.trim());
             attachDetails(card, 'prompt', event.prompt);
+            // What the record means, in words: compared and how it ended, or
+            // not compared because the skill or tool carries no mapping.
+            const named = skills || event.capability_name || 'this entry';
+            const IBAC_NOTES = {
+                missing_coaz_mapping: ['skipped', `Not compared: ${named} ${named.includes(',') ? 'have' : 'has'} no mapping, so the intent was not checked against it.`],
+                invalid_coaz_mapping: ['mismatch', `Dropped: the mapping of ${named} cannot be read.`],
+                intent_mismatch: ['mismatch', 'The intent in the token does not cover this.'],
+                intent_match_search: ['match', 'The intent in the token covers this.'],
+                intent_match_authzen_required: ['match', 'The intent covers this call; the platform was asked about the data it names.'],
+            };
+            const note = IBAC_NOTES[event.reason_code];
+            if (note) {
+                const line = document.createElement('div');
+                line.className = `audit-intent-discovery ${note[0]}`;
+                line.textContent = note[1];
+                card.appendChild(line);
+            }
         }
         attachIntentCheck(card, event);
         // A token that found no gateway card stands alone: the raw string

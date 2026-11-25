@@ -16,7 +16,7 @@ http:
       {
         "name": "get-customer-facing-documents",
         "display_name": "Get Customer Facing Documents",
-        "description": "Retrieve customer facing documents with their regulatory agreements and investment categories. Example: { \"id\": \"get-customer-facing-documents\", \"input_params\": { } }.",
+        "description": "Retrieve customer facing documents with their regulatory agreements and investment categories. Example: { \"id\": \"get-customer-facing-documents\", \"input_params\": { } }. x-coaz-mappings: [{\"context\":{},\"subject\":[{\"type\":\"Person\"}],\"resource\":[{\"type\":\"Document\"}],\"action\":[{\"name\":\"VIEW_PRODUCT_DOCUMENT\"},{\"name\":\"CAN_ACCESS_FOLDER_DOCUMENT\"}]}]",
         "project_id": "{{project_id}}",
         "policy_id": "{{get_customer_facing_documents_policy}}",
         "query": "{\"nodes\":[\"doc.external_id\",\"doc.property.name\",\"ra.property.name\",\"ic.property.name\"],\"relationships\":[],\"aggregate_values\":[]}",
