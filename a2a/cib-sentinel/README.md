@@ -195,13 +195,13 @@ make                        # fleet images from ../ibac-demo, console, sentinel
 docker compose up -d
 ```
 
-The gateways and the Token Service run the images named in
-`AGENT_GATEWAY_IMAGE` and `TOKEN_SERVICE_IMAGE`. `.example.env` names the
-images published on Docker Hub
+The gateways and the Token Service run the images published on Docker Hub
 ([agent-gateway](https://hub.docker.com/r/indykite/agent-gateway/tags),
-[token-service](https://hub.docker.com/r/indykite/token-service/tags)); name
-the same version in both. After changing either, recreate `token-service`
-and the four gateways.
+[token-service](https://hub.docker.com/r/indykite/token-service/tags)),
+pinned by digest at the same release in `iag-base-docker.yaml` and
+`docker-compose.yaml`. `AGENT_GATEWAY_IMAGE` and `TOKEN_SERVICE_IMAGE` in
+`.env` override them; set both or neither, to the same release. After
+changing either, recreate `token-service` and the four gateways.
 
 ### 6. Try it
 

@@ -309,8 +309,8 @@ block from [`iag-base-docker.yaml`](iag-base-docker.yaml). Details in
 [`token-service/README.md`](token-service/README.md); in short:
 
 1. **Image**: [`indykite/token-service`](https://hub.docker.com/r/indykite/token-service/tags)
-   on Docker Hub, named in `.env` as `TOKEN_SERVICE_IMAGE`, the same release
-   as the gateways (see [The Agent Gateway image](#7-the-agent-gateway-image)).
+   on Docker Hub, pinned in `docker-compose.yaml` at the gateways' release
+   (see [The Agent Gateway image](#7-the-agent-gateway-image)).
    It is `linux/amd64`; arm64 hosts run it under emulation.
 2. **Configure**: copy `token-service/token-service.example.yaml` to
    `token-service/token-service.yaml` (gitignored); fill a fresh RSA private
@@ -401,15 +401,17 @@ local build of the [public repo](https://github.com/indykite/intent-agent).
 
 ### 7. The Agent Gateway image
 
-The gateways and the Token Service run the images named in `.env` as
-`AGENT_GATEWAY_IMAGE` and `TOKEN_SERVICE_IMAGE`. Both are published on
-Docker Hub, and `.example.env` names the latest release there:
+The gateways and the Token Service run the images published on Docker Hub,
+pinned by digest at the same release in
+[`iag-base-docker.yaml`](iag-base-docker.yaml) and
+[`docker-compose.yaml`](docker-compose.yaml):
 
 - [`indykite/agent-gateway`](https://hub.docker.com/r/indykite/agent-gateway/tags)
 - [`indykite/token-service`](https://hub.docker.com/r/indykite/token-service/tags)
 
-Keep the two on the same release: the gateway sends the intent to the Token
-Service, which has to write it into the token. Check what a gateway runs
+`AGENT_GATEWAY_IMAGE` and `TOKEN_SERVICE_IMAGE` in `.env` override them; set
+both or neither, to the same release: the gateway sends the intent to the
+Token Service, which has to write it into the token. Check what a gateway runs
 with:
 
 ```sh
@@ -862,8 +864,9 @@ environment.
   the profile.
 - **Every prompt is a `502` with `IBAC_ENABLED=true`**: the Token Service
   does not write the intent into the token, because its image is not the
-  gateways' release. Set `TOKEN_SERVICE_IMAGE` in `.env` to the same release
-  as `AGENT_GATEWAY_IMAGE` and recreate `token-service`.
+  gateways' release. Remove `AGENT_GATEWAY_IMAGE` and `TOKEN_SERVICE_IMAGE`
+  from `.env` (or set both to the same release), then recreate
+  `token-service` and the gateways.
 - **Only a few of the modelled tools are permitted, or a different set than
   the workflow's**: the `HAS` edges were captured without
   `discriminating_property: workflow_name`, so the platform kept one edge

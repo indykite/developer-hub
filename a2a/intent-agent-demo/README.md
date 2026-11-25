@@ -90,8 +90,8 @@ minute and the Intent Agent refuses prompts until it can read it.
 
 ### 2. The Intent Agent image
 
-The stack runs the published image, `indykite/intent-agent:1.1.0` from
-Docker Hub, pinned by digest in `docker-compose.yaml` and in the chart.
+The stack runs the published image, `indykite/intent-agent` from Docker Hub,
+pinned by digest in `docker-compose.yaml` and in the chart.
 Nothing to do: `make up` pulls it.
 
 To test an unreleased agent instead, build it from a clean checkout of the
@@ -110,9 +110,9 @@ cp .example.env .env
 ```
 
 Fill in `INDYKITE_BASE_URL`, `APP_AGENT_CREDENTIALS_TOKEN` and
-`GEMINI_API_KEY`. Leave `INTENT_AGENT_IMAGE` on the published image unless
-step 2 built a local one, and leave the two generated values for the next
-step.
+`GEMINI_API_KEY`. Leave `INTENT_AGENT_IMAGE` commented out, so compose runs
+the published image, unless step 2 built a local one, and leave the two
+generated values for the next step.
 
 ### 4. Generate the key material
 
@@ -215,7 +215,7 @@ share ports. All commands run from `a2a/intent-agent-demo`.
    under another release name in step 4.
 
 4. Install the chart, naming your platform region (the agent image defaults
-   to the published `indykite/intent-agent:1.1.0`):
+   to the published `indykite/intent-agent` pinned in `chart/values.yaml`):
 
    ```sh
    helm install intent-demo chart -n intent-demo \
