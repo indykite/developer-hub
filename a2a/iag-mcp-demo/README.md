@@ -292,7 +292,7 @@ Fill in, at a minimum:
 | `AUTHZEN_SUBJECT_TYPES` | Subject node type the console (grant self-check, `CAN_TRIGGER` edges) and the ERP server (AuthZEN search) use: `User` for canbank, `Person` for insurance. The gateways do not read it; they take the type from whoami. |
 | `IAG_CAPABILITY_CHECKS` | Optional, default `true`. Capability checks of the gateways (`JARVIS_AUTHZEN_CAPABILITIES_ENABLED`); `false` = admission decision only, lists unfiltered. See [Capability checks](#capability-checks). |
 | `IAG_AUTHZEN_CACHE_TTL` | Optional, default `30s`. How long a gateway keeps an admission decision and a permitted set per subject and chain, i.e. how fast a grant or revoke reaches the gateways. |
-| `AGENT_GATEWAY_IMAGE` | Optional. Agent Gateway image for all gateways; the default in [`iag-base-docker.yaml`](iag-base-docker.yaml) is release `2.112.0` as the local image `agent-gateway:2.112.0`. Never use the `latest` tag. |
+| `AGENT_GATEWAY_IMAGE` | Optional. Agent Gateway image for all gateways; the default in [`iag-base-docker.yaml`](iag-base-docker.yaml) is release `2.115.1` from Docker Hub. Never use the `latest` tag. |
 | `ANALYST_MCP_SERVER_URLS` | *(Drive profile)* Multi-backend analyst: `indykite=http://mcp-iag:8886/mcp/v1/<PROJECT_GID>,drive=http://drive-mcp-iag:8887/mcp` (same unencoded gid as `MCP_SERVER_PATH`). Required for Drive prompts; see the Drive section. |
 | `CIQ_QUERY_HQ_WEATHER` | Optional. Name (not gid) of the `get-hq-weather` knowledge query; the weather agent calls the MCP tool of that name for HQ prompts (default: `get-hq-weather`). Needs slot 9 + the `weather` / `weather-units` EDRs. Without it, weather prompts go to Open-Meteo. |
 | `FLASK_SECRET_KEY` | Generate a fresh one: `python -c "import secrets; print(secrets.token_hex(32))"` |
@@ -329,30 +329,23 @@ make new-erp-mcp     # optional, profile "erp"   - outside the default build
 
 ### 4. Pin the Agent Gateway image tag
 
-[`iag-base-docker.yaml`](iag-base-docker.yaml) names release `2.112.0`:
+[`iag-base-docker.yaml`](iag-base-docker.yaml) names release `2.115.1`,
+pinned by digest:
 
 ```yaml
 services:
   iag-base:
-    image: ${AGENT_GATEWAY_IMAGE:-agent-gateway:2.112.0}
+    image: ${AGENT_GATEWAY_IMAGE:-indykite/agent-gateway:2.115.1@sha256:c37338d1663c57a8a4db6be65236e297d22905043bb6e59bcbae868743d9a6ee}
 ```
 
-`agent-gateway:2.112.0` is an image of the local Docker daemon: load the
-release build, or tag it, under that name before `docker compose up`. All
-gateways inherit this image. The demo relies on what it implements: MCP
+All gateways inherit this image. The demo relies on what it implements: MCP
 proxying (`JARVIS_PROTECTED_AGENT_PROTOCOL: mcp`, used by `mcp-iag`,
 `drive-mcp-iag` and `erp-mcp-iag`) with one MCP endpoint per gateway and
 OAuth discovery, admission by one AuthZEN evaluation over the delegation
 chain, the capability checks, and the agent cards of the A2A gateways.
 
-To run another image, set `AGENT_GATEWAY_IMAGE` in `.env`. The newest
-release on Docker Hub runs with the same settings:
-
-```text
-AGENT_GATEWAY_IMAGE=indykite/agent-gateway:2.0.3@sha256:8368f151cfec343f679dce6f320f43ab8c14cebb5465f683213de66c857aed33
-```
-
-Never use the `latest` tag: on Docker Hub it points at an older build.
+To run another image, set `AGENT_GATEWAY_IMAGE` in `.env`. Never use the
+`latest` tag: on Docker Hub it points at an older build.
 
 If you are on Apple Silicon, add a `platform` attribute:
 
@@ -990,10 +983,6 @@ delegation chain growing by one client on each card's **chain** line.
   the image named in `AGENT_GATEWAY_IMAGE` doesn't exist for your platform.
   Name a tag that Docker Hub lists (never `latest`) and, on Apple Silicon,
   add `platform: linux/amd64`.
-- **`pull access denied for agent-gateway`**: the default image
-  `agent-gateway:2.112.0` is not in the local Docker daemon. Load or tag the
-  release build under that name, or set `AGENT_GATEWAY_IMAGE` to a published
-  tag (see [Pin the Agent Gateway image tag](#4-pin-the-agent-gateway-image-tag)).
 - **A gateway exits at start**: a setting is missing or invalid, and the
   gateway's log names it. Typical: a percent-encoded `MCP_SERVER_PATH`
   (write the gid as `gid:...`), or a leftover

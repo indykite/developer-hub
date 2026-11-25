@@ -55,7 +55,7 @@ services:
   # the delegation token the console presents to the Intent Agent, and is the
   # agent's INTROSPECT_URL. Official image; linux/amd64 only.
   token-service:
-    image: indykite/token-service:1.0.0@sha256:a1248b73ab22fb939e533455a89468b7112b2b938486d8feca818e17776a97e2
+    image: indykite/token-service:2.115.1@sha256:8c3dcc59cb08bd4ce61c70aa57da896df9cc9cc2a9542eca1106c6107d7cf601
     platform: linux/amd64
     # Published for curl-level inspection only, on loopback (see CONSOLE_BIND).
     ports:
