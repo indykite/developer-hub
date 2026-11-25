@@ -331,7 +331,8 @@
         const carried = run.entries.filter((e) => e.token && window.Ledger.tokenIntent(e.token));
         const isEntryHop = (entry) => chainOf(entry.event).length <= 1;
         // A record saying the engine was not asked: the skills or tools it names carry no mapping
-        // (or one that cannot be read), so the intent was not compared with them.
+        // (or one that cannot be read), so the intent was not compared with them. Whether they
+        // were let through or refused is the record's own outcome (entry.tone), kept apart.
         const notCompared = (entry) => ['missing_coaz_mapping', 'invalid_coaz_mapping'].includes(entry.event.reason_code);
         const namedIn = (event) => (Array.isArray(event.skill_ids) && event.skill_ids.length
             ? event.skill_ids : [event.skill_id || event.capability_name].filter(Boolean));
@@ -400,13 +401,19 @@
                 if (!names.length) return;
                 const label = names.length <= 2 ? names.join(', ')
                     : `${names.length} ${entryHop ? 'skills' : 'entries'} without a mapping`;
-                const id = `skip:${event.service}`;
+                // Let through and refused are drawn as two nodes: one record may skip a skill
+                // without a mapping while another drops one whose mapping cannot be read.
+                const bad = entry.tone === 'deny' || entry.tone === 'warn';
+                const why = event.reason_code === 'invalid_coaz_mapping' ? 'unreadable mapping' : 'no mapping';
+                const id = `skip:${event.service}:${bad ? entry.tone : 'passed'}`;
                 const node = nodes.get(id) || add({
-                    id, layer: entryHop ? 2 : 3, kind: entryHop ? 'skill' : 'ghost', label, faint: true,
-                    sub: `no mapping · not compared${entryHop ? '' : ` at ${event.service}`}`, title: names.join(', '),
+                    id, layer: entryHop ? 2 : 3, kind: entryHop ? 'skill' : 'ghost', label, faint: !bad,
+                    tone: bad ? entry.tone : 'none', title: names.join(', '),
+                    sub: `${why} · ${bad ? (entry.tone === 'deny' ? 'refused' : 'failed') : 'not compared'}${entryHop ? '' : ` at ${event.service}`}`,
                 });
                 node.entries.push(entry);
-                [...nodes.values()].filter((n) => n.kind === 'evaluation').forEach((source) => link(source.id, id, 'none', 'not compared'));
+                [...nodes.values()].filter((n) => n.kind === 'evaluation').forEach((source) => link(
+                    source.id, id, bad ? entry.tone : 'none', bad ? (entry.tone === 'deny' ? 'refused' : 'failed') : 'not compared'));
                 return;
             }
             (Array.isArray(event.evaluations) ? event.evaluations : []).forEach((item) => {
@@ -455,8 +462,10 @@
             const node = capability(event.service, name, 3, 'call', `at ${event.service}`);
             node.entries.push(entry);
             if (notCompared(entry)) {
-                // A call of a tool without a mapping: it went on, unchecked.
-                node.tags.push('call not checked');
+                // A call of a tool without a readable mapping: it went on unchecked, or was refused for it.
+                const bad = entry.tone === 'deny' || entry.tone === 'warn';
+                node.tags.push(bad ? (entry.tone === 'deny' ? 'call refused (no mapping)' : 'call failed') : 'call not checked');
+                if (bad) node.tone = worst([node.tone, entry.tone]);
                 node.faint = node.tone === 'none';
                 return;
             }
@@ -531,15 +540,18 @@
             const fitting = items.filter((i) => i.matchedSkills.length).length;
             steps.push({
                 title: 'Entry gateway', cards: cards(entryFits),
-                state: worst(compared.map((e) => e.tone)) === 'deny' || !fitting ? 'deny' : 'ok',
+                state: worst(entryFits.map((e) => e.tone)) === 'deny' || !fitting ? 'deny' : 'ok',
                 text: `${fitting} of ${plural(items.length, 'evaluation')} fit a skill`
                     + (uncompared.length ? ` · not compared with ${uncompared.join(', ')}` : ''),
             });
         } else if (uncompared.length) {
-            // Only the "not compared" record arrived: the intent was let through, not checked.
+            // Only "not compared" records arrived: the intent was let through unchecked, or refused for it.
+            const outcome = worst(entryFits.map((e) => e.tone));
+            const refused = outcome === 'deny' || outcome === 'warn';
             steps.push({
-                title: 'Entry gateway', state: 'info', cards: cards(entryFits),
-                text: `not compared: ${uncompared.join(', ')} ${uncompared.length === 1 ? 'has' : 'have'} no mapping`,
+                title: 'Entry gateway', state: refused ? outcome : 'info', cards: cards(entryFits),
+                text: `${refused ? 'refused' : 'not compared'}: ${uncompared.join(', ')} ${uncompared.length === 1 ? 'has' : 'have'} `
+                    + (entryFits.some((e) => e.event.reason_code === 'invalid_coaz_mapping') ? 'no readable mapping' : 'no mapping'),
             });
         } else if (preview) {
             steps.push({
@@ -558,16 +570,20 @@
         const downstream = usages.concat(fits.filter((e) => !isEntryHop(e)));
         if (downstream.length) {
             const checked = usages.filter((e) => !notCompared(e));
-            const unchecked = usages.length - checked.length;
-            const refused = checked.filter((e) => e.tone === 'deny').length;
+            // Refusals count whatever their reason: a call refused for a missing or unreadable
+            // mapping is a refused call.
+            const refused = usages.filter((e) => e.tone === 'deny').length;
+            const unchecked = usages.filter((e) => notCompared(e) && e.tone !== 'deny').length;
             const narrowed = fits.some((e) => !isEntryHop(e) && !notCompared(e));
             const parts = [];
-            if (checked.length) parts.push(`${plural(checked.length, 'call')} checked${refused ? `, ${refused} refused` : ''}`);
+            if (checked.length) parts.push(`${plural(checked.length, 'call')} checked`);
+            if (refused) parts.push(`${refused} refused`);
             if (unchecked) parts.push(`${unchecked} not checked (no mapping)`);
             if (narrowed) parts.push('lists narrowed');
             if (!parts.length) parts.push('lists not compared (no mapping)');
             steps.push({
-                title: 'MCP gateway', state: refused ? 'deny' : checked.length || narrowed ? 'ok' : 'info',
+                title: 'MCP gateway',
+                state: refused || downstream.some((e) => e.tone === 'deny') ? 'deny' : checked.length || narrowed ? 'ok' : 'info',
                 text: parts.join(' · '), cards: cards(downstream),
             });
         } else {
