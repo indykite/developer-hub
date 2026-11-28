@@ -42,7 +42,7 @@ intentAgent:
 tokenService:
   image:
     repository: docker.io/indykite/token-service
-    tag: "2.115.1@sha256:8c3dcc59cb08bd4ce61c70aa57da896df9cc9cc2a9542eca1106c6107d7cf601"
+    tag: "2.118.0@sha256:f258550843a6711505f63077c5d43dec5aac62cfc324424eeb3ae632cff136d7"
     pullPolicy: IfNotPresent
   port: 8102
   # Must equal idp.client_auth.client_id inside token-service.yaml.
